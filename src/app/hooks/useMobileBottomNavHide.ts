@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
-/** Matches main `pb-16` clearance for the mobile bottom nav */
-export const MOBILE_BOTTOM_NAV_CLEARANCE = '4rem';
+/** Clearance for floating dock bottom nav */
+export const MOBILE_BOTTOM_NAV_CLEARANCE = '4.5rem';
 
-/** Fixed height of showcase detail action bar (replaces bottom nav on product/idea detail) */
-export const MOBILE_SHOWCASE_ACTION_BAR_HEIGHT = '3.625rem';
+/** Fixed clearance for floating showcase action bar */
+export const MOBILE_SHOWCASE_ACTION_BAR_HEIGHT = '3.75rem';
 
 export function isMobileCustomBottomBarRoute(pathname: string): boolean {
   return pathname === '/product-detail' || pathname === '/idea-detail';

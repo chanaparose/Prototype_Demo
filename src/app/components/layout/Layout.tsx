@@ -1,19 +1,16 @@
 import React from 'react';
-import { useNavigate, useLocation, Link, Navigate } from 'react-router';
+import { useLocation, Link, Navigate } from 'react-router';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { AnimatedOutlet } from '@/components/layout/AnimatedOutlet';
 import {
-  Home,
-  ClipboardList,
   MessageCircle,
-  User,
-  Lightbulb,
   Bell,
   Heart,
   Wallet,
   LayoutDashboard,
   Images,
   Package,
+  User,
 } from 'lucide-react';
 import { DesktopSidebar } from '@/components/layout/DesktopSidebar';
 import { ProductTour } from '@/components/features/explore/ProductTour';
@@ -21,9 +18,6 @@ import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
 import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
 import { isFactoryRole } from '@/utils/factoryUser';
-import {
-  isFactorySidebarNavActive,
-} from '@/components/layout/factoryGlobalNavConfig';
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Image } from '@/components/ui/image';
@@ -32,6 +26,8 @@ import {
   useMobileBottomNavHide,
 } from '@/hooks/useMobileBottomNavHide';
 import { MobileCreateRfqFab } from '@/components/layout/MobileCreateRfqFab';
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
+import { MOBILE_BOTTOM_NAV_CLEARANCE } from '@/hooks/useMobileBottomNavHide';
 import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
@@ -96,15 +92,6 @@ function HeaderIconLink({
   );
 }
 
-// ─── Customer bottom nav (5 items) ─────────────────────────────────────────
-const customerNavLinks = [
-  { path: '/', icon: Home, label: 'หน้าแรก' },
-  { path: '/factory-ideas', icon: Lightbulb, label: 'แนะนำโรงงาน' },
-  { path: '/orders', icon: ClipboardList, label: 'คำสั่งงาน' },
-  { path: '/messages', icon: MessageCircle, label: 'ข้อความ' },
-  { path: '/profile', icon: User, label: 'โปรไฟล์' },
-];
-
 // ─── Factory bottom nav (5 most-used items) ─────────────────────────────────
 const factoryBottomLinks = [
   {
@@ -153,7 +140,6 @@ const factoryBottomLinks = [
 
 // ─── Layout ──────────────────────────────────────────────────────────────────
 export function Layout() {
-  const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
   const data = useData();
@@ -206,13 +192,7 @@ export function Layout() {
     return <Navigate to='/admin/dashboard' replace />;
   }
 
-  const isActive = (path: string) =>
-    path === '/'
-      ? location.pathname === '/'
-      : location.pathname === path || location.pathname.startsWith(`${path}/`);
-
   const brandActive = isFactory ? 'var(--brand-indigo)' : 'var(--brand-purple)';
-  const brandActiveBg = isFactory ? '#EEF2FF' : 'rgba(162,56,255,0.08)';
 
   /** Mobile FAB — whitelist only (Explore home = `/`) */
   const createRfqFabPaths = [
@@ -300,7 +280,12 @@ export function Layout() {
 
         {/* ── Main content ────────────────────────────────────────────────── */}
         <main
-          className={`flex-1 min-w-0 overflow-x-hidden bg-[var(--brand-page)] lg:pb-0 ${hideMobileBottomNav ? 'pb-0' : 'pb-16'}`}
+          className='flex-1 min-w-0 overflow-x-hidden bg-[var(--brand-page)] lg:pb-0'
+          style={
+            hideMobileBottomNav
+              ? undefined
+              : { paddingBottom: `calc(${MOBILE_BOTTOM_NAV_CLEARANCE} + env(safe-area-inset-bottom, 0px))` }
+          }
         >
           {/* `relative` gives AnimatePresence a positioned ancestor so the
               exiting element doesn't escape the content column. */}
@@ -310,111 +295,17 @@ export function Layout() {
         </main>
       </div>
 
-      {/* ── Bottom Navigation bar (mobile + iPad) ───────────────────────── */}
       {!hideMobileBottomNav ? (
-      <nav
-        className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 transition-transform duration-300 ease-in-out ${
-          bottomNavHidden ? 'translate-y-full' : 'translate-y-0'
-        }`}
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-      >
-        <div className='flex items-stretch'>
-          {isFactory
-            ? /* ── Factory items ── */
-              factoryBottomLinks.map((item) => {
-                const active = isFactorySidebarNavActive(location.pathname, item);
-                const locked = Boolean(item.requiresApproval && !factoryApproved);
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.key}
-                    type='button'
-                    disabled={locked}
-                    onClick={() => {
-                      if (locked) return;
-                      void navigate(item.href);
-                    }}
-                    className='flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-w-0 disabled:opacity-40'
-                  >
-                    <div className='relative'>
-                      <Icon
-                        size={23}
-                        strokeWidth={active ? 2.2 : 1.6}
-                        style={{ color: active ? brandActive : '#9CA3AF' }}
-                      />
-                      {item.key === 'messages' && unreadMessages > 0 && (
-                        <span
-                          className='absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full text-white flex items-center justify-center text-[8px] border border-white tabular-nums'
-                          style={{ background: 'var(--brand-orange)', fontWeight: 700 }}
-                        >
-                          {unreadMessages > 99 ? '99+' : unreadMessages}
-                        </span>
-                      )}
-                    </div>
-                    <span
-                      className='text-[10px] font-medium leading-tight truncate max-w-full px-1'
-                      style={{ color: active ? brandActive : '#9CA3AF' }}
-                    >
-                      {item.label}
-                    </span>
-                    {active && (
-                      <span
-                        className='absolute bottom-0 w-6 h-0.5 rounded-full'
-                        style={{ background: brandActive }}
-                      />
-                    )}
-                  </button>
-                );
-              })
-            : /* ── Customer items ── */
-              customerNavLinks.map(({ path, icon: Icon, label }) => {
-                const active = isActive(path);
-                // Profile item: show login if guest
-                return (
-                  <button
-                    key={path}
-                    type='button'
-                    onClick={() => {
-                      if (path === '/profile' && !isAuthenticated) {
-                        openLoginModal('/profile');
-                        return;
-                      }
-                      void navigate(path);
-                    }}
-                    className='flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-w-0 relative'
-                  >
-                    <div className='relative'>
-                      <Icon
-                        size={23}
-                        strokeWidth={active ? 2.2 : 1.6}
-                        style={{ color: active ? brandActive : '#9CA3AF' }}
-                      />
-                      {path === '/messages' && unreadMessages > 0 && (
-                        <span
-                          className='absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full text-white flex items-center justify-center text-[8px] border border-white tabular-nums'
-                          style={{ background: 'var(--brand-orange)', fontWeight: 700 }}
-                        >
-                          {unreadMessages > 99 ? '99+' : unreadMessages}
-                        </span>
-                      )}
-                    </div>
-                    <span
-                      className='text-[10px] font-medium leading-tight truncate max-w-full px-1'
-                      style={{ color: active ? brandActive : '#9CA3AF' }}
-                    >
-                      {label}
-                    </span>
-                    {active && (
-                      <span
-                        className='absolute bottom-0 w-6 h-0.5 rounded-full'
-                        style={{ background: brandActive }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-        </div>
-      </nav>
+        <MobileBottomNav
+          hidden={bottomNavHidden}
+          isFactory={isFactory}
+          factoryApproved={factoryApproved}
+          factoryBottomLinks={factoryBottomLinks}
+          unreadMessages={unreadMessages}
+          brandActive={brandActive}
+          isAuthenticated={isAuthenticated}
+          onProfileGuest={() => openLoginModal('/profile')}
+        />
       ) : null}
 
       {showCreateRfqFab ? (
