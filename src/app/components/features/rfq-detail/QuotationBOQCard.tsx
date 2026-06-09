@@ -1,7 +1,7 @@
 import React from 'react';
 import { openImageLightbox } from '@/stores/useLightboxStore';
 import { BadgeCheck, Calendar, Package, Shield, Truck } from 'lucide-react';
-import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 
@@ -123,13 +123,11 @@ export function quotationFromOfferSource(
 
 export type QuotationBOQDetailsPanelProps = {
   quotation: Quotation;
-  rfqUnitName?: string;
   className?: string;
 };
 
 export function QuotationBOQDetailsPanel({
   quotation: q,
-  rfqUnitName,
   className = '',
 }: QuotationBOQDetailsPanelProps) {
   return (
@@ -150,10 +148,10 @@ export function QuotationBOQDetailsPanel({
       <div className='grid grid-cols-2 gap-2 sm:grid-cols-4'>
         <MetricTile label='ค่าแม่พิมพ์' value={formatCurrency(q.mold_cost)} />
         <MetricTile
-          label='MOQ'
-          value={`${formatCompactNumber(q.moq)} ${q.factory_unit_name || rfqUnitName || 'หน่วย'}`}
+          label='อายุใบเสนอราคา'
+          value={q.validity_days != null && q.validity_days > 0 ? `${q.validity_days} วัน` : '—'}
         />
-        <MetricTile label='Lead time' value={`${q.lead_time_days} วัน`} />
+         
       </div>
 
       {q.certifications.length > 0 && (

@@ -469,7 +469,6 @@ export function RfqDetailOffersSection({
                         toolingMoldCost +
                         vatAmount,
                     );
-              const validityDays = Math.max(0, asNumber(qd.validity_days));
               return (
                 <div
                   key={offer.id}
@@ -587,9 +586,11 @@ export function RfqDetailOffersSection({
                     </div>
                     <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
                       <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
-                        {validityDays > 0 ? `${validityDays}` : '-'}
+                        {formatCompactNumber(boq.moq)}
                       </p>
-                      <p className='text-[9px] text-gray-500'>อายุใบเสนอราคา (วัน)</p>
+                      <p className='text-[9px] text-gray-500'>
+                        จำนวน ({qd.factory_unit_name || rfqUnitName || 'หน่วย'})
+                      </p>
                     </div>
                   </div>
                   <div className='rounded-xl border border-gray-100 bg-gray-50/40 px-3 py-2 mb-3'>
@@ -686,7 +687,6 @@ export function RfqDetailOffersSection({
                     <div className='overflow-hidden min-h-0'>
                       <QuotationBOQDetailsPanel
                         quotation={boq}
-                        rfqUnitName={rfqUnitName}
                         className='-mx-4 border-gray-100 px-4 pb-3 pt-2'
                       />
                     </div>
