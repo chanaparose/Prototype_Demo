@@ -165,7 +165,9 @@ export function extractShowcaseRows(raw: unknown): Record<string, unknown>[] {
 }
 
 export async function fetchAndMapShowcaseList(type?: ShowcaseApiType): Promise<FactoryShowcase[]> {
-  const raw = await showcasesApi.list(type);
+  const raw = type
+    ? await showcasesApi.listFiltered({ type })
+    : await showcasesApi.list();
   const arr = extractShowcaseRows(raw);
   return arr.map(mapShowcaseFromApi).filter((s) => s.id && s.title);
 }

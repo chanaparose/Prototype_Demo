@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   SHOWCASE_DETAIL_BRAND as BRAND,
   formatShowcaseThaiDate as formatThaiDate,
@@ -20,10 +20,8 @@ import { useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
-import { type FactoryShowcase } from '@/stores/types';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
-import { showcasesApi } from '@/services/api/factoryApi';
-import { mapShowcaseFromApi } from '@/hooks/useShowcases';
+import { useShowcases } from '@/hooks/useShowcases';
 import { RelatedShowcasesSection } from '@/components/features/idea-detail/RelatedShowcasesSection';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -42,35 +40,11 @@ export function IdeaDetailMobile() {
   const data = useData();
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, resolvedId, reviews } = useIdeaDetailShowcase();
-  const [relatedIdeas, setRelatedIdeas] = useState<FactoryShowcase[]>([]);
+  const { showcases: relatedIdeas, loading: relatedIdeasLoading } = useShowcases({ type: 'ID' });
 
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
-
-  useEffect(() => {
-    if (!item?.id) {
-      setRelatedIdeas([]);
-      return;
-    }
-    let cancelled = false;
-    void (async () => {
-      try {
-        const rows = await showcasesApi.list('ID');
-        if (cancelled) return;
-        const list = (Array.isArray(rows) ? rows : [])
-          .map((r) => mapShowcaseFromApi((r ?? {}) as Record<string, unknown>))
-          .filter((s) => s.contentType === 'idea' && s.id !== item.id)
-          .slice(0, 5);
-        setRelatedIdeas(list);
-      } catch {
-        if (!cancelled) setRelatedIdeas([]);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [item?.id]);
 
   if (loading) {
     return <ProductDetailSkeleton />;
@@ -283,16 +257,18 @@ export function IdeaDetailMobile() {
           </div>
         </section>
 
-        {relatedIdeas.length > 0 ? (
-          <section
-            className='mt-4 rounded-2xl border border-gray-100/90 bg-white p-4 pb-2 shadow-sm'
-            aria-label='บทความที่เกี่ยวข้อง'
-          >
-            <h2 className='mb-3 text-[14px] font-bold' style={{ color: CARD.blue }}>
-              บทความที่น่าสนใจให้อ่านต่อ
-            </h2>
+        <section
+          className='mt-4 rounded-2xl border border-gray-100/90 bg-white p-4 pb-2 shadow-sm'
+          aria-label='บทความที่เกี่ยวข้อง'
+        >
+          <h2 className='mb-3 text-[14px] font-bold' style={{ color: CARD.blue }}>
+            บทความที่น่าสนใจให้อ่านต่อ
+          </h2>
+          {relatedIdeasLoading ? (
+            <p className='text-[12px] text-gray-400 py-2'>กำลังโหลดบทความ…</p>
+          ) : (
             <div className='space-y-3'>
-              {relatedIdeas.map((next) => {
+              {relatedIdeas.slice(0, 5).map((next) => {
                 const relFactory = data.factories.find((f) => f.id === next.factoryId);
                 const excerpt = next.excerpt || next.description || '';
                 return (
@@ -369,8 +345,8 @@ export function IdeaDetailMobile() {
                 );
               })}
             </div>
-          </section>
-        ) : null}
+          )}
+        </section>
       </main>
 
       <ShowcaseDetailMobileActionBar

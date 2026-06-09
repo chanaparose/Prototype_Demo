@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   SHOWCASE_DETAIL_BRAND as BRAND,
   formatShowcaseThaiDate as formatThaiDate,
@@ -20,10 +20,8 @@ import { useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
-import { type FactoryShowcase } from '@/stores/types';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
-import { showcasesApi } from '@/services/api/factoryApi';
-import { mapShowcaseFromApi } from '@/hooks/useShowcases';
+import { useShowcases } from '@/hooks/useShowcases';
 import { RelatedShowcasesSection } from '@/components/features/idea-detail/RelatedShowcasesSection';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -40,35 +38,11 @@ export function IdeaDetailDesktop() {
   const data = useData();
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, resolvedId } = useIdeaDetailShowcase();
-  const [relatedIdeas, setRelatedIdeas] = useState<FactoryShowcase[]>([]);
+  const { showcases: relatedIdeas } = useShowcases({ type: 'ID' });
 
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
-
-  useEffect(() => {
-    if (!item?.id) {
-      setRelatedIdeas([]);
-      return;
-    }
-    let cancelled = false;
-    void (async () => {
-      try {
-        const rows = await showcasesApi.list('ID');
-        if (cancelled) return;
-        const list = (Array.isArray(rows) ? rows : [])
-          .map((r) => mapShowcaseFromApi((r ?? {}) as Record<string, unknown>))
-          .filter((s) => s.contentType === 'idea' && s.id !== item.id)
-          .slice(0, 5);
-        setRelatedIdeas(list);
-      } catch {
-        if (!cancelled) setRelatedIdeas([]);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [item?.id]);
 
   if (loading) {
     return (
@@ -250,7 +224,7 @@ export function IdeaDetailDesktop() {
             บทความที่น่าสนใจให้อ่านต่อ
           </h2>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-            {relatedIdeas.map((next) => {
+            {relatedIdeas.slice(0, 5).map((next) => {
               const relFactory = data.factories.find((f) => f.id === next.factoryId);
               const excerpt = next.excerpt || next.description || '';
               return (
