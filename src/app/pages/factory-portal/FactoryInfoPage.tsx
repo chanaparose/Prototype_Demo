@@ -31,7 +31,7 @@ import { BusinessInfoSection } from '@/components/factory/profile/BusinessInfoSe
 import { CategoriesSection } from '@/components/factory/profile/CategoriesSection';
 import { AddressesSection } from '@/components/factory/profile/AddressesSection';
 import { CertificatesSection } from '@/components/factory/profile/CertificatesSection';
-import { BankAccountPlaceholder } from '@/components/factory/profile/BankAccountPlaceholder';
+import { FactoryBankSettingsPage } from '@/pages/factory-portal/FactoryBankSettingsPage';
 import {
   PROFILE_FORM_DEFAULTS,
   type ProfileFormValues,
@@ -621,15 +621,9 @@ export function FactoryInfoPage() {
         />
       </InfoCard>
 
-      {/* ── 5. บัญชีธนาคาร — placeholder ──────────────────────────────────────── */}
-      <InfoCard
-        title='บัญชีธนาคาร'
-        action={
-          <span className='text-[10px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 border border-gray-200'>Optional</span>
-        }
-      >
-        <p className='text-xs text-gray-400 mb-4'>ใช้สำหรับรับการโอนเงิน</p>
-        <BankAccountPlaceholder />
+      {/* ── 5. บัญชีธนาคาร — full CRUD ──────────────────────────────────────── */}
+      <InfoCard>
+        <FactoryBankSettingsPage />
       </InfoCard>
     </div>
   );
