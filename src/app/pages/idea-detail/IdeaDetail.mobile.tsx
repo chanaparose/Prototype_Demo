@@ -19,7 +19,6 @@ import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
-import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useShowcases } from '@/hooks/useShowcases';
 import { RelatedShowcasesSection } from '@/components/features/idea-detail/RelatedShowcasesSection';
@@ -37,7 +36,6 @@ export function IdeaDetailMobile() {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
   const { user } = useAuth();
-  const data = useData();
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, resolvedId, reviews } = useIdeaDetailShowcase();
   const { showcases: relatedIdeas, loading: relatedIdeasLoading } = useShowcases({ type: 'ID' });
@@ -258,92 +256,59 @@ export function IdeaDetailMobile() {
         </section>
 
         <section
-          className='mt-4 rounded-2xl border border-gray-100/90 bg-white p-4 pb-2 shadow-sm'
+          className='mt-4 rounded-2xl border border-gray-100/90 bg-white px-3 py-3 shadow-sm'
           aria-label='บทความที่เกี่ยวข้อง'
         >
-          <h2 className='mb-3 text-[14px] font-bold' style={{ color: CARD.blue }}>
+          <h2 className='mb-2 px-1 text-[13px] font-bold' style={{ color: CARD.blue }}>
             บทความที่น่าสนใจให้อ่านต่อ
           </h2>
           {relatedIdeasLoading ? (
-            <p className='text-[12px] text-gray-400 py-2'>กำลังโหลดบทความ…</p>
+            <p className='px-1 py-1 text-[12px] text-gray-400'>กำลังโหลดบทความ…</p>
           ) : (
-            <div className='space-y-3'>
-              {relatedIdeas.slice(0, 5).map((next) => {
-                const relFactory = data.factories.find((f) => f.id === next.factoryId);
-                const excerpt = next.excerpt || next.description || '';
-                return (
-                  <article
-                    key={next.id}
-                    className='cursor-pointer rounded-xl border border-slate-100 bg-white p-3 transition-transform active:scale-[0.98]'
-                    onClick={() =>
-                      navigate(`/idea-detail?showcase_id=${encodeURIComponent(next.id)}`)
-                    }
-                  >
-                    <div className='mb-2 flex items-center gap-2'>
-                      <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[9px] font-bold text-brand-magenta'>
+            <div className='divide-y divide-gray-100'>
+              {relatedIdeas.slice(0, 5).map((next) => (
+                <article
+                  key={next.id}
+                  className='flex cursor-pointer items-start gap-2 px-1 py-2.5 active:bg-gray-50'
+                  onClick={() =>
+                    navigate(`/idea-detail?showcase_id=${encodeURIComponent(next.id)}`)
+                  }
+                >
+                  <div className='min-w-0 flex-1'>
+                    <div className='mb-0.5 flex items-center gap-1'>
+                      <span className='inline-flex shrink-0 items-center rounded-full bg-brand-lavender-chip px-1.5 py-px text-[8px] font-bold text-brand-magenta'>
                         ไอเดีย
                       </span>
-                      <span className='truncate text-[10px] text-gray-400'>{next.factoryName}</span>
+                      {next.factoryVerified ? (
+                        <BadgeCheck className='h-3 w-3 shrink-0' style={{ color: CARD.purple }} />
+                      ) : null}
                     </div>
                     <h3
-                      className='text-[13px] font-bold leading-[19px] line-clamp-2'
+                      className='text-[12px] font-bold leading-snug line-clamp-2'
                       style={{ color: CARD.blue }}
                     >
                       {next.title}
                     </h3>
-                    <p className='mt-1 line-clamp-3 text-[11px] leading-[16px] text-gray-500'>
-                      {excerpt || ' '}
-                    </p>
-                    <div className='mt-2 border-t border-gray-100 pt-2'>
-                      <div className='mb-1 min-w-0 h-[18px]'>
-                        {next.factoryName ? (
-                          <Button
-                            variant='unstyled'
-                            type='button'
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/factories/${next.factoryId}`);
-                            }}
-                            className='flex w-full min-w-0 items-center gap-1 text-left text-[10px] font-semibold active:opacity-80'
-                            style={{ color: CARD.blue }}
-                          >
-                            <span className='truncate'>{next.factoryName}</span>
-                            {relFactory?.verified ? (
-                              <BadgeCheck
-                                className='h-3 w-3 shrink-0'
-                                style={{ color: CARD.purple }}
-                              />
-                            ) : null}
-                          </Button>
-                        ) : null}
-                      </div>
-                      <div className='flex min-w-0 items-center justify-between'>
-                        <span className='shrink-0 text-[10px] text-gray-400'>
-                          MOQ{' '}
-                          <span className='font-semibold tabular-nums' style={{ color: CARD.blue }}>
-                            {next.minOrder}
-                          </span>
-                        </span>
-                        <button
-                          type='button'
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void toggleFavorite(next.id);
-                          }}
-                          className='flex shrink-0 items-center gap-1 text-[10px] text-gray-400'
-                        >
-                          <Heart
-                            className={`h-3 w-3 shrink-0 ${isLiked(next.id) ? 'fill-red-500 text-red-500' : ''}`}
-                          />
-                          <span className='font-medium tabular-nums text-gray-500'>
-                            {next.likes + (isLiked(next.id) ? 1 : 0)}
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
+                    <p className='mt-0.5 truncate text-[10px] text-gray-400'>{next.factoryName}</p>
+                  </div>
+                  <button
+                    type='button'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void toggleFavorite(next.id);
+                    }}
+                    className='flex shrink-0 flex-col items-center gap-0.5 pt-0.5 text-[10px] text-gray-400'
+                    aria-label='ถูกใจ'
+                  >
+                    <Heart
+                      className={`h-3.5 w-3.5 ${isLiked(next.id) ? 'fill-red-500 text-red-500' : ''}`}
+                    />
+                    <span className='font-medium tabular-nums text-gray-500'>
+                      {next.likes + (isLiked(next.id) ? 1 : 0)}
+                    </span>
+                  </button>
+                </article>
+              ))}
             </div>
           )}
         </section>
