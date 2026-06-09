@@ -88,13 +88,7 @@ export function MessagesMobile({
 
         {/* Right: unread badge pill */}
         <div className='w-9 flex justify-end'>
-          {totalUnread > 0 ? (
-            <span className='flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[var(--brand-mauve)] px-1.5 text-[11px] font-bold text-white'>
-              {totalUnread > 99 ? '99+' : totalUnread}
-            </span>
-          ) : (
-            <div />
-          )}
+            
         </div>
       </div>
 
