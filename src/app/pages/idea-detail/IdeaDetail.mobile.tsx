@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   SHOWCASE_DETAIL_BRAND as BRAND,
   formatShowcaseThaiDate as formatThaiDate,
@@ -9,13 +9,17 @@ import {
   BadgeCheck,
   CalendarDays,
   ChevronRight,
+  Heart,
   Share2,
   MapPin,
 } from 'lucide-react';
+import { openImageLightbox } from '@/stores/useLightboxStore';
+import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
+import { useData } from '@/stores/useDataStore';
 import { type FactoryShowcase } from '@/stores/types';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { showcasesApi } from '@/services/api/factoryApi';
@@ -26,22 +30,19 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { ProductDetailSkeleton } from '@/components/skeletons/PageSkeletons';
 import { mobileShowcaseDetailPaddingBottom } from '@/hooks/useMobileBottomNavHide';
 import { ShowcaseDetailMobileActionBar } from '@/components/features/showcase-detail/ShowcaseDetailMobileActionBar';
-import { Image } from '@/components/ui/image';
+const CARD = {
+  purple: 'var(--brand-mauve)',
+  blue: 'var(--brand-navy)',
+} as const;
 
 export function IdeaDetailMobile() {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
   const { user } = useAuth();
+  const data = useData();
   const { startChat, starting } = useStartChatWithFactory();
-  const { item, loading, error, factory, resolvedId } = useIdeaDetailShowcase();
+  const { item, loading, error, factory, resolvedId, reviews } = useIdeaDetailShowcase();
   const [relatedIdeas, setRelatedIdeas] = useState<FactoryShowcase[]>([]);
-  const coverImage = useMemo(() => {
-    const urls = Array.isArray(item?.imageUrls)
-      ? item.imageUrls.filter((u) => String(u).trim() !== '')
-      : [];
-    if (urls.length > 0) return urls[0];
-    return item?.image?.trim() || null;
-  }, [item?.image, item?.imageUrls]);
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -60,7 +61,7 @@ export function IdeaDetailMobile() {
         const list = (Array.isArray(rows) ? rows : [])
           .map((r) => mapShowcaseFromApi((r ?? {}) as Record<string, unknown>))
           .filter((s) => s.contentType === 'idea' && s.id !== item.id)
-          .slice(0, 6);
+          .slice(0, 5);
         setRelatedIdeas(list);
       } catch {
         if (!cancelled) setRelatedIdeas([]);
@@ -106,6 +107,11 @@ export function IdeaDetailMobile() {
       id: Number(resolvedId),
       title: item.title,
     });
+
+  const avgRating = Number(reviews?.summary.average ?? factory?.rating ?? 0);
+  const reviewCount = Number(reviews?.summary.total ?? factory?.reviews ?? 0);
+  const breakdown = reviews?.summary.breakdown ?? { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
+  const latestReviews = reviews?.items ?? [];
 
   return (
     <div
@@ -217,36 +223,148 @@ export function IdeaDetailMobile() {
           />
         </article>
 
+        <section className='mt-4 rounded-2xl border border-gray-100/90 bg-white px-4 py-4 shadow-sm'>
+          <p className='text-[14px] font-bold' style={{ color: BRAND.ink }}>
+            คะแนนรีวิวโรงงาน
+          </p>
+          <div className='mt-3 flex items-center gap-4'>
+            <div>
+              <p className='text-[26px] font-bold leading-none' style={{ color: BRAND.orange }}>
+                {avgRating.toFixed(1)}
+              </p>
+              <p className='mt-1 text-[12px] text-gray-500'>{reviewCount} รีวิว</p>
+            </div>
+            <div className='flex-1 space-y-1.5'>
+              {[5, 4, 3, 2, 1].map((star) => {
+                const count = Number(breakdown[String(star)] ?? 0);
+                const intensity =
+                  reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
+                return (
+                  <div key={star} className='flex items-center gap-2'>
+                    <span className='w-7 text-[11px] text-gray-500'>{star}★</span>
+                    <div className='h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100'>
+                      <div
+                        className='h-full rounded-full'
+                        style={{ width: `${intensity}%`, background: BRAND.orange }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className='mt-4 space-y-2 border-t border-gray-100 pt-3'>
+            <p className='text-[13px] font-semibold' style={{ color: BRAND.ink }}>
+              รีวิวล่าสุดจากลูกค้า
+            </p>
+            {latestReviews.length === 0 ? (
+              <p className='text-[12px] text-gray-400'>ยังไม่มีรีวิว</p>
+            ) : (
+              latestReviews.slice(0, 2).map((r) => (
+                <div key={r.id} className='rounded-lg border border-gray-100 px-2.5 py-2'>
+                  <div className='flex items-center justify-between gap-2'>
+                    <p className='truncate text-[12px] font-semibold text-gray-700'>{r.reviewer}</p>
+                    <p className='shrink-0 text-[12px] text-amber-600'>
+                      ★ {Number(r.rating || 0).toFixed(1)}
+                    </p>
+                  </div>
+                  <p className='mt-1 line-clamp-2 text-[12px] text-gray-600'>{r.comment || '-'}</p>
+                  {r.imageUrls && r.imageUrls.length > 0 ? (
+                    <div className='mt-1.5'>
+                      <ReviewImageAttachments
+                        urls={r.imageUrls}
+                        onPreviewUrl={(u) => openImageLightbox(u)}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
         {relatedIdeas.length > 0 ? (
-          <section className='mt-4 pb-2' aria-label='อ่านต่อ'>
-            <h2 className='mb-2.5 text-[13px] font-bold text-[var(--brand-navy)]'>
-              อ่านต่อ
+          <section
+            className='mt-4 rounded-2xl border border-gray-100/90 bg-white p-4 pb-2 shadow-sm'
+            aria-label='บทความที่เกี่ยวข้อง'
+          >
+            <h2 className='mb-3 text-[14px] font-bold' style={{ color: CARD.blue }}>
+              บทความที่น่าสนใจให้อ่านต่อ
             </h2>
-            <div className='-mx-1 flex gap-2.5 overflow-x-auto px-1 pb-0.5 snap-x snap-mandatory'>
+            <div className='space-y-3'>
               {relatedIdeas.map((next) => {
-                const excerpt = (next.excerpt || next.description || '').trim();
+                const relFactory = data.factories.find((f) => f.id === next.factoryId);
+                const excerpt = next.excerpt || next.description || '';
                 return (
                   <article
                     key={next.id}
-                    className='w-[11.5rem] shrink-0 snap-start cursor-pointer rounded-xl border border-gray-100 bg-white p-3 active:scale-[0.98] transition-transform'
+                    className='cursor-pointer rounded-xl border border-slate-100 bg-white p-3 transition-transform active:scale-[0.98]'
                     onClick={() =>
                       navigate(`/idea-detail?showcase_id=${encodeURIComponent(next.id)}`)
                     }
                   >
-                    <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-1.5 py-px text-[9px] font-bold text-brand-magenta'>
-                      ไอเดีย
-                    </span>
+                    <div className='mb-2 flex items-center gap-2'>
+                      <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[9px] font-bold text-brand-magenta'>
+                        ไอเดีย
+                      </span>
+                      <span className='truncate text-[10px] text-gray-400'>{next.factoryName}</span>
+                    </div>
                     <h3
-                      className='mt-1.5 text-[12px] font-bold leading-snug line-clamp-3 text-[var(--brand-navy)]'
+                      className='text-[13px] font-bold leading-[19px] line-clamp-2'
+                      style={{ color: CARD.blue }}
                     >
                       {next.title}
                     </h3>
-                    {excerpt ? (
-                      <p className='mt-1 text-[10px] leading-relaxed text-gray-500 line-clamp-2'>
-                        {excerpt}
-                      </p>
-                    ) : null}
-                    <p className='mt-2 truncate text-[10px] text-gray-400'>{next.factoryName}</p>
+                    <p className='mt-1 line-clamp-3 text-[11px] leading-[16px] text-gray-500'>
+                      {excerpt || ' '}
+                    </p>
+                    <div className='mt-2 border-t border-gray-100 pt-2'>
+                      <div className='mb-1 min-w-0 h-[18px]'>
+                        {next.factoryName ? (
+                          <Button
+                            variant='unstyled'
+                            type='button'
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/factories/${next.factoryId}`);
+                            }}
+                            className='flex w-full min-w-0 items-center gap-1 text-left text-[10px] font-semibold active:opacity-80'
+                            style={{ color: CARD.blue }}
+                          >
+                            <span className='truncate'>{next.factoryName}</span>
+                            {relFactory?.verified ? (
+                              <BadgeCheck
+                                className='h-3 w-3 shrink-0'
+                                style={{ color: CARD.purple }}
+                              />
+                            ) : null}
+                          </Button>
+                        ) : null}
+                      </div>
+                      <div className='flex min-w-0 items-center justify-between'>
+                        <span className='shrink-0 text-[10px] text-gray-400'>
+                          MOQ{' '}
+                          <span className='font-semibold tabular-nums' style={{ color: CARD.blue }}>
+                            {next.minOrder}
+                          </span>
+                        </span>
+                        <button
+                          type='button'
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void toggleFavorite(next.id);
+                          }}
+                          className='flex shrink-0 items-center gap-1 text-[10px] text-gray-400'
+                        >
+                          <Heart
+                            className={`h-3 w-3 shrink-0 ${isLiked(next.id) ? 'fill-red-500 text-red-500' : ''}`}
+                          />
+                          <span className='font-medium tabular-nums text-gray-500'>
+                            {next.likes + (isLiked(next.id) ? 1 : 0)}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
                   </article>
                 );
               })}
