@@ -58,7 +58,6 @@ export const SHOWCASE_DETAIL_MARKDOWN_CLASS = [
   '[&_pre]:overflow-x-auto [&_pre]:bg-gray-50 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:my-3',
   '[&_code]:font-mono',
   '[&_p_code]:bg-gray-100 [&_p_code]:px-1.5 [&_p_code]:py-0.5 [&_p_code]:rounded',
-  '[&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:text-gray-600 [&_blockquote]:my-3',
 ].join(' ');
 
 export function formatShowcaseThaiDate(date: string): string {

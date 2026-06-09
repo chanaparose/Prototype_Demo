@@ -13,6 +13,9 @@ type Props = {
   typography?: MarkdownTypography;
 };
 
+export const MARKDOWN_BLOCKQUOTE_CLASS =
+  '[&_blockquote]:border-l-4 [&_blockquote]:border-[var(--brand-mauve)] [&_blockquote]:bg-[rgba(245,240,255,0.65)] [&_blockquote]:px-3 [&_blockquote]:py-2 [&_blockquote]:my-3';
+
 const defaultMarkdownClassName = `max-w-none text-gray-800 text-sm md:text-base leading-relaxed
          [&_p]:my-2
          [&_h1]:text-2xl [&_h1]:md:text-3xl [&_h1]:font-bold [&_h1]:leading-tight [&_h1]:mt-6 [&_h1]:mb-3
@@ -33,8 +36,7 @@ const defaultMarkdownClassName = `max-w-none text-gray-800 text-sm md:text-base 
          [&_table]:w-full [&_table]:border-collapse [&_table]:text-sm [&_table]:my-3 [&_table]:overflow-x-auto [&_th]:bg-gray-50 [&_th]:border [&_td]:border [&_th]:px-3 [&_td]:px-3 [&_th]:py-2 [&_td]:py-2
          [&_pre]:overflow-x-auto [&_pre]:bg-gray-50 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:my-3
          [&_code]:font-mono [&_code]:text-[0.92em]
-         [&_p_code]:bg-gray-100 [&_p_code]:px-1.5 [&_p_code]:py-0.5 [&_p_code]:rounded
-         [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:text-gray-600 [&_blockquote]:my-3`;
+         [&_p_code]:bg-gray-100 [&_p_code]:px-1.5 [&_p_code]:py-0.5 [&_p_code]:rounded`;
 
 /** XSS-safe markdown body (detail pages + editor preview parity). */
 export function MarkdownBody({ source, className, typography = 'default' }: Props) {
@@ -44,7 +46,7 @@ export function MarkdownBody({ source, className, typography = 'default' }: Prop
 
   return (
     <div
-      className={cn(baseClassName, className)}
+      className={cn(baseClassName, MARKDOWN_BLOCKQUOTE_CLASS, className)}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
