@@ -46,10 +46,6 @@ export interface Quotation {
   factory_unit_name?: string | null;
 }
 
-const MIDNIGHT = 'var(--brand-navy)';
-const PLUM = 'var(--brand-mauve)';
-const PLUM_SOFT = 'var(--brand-page)';
-
 /** ข้อมูลจาก OfferItem / API สำหรับสร้าง Quotation แบบเต็ม (เติมค่า default ถ้าขาด) */
 export type QuotationOfferSource = {
   id: string;
@@ -130,69 +126,61 @@ export function QuotationBOQDetailsPanel({
   quotation: q,
   className = '',
 }: QuotationBOQDetailsPanelProps) {
+  const validUntil = formatValidUntil(q.valid_until);
+  const validityDays =
+    q.validity_days != null && q.validity_days > 0 ? `${q.validity_days} วัน` : null;
+  const expiryLabel =
+    validUntil !== '—'
+      ? validityDays
+        ? `${validUntil} (${validityDays})`
+        : validUntil
+      : validityDays ?? '—';
+  const hasImages = Array.isArray(q.image_urls) && q.image_urls.length > 0;
+  const hasCerts = q.certifications.length > 0;
+
   return (
-    <div className={`space-y-4 border-t border-gray-100 ${className}`}>
-      <p className='text-[11px] font-bold uppercase tracking-wide text-gray-400 pt-1'>
-        รายละเอียด BOQ
-      </p>
-
-      <div className='grid gap-3 sm:grid-cols-2'>
-        <DetailRow icon={<Truck size={14} />} label='การจัดส่ง' value={q.shipping_method} />
-        <DetailRow
-          icon={<Calendar size={14} />}
-          label='ใบเสนอราคาถึง'
-          value={formatValidUntil(q.valid_until)}
-        />
+    <div className={`border-t border-gray-100 pt-2 space-y-2 ${className}`}>
+      <div className='grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2'>
+        <CompactItem icon={<Truck size={12} />} label='การจัดส่ง' value={q.shipping_method} />
+        <CompactItem icon={<Calendar size={12} />} label='หมดอายุ' value={expiryLabel} />
+        {q.mold_cost > 0 ? (
+          <CompactItem label='ค่าแม่พิมพ์' value={formatCurrency(q.mold_cost)} />
+        ) : null}
       </div>
 
-      <div className='grid grid-cols-2 gap-2 sm:grid-cols-4'>
-        <MetricTile label='ค่าแม่พิมพ์' value={formatCurrency(q.mold_cost)} />
-        <MetricTile
-          label='อายุใบเสนอราคา'
-          value={q.validity_days != null && q.validity_days > 0 ? `${q.validity_days} วัน` : '—'}
-        />
-         
-      </div>
-
-      {q.certifications.length > 0 && (
-        <div>
-          <div className='mb-2 flex items-center gap-1.5 text-[11px] font-bold text-gray-500'>
-            <Shield size={14} className='text-brand-mauve' />
-            ใบรับรอง & ความน่าเชื่อถือ
-          </div>
-          <ul className='flex flex-wrap gap-2'>
+      {hasCerts ? (
+        <div className='flex flex-wrap items-center gap-1.5'>
+          <Shield size={11} className='shrink-0 text-brand-mauve' aria-hidden />
+          <ul className='flex flex-wrap gap-1'>
             {q.certifications.map((c) => (
               <li key={c}>
-                <StatusBadge variant='active' size='sm' icon={<BadgeCheck size={12} />}>
+                <StatusBadge variant='active' size='sm' icon={<BadgeCheck size={10} />}>
                   {c}
                 </StatusBadge>
               </li>
             ))}
           </ul>
         </div>
-      )}
+      ) : null}
 
-      {Array.isArray(q.image_urls) && q.image_urls.length > 0 && (
-        <div>
-          <div className='mb-2 flex items-center gap-1.5 text-[11px] font-bold text-gray-500'>
-            <Package size={14} className='text-brand-mauve' />
-            ภาพแนบจากใบเสนอราคา
-          </div>
-          <div className='grid grid-cols-3 sm:grid-cols-5 gap-2'>
-            {q.image_urls.slice(0, 5).map((url, idx) => (
+      {hasImages ? (
+        <div className='flex items-center gap-1.5'>
+          <Package size={11} className='shrink-0 text-brand-mauve' aria-hidden />
+          <div className='flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5'>
+            {q.image_urls!.slice(0, 5).map((url, idx) => (
               <button
                 key={`${url}-${idx}`}
                 type='button'
                 onClick={() => openImageLightbox(url)}
-                className='block aspect-square rounded-xl overflow-hidden border border-gray-100 bg-gray-50 focus:outline-none active:opacity-80'
+                className='block h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50 focus:outline-none active:opacity-80'
                 aria-label='ดูรูปขนาดใหญ่'
               >
-                <ImageWithFallback src={url} alt='' className='w-full h-full object-cover' />
+                <ImageWithFallback src={url} alt='' className='h-full w-full object-cover' />
               </button>
             ))}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -208,35 +196,24 @@ function formatValidUntil(iso: string): string {
   });
 }
 
-function DetailRow({
+function CompactItem({
   icon,
   label,
   value,
 }: {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   label: string;
   value: string;
 }) {
   return (
-    <div className='rounded-xl border border-gray-100 bg-gray-50/50 p-3'>
-      <div className='mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-gray-500'>
-        <span className='text-brand-mauve' aria-hidden>
+    <div className='flex min-w-0 items-start gap-1 text-[11px] leading-snug'>
+      {icon ? (
+        <span className='mt-px shrink-0 text-brand-mauve' aria-hidden>
           {icon}
         </span>
-        {label}
-      </div>
-      <p className='text-xs leading-relaxed text-gray-800'>{value}</p>
-    </div>
-  );
-}
-
-function MetricTile({ label, value }: { label: string; value: string }) {
-  return (
-    <div className='rounded-xl px-3 py-2.5' style={{ backgroundColor: PLUM_SOFT }}>
-      <p className='text-[9px] font-semibold uppercase tracking-wide text-gray-500'>{label}</p>
-      <p className='mt-0.5 text-xs font-bold' style={{ color: MIDNIGHT }}>
-        {value}
-      </p>
+      ) : null}
+      <span className='shrink-0 text-gray-500'>{label}:</span>
+      <span className='min-w-0 font-medium text-gray-800'>{value}</span>
     </div>
   );
 }
