@@ -25,6 +25,7 @@ export type ExploreProductCarouselItem = {
   factoryName?: string;
   likes?: number;
   minOrder?: number;
+  minOrderUnit?: string;
   factoryRating?: number;
   location?: string;
 };
@@ -181,7 +182,8 @@ export function ExploreProductCarouselSection({
                                   </span>
                                 </div>
                                 <span className='text-gray-400 text-[8px] shrink-0'>
-                                  ขั้นต่ำ {product.minOrder ?? 0}
+                                  ขั้นต่ำ {product.minOrder ?? 0}{' '}
+                                  {product.minOrderUnit}
                                 </span>
                               </div>
                             </div>

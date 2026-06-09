@@ -21,6 +21,8 @@ export type IExploreShowcase = {
   postedAt: string;
   likes: number;
   minOrder: number;
+  unitId?: number;
+  moqUnit?: string;
   leadTime: string;
   tags: string[];
   factoryRating?: number;
@@ -37,6 +39,7 @@ export type IExploreFactory = {
   rating: number;
   reviews: number;
   minOrder: number;
+  minOrderUnit?: string;
   verified: boolean;
 };
 

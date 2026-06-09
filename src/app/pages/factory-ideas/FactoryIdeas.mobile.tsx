@@ -31,6 +31,8 @@ import {
   factoryIdeasTabOrder,
   factoryIdeasFactoryScopeOrder,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { useMasterUnitMap } from '@/hooks/master/useMasterUnitMap';
+import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
 
 const MOBILE_TABS: { id: FactoryIdeasContentType; label: string }[] = [
   { id: 'all',      label: 'ทั้งหมด' },
@@ -42,6 +44,7 @@ const MOBILE_TABS: { id: FactoryIdeasContentType; label: string }[] = [
 
 export function FactoryIdeasMobile() {
   const navigate = useNavigate();
+  const unitMap = useMasterUnitMap().data;
   const {
     data,
     isLiked,
@@ -360,7 +363,8 @@ export function FactoryIdeasMobile() {
                         <span className='text-gray-400 text-[9px]'>({factory.reviews})</span>
                       </div>
                       <span className='text-gray-400 text-[8px] shrink-0'>
-                        ขั้นต่ำ {factory.minOrder}
+                        ขั้นต่ำ {factory.minOrder}{' '}
+                        {resolveUnitLabel(undefined, factory.minOrderUnit, unitMap)}
                       </span>
                     </div>
                   </div>
@@ -454,7 +458,8 @@ export function FactoryIdeasMobile() {
                           </span>
                         </div>
                         <span className='text-gray-400 text-[8px] shrink-0'>
-                          ขั้นต่ำ {item.minOrder}
+                          ขั้นต่ำ {item.minOrder}{' '}
+                          {resolveUnitLabel(item.unitId, item.moqUnit, unitMap)}
                         </span>
                       </div>
                     </div>
@@ -529,7 +534,8 @@ export function FactoryIdeasMobile() {
                           ขั้นต่ำ{' '}
                           <span className='font-semibold tabular-nums text-[var(--brand-navy)]'>
                             {item.minOrder}
-                          </span>
+                          </span>{' '}
+                          {resolveUnitLabel(item.unitId, item.moqUnit, unitMap)}
                         </span>
                       </div>
                     </div>

@@ -25,6 +25,8 @@ import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
 import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useMasterUnitMap } from '@/hooks/master/useMasterUnitMap';
+import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
 
 type ExploreDesktopProps = {
   searchText: string;
@@ -112,6 +114,7 @@ export function ExploreDesktop({
 }: Readonly<Omit<ExploreDesktopProps, 'activeRFQs' | 'recentOrders'>>) {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
+  const unitMap = useMasterUnitMap().data;
   const ideaArticlesList = ideaArticles ?? [];
   const recommendedFactories = useMemo(() => (factories ?? []).slice(0, 10), [factories]);
 
@@ -127,10 +130,11 @@ export function ExploreDesktop({
         factoryId: s.factoryId,
         factoryName: s.factoryName,
         minOrder: s.minOrder,
+        minOrderUnit: resolveUnitLabel(s.unitId, s.moqUnit, unitMap),
         factoryRating: s.factoryRating,
         location: s.location,
       })),
-    [exploreProducts],
+    [exploreProducts, unitMap],
   );
 
   // const promoShowcases = useMemo(() => (explorePromotions ?? []).slice(0, 4), [explorePromotions]);
@@ -147,10 +151,11 @@ export function ExploreDesktop({
         factoryId: s.factoryId,
         factoryName: s.factoryName,
         minOrder: s.minOrder,
+        minOrderUnit: resolveUnitLabel(s.unitId, s.moqUnit, unitMap),
         factoryRating: s.factoryRating,
         location: s.location,
       })),
-    [exploreMatrials],
+    [exploreMatrials, unitMap],
   );
 
   // Promo slides จาก API เท่านั้น — ไม่มี fallback

@@ -39,6 +39,8 @@ function mapRowToExploreShowcase(row: IExploreShowcaseResponse): IExploreShowcas
     postedAt: s.postedAt,
     likes: s.likes,
     minOrder: s.minOrder,
+    ...(s.unitId != null && s.unitId > 0 ? { unitId: s.unitId } : {}),
+    ...(s.moqUnit ? { moqUnit: s.moqUnit } : {}),
     leadTime: s.leadTime,
     tags: s.tags,
     ...(s.factoryRating != null ? { factoryRating: s.factoryRating } : {}),
@@ -74,6 +76,7 @@ function mapExploreFactory(f: IExploreFactoryItem): IExploreFactory {
     rating: f.rating,
     reviews: f.reviews,
     minOrder: f.min_order,
+    ...(f.min_order_unit ? { minOrderUnit: f.min_order_unit } : {}),
     verified: f.verified,
   };
 }

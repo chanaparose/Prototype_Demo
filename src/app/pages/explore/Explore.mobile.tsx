@@ -26,6 +26,8 @@ import { Image } from '@/components/ui/image';
 import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
 import { ProductCardSkeleton } from '@/components/skeletons/PageSkeletons';
+import { useMasterUnitMap } from '@/hooks/master/useMasterUnitMap';
+import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
 
 type ExploreMobileProps = {
   searchText: string;
@@ -67,6 +69,7 @@ export function ExploreMobile({
 }: ExploreMobileProps) {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
+  const unitMap = useMasterUnitMap().data;
 
   const productShowcases = (exploreProducts ?? []).slice(0, 8);
   // const promoShowcases = (explorePromotions ?? []).slice(0, 4);
@@ -180,7 +183,8 @@ export function ExploreMobile({
                         </span>
                       </div>
                       <span className='text-gray-400 text-[9px] shrink-0'>
-                        ขั้นต่ำ {item.minOrder ?? 0}
+                        ขั้นต่ำ {item.minOrder ?? 0}{' '}
+                        {resolveUnitLabel(item.unitId, item.moqUnit, unitMap)}
                       </span>
                     </div>
                   </div>
@@ -289,7 +293,8 @@ export function ExploreMobile({
                         </span>
                       </div>
                       <span className='text-gray-400 text-[9px] shrink-0'>
-                        ขั้นต่ำ {item.minOrder ?? 0}
+                        ขั้นต่ำ {item.minOrder ?? 0}{' '}
+                        {resolveUnitLabel(item.unitId, item.moqUnit, unitMap)}
                       </span>
                     </div>
                   </div>

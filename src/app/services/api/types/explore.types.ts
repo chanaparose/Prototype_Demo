@@ -12,6 +12,8 @@ export interface IExploreShowcaseResponse {
   sub_category_id: number | null;
   sub_category_name: string | null;
   moq: number;
+  unit_id?: number | null;
+  unit_name_th?: string | null;
   likes_count: number;
   published_at: string;
   factory_name: string;
@@ -66,6 +68,7 @@ export interface IExploreFactoryItem {
   rating: number;
   reviews: number;
   min_order: number;
+  min_order_unit?: string | null;
   verified: boolean;
 }
 
