@@ -16,10 +16,8 @@ import {
   Heart,
   ImageIcon,
   MapPin,
-  MessageCircle,
   Share2,
   Star,
-  Store,
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
@@ -27,10 +25,8 @@ import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImag
 import { openImageLightbox } from '@/stores/useLightboxStore';
 import { ProductDetailSkeleton } from '@/components/skeletons/PageSkeletons';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
-import {
-  mobileActionBarBottomOffset,
-  useMobileBottomNavHide,
-} from '@/hooks/useMobileBottomNavHide';
+import { mobileShowcaseDetailPaddingBottom } from '@/hooks/useMobileBottomNavHide';
+import { ShowcaseDetailMobileActionBar } from '@/components/features/showcase-detail/ShowcaseDetailMobileActionBar';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
@@ -43,7 +39,6 @@ export function ProductDetailMobile() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
-  const bottomNavHidden = useMobileBottomNavHide();
   const data = useData();
   const {
     item,
@@ -161,7 +156,10 @@ export function ProductDetailMobile() {
   }
 
   return (
-    <div className='min-h-screen bg-brand-panel pb-[72px] animate-[fadeIn_0.2s_ease-in]'>
+    <div
+      className='min-h-screen bg-brand-panel animate-[fadeIn_0.2s_ease-in]'
+      style={{ paddingBottom: mobileShowcaseDetailPaddingBottom() }}
+    >
       <div className='relative w-full aspect-[4/3] bg-white overflow-hidden'>
         <div className='absolute inset-0 overflow-hidden' ref={emblaRef}>
           <div className='flex h-full'>
@@ -586,54 +584,15 @@ export function ProductDetailMobile() {
         </div>
       </>
 
-      <div
-        className='fixed inset-x-2 bg-white/92 backdrop-blur-md border z-40 flex items-stretch h-[58px] rounded-xl shadow-[0_4px_14px_rgba(46,34,82,0.12)] overflow-hidden transition-[bottom] duration-300 ease-in-out'
-        style={{
-          borderColor: BRAND.border,
-          bottom: mobileActionBarBottomOffset(bottomNavHidden),
-        }}
-      >
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => navigate(`/factories/${item.factoryId}`)}
-          className='w-[72px] flex flex-col items-center justify-center gap-0.5 text-gray-600 active:bg-white'
-        >
-          <Store className='w-5 h-5' />
-          <span className='text-[12px] leading-none'>โปรไฟล์</span>
-        </Button>
-        <div className='w-px bg-violet-100/70' />
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => void toggleFavorite(item.id)}
-          className='w-[72px] flex flex-col items-center justify-center gap-0.5 text-gray-600 active:bg-white'
-          aria-label='ถูกใจ'
-        >
-          <Heart
-            className='w-5 h-5 shrink-0'
-            style={liked ? { color: 'var(--status-danger)', fill: 'var(--status-danger)' } : {}}
-          />
-          <span className='text-[12px] leading-none text-gray-500'>{likeCount}</span>
-        </Button>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={canChat ? handleStartChat : () => navigate(`/factories/${item.factoryId}`)}
-          disabled={starting}
-          className='flex-1 flex items-center justify-center gap-2 text-white font-bold text-[14px] disabled:opacity-70'
-          style={{
-            background: 'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-orange) 100%)',
-          }}
-        >
-          {starting ? (
-            <span className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
-          ) : (
-            <MessageCircle className='w-4 h-4' />
-          )}
-          {canChat ? 'แชทกับโรงงาน' : 'ดูโปรไฟล์โรงงาน'}
-        </Button>
-      </div>
+      <ShowcaseDetailMobileActionBar
+        factoryId={item.factoryId}
+        liked={liked}
+        likeCount={likeCount}
+        canChat={canChat}
+        starting={starting}
+        onToggleFavorite={() => void toggleFavorite(item.id)}
+        onChat={handleStartChat}
+      />
     </div>
   );
 }

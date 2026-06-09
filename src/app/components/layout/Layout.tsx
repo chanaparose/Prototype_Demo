@@ -27,7 +27,10 @@ import {
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Image } from '@/components/ui/image';
-import { useMobileBottomNavHide } from '@/hooks/useMobileBottomNavHide';
+import {
+  isMobileCustomBottomBarRoute,
+  useMobileBottomNavHide,
+} from '@/hooks/useMobileBottomNavHide';
 import { MobileCreateRfqFab } from '@/components/layout/MobileCreateRfqFab';
 import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -160,6 +163,7 @@ export function Layout() {
   const isAdminRole = userRole === 'AM' || userRole === 'AD' || userRole === 'SA';
   const factoryApproved = factoryVerifyStatus(user) === 'AP';
   const bottomNavHidden = useMobileBottomNavHide();
+  const hideMobileBottomNav = isMobileCustomBottomBarRoute(location.pathname);
   const unreadMessages = useConversationUnreadCount();
   const { likedIds } = useFavorites();
   const { open: openLoginModal } = useAuthModalStore();
@@ -295,7 +299,9 @@ export function Layout() {
         ) : null}
 
         {/* ── Main content ────────────────────────────────────────────────── */}
-        <main className='flex-1 min-w-0 overflow-x-hidden bg-[var(--brand-page)] pb-16 lg:pb-0'>
+        <main
+          className={`flex-1 min-w-0 overflow-x-hidden bg-[var(--brand-page)] lg:pb-0 ${hideMobileBottomNav ? 'pb-0' : 'pb-16'}`}
+        >
           {/* `relative` gives AnimatePresence a positioned ancestor so the
               exiting element doesn't escape the content column. */}
           <div className={`relative ${mainContentMaxWidth} mx-auto min-h-full`}>
@@ -305,6 +311,7 @@ export function Layout() {
       </div>
 
       {/* ── Bottom Navigation bar (mobile + iPad) ───────────────────────── */}
+      {!hideMobileBottomNav ? (
       <nav
         className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 transition-transform duration-300 ease-in-out ${
           bottomNavHidden ? 'translate-y-full' : 'translate-y-0'
@@ -408,6 +415,7 @@ export function Layout() {
               })}
         </div>
       </nav>
+      ) : null}
 
       {showCreateRfqFab ? (
         <MobileCreateRfqFab

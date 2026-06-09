@@ -3,6 +3,17 @@ import { useEffect, useRef, useState } from 'react';
 /** Matches main `pb-16` clearance for the mobile bottom nav */
 export const MOBILE_BOTTOM_NAV_CLEARANCE = '4rem';
 
+/** Fixed height of showcase detail action bar (replaces bottom nav on product/idea detail) */
+export const MOBILE_SHOWCASE_ACTION_BAR_HEIGHT = '3.625rem';
+
+export function isMobileCustomBottomBarRoute(pathname: string): boolean {
+  return pathname === '/product-detail' || pathname === '/idea-detail';
+}
+
+export function mobileShowcaseDetailPaddingBottom(): string {
+  return `calc(${MOBILE_SHOWCASE_ACTION_BAR_HEIGHT} + env(safe-area-inset-bottom, 0px))`;
+}
+
 /** Gap between FAB and bottom nav when nav is visible */
 export const MOBILE_FAB_GAP = '1rem';
 

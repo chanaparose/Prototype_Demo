@@ -6,13 +6,11 @@ import {
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
-  ArrowUpRight,
   BadgeCheck,
   CalendarDays,
   Heart,
   Share2,
   MapPin,
-  MessageCircle,
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
@@ -27,6 +25,8 @@ import { RelatedShowcasesSection } from '@/components/features/idea-detail/Relat
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { ProductDetailSkeleton } from '@/components/skeletons/PageSkeletons';
+import { mobileShowcaseDetailPaddingBottom } from '@/hooks/useMobileBottomNavHide';
+import { ShowcaseDetailMobileActionBar } from '@/components/features/showcase-detail/ShowcaseDetailMobileActionBar';
 
 const CARD = {
   purple: 'var(--brand-mauve)',
@@ -109,9 +109,20 @@ export function IdeaDetailMobile() {
   const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
   const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
   const markdown = String(item.content ?? '').trim();
+  const liked = isLiked(item.id);
+  const likeCount = item.likes + (liked ? 1 : 0);
+  const handleStartChat = () =>
+    void startChat(item.factoryId, {
+      type: 'ID',
+      id: Number(resolvedId),
+      title: item.title,
+    });
 
   return (
-    <div className='min-h-screen bg-white pb-[72px]'>
+    <div
+      className='min-h-screen bg-white'
+      style={{ paddingBottom: mobileShowcaseDetailPaddingBottom() }}
+    >
       <div className='bg-white px-4 pt-4 pb-3 border-b' style={{ borderColor: BRAND.divider }}>
         <div className='flex items-start'>
           <Button
@@ -162,15 +173,7 @@ export function IdeaDetailMobile() {
         </div>
       </div>
 
-      <div className='px-4 pt-4 space-y-3'>
-        <article className='bg-white rounded-xl p-4 border border-slate-100'>
-          <MarkdownBody
-            source={markdown}
-            className='max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]'
-          />
-        </article>
-
-        <div className='bg-white px-4 py-3 border border-slate-100 rounded-xl'>
+      <div className='bg-white px-4 py-3 border border-slate-100 rounded-xl'>
           <div className='flex items-center gap-3 min-w-0'>
             <div className='w-10 h-10 rounded-xl overflow-hidden border border-gray-100 shrink-0'>
               <ImageWithFallback
@@ -193,56 +196,17 @@ export function IdeaDetailMobile() {
                 <MapPin className='w-3 h-3' /> {factory?.location ?? '-'}
               </p>
             </div>
-            <button
-              type='button'
-              onClick={() => void toggleFavorite(item.id)}
-              className='inline-flex items-center gap-1 text-[11px] text-gray-500'
-            >
-              <Heart
-                className={`w-3 h-3 ${isLiked(item.id) ? 'text-red-500 fill-red-500' : ''}`}
-                style={isLiked(item.id) ? undefined : { color: BRAND.orange }}
-              />
-              {item.likes + (isLiked(item.id) ? 1 : 0)}
-            </button>
-          </div>
-          <div className='mt-3 flex gap-2'>
-            {canChat ? (
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() =>
-                  void startChat(item.factoryId, {
-                    type: 'ID',
-                    id: Number(resolvedId),
-                    title: item.title,
-                  })
-                }
-                disabled={starting}
-                className='flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-[12px] font-bold text-white disabled:opacity-70'
-                style={{ background: BRAND.purple }}
-              >
-                {starting ? (
-                  <span className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
-                ) : (
-                  <MessageCircle className='w-4 h-4' />
-                )}
-                แชทกับโรงงาน
-              </Button>
-            ) : null}
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => navigate(`/factories/${item.factoryId}`)}
-              className={`inline-flex items-center justify-center gap-1 rounded-lg px-2.5 py-2.5 text-[11px] font-semibold border ${canChat ? '' : 'flex-1'}`}
-              style={{
-                borderColor: 'rgba(122,75,148,0.30)',
-                color: BRAND.purple,
-              }}
-            >
-              โปรไฟล์ <ArrowUpRight className='w-3 h-3' />
-            </Button>
           </div>
         </div>
+
+
+      <div className='px-4 pt-4 space-y-3'>
+        <article className='bg-white rounded-xl p-4 border border-slate-100'>
+          <MarkdownBody
+            source={markdown}
+            className='max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]'
+          />
+        </article>
 
         <RelatedShowcasesSection
           linkedShowcases={item.linkedShowcases}
@@ -339,6 +303,16 @@ export function IdeaDetailMobile() {
           </div>
         </section>
       </div>
+
+      <ShowcaseDetailMobileActionBar
+        factoryId={item.factoryId}
+        liked={liked}
+        likeCount={likeCount}
+        canChat={canChat}
+        starting={starting}
+        onToggleFavorite={() => void toggleFavorite(item.id)}
+        onChat={handleStartChat}
+      />
     </div>
   );
 }
