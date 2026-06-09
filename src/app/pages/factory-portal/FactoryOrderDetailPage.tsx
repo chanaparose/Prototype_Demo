@@ -622,9 +622,6 @@ export function FactoryOrderDetailPage() {
                 </div>
               </div>
 
-              {/* ── Slip verification card (new payment flow) ── */}
-              <SlipVerificationCard orderId={String(order.order_id ?? id)} orderStatus={status} onStatusChange={() => { setError(''); loadOrder(); }} />
-
               {/* ── Tabbed detail card ── */}
               <div className='rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden'>
                 {/* Tab row */}
@@ -746,6 +743,16 @@ export function FactoryOrderDetailPage() {
                       ) : (
                         <p className='text-sm text-slate-400'>ยังไม่มีข้อมูลที่อยู่จัดส่ง</p>
                       )}
+                    </div>
+
+                    {/* ── สลีปการโอนเงิน ── */}
+                    <div className='px-4 py-4'>
+                      <SlipVerificationCard orderId={String(order.order_id ?? id)} orderStatus={status} onStatusChange={() => { setError(''); loadOrder(); }} />
+                    </div>
+
+                    {/* ── ประวัติการชำระเงิน ── */}
+                    <div className='px-4 py-4'>
+                      <PaymentTransactionsTable orderId={String(order.order_id ?? id)} />
                     </div>
                   </div>
                 ) : null}
@@ -899,6 +906,14 @@ export function FactoryOrderDetailPage() {
 
 /* ── Slip Verification Card (Factory approves/rejects customer slip) ── */
 
+function slipStatusConfig(s: string) {
+  const code = s.toUpperCase();
+  if (code === 'AP') return { label: 'ยืนยันแล้ว', border: 'border-emerald-300', bg: 'bg-emerald-50', icon: 'text-emerald-600', title: 'text-emerald-800' };
+  if (code === 'RJ') return { label: 'ปฏิเสธแล้ว', border: 'border-red-300', bg: 'bg-red-50', icon: 'text-red-600', title: 'text-red-800' };
+  if (code === 'PE') return { label: 'รอลูกค้าแนบสลีป', border: 'border-slate-200', bg: 'bg-slate-50', icon: 'text-slate-400', title: 'text-slate-600' };
+  return { label: 'รอตรวจสอบ', border: 'border-amber-300', bg: 'bg-amber-50', icon: 'text-amber-600', title: 'text-amber-800' };
+}
+
 function SlipVerificationCard({
   orderId,
   orderStatus,
@@ -931,9 +946,16 @@ function SlipVerificationCard({
     void fetchSlip();
   }, [fetchSlip]);
 
-  const slipStatus = String(slipData?.slip_status ?? '').trim();
+  const slipStatus = String(slipData?.slip_status ?? '').trim().toUpperCase();
 
-  if (loading || !slipData || slipStatus !== 'ST') return null;
+  // ไม่แสดงอะไรเลยถ้ายังโหลดอยู่ หรือไม่มี slip data หรือสถานะว่าง
+  if (loading || !slipData || !slipStatus) return null;
+
+  const cfg = slipStatusConfig(slipStatus);
+  const isPending = slipStatus === 'ST';
+  const isApproved = slipStatus === 'AP';
+  const isRejected = slipStatus === 'RJ';
+  const isWaiting = slipStatus === 'PE';
 
   const handleApprove = async () => {
     if (acting) return;
@@ -970,80 +992,122 @@ function SlipVerificationCard({
   };
 
   return (
-    <div className='rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 space-y-3 mb-4'>
-      <div className='flex items-center gap-2'>
-        <AlertCircle size={16} className='text-amber-600' />
-        <p className='text-sm font-bold text-amber-800'>ลูกค้าแนบสลีปการโอนเงิน — รอตรวจสอบ</p>
+    <div className={`rounded-2xl border-2 ${cfg.border} ${cfg.bg} p-4 space-y-3`}>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-2'>
+        <div className='flex items-center gap-2'>
+          <AlertCircle size={16} className={cfg.icon} />
+          <p className={`text-sm font-bold ${cfg.title}`}>
+            {isPending && 'ลูกค้าแนบสลีปการโอนเงิน — รอตรวจสอบ'}
+            {isApproved && 'สลีปได้รับการยืนยันแล้ว'}
+            {isRejected && 'สลีปถูกปฏิเสธ'}
+            {isWaiting && 'รอลูกค้าแนบสลีปการโอนเงิน'}
+          </p>
+        </div>
+        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
+          isApproved ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+          : isRejected ? 'bg-red-100 text-red-700 border-red-200'
+          : isWaiting ? 'bg-slate-100 text-slate-500 border-slate-200'
+          : 'bg-amber-100 text-amber-700 border-amber-200'
+        }`}>
+          {cfg.label}
+        </span>
       </div>
 
+      {/* Slip image */}
       {slipData.slip_url ? (
         <button type='button' onClick={() => setPreviewUrl(String(slipData.slip_url))}>
           <img
             src={String(slipData.slip_url)}
             alt='สลีปการโอนเงิน'
-            className='rounded-xl border border-amber-200 max-h-52 object-contain cursor-pointer hover:opacity-80 transition-opacity'
+            className={`rounded-xl border max-h-52 object-contain cursor-pointer hover:opacity-80 transition-opacity ${
+              isApproved ? 'border-emerald-200' : isRejected ? 'border-red-200' : 'border-amber-200'
+            }`}
           />
         </button>
       ) : null}
 
+      {/* Slip note */}
       {slipData.slip_note ? (
-        <p className='text-xs text-amber-700 bg-amber-100 rounded-lg px-3 py-1.5'>
+        <p className={`text-xs rounded-lg px-3 py-1.5 ${
+          isApproved ? 'text-emerald-700 bg-emerald-100'
+          : isRejected ? 'text-red-700 bg-red-100'
+          : 'text-amber-700 bg-amber-100'
+        }`}>
           หมายเหตุจากลูกค้า: {String(slipData.slip_note)}
         </p>
       ) : null}
 
-      {!showRejectInput ? (
-        <div className='flex items-center gap-2'>
-          <Button
-            variant='unstyled'
-            type='button'
-            disabled={acting}
-            onClick={handleApprove}
-            className='flex-1 rounded-xl py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-60'
-          >
-            {acting ? 'กำลังดำเนินการ…' : 'ยืนยันรับเงิน'}
-          </Button>
-          <Button
-            variant='unstyled'
-            type='button'
-            disabled={acting}
-            onClick={() => setShowRejectInput(true)}
-            className='rounded-xl py-2.5 px-4 text-sm font-semibold text-red-600 border border-red-200 bg-white hover:bg-red-50 transition-colors disabled:opacity-60'
-          >
-            ปฏิเสธ
-          </Button>
+      {/* Verification info (for AP/RJ) */}
+      {(isApproved || isRejected) && slipData.verified_at ? (
+        <div className='flex items-center gap-3 text-[11px] text-slate-500'>
+          <span>ตรวจสอบเมื่อ {formatDateTime(String(slipData.verified_at))}</span>
         </div>
-      ) : (
-        <div className='space-y-2'>
-          <textarea
-            value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
-            placeholder='ระบุเหตุผลในการปฏิเสธ (อย่างน้อย 5 ตัวอักษร)'
-            className='w-full rounded-xl border border-red-200 px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none'
-            rows={2}
-          />
+      ) : null}
+
+      {/* Upload time */}
+      {slipData.uploaded_at ? (
+        <p className='text-[11px] text-slate-400'>
+          อัปโหลดเมื่อ {formatDateTime(String(slipData.uploaded_at))}
+        </p>
+      ) : null}
+
+      {/* Action buttons — only for ST (pending) */}
+      {isPending ? (
+        !showRejectInput ? (
           <div className='flex items-center gap-2'>
             <Button
               variant='unstyled'
               type='button'
-              disabled={acting || rejectReason.trim().length < 5}
-              onClick={handleReject}
-              className='flex-1 rounded-xl py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-60'
+              disabled={acting}
+              onClick={handleApprove}
+              className='flex-1 rounded-xl py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-60'
             >
-              {acting ? 'กำลังดำเนินการ…' : 'ยืนยันปฏิเสธสลีป'}
+              {acting ? 'กำลังดำเนินการ…' : 'ยืนยันรับเงิน'}
             </Button>
             <Button
               variant='unstyled'
               type='button'
-              onClick={() => { setShowRejectInput(false); setRejectReason(''); }}
-              className='rounded-xl py-2 px-4 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors'
+              disabled={acting}
+              onClick={() => setShowRejectInput(true)}
+              className='rounded-xl py-2.5 px-4 text-sm font-semibold text-red-600 border border-red-200 bg-white hover:bg-red-50 transition-colors disabled:opacity-60'
             >
-              ยกเลิก
+              ปฏิเสธ
             </Button>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className='space-y-2'>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder='ระบุเหตุผลในการปฏิเสธ (อย่างน้อย 5 ตัวอักษร)'
+              className='w-full rounded-xl border border-red-200 px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none'
+              rows={2}
+            />
+            <div className='flex items-center gap-2'>
+              <Button
+                variant='unstyled'
+                type='button'
+                disabled={acting || rejectReason.trim().length < 5}
+                onClick={handleReject}
+                className='flex-1 rounded-xl py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-60'
+              >
+                {acting ? 'กำลังดำเนินการ…' : 'ยืนยันปฏิเสธสลีป'}
+              </Button>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => { setShowRejectInput(false); setRejectReason(''); }}
+                className='rounded-xl py-2 px-4 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors'
+              >
+                ยกเลิก
+              </Button>
+            </div>
+          </div>
+        )
+      ) : null}
 
+      {/* Fullscreen preview modal */}
       {previewUrl ? (
         <div className='fixed inset-0 z-[99999] bg-black/70 flex items-center justify-center p-4' onClick={() => setPreviewUrl(null)}>
           <div className='relative max-w-3xl max-h-[90vh]' onClick={(e) => e.stopPropagation()}>
@@ -1058,6 +1122,111 @@ function SlipVerificationCard({
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+/* ── Payment Transactions Table ── */
+
+function txTypeLabel(type: string): string {
+  const t = type?.toUpperCase();
+  if (t === 'DEPOSIT') return 'มัดจำ';
+  if (t === 'FULL' || t === 'FULL_PAYMENT') return 'ชำระเต็ม';
+  if (t === 'REFUND') return 'คืนเงิน';
+  if (t === 'COMMISSION') return 'ค่าบริการ';
+  if (t === 'TRANSFER') return 'โอนเงิน';
+  return type || '-';
+}
+
+function txStatusBadge(status: string) {
+  const s = status?.toUpperCase();
+  if (s === 'SUCCESS' || s === 'CP' || s === 'AP')
+    return <span className='text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200'>สำเร็จ</span>;
+  if (s === 'PENDING' || s === 'PE' || s === 'ST')
+    return <span className='text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200'>รอดำเนินการ</span>;
+  if (s === 'FAILED' || s === 'RJ' || s === 'CN')
+    return <span className='text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200'>ล้มเหลว</span>;
+  return <span className='text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200'>{status || '-'}</span>;
+}
+
+function PaymentTransactionsTable({ orderId }: { orderId: string | number }) {
+  const [txs, setTxs] = React.useState<Record<string, unknown>[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await ordersApi.listPayments(orderId);
+        if (!cancelled) setTxs(Array.isArray(res) ? res : []);
+      } catch {
+        if (!cancelled) setTxs([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [orderId]);
+
+  if (loading) {
+    return (
+      <div className='rounded-2xl border border-slate-200 bg-white p-4'>
+        <div className='h-5 w-40 bg-slate-100 rounded animate-pulse mb-3' />
+        <div className='space-y-2'>
+          {[1, 2].map((i) => <div key={i} className='h-10 bg-slate-50 rounded animate-pulse' />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (txs.length === 0) return null;
+
+  return (
+    <div className='rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden'>
+      <div className='px-4 py-3 border-b border-slate-100 flex items-center gap-2'>
+        <Handshake size={14} className='text-indigo-600' />
+        <h2 className='text-sm font-bold text-slate-900'>ประวัติการชำระเงิน</h2>
+        <span className='text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500'>
+          {txs.length} รายการ
+        </span>
+      </div>
+      <div className='overflow-x-auto'>
+        <table className='w-full text-sm'>
+          <thead>
+            <tr className='bg-slate-50 text-[11px] font-semibold text-slate-500 uppercase tracking-wide'>
+              <th className='px-4 py-2.5 text-left'>วันที่</th>
+              <th className='px-4 py-2.5 text-left'>ประเภท</th>
+              <th className='px-4 py-2.5 text-right'>จำนวนเงิน</th>
+              <th className='px-4 py-2.5 text-left'>วิธีชำระ</th>
+              <th className='px-4 py-2.5 text-center'>สถานะ</th>
+            </tr>
+          </thead>
+          <tbody className='divide-y divide-slate-100'>
+            {txs.map((tx, i) => {
+              const txId = String(tx.payment_id ?? tx.tx_id ?? tx.id ?? i);
+              return (
+                <tr key={txId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}>
+                  <td className='px-4 py-2.5 text-[12px] text-slate-600 whitespace-nowrap'>
+                    {formatDateTime(String(tx.created_at ?? tx.paid_at ?? '-'))}
+                  </td>
+                  <td className='px-4 py-2.5 text-[12px] font-medium text-slate-700'>
+                    {txTypeLabel(String(tx.type ?? tx.payment_type ?? ''))}
+                  </td>
+                  <td className='px-4 py-2.5 text-[13px] font-bold text-slate-900 text-right tabular-nums'>
+                    {formatCurrency(Number(tx.amount ?? tx.total ?? 0))}
+                  </td>
+                  <td className='px-4 py-2.5 text-[12px] text-slate-600'>
+                    {String(tx.payment_method ?? tx.method ?? 'โอนเงิน')}
+                  </td>
+                  <td className='px-4 py-2.5 text-center'>
+                    {txStatusBadge(String(tx.status ?? ''))}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

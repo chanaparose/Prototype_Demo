@@ -59,6 +59,10 @@ export const ordersApi = {
       ...(data.courier ? { courier: data.courier } : {}),
     } satisfies IProductionUpdateRequest),
 
+  /** GET /orders/:id/payments — list payment transactions for this order */
+  listPayments: (orderId: string | number) =>
+    httpClient.get<Record<string, unknown>[]>(`/orders/${orderId}/payments`),
+
   /** POST /orders/:id/payments — pay deposit or full payment */
   createPayment: (
     orderId: string | number,
