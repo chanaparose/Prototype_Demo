@@ -155,6 +155,14 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       return rfqUnitLabel;
     }, [factoryUnitId, units, rfqUnitLabel]);
 
+    const effectiveQty = useMemo(() => {
+      if (factoryQty != null && factoryQty > 0) return factoryQty;
+      return rfqQuantity ?? 0;
+    }, [factoryQty, rfqQuantity]);
+
+    const hasQtyOverride =
+      factoryQty != null && factoryQty > 0 && rfqQuantity != null && factoryQty !== rfqQuantity;
+
     const form = useForm<QuotationCreateFormValues>({
       resolver: zodResolver(quotationFormSchema),
       defaultValues: DEFAULTS,
@@ -197,15 +205,14 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
     const preview = useMemo<IQuotationBreakdown | null>(() => {
       if (!commissionConfig) return null;
       const priceN = Number(priceWatch);
-      const qty = rfqQuantity ?? 0;
       return calculateQuotationBreakdown(commissionConfig, {
         pricePerPiece: priceN,
-        quantity: qty,
+        quantity: effectiveQty,
         shippingCost: Number(shippingWatch) || 0,
         packagingCost: Number(packagingWatch) || 0,
         toolingMoldCost: Number(moldWatch) || 0,
       });
-    }, [commissionConfig, priceWatch, shippingWatch, packagingWatch, moldWatch, rfqQuantity]);
+    }, [commissionConfig, priceWatch, shippingWatch, packagingWatch, moldWatch, effectiveQty]);
     const previewLoading = false;
 
     const [imageUrls, setImageUrls] = useState<string[]>(() => initialImageUrls ?? []);
@@ -346,59 +353,81 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       >
         {showHeading ? <h3 className='text-sm font-bold text-gray-900'>ยื่นใบเสนอราคา</h3> : null}
 
-        <FormField
-          label='ราคาต่อหน่วย (บาท)'
-          required
-          error={form.formState.errors.price_per_piece?.message}
-          helperText={
-            budgetPerPiece != null
-              ? `งบลูกค้า ${formatCurrency(budgetPerPiece)} ต่อหน่วย`
-              : undefined
-          }
-        >
-          <Input
-            type='number'
-            step='0.01'
-            min={0}
-            disabled={readOnly}
-            placeholder='0.00'
-            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
-            {...form.register('price_per_piece')}
-          />
-        </FormField>
+        <div className='rounded-xl border border-gray-200 p-3 space-y-3'>
+          <p className='text-xs font-semibold text-gray-800'>ราคาและจำนวนที่เสนอ</p>
 
-        {/* Factory counter-proposal qty/unit */}
-        <div className='rounded-xl border border-amber-100 bg-amber-50 p-3 space-y-2'>
-          <p className='text-xs font-semibold text-amber-800'>
-            จำนวนที่โรงงานเสนอ
-            <span className='ml-1 font-normal text-amber-600'>(ไม่บังคับ — ถ้าไม่กรอก = รับตามจำนวน RFQ)</span>
-          </p>
           {rfqQuantity != null && (
-            <p className='text-[11px] text-amber-700'>
-              ลูกค้าขอ: <strong>{formatCompactNumber(rfqQuantity)}</strong> {rfqUnitLabel}
+            <p className='text-[11px] text-gray-500'>
+              ลูกค้าขอ:{' '}
+              <strong className='text-gray-700'>
+                {formatCompactNumber(rfqQuantity)} {rfqUnitLabel}
+              </strong>
+              {budgetPerPiece != null ? (
+                <span> • งบ ~{formatCurrency(budgetPerPiece)}/{rfqUnitLabel}</span>
+              ) : null}
             </p>
           )}
-          <div className='flex items-center gap-2'>
+
+          <div>
+            <p className='text-[11px] font-medium text-gray-600 mb-1.5'>
+              จำนวนที่โรงงานเสนอ
+              <span className='ml-1 font-normal text-gray-400'>(ไม่กรอก = รับตามจำนวน RFQ)</span>
+            </p>
+            <div className='flex items-center gap-2'>
+              <Input
+                type='number'
+                min={1}
+                disabled={readOnly}
+                value={factoryQty ?? ''}
+                onChange={(e) => setFactoryQty(e.target.value ? Number(e.target.value) : null)}
+                placeholder={rfqQuantity != null ? String(rfqQuantity) : 'จำนวนที่เสนอ'}
+                className='flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+              />
+              <UnitPicker units={units} value={factoryUnitId} onChange={setFactoryUnitId} />
+            </div>
+            {hasQtyOverride ? (
+              <p className='text-[11px] text-amber-700 mt-1.5'>
+                ⚠️ จำนวนต่างจาก RFQ — ลูกค้าจะเห็น badge &ldquo;โรงงานเสนอ{' '}
+                {formatCompactNumber(factoryQty!)} {factoryUnitLabel}&rdquo;
+              </p>
+            ) : null}
+          </div>
+
+          <FormField
+            label={`ราคาต่อ${factoryUnitLabel} (บาท)`}
+            required
+            error={form.formState.errors.price_per_piece?.message}
+          >
             <Input
               type='number'
-              min={1}
+              step='0.01'
+              min={0}
               disabled={readOnly}
-              value={factoryQty ?? ''}
-              onChange={(e) => setFactoryQty(e.target.value ? Number(e.target.value) : null)}
-              placeholder='จำนวนที่เสนอ'
-              className='flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+              placeholder='0.00'
+              className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+              {...form.register('price_per_piece')}
             />
-            <UnitPicker
-              units={units}
-              value={factoryUnitId}
-              onChange={setFactoryUnitId}
-            />
-          </div>
-          {factoryQty != null && factoryQty > 0 && rfqQuantity != null && factoryQty !== rfqQuantity && (
-            <p className='text-[11px] text-amber-700'>
-              ⚠️ จำนวนต่างจาก RFQ — ลูกค้าจะเห็น badge &ldquo;โรงงานเสนอ {formatCompactNumber(factoryQty)} {factoryUnitLabel}&rdquo;
-            </p>
-          )}
+          </FormField>
+
+          {(() => {
+            const p = Number(priceWatch);
+            if (!Number.isFinite(p) || p <= 0 || effectiveQty <= 0) return null;
+            const total = p * effectiveQty;
+            return (
+              <div className='rounded-lg border border-violet-100 bg-violet-50/50 px-3 py-2'>
+                <p className='text-xs font-semibold text-gray-800'>
+                  สรุปข้อเสนอ: {formatCompactNumber(effectiveQty)} {factoryUnitLabel} ×{' '}
+                  {formatCurrency(p)} ={' '}
+                  <span className='text-violet-700'>{fmt(total)} บาท</span>
+                </p>
+                <p className='text-[10px] text-gray-500 mt-0.5'>
+                  {hasQtyOverride
+                    ? 'คำนวณจากจำนวนที่โรงงานเสนอ (ไม่ใช่จำนวน RFQ)'
+                    : 'คำนวณจากจำนวนที่ลูกค้าขอ'}
+                </p>
+              </div>
+            );
+          })()}
         </div>
 
         <div>
@@ -579,7 +608,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </div>
         ) : null}
 
-        {(preview || previewLoading) && rfqQuantity && rfqQuantity > 0 ? (
+        {(preview || previewLoading) && effectiveQty > 0 ? (
           <div className='rounded-xl border border-violet-100 bg-violet-50/60 p-3 space-y-1.5'>
             <div className='flex items-center justify-between mb-1'>
               <p className='text-[11px] font-bold text-violet-700 uppercase tracking-wide'>
