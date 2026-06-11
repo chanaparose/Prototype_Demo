@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 
 import { activateTourMocks, clearTourMocks, setTourActive } from '@/utils/tourMocks';
-import { useAuth } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { queryClient } from '@/lib/queryClient';
 import {
@@ -12,16 +11,17 @@ import {
   showcaseKeys,
   factoryIdeasKeys,
 } from '@/lib/queryKeys';
-import { TOUR_STEPS } from '@/components/features/explore/product-tour/tourSteps';
+import {
+  TOUR_STEPS,
+  PAGE_TOUR_STEPS,
+  getPageKey,
+  isPageTourSeen,
+  markPageTourSeen,
+} from '@/components/features/explore/product-tour/tourSteps';
 import { injectTourCSS } from '@/components/features/explore/product-tour/tourStyles';
 import { TourCard } from '@/components/features/explore/product-tour/TourCard';
 import { SpotlightOverlay } from '@/components/features/explore/product-tour/TourSpotlight';
 import {
-  MockCreateRfq,
-  MockMessages,
-  MockOrderDetail,
-  MockProductDetail,
-  MockRfqDetail,
   findTarget,
 } from '@/components/features/explore/product-tour/TourMockScreens';
 import type { TourStepDef } from '@/components/features/explore/product-tour/tourTypes';
@@ -30,42 +30,53 @@ import {
   isTourTargetMostlyVisible,
 } from '@/components/features/explore/product-tour/tourTargetRect';
 
-const TOUR_KEY = 'tryly_tour_seen_v1';
+/** Full-tour key (กดปุ่ม "สาธิตการใช้งาน") — ไม่ใช้สำหรับ auto-show อีกต่อไป */
+const FULL_TOUR_KEY = 'tryly_tour_seen_v1';
+
+type TourMode = 'full' | 'page';
 
 export function ProductTour() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<TourMode>('full');
+  const [activeSteps, setActiveSteps] = useState<TourStepDef[]>(TOUR_STEPS);
   const [step, setStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-  const [autoShown, setAutoShown] = useState(false);
   const originPath = useRef('/');
+  // ป้องกัน auto-show ซ้ำใน session เดียวกัน
+  const shownPageKeys = useRef<Set<string>>(new Set());
 
   injectTourCSS();
 
+  // ── Per-page first-visit tour ───────────────────────────────────────────────
   useEffect(() => {
-    if (autoShown || open) return;
-    if (location.pathname !== '/') return;
-    if (isAuthenticated) {
-      setAutoShown(true);
-      return;
-    }
-    const seen = localStorage.getItem(TOUR_KEY);
-    if (!seen) {
-      const t = setTimeout(() => {
-        setTourActive(true);
-        setOpen(true);
-        setAutoShown(true);
-      }, 1200);
-      return () => clearTimeout(t);
-    }
-    setAutoShown(true);
-  }, [autoShown, open, location.pathname, isAuthenticated]);
+    if (open) return;
+    const pageKey = getPageKey(location.pathname);
+    if (!pageKey) return;
+    // ถ้าแสดงไปแล้วใน session นี้ หรือ localStorage บอกว่าเคยเห็นแล้ว → ข้าม
+    if (shownPageKeys.current.has(pageKey)) return;
+    if (isPageTourSeen(pageKey)) return;
+    const steps = PAGE_TOUR_STEPS[pageKey];
+    if (!steps?.length) return;
 
+    shownPageKeys.current.add(pageKey);
+    const t = setTimeout(() => {
+      setMode('page');
+      setActiveSteps(steps);
+      setStep(0);
+      setTourActive(true);
+      setOpen(true);
+    }, 900);
+    return () => clearTimeout(t);
+  }, [location.pathname, open]);
+
+  // ── Full tour — triggered by "สาธิตการใช้งาน" button ──────────────────────
   useEffect(() => {
     const handler = () => {
       originPath.current = location.pathname;
+      setMode('full');
+      setActiveSteps(TOUR_STEPS);
       setStep(0);
       setTourActive(true);
       setOpen(true);
@@ -74,37 +85,54 @@ export function ProductTour() {
     return () => window.removeEventListener('tryly-open-tour', handler);
   }, [location.pathname]);
 
+  // ── Activate mock scenario per step ────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
-    const def = TOUR_STEPS[step];
+    const def = activeSteps[step];
+    if (!def) return;
     if (def.mockScenario) {
       activateTourMocks(def.mockScenario);
     } else {
       clearTourMocks();
     }
-  }, [open, step]);
+  }, [open, step, activeSteps]);
 
+  // ── Navigate to step route (full tour only) ─────────────────────────────────
   useEffect(() => {
-    if (!open) return;
-    const def = TOUR_STEPS[step];
-    if (!def.route) return;
+    if (!open || mode === 'page') return;
+    const def = activeSteps[step];
+    if (!def?.route) return;
     const current = `${location.pathname}${location.search}`;
     if (current !== def.route) {
       navigate(def.route);
     }
-  }, [open, step, location.pathname, location.search, navigate]);
+  }, [open, mode, step, activeSteps, location.pathname, location.search, navigate]);
 
+  // ── Measure target element ──────────────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
-    const def = TOUR_STEPS[step];
-    if (!def.route) {
-      setTargetRect(null);
-      return;
-    }
-    const current = `${location.pathname}${location.search}`;
-    if (current !== def.route) {
-      setTargetRect(null);
-      return;
+    const def = activeSteps[step];
+    if (!def) return;
+
+    // Page tour: ถ้า route ไม่ตรงกับหน้าปัจจุบัน ไม่แสดง spotlight
+    if (mode === 'page') {
+      const current = `${location.pathname}${location.search}`;
+      const defRoute = def.route ?? '';
+      // เปรียบเทียบเฉพาะ pathname ของ def.route (ตัด query string)
+      const defPathname = defRoute.split('?')[0];
+      if (defPathname && location.pathname !== defPathname) {
+        setTargetRect(null);
+        return;
+      }
+    } else {
+      // Full tour: รอให้ navigate เสร็จก่อน
+      if (def.route) {
+        const current = `${location.pathname}${location.search}`;
+        if (current !== def.route) {
+          setTargetRect(null);
+          return;
+        }
+      }
     }
 
     let cancelled = false;
@@ -172,7 +200,7 @@ export function ProductTour() {
       if (rafId != null) cancelAnimationFrame(rafId);
       vvCleanup?.();
     };
-  }, [open, step, location.pathname, location.search]);
+  }, [open, mode, step, activeSteps, location.pathname, location.search]);
 
   const isPublicRoute = useCallback((path: string) => {
     if (path === '/' || path === '/factory-ideas' || path === '/factories') return true;
@@ -183,30 +211,27 @@ export function ProductTour() {
     return false;
   }, []);
 
-  /**
-   * ล้าง React Query cache ที่ถูก contaminate ด้วย tour mock data
-   * เรียกเมื่อ tour จบหรือถูกปิด ก่อน navigate กลับ
-   */
   const purgeTourQueryCache = useCallback(() => {
-    // list: conversations ที่แสดง conv 9001 ปลอม
     queryClient.removeQueries({ queryKey: chatKeys.all });
-    // factory-ideas: categories + showcases + factories จาก browse step
     queryClient.removeQueries({ queryKey: factoryIdeasKeys.all });
-    // showcase 14 detail จาก product step
     queryClient.removeQueries({ queryKey: showcaseKeys.all });
-    // rfq 28 bundle จาก rfq step
     queryClient.removeQueries({ queryKey: rfqKeys.detail('28') });
-    // order 17 detail จาก order step
     queryClient.removeQueries({ queryKey: orderKeys.detail('17') });
-    // wallet balance จาก order step
     queryClient.removeQueries({ queryKey: ['wallet', 'me'] });
-    // review state ของ order 17
     queryClient.removeQueries({ queryKey: ['orderReviewState', '17'] });
   }, []);
 
   const closeTo = useCallback(
     (target: string) => {
-      localStorage.setItem(TOUR_KEY, '1');
+      // full tour: บันทึก global seen flag
+      if (mode === 'full') {
+        localStorage.setItem(FULL_TOUR_KEY, '1');
+      }
+      // page tour: บันทึก per-page seen flag
+      if (mode === 'page') {
+        const pageKey = getPageKey(location.pathname);
+        if (pageKey) markPageTourSeen(pageKey);
+      }
       clearTourMocks();
       purgeTourQueryCache();
       setOpen(false);
@@ -217,17 +242,32 @@ export function ProductTour() {
       }
       window.setTimeout(() => setTourActive(false), 50);
     },
-    [location.pathname, navigate, purgeTourQueryCache],
+    [mode, location.pathname, navigate, purgeTourQueryCache],
   );
 
   const handleClose = useCallback(() => {
+    if (mode === 'page') {
+      // page tour: ปิดแล้วอยู่หน้าเดิม
+      const pageKey = getPageKey(location.pathname);
+      if (pageKey) markPageTourSeen(pageKey);
+      clearTourMocks();
+      purgeTourQueryCache();
+      setOpen(false);
+      setTargetRect(null);
+      window.setTimeout(() => setTourActive(false), 50);
+      return;
+    }
     const target = isPublicRoute(originPath.current) ? originPath.current : '/';
     closeTo(target);
-  }, [closeTo, isPublicRoute]);
+  }, [mode, location.pathname, closeTo, isPublicRoute, purgeTourQueryCache]);
 
   const handleFinish = useCallback(() => {
+    if (mode === 'page') {
+      handleClose();
+      return;
+    }
     closeTo('/');
-  }, [closeTo]);
+  }, [mode, closeTo, handleClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -247,8 +287,8 @@ export function ProductTour() {
 
   const handleNext = useCallback(() => {
     setTargetRect(null);
-    setStep((s) => Math.min(s + 1, TOUR_STEPS.length - 1));
-  }, []);
+    setStep((s) => Math.min(s + 1, activeSteps.length - 1));
+  }, [activeSteps.length]);
 
   const handlePrev = useCallback(() => {
     setTargetRect(null);
@@ -257,8 +297,9 @@ export function ProductTour() {
 
   if (!open) return null;
 
-  const def = TOUR_STEPS[step];
-  const isLast = step === TOUR_STEPS.length - 1;
+  const def = activeSteps[step];
+  if (!def) return null;
+  const isLast = step === activeSteps.length - 1;
 
   return (
     <>
@@ -272,7 +313,7 @@ export function ProductTour() {
       <TourCard
         stepIdx={step}
         def={def}
-        total={TOUR_STEPS.length}
+        total={activeSteps.length}
         rect={targetRect}
         isMock={false}
         onPrev={handlePrev}
