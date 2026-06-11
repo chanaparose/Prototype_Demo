@@ -13,7 +13,11 @@ export const MOBILE_BOTTOM_NAV_COMPACT_CLEARANCE = '4rem';
 export const MOBILE_SHOWCASE_ACTION_BAR_CLEARANCE = 'calc(3.5rem + 0.5rem)';
 
 export function isMobileCustomBottomBarRoute(pathname: string): boolean {
-  return pathname === '/product-detail' || pathname === '/idea-detail';
+  return (
+    pathname === '/product-detail' ||
+    pathname === '/idea-detail' ||
+    pathname === '/create-rfq'
+  );
 }
 
 export function mobileShowcaseDetailPaddingBottom(): string {
