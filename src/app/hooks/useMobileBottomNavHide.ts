@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 
 /** Clearance for floating dock bottom nav (full size) */
 export const MOBILE_BOTTOM_NAV_CLEARANCE = '4.5rem';
@@ -18,6 +18,16 @@ export function isMobileCustomBottomBarRoute(pathname: string): boolean {
 
 export function mobileShowcaseDetailPaddingBottom(): string {
   return `calc(${MOBILE_SHOWCASE_ACTION_BAR_CLEARANCE} + env(safe-area-inset-bottom, 0px))`;
+}
+
+/** Shared fixed bottom + scale-on-scroll styles for floating mobile nav bars */
+export function mobileBottomNavCompactStyles(compact: boolean): CSSProperties {
+  return {
+    bottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))',
+    transform: compact ? `scale(${MOBILE_BOTTOM_NAV_COMPACT_SCALE})` : 'scale(1)',
+    transformOrigin: 'bottom center',
+    opacity: compact ? 0.94 : 1,
+  };
 }
 
 /** Gap between FAB and bottom nav when nav is visible */

@@ -2,6 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { Heart, MessageCircle, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  mobileBottomNavCompactStyles,
+  useMobileBottomNavHide,
+} from '@/hooks/useMobileBottomNavHide';
 
 type ShowcaseDetailMobileActionBarProps = {
   factoryId: string;
@@ -23,11 +27,12 @@ export function ShowcaseDetailMobileActionBar({
   onChat,
 }: ShowcaseDetailMobileActionBarProps) {
   const navigate = useNavigate();
+  const compact = useMobileBottomNavHide();
 
   return (
     <nav
-      className='lg:hidden fixed inset-x-3 z-50 flex h-14 items-stretch overflow-hidden rounded-[1.25rem] border border-white/80 bg-white/78 shadow-[0_8px_32px_rgba(46,34,82,0.12)] backdrop-blur-2xl'
-      style={{ bottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
+      className='lg:hidden fixed inset-x-3 z-50 flex h-14 items-stretch overflow-hidden rounded-[1.25rem] border border-white/80 bg-white/78 shadow-[0_8px_32px_rgba(46,34,82,0.12)] backdrop-blur-2xl transition-[transform,opacity] duration-300 ease-out'
+      style={mobileBottomNavCompactStyles(compact)}
       aria-label='การดำเนินการสินค้า'
     >
       <Button
