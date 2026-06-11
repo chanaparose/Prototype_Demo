@@ -5,7 +5,6 @@ export type TourStepDef = {
   /**
    * Key ที่ใช้ระบุว่า step นี้เป็นของหน้าไหน
    * ใช้สำหรับ per-page first-visit tour
-   * เช่น 'explore', 'factory-ideas', 'create-rfq'
    */
   pageKey?: string;
   mockScenario?: TourScenario;
@@ -18,8 +17,10 @@ export type TourStepDef = {
   cardPlacement?: 'top' | 'bottom' | 'auto';
   badgeColor: string;
   icon: string;
-  badge: string;
+  /** @deprecated ไม่ render แล้ว เก็บไว้สำหรับ a11y/reference */
+  badge?: string;
   title: string;
   desc: string;
-  tip: string;
+  /** @deprecated ไม่ render เป็น tip box แยกอีกต่อไป — รวมเข้า desc แล้ว */
+  tip?: string;
 };

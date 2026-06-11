@@ -1,5 +1,4 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { TourStepDef } from '@/components/features/explore/product-tour/tourTypes';
 
 export function TourCard({
@@ -31,6 +30,10 @@ export function TourCard({
     return !isMock && rect ? rect.top > wh * 0.5 : false;
   })();
 
+  const shadowDir = placeAtTop
+    ? '0 6px 40px rgba(0,0,0,0.15)'
+    : '0 -6px 40px rgba(0,0,0,0.15)';
+
   return (
     <div
       key={stepIdx}
@@ -43,169 +46,154 @@ export function TourCard({
         zIndex: 100001,
         maxWidth: 440,
         margin: '0 auto',
-        background: 'var(--neutral-white)',
-        borderRadius: 20,
-        boxShadow: placeAtTop ? '0 4px 40px rgba(0,0,0,0.28)' : '0 -4px 40px rgba(0,0,0,0.28)',
-        overflow: 'visible',
+        borderRadius: 22,
+        /* ── Liquid Glass surface ── */
+        background: 'rgba(255, 255, 255, 0.74)',
+        backdropFilter: 'blur(22px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(22px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.6)',
+        boxShadow: [
+          shadowDir,
+          'inset 0 1.5px 0 rgba(255,255,255,0.95)',
+          'inset 0 -1px 0 rgba(0,0,0,0.04)',
+        ].join(', '),
+        padding: '14px 16px 16px',
         animation: 'tour-card-in 0.22s ease-out both',
       }}
     >
-      <div
+      {/* ── Header: icon + title + × close ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 9 }}>
+        {/* Emoji icon */}
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 18,
+            background: `${def.badgeColor}18`,
+            border: `1px solid ${def.badgeColor}30`,
+          }}
+        >
+          {def.icon}
+        </div>
+
+        {/* Title */}
+        <p
+          style={{
+            flex: 1,
+            margin: 0,
+            paddingTop: 1,
+            fontSize: 15,
+            fontWeight: 700,
+            color: 'var(--brand-ink)',
+            lineHeight: 1.35,
+          }}
+        >
+          {def.title}
+        </p>
+
+        {/* × close button */}
+        <button
+          onClick={onClose}
+          aria-label='ปิดทัวร์'
+          style={{
+            width: 26,
+            height: 26,
+            borderRadius: 99,
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.07)',
+            border: 'none',
+            cursor: 'pointer',
+            marginTop: 1,
+          }}
+        >
+          <X size={13} color='var(--neutral-subtle)' />
+        </button>
+      </div>
+
+      {/* ── Desc (1 sentence, indented under icon) ── */}
+      <p
         style={{
-          height: 4,
-          borderRadius: '20px 20px 0 0',
-          background: `linear-gradient(90deg, ${def.badgeColor} 0%, var(--brand-purple) 100%)`,
+          fontSize: 13,
+          color: '#4B5563',
+          lineHeight: 1.65,
+          margin: '0 0 12px',
+          paddingLeft: 46,
         }}
-      />
-      <div style={{ padding: '14px 16px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 9 }}>
+      >
+        {def.desc}
+      </p>
+
+      {/* ── Segmented line progress ── */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
+        {Array.from({ length: total }).map((_, i) => (
           <div
+            key={i}
+            style={{
+              flex: 1,
+              height: 3,
+              borderRadius: 99,
+              background: i <= stepIdx ? def.badgeColor : 'rgba(0,0,0,0.10)',
+              transition: 'background 0.3s',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* ── Footer: prev (icon-only) + next/finish ── */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        {!isFirst && (
+          <button
+            onClick={onPrev}
+            aria-label='ย้อนกลับ'
             style={{
               width: 36,
               height: 36,
-              borderRadius: 10,
-              flexShrink: 0,
+              borderRadius: 99,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 18,
-              background: `${def.badgeColor}18`,
-              border: `1px solid ${def.badgeColor}30`,
+              background: 'rgba(0,0,0,0.06)',
+              border: 'none',
+              cursor: 'pointer',
             }}
           >
-            {def.icon}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                padding: '2px 8px',
-                borderRadius: 99,
-                background: `${def.badgeColor}18`,
-                color: def.badgeColor,
-                border: `1px solid ${def.badgeColor}30`,
-                display: 'inline-block',
-                marginBottom: 4,
-              }}
-            >
-              {def.badge}
-            </span>
-            <p
-              style={{
-                fontSize: 15,
-                fontWeight: 700,
-                color: 'var(--brand-ink)',
-                lineHeight: 1.3,
-                margin: 0,
-              }}
-            >
-              {def.title}
-            </p>
-          </div>
-        </div>
-        <p style={{ fontSize: 13, color: '#4B5563', lineHeight: 1.7, marginBottom: 10 }}>
-          {def.desc}
-        </p>
-        <div
+            <ChevronLeft size={15} color='var(--neutral-subtle)' />
+          </button>
+        )}
+
+        <button
+          onClick={isLast ? onClose : onNext}
           style={{
-            fontSize: 11.5,
-            fontWeight: 600,
-            padding: '7px 11px',
-            borderRadius: 10,
-            marginBottom: 14,
-            background: `${def.badgeColor}12`,
-            border: `1px solid ${def.badgeColor}25`,
-            color: def.badgeColor,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: 13,
+            fontWeight: 700,
+            padding: '8px 20px',
+            borderRadius: 99,
+            border: 'none',
+            background: def.badgeColor,
+            color: '#fff',
+            cursor: 'pointer',
+            boxShadow: `0 4px 14px ${def.badgeColor}55`,
           }}
         >
-          {def.tip}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-            {Array.from({ length: total }).map((_, i) => (
-              <div
-                key={i}
-                style={{
-                  width: i === stepIdx ? 20 : 6,
-                  height: 6,
-                  borderRadius: 99,
-                  background: i === stepIdx ? def.badgeColor : 'var(--neutral-border)',
-                  transition: 'all 0.25s',
-                }}
-              />
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 7 }}>
-            {!isFirst ? (
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={onPrev}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 3,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  padding: '7px 13px',
-                  borderRadius: 99,
-                  border: '1.5px solid var(--neutral-border)',
-                  background: 'transparent',
-                  color: 'var(--neutral-subtle)',
-                  cursor: 'pointer',
-                }}
-              >
-                <ChevronLeft size={13} /> ย้อนกลับ
-              </Button>
-            ) : (
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={onClose}
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  padding: '7px 13px',
-                  borderRadius: 99,
-                  border: '1.5px solid var(--neutral-border)',
-                  background: 'transparent',
-                  color: 'var(--neutral-subtle)',
-                  cursor: 'pointer',
-                }}
-              >
-                ข้ามทัวร์
-              </Button>
-            )}
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={isLast ? onClose : onNext}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                fontSize: 13,
-                fontWeight: 700,
-                padding: '7px 18px',
-                borderRadius: 99,
-                border: 'none',
-                background: def.badgeColor,
-                color: 'var(--neutral-white)',
-                cursor: 'pointer',
-                boxShadow: `0 4px 14px ${def.badgeColor}55`,
-              }}
-            >
-              {isLast ? (
-                'เริ่มเลย 🎉'
-              ) : (
-                <>
-                  ถัดไป <ChevronRight size={13} />
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
+          {isLast ? (
+            'ลองเลย ✨'
+          ) : (
+            <>
+              ถัดไป <ChevronRight size={13} />
+            </>
+          )}
+        </button>
       </div>
     </div>
   );
