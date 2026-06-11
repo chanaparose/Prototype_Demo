@@ -3,18 +3,17 @@ import path from 'path';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 export default defineConfig(({ mode }) => {
   // loadEnv อ่าน .env.local ก่อน .env → ใช้สลับ local/production โดยไม่แก้โค้ด
   const env = loadEnv(mode, process.cwd(), '');
   const BE_URL = env.VITE_BE_URL || 'https://tryly-dev-server.onrender.com';
 
   return {
-    plugins: [
-      // The React and Tailwind plugins are both required for Make, even if
-      // Tailwind is not being actively used – do not remove them
-      react(),
-      tailwindcss(),
-    ],
+    plugins: [// The React and Tailwind plugins are both required for Make, even if
+    // Tailwind is not being actively used – do not remove them
+    react(), tailwindcss(), cloudflare()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src/app'),
