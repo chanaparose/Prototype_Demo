@@ -20,7 +20,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/stores/useAuthStore';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
-import { AlertCircle, LogIn } from 'lucide-react';
+import { AlertCircle, ChevronLeft, LogIn } from 'lucide-react';
+import { useScrollHeaderCollapse } from '@/hooks/useMobileBottomNavHide';
 import {
   RFQ_BORDER,
   RFQ_RADIUS,
@@ -53,6 +54,8 @@ const step4Schema = z.object({});
 
 const STEPS = ['กรอกข้อมูล', 'สรุปข้อมูล'];
 
+const HEADER_VERTICAL_PADDING = 24;
+
 export function RFQCreateWizard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -72,6 +75,28 @@ export function RFQCreateWizard() {
   const [shippingMap, setShippingMap] = React.useState<Record<number, string>>({});
   const [allFactories, setAllFactories] = React.useState<TargetFactory[]>([]);
   const { data: allCategories = [] } = useLbiCategoriesByScope('ALL');
+  const headerCollapse = useScrollHeaderCollapse(16, 96);
+  const backRowRef = React.useRef<HTMLDivElement>(null);
+  const collapsibleInnerRef = React.useRef<HTMLDivElement>(null);
+  const [backRowHeight, setBackRowHeight] = React.useState(0);
+  const [collapsibleHeight, setCollapsibleHeight] = React.useState(0);
+
+  React.useLayoutEffect(() => {
+    const backRow = backRowRef.current;
+    const collapsibleInner = collapsibleInnerRef.current;
+    if (!backRow || !collapsibleInner) return;
+
+    const sync = () => {
+      setBackRowHeight(backRow.offsetHeight);
+      setCollapsibleHeight(collapsibleInner.offsetHeight);
+    };
+
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(backRow);
+    ro.observe(collapsibleInner);
+    return () => ro.disconnect();
+  }, [step]);
 
   React.useEffect(() => {
     const mode = (searchParams.get('mode') || '').trim();
@@ -343,39 +368,71 @@ export function RFQCreateWizard() {
   const isMaterialKind = kind === 'MS' || kind === 'MR';
 
   const showMatchStrip = Boolean(draft.category_id) && Number(draft.category_id) > 0;
+  const headerReveal = 1 - headerCollapse;
+  const headerSpacerHeight =
+    HEADER_VERTICAL_PADDING +
+    backRowHeight +
+    collapsibleHeight * headerReveal +
+    8 * headerReveal;
 
   return (
     <div className='min-h-screen bg-[var(--brand-page)] pb-32 max-lg:pb-[calc(4.5rem+4.5rem+env(safe-area-inset-bottom))]'>
-      <header className='sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md'>
+      <header className='fixed top-0 left-0 right-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur-md lg:left-64'>
         <div className='mx-auto max-w-6xl px-4 py-3 lg:px-8'>
-          <p className='text-[10px] font-semibold uppercase tracking-wider text-[#C4A484]'>
-            สร้างคำขอ
-          </p>
-          <div className='mt-0.5 flex items-center justify-between gap-2'>
-            <h1 className='text-lg font-bold text-brand-navy-deep'>ขอใบเสนอราคา</h1>
-            <span className='shrink-0 rounded-full bg-brand-lavender-chip px-2.5 py-0.5 text-[11px] font-semibold text-brand-violet-deep'>
-              {step + 1}/{STEPS.length} · {STEPS[step]}
-            </span>
+          <div ref={backRowRef}>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => (step > 0 ? setStep(step - 1) : navigate(-1))}
+              className='-ml-1 flex shrink-0 items-center gap-0.5 text-sm text-gray-600 transition-colors hover:text-gray-900'
+              aria-label={step > 0 ? 'ขั้นก่อนหน้า' : 'กลับ'}
+            >
+              <ChevronLeft size={18} />
+              กลับ
+            </Button>
           </div>
-          <div className='mt-2.5 flex gap-1'>
-            {STEPS.map((s, i) => (
-              <Button
-                variant='unstyled'
-                key={s}
-                type='button'
-                onClick={() => {
-                  if (i === 0 || isFormValid) setStep(i);
-                }}
-                aria-current={step === i ? 'step' : undefined}
-                className={`h-1 flex-1 rounded-full transition-colors ${
-                  i <= step ? 'bg-brand-violet-deep' : 'bg-gray-200'
-                }`}
-                aria-label={`ขั้นที่ ${i + 1}: ${s}`}
-              />
-            ))}
+
+          <div
+            className={headerCollapse > 0.92 ? 'pointer-events-none' : undefined}
+            style={{
+              height: collapsibleHeight
+                ? `${collapsibleHeight * headerReveal}px`
+                : undefined,
+              opacity: Math.max(0, 1 - headerCollapse * 1.15),
+              overflow: 'hidden',
+              marginTop: `${8 * headerReveal}px`,
+            }}
+          >
+            <div ref={collapsibleInnerRef}>
+              <div className='flex items-center justify-between gap-2'>
+                <h1 className='text-lg font-bold text-brand-navy-deep'>ขอใบเสนอราคา</h1>
+                <span className='shrink-0 rounded-full bg-brand-lavender-chip px-2.5 py-0.5 text-[11px] font-semibold text-brand-violet-deep'>
+                  {step + 1}/{STEPS.length} · {STEPS[step]}
+                </span>
+              </div>
+              <div className='mt-2.5 flex gap-1'>
+                {STEPS.map((s, i) => (
+                  <Button
+                    variant='unstyled'
+                    key={s}
+                    type='button'
+                    onClick={() => {
+                      if (i === 0 || isFormValid) setStep(i);
+                    }}
+                    aria-current={step === i ? 'step' : undefined}
+                    className={`h-1 flex-1 rounded-full transition-colors ${
+                      i <= step ? 'bg-brand-violet-deep' : 'bg-gray-200'
+                    }`}
+                    aria-label={`ขั้นที่ ${i + 1}: ${s}`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </header>
+
+      <div aria-hidden style={{ height: headerSpacerHeight }} />
 
       <main className='mx-auto max-w-6xl space-y-4 px-4 py-5 lg:px-8'>
         {step === 0 ? (

@@ -158,7 +158,8 @@ export function Layout() {
   const onFavoritesPage = location.pathname === '/profile/favorites';
   const onNotificationsPage = location.pathname === '/notifications';
   const headerIconTone: HeaderIconTone = isFactory ? 'indigo' : 'purple';
-  const hideMobileTopHeader = /^\/orders\/[^/]+$/.test(location.pathname);
+  const hideMobileTopHeader =
+    /^\/orders\/[^/]+$/.test(location.pathname) || location.pathname === '/create-rfq';
   const wideContentPaths = [
     '/',
     '/factory-ideas',

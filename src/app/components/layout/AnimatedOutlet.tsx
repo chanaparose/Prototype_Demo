@@ -27,6 +27,12 @@ export function AnimatedOutlet({ className }: AnimatedOutletProps) {
   // and should NOT trigger the full page enter/exit animation.
   const routeKey = location.pathname;
 
+  /** `transform` on this wrapper breaks `position: fixed/sticky` for page chrome. */
+  const skipYMotion =
+    routeKey === '/create-rfq' ||
+    routeKey === '/product-detail' ||
+    routeKey === '/idea-detail';
+
   // Scroll to top on every route change so new pages start at the top.
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -52,6 +58,22 @@ export function AnimatedOutlet({ className }: AnimatedOutletProps) {
   /* ── Full animation ──────────────────────────────────────────────────── */
   const enterY = isDesktop ? 5 : 8;
   const enterDuration = isDesktop ? 0.48 : 0.52;
+
+  if (skipYMotion) {
+    return (
+      <AnimatePresence mode='wait' initial={false}>
+        <motion.div
+          key={routeKey}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, transition: { duration: 0.22, ease: 'easeOut' } }}
+          exit={{ opacity: 0, transition: { duration: 0.16, ease: 'easeOut' } }}
+          className={cn('min-h-0', className)}
+        >
+          {outlet}
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
 
   return (
     <AnimatePresence mode='wait' initial={false}>

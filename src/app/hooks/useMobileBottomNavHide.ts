@@ -38,28 +38,92 @@ export function mobileBottomNavCompactStyles(compact: boolean): CSSProperties {
 export const MOBILE_FAB_GAP = '1rem';
 
 /**
- * Shrinks mobile bottom nav on scroll down (scale, same aspect ratio).
- * Use with `mobileFabBottomOffset()` so FABs track the smaller bar.
+ * Scroll-linked collapse progress (0 = expanded, 1 = collapsed).
+ * Follows scroll position directly for smooth, native-feeling header shrink.
  */
-export function useMobileBottomNavHide() {
+export function useScrollHeaderCollapse(start = 16, end = 96) {
+  const [progress, setProgress] = useState(0);
+  const rafId = useRef(0);
+
+  useEffect(() => {
+    const readY = () =>
+      document.scrollingElement?.scrollTop ??
+      window.scrollY ??
+      document.documentElement.scrollTop ??
+      0;
+
+    const update = () => {
+      const y = readY();
+      const p = y <= start ? 0 : y >= end ? 1 : (y - start) / (end - start);
+      setProgress(p);
+    };
+
+    const onScroll = () => {
+      if (rafId.current) return;
+      rafId.current = requestAnimationFrame(() => {
+        rafId.current = 0;
+        update();
+      });
+    };
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('scroll', onScroll, { passive: true, capture: true });
+    return () => {
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('scroll', onScroll, { capture: true });
+    };
+  }, [start, end]);
+
+  return progress;
+}
+
+/**
+ * True when user scrolls down past threshold; false when scrolling up.
+ * Shared by mobile bottom nav compact mode and collapsible page headers.
+ */
+export function useScrollCompact() {
   const [compact, setCompact] = useState(false);
   const lastY = useRef(0);
 
   useEffect(() => {
+    const readY = () =>
+      document.scrollingElement?.scrollTop ??
+      window.scrollY ??
+      document.documentElement.scrollTop ??
+      0;
+
     const onScroll = () => {
-      const y = window.scrollY;
-      if (y > lastY.current + 10 && y > 60) {
+      const y = readY();
+      if (y <= 24) {
+        setCompact(false);
+      } else if (y > lastY.current + 8) {
         setCompact(true);
-      } else if (y < lastY.current - 6) {
+      } else if (y < lastY.current - 4) {
         setCompact(false);
       }
       lastY.current = y;
     };
+
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    document.addEventListener('scroll', onScroll, { passive: true, capture: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('scroll', onScroll, { capture: true });
+    };
   }, []);
 
   return compact;
+}
+
+/**
+ * Shrinks mobile bottom nav on scroll down (scale, same aspect ratio).
+ * Use with `mobileFabBottomOffset()` so FABs track the smaller bar.
+ */
+export function useMobileBottomNavHide() {
+  return useScrollCompact();
 }
 
 export function mobileFabBottomOffset(bottomNavCompact: boolean): string {
