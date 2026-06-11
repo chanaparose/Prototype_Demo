@@ -1,0 +1,5 @@
+name = "prototype-demo"
+pages_build_output_dir = "dist"
+
+[vars]
+VITE_BE_URL = "https://tryly-dev-server.onrender.com"
