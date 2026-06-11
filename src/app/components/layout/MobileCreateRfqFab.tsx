@@ -5,17 +5,17 @@ import { Button } from '@/components/ui/button';
 import { mobileFabBottomOffset } from '@/hooks/useMobileBottomNavHide';
 
 type MobileCreateRfqFabProps = {
-  /** Sync with Layout bottom nav scroll-hide */
-  bottomNavHidden: boolean;
+  /** Sync with Layout bottom nav compact state on scroll */
+  bottomNavCompact: boolean;
   /** `data-tour="fab"` on home for product tour */
   showTourAnchor?: boolean;
 };
 
 /**
- * Global mobile/tablet FAB — gradient style, offset above bottom nav (slides down when nav hides).
+ * Global mobile/tablet FAB — gradient style, offset above bottom nav (tracks compact nav).
  */
 export function MobileCreateRfqFab({
-  bottomNavHidden,
+  bottomNavCompact,
   showTourAnchor = false,
 }: MobileCreateRfqFabProps) {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ export function MobileCreateRfqFab({
         'shadow-[0_6px_20px_rgba(162,56,255,0.35)]',
         'transition-[bottom,transform] duration-300 ease-in-out active:scale-95',
       )}
-      style={{ bottom: mobileFabBottomOffset(bottomNavHidden) }}
+      style={{ bottom: mobileFabBottomOffset(bottomNavCompact) }}
     >
       <Plus size={24} className='text-white' />
     </Button>

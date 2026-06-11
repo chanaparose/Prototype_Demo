@@ -26,12 +26,8 @@ export function ShowcaseDetailMobileActionBar({
 
   return (
     <nav
-      className='lg:hidden fixed inset-x-3 z-50 flex items-stretch overflow-hidden rounded-[1.25rem] border border-white/80 bg-white/78 shadow-[0_8px_32px_rgba(46,34,82,0.12)] backdrop-blur-2xl'
-      style={{
-        bottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))',
-        height: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-      }}
+      className='lg:hidden fixed inset-x-3 z-50 flex h-14 items-stretch overflow-hidden rounded-[1.25rem] border border-white/80 bg-white/78 shadow-[0_8px_32px_rgba(46,34,82,0.12)] backdrop-blur-2xl'
+      style={{ bottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
       aria-label='การดำเนินการสินค้า'
     >
       <Button
@@ -62,7 +58,7 @@ export function ShowcaseDetailMobileActionBar({
         type='button'
         onClick={canChat ? onChat : () => navigate(`/factories/${factoryId}`)}
         disabled={starting}
-        className='flex h-full min-h-[3.5rem] flex-1 items-center justify-center gap-2 text-[13px] font-bold text-white disabled:opacity-70'
+        className='flex flex-1 items-center justify-center gap-2 text-[13px] font-bold text-white disabled:opacity-70'
         style={{
           background: 'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-orange) 100%)',
         }}

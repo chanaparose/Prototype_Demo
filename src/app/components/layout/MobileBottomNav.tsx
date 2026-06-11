@@ -13,9 +13,10 @@ import {
   isFactorySidebarNavActive,
   type FactorySidebarNavItem,
 } from '@/components/layout/factoryGlobalNavConfig';
+import { MOBILE_BOTTOM_NAV_COMPACT_SCALE } from '@/hooks/useMobileBottomNavHide';
 
 type MobileBottomNavProps = {
-  hidden: boolean;
+  compact: boolean;
   isFactory: boolean;
   factoryApproved: boolean;
   factoryBottomLinks: FactorySidebarNavItem[];
@@ -89,7 +90,7 @@ const customerNavLinks = [
 ] as const;
 
 export function MobileBottomNav({
-  hidden,
+  compact,
   isFactory,
   factoryApproved,
   factoryBottomLinks,
@@ -111,11 +112,13 @@ export function MobileBottomNav({
 
   return (
     <nav
-      className={cn(
-        'lg:hidden fixed inset-x-3 z-50 transition-transform duration-300 ease-out',
-        hidden ? 'translate-y-[calc(100%+1.25rem)]' : 'translate-y-0',
-      )}
-      style={{ bottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
+      className='lg:hidden fixed inset-x-3 z-50 transition-[transform,opacity] duration-300 ease-out'
+      style={{
+        bottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))',
+        transform: compact ? `scale(${MOBILE_BOTTOM_NAV_COMPACT_SCALE})` : 'scale(1)',
+        transformOrigin: 'bottom center',
+        opacity: compact ? 0.94 : 1,
+      }}
       aria-label='เมนูหลัก'
     >
       <div className='flex items-stretch rounded-[1.25rem] border border-white/80 bg-white/78 px-1 py-1.5 shadow-[0_8px_32px_rgba(46,34,82,0.12)] backdrop-blur-2xl'>

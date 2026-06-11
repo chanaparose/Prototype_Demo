@@ -148,7 +148,7 @@ export function Layout() {
   const userRole = String(user?.role ?? '').toUpperCase();
   const isAdminRole = userRole === 'AM' || userRole === 'AD' || userRole === 'SA';
   const factoryApproved = factoryVerifyStatus(user) === 'AP';
-  const bottomNavHidden = useMobileBottomNavHide();
+  const bottomNavCompact = useMobileBottomNavHide();
   const hideMobileBottomNav = isMobileCustomBottomBarRoute(location.pathname);
   const unreadMessages = useConversationUnreadCount();
   const { likedIds } = useFavorites();
@@ -297,7 +297,7 @@ export function Layout() {
 
       {!hideMobileBottomNav ? (
         <MobileBottomNav
-          hidden={bottomNavHidden}
+          compact={bottomNavCompact}
           isFactory={isFactory}
           factoryApproved={factoryApproved}
           factoryBottomLinks={factoryBottomLinks}
@@ -310,7 +310,7 @@ export function Layout() {
 
       {showCreateRfqFab ? (
         <MobileCreateRfqFab
-          bottomNavHidden={bottomNavHidden}
+          bottomNavCompact={bottomNavCompact}
           showTourAnchor={location.pathname === '/'}
         />
       ) : null}

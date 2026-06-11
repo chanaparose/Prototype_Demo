@@ -76,7 +76,7 @@ export function RFQCreateWizard() {
   const [shippingMap, setShippingMap] = React.useState<Record<number, string>>({});
   const [allFactories, setAllFactories] = React.useState<TargetFactory[]>([]);
   const { data: allCategories = [] } = useLbiCategoriesByScope('ALL');
-  const bottomNavHidden = useMobileBottomNavHide();
+  const bottomNavCompact = useMobileBottomNavHide();
 
   React.useEffect(() => {
     const mode = (searchParams.get('mode') || '').trim();
@@ -574,7 +574,7 @@ export function RFQCreateWizard() {
       <div
         className='fixed left-0 right-0 z-40 border-t border-gray-200/90 bg-white/95 backdrop-blur-md px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] transition-[bottom] duration-300 ease-in-out max-lg:[bottom:var(--rfq-action-bar-bottom)] lg:bottom-0 lg:left-64'
         style={
-          { '--rfq-action-bar-bottom': mobileActionBarBottomOffset(bottomNavHidden) } as React.CSSProperties
+          { '--rfq-action-bar-bottom': mobileActionBarBottomOffset(bottomNavCompact) } as React.CSSProperties
         }
       >
         <div className='mx-auto flex max-w-6xl items-center justify-between gap-3 lg:px-4'>
