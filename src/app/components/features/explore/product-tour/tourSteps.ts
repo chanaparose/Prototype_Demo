@@ -132,9 +132,28 @@ export const PATH_TO_PAGE_KEY: Array<{ test: (p: string) => boolean; pageKey: st
   { test: (p) => p === '/factory-ideas' || p.startsWith('/factory-ideas/'), pageKey: 'factory-ideas' },
   { test: (p) => p === '/create-rfq', pageKey: 'create-rfq' },
   { test: (p) => p.startsWith('/product-detail'), pageKey: 'product-detail' },
+  // /messages list → navigate ไป /messages/:id เพื่อแสดง tour
+  { test: (p) => p === '/messages', pageKey: 'messages-list' },
   { test: (p) => p.startsWith('/messages/'), pageKey: 'messages' },
   { test: (p) => /^\/rfqs\/\d+/.test(p), pageKey: 'rfq-detail' },
+  // /orders list → เล่น rfq-detail + order-detail steps ต่อกัน (navigate ผ่าน mock routes)
+  { test: (p) => p === '/orders', pageKey: 'orders-journey' },
   { test: (p) => /^\/orders\/\d+/.test(p), pageKey: 'order-detail' },
+];
+
+/**
+ * pageKey ที่ tour จะ navigate ข้ามหน้า (เหมือน full tour แต่เฉพาะ steps ของตัวเอง)
+ * เมื่อปิด tour จะ navigate กลับไปยัง originPath
+ */
+export const NAV_PAGE_KEYS = new Set(['messages-list', 'orders-journey']);
+
+// messages-list: เมื่อมาที่ /messages → แสดง steps ของ 'messages' (navigate ไป /messages/:id)
+PAGE_TOUR_STEPS['messages-list'] = PAGE_TOUR_STEPS['messages'] ?? [];
+
+// orders-journey: เมื่อมาที่ /orders → รวม rfq-detail + order-detail ต่อกัน
+PAGE_TOUR_STEPS['orders-journey'] = [
+  ...(PAGE_TOUR_STEPS['rfq-detail'] ?? []),
+  ...(PAGE_TOUR_STEPS['order-detail'] ?? []),
 ];
 
 /** localStorage key สำหรับ per-page tour */

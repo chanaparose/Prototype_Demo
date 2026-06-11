@@ -14,6 +14,7 @@ import {
 import {
   TOUR_STEPS,
   PAGE_TOUR_STEPS,
+  NAV_PAGE_KEYS,
   getPageKey,
   isPageTourSeen,
   markPageTourSeen,
@@ -44,6 +45,8 @@ export function ProductTour() {
   const [step, setStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const originPath = useRef('/');
+  /** page tour นี้อนุญาตให้ navigate ข้ามหน้า (messages-list, orders-journey) */
+  const [allowNav, setAllowNav] = useState(false);
   // ป้องกัน auto-show ซ้ำใน session เดียวกัน
   const shownPageKeys = useRef<Set<string>>(new Set());
 
@@ -61,8 +64,11 @@ export function ProductTour() {
     if (!steps?.length) return;
 
     shownPageKeys.current.add(pageKey);
+    const isNavTour = NAV_PAGE_KEYS.has(pageKey);
+    if (isNavTour) originPath.current = location.pathname;
     const t = setTimeout(() => {
       setMode('page');
+      setAllowNav(isNavTour);
       setActiveSteps(steps);
       setStep(0);
       setTourActive(true);
@@ -76,6 +82,7 @@ export function ProductTour() {
     const handler = () => {
       originPath.current = location.pathname;
       setMode('full');
+      setAllowNav(true);
       setActiveSteps(TOUR_STEPS);
       setStep(0);
       setTourActive(true);
@@ -97,16 +104,16 @@ export function ProductTour() {
     }
   }, [open, step, activeSteps]);
 
-  // ── Navigate to step route (full tour only) ─────────────────────────────────
+  // ── Navigate to step route (full tour + navigating page tours) ─────────────
   useEffect(() => {
-    if (!open || mode === 'page') return;
+    if (!open || !allowNav) return;
     const def = activeSteps[step];
     if (!def?.route) return;
     const current = `${location.pathname}${location.search}`;
     if (current !== def.route) {
       navigate(def.route);
     }
-  }, [open, mode, step, activeSteps, location.pathname, location.search, navigate]);
+  }, [open, allowNav, step, activeSteps, location.pathname, location.search, navigate]);
 
   // ── Measure target element ──────────────────────────────────────────────────
   useEffect(() => {
@@ -114,18 +121,16 @@ export function ProductTour() {
     const def = activeSteps[step];
     if (!def) return;
 
-    // Page tour: ถ้า route ไม่ตรงกับหน้าปัจจุบัน ไม่แสดง spotlight
-    if (mode === 'page') {
-      const current = `${location.pathname}${location.search}`;
+    if (mode === 'page' && !allowNav) {
+      // Static page tour: ถ้า route ไม่ตรงกับหน้าปัจจุบัน ไม่แสดง spotlight
       const defRoute = def.route ?? '';
-      // เปรียบเทียบเฉพาะ pathname ของ def.route (ตัด query string)
       const defPathname = defRoute.split('?')[0];
       if (defPathname && location.pathname !== defPathname) {
         setTargetRect(null);
         return;
       }
     } else {
-      // Full tour: รอให้ navigate เสร็จก่อน
+      // Full tour หรือ navigating page tour: รอให้ navigate เสร็จก่อน
       if (def.route) {
         const current = `${location.pathname}${location.search}`;
         if (current !== def.route) {
@@ -200,7 +205,7 @@ export function ProductTour() {
       if (rafId != null) cancelAnimationFrame(rafId);
       vvCleanup?.();
     };
-  }, [open, mode, step, activeSteps, location.pathname, location.search]);
+  }, [open, mode, allowNav, step, activeSteps, location.pathname, location.search]);
 
   const isPublicRoute = useCallback((path: string) => {
     if (path === '/' || path === '/factory-ideas' || path === '/factories') return true;
@@ -247,19 +252,26 @@ export function ProductTour() {
 
   const handleClose = useCallback(() => {
     if (mode === 'page') {
-      // page tour: ปิดแล้วอยู่หน้าเดิม
-      const pageKey = getPageKey(location.pathname);
-      if (pageKey) markPageTourSeen(pageKey);
+      // บันทึก seen flag ด้วย pageKey ของหน้าเริ่มต้น (ไม่ใช่หน้าที่ navigate ไปแล้ว)
+      const originPageKey = getPageKey(originPath.current);
+      if (originPageKey) markPageTourSeen(originPageKey);
+      // fallback: ถ้า originPath ≠ current → mark current page ด้วย
+      const curPageKey = getPageKey(location.pathname);
+      if (curPageKey && curPageKey !== originPageKey) markPageTourSeen(curPageKey);
       clearTourMocks();
       purgeTourQueryCache();
       setOpen(false);
       setTargetRect(null);
+      // navigating page tour: กลับไปหน้าเดิมที่เริ่ม tour
+      if (allowNav && location.pathname !== originPath.current) {
+        navigate(originPath.current, { replace: true });
+      }
       window.setTimeout(() => setTourActive(false), 50);
       return;
     }
     const target = isPublicRoute(originPath.current) ? originPath.current : '/';
     closeTo(target);
-  }, [mode, location.pathname, closeTo, isPublicRoute, purgeTourQueryCache]);
+  }, [mode, allowNav, location.pathname, navigate, closeTo, isPublicRoute, purgeTourQueryCache]);
 
   const handleFinish = useCallback(() => {
     if (mode === 'page') {
