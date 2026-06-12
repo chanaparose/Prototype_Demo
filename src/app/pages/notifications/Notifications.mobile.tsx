@@ -16,6 +16,7 @@ import {
 import { motion } from 'motion/react';
 import { notificationsApi } from '@/services/api/chatApi';
 import { fetchNotificationsPage } from '@/domain/notifications/queries/useNotificationQueries';
+import { NOTI_SUPERSEDE_RULES } from '@/domain/notifications/mappers/mapNotification';
 import type { INotificationModel } from '@/domain/notifications/types/notification.model';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,7 +51,12 @@ export function NotificationsMobile() {
         const pageRes = await fetchNotificationsPage(tab, LIMIT, nextOffset);
         setOffset(nextOffset);
         setTotal(pageRes.total);
-        setNotifications((prev) => (append ? [...prev, ...pageRes.items] : pageRes.items));
+        setNotifications((prev) => {
+          if (!append) return pageRes.items;
+          // dedup by noti_id — ป้องกัน item ซ้ำเมื่อ load more ขณะ item ใหม่เลื่อน offset
+          const existingIds = new Set(prev.map((n) => n.noti_id));
+          return [...prev, ...pageRes.items.filter((n) => !existingIds.has(n.noti_id))];
+        });
         setUnreadCount(pageRes.unreadCount);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'โหลดการแจ้งเตือนไม่สำเร็จ');
@@ -68,10 +74,40 @@ export function NotificationsMobile() {
     void load(0, false);
   }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Tab filtering is server-side; only apply local search and unread filter
+  // Tab filtering is server-side; apply local search, unread filter, and dedup
   const filtered = useMemo(() => {
+    // 1) dedup by noti_id (กรณี race condition / overlap ระหว่าง tab switch)
+    const seen = new Set<number>();
+    let unique = notifications.filter((n) => {
+      if (seen.has(n.noti_id)) return false;
+      seen.add(n.noti_id);
+      return true;
+    });
+
+    // 2) semantic dedup — suppress broad-type เมื่อมี specific-type สำหรับ rfq_id เดียวกัน
+    if (NOTI_SUPERSEDE_RULES.length > 0) {
+      const specificKeys = new Set<string>();
+      for (const n of unique) {
+        for (const rule of NOTI_SUPERSEDE_RULES) {
+          if (n.type === rule.specificType && n.rfq_id) {
+            specificKeys.add(`${rule.specificType}__${n.rfq_id}`);
+          }
+        }
+      }
+      if (specificKeys.size > 0) {
+        unique = unique.filter((n) => {
+          for (const rule of NOTI_SUPERSEDE_RULES) {
+            if (n.type === rule.broadType && n.rfq_id) {
+              if (specificKeys.has(`${rule.specificType}__${n.rfq_id}`)) return false;
+            }
+          }
+          return true;
+        });
+      }
+    }
+
     const keyword = searchText.trim().toLowerCase();
-    const byUnread = onlyUnread ? notifications.filter((n) => !n.is_read) : notifications;
+    const byUnread = onlyUnread ? unique.filter((n) => !n.is_read) : unique;
     if (!keyword) return byUnread;
     return byUnread.filter(
       (n) =>

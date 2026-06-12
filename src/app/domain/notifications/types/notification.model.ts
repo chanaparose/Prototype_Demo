@@ -10,6 +10,8 @@ export type INotificationModel = {
   rfq_id?: string;
   order_id?: string;
   conversation_id?: string;
+  /** raw reference_id จาก DB — ใช้สำหรับ semantic dedup (category vs subcategory) */
+  reference_id?: number;
 };
 
 export type INotificationsPageModel = {
