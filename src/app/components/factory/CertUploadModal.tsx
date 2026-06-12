@@ -197,7 +197,7 @@ export function CertUploadModal({
       >
         <Input
           type='file'
-          accept='image/*,.pdf'
+          accept='image/jpeg,.jpg,.jpeg'
           className='text-sm block w-full'
           onChange={(e) => {
             const f = e.target.files?.[0] ?? null;

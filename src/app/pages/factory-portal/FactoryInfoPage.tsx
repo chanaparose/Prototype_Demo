@@ -195,7 +195,7 @@ function AvatarUploader({
         }
         <Input
           type='file'
-          accept='image/jpeg,image/png,image/webp'
+          accept='image/jpeg,.jpg,.jpeg'
           className='hidden'
           disabled={busy}
           onChange={(e) => {

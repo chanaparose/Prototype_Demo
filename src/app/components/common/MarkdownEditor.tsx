@@ -387,7 +387,7 @@ export function MarkdownEditor({
                   id='file-input'
                   ref={fileRef}
                   type='file'
-                  accept='image/*'
+                  accept='image/jpeg,.jpg,.jpeg'
                   className='hidden'
                   onChange={(e) => {
                     const f = e.target.files?.[0] ?? null;

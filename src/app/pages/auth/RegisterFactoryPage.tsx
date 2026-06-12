@@ -598,7 +598,7 @@ export function RegisterFactoryPage() {
                 >
                   <input
                     type='file'
-                    accept='image/*,.pdf'
+                    accept='image/jpeg,.jpg,.jpeg'
                     className='w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-purple/10 file:text-brand-purple hover:file:bg-brand-purple/20 cursor-pointer'
                     onChange={(e) => {
                       const f = e.target.files?.[0] ?? null;

@@ -566,7 +566,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             <Input
               ref={imageInputRef}
               type='file'
-              accept='image/*'
+              accept='image/jpeg,.jpg,.jpeg'
               multiple
               className='hidden'
               onChange={(e) => void handleImageFiles(e.target.files)}

@@ -315,7 +315,7 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
                     </span>
                     <Input
                       type='file'
-                      accept='image/*'
+                      accept='image/jpeg,.jpg,.jpeg'
                       multiple
                       className='hidden'
                       capture={isMobile ? 'environment' : undefined}

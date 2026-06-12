@@ -735,7 +735,7 @@ function ChatRoomBody({
           <input
             ref={fileInputRef}
             type='file'
-            accept='image/*'
+            accept='image/jpeg,.jpg,.jpeg'
             className='hidden'
             onChange={(e) => void handleImageUpload(e)}
           />

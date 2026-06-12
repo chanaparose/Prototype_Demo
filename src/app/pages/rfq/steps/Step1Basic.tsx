@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { toast } from 'sonner';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 import { mediaApi } from '@/services/api/factoryApi';
 import { masterApi } from '@/services/api/masterApi';
@@ -69,6 +70,10 @@ export function Step1Basic({
 
   const uploadOne = async (f: File) => {
     if (draft.reference_images.length >= 5) return;
+    if (f.type !== 'image/jpeg') {
+      toast.error('รองรับเฉพาะไฟล์ .jpg/.jpeg เท่านั้น');
+      return;
+    }
     setUploading(true);
     try {
       const res = await mediaApi.upload(f);
@@ -136,7 +141,7 @@ export function Step1Basic({
         <Input
           ref={fileInputRef}
           type='file'
-          accept='image/*,.pdf'
+          accept='image/jpeg,.jpg,.jpeg'
           className='hidden'
           onChange={(e) => {
             const f = e.target.files?.[0];

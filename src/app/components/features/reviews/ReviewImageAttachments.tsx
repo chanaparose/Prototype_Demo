@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { ImagePlus, X } from 'lucide-react';
 import { mediaApi } from '@/services/api/factoryApi';
 import { normalizeReviewImageUrls, REVIEW_IMAGE_MAX } from '@/utils/reviewImageUrls';
@@ -28,8 +29,11 @@ export function ReviewImageAttachments({
 
   const addFiles = async (files: FileList | null) => {
     if (!files || !onChange) return;
-    const list = Array.from(files).filter((f) => f.type.startsWith('image/'));
-    if (list.length === 0) return;
+    const list = Array.from(files).filter((f) => f.type === 'image/jpeg');
+    if (list.length === 0) {
+      if (Array.from(files).length > 0) toast.error('รองรับเฉพาะไฟล์ .jpg/.jpeg เท่านั้น');
+      return;
+    }
     setUploading(true);
     try {
       let next = [...urls];
@@ -96,7 +100,7 @@ export function ReviewImageAttachments({
             <Input
               ref={inputRef}
               type='file'
-              accept='image/*'
+              accept='image/jpeg,.jpg,.jpeg'
               multiple
               className='hidden'
               onChange={(e) => {

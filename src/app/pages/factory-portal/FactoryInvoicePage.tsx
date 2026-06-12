@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import {
   FileText,
   Upload,
@@ -76,6 +77,11 @@ export function FactoryInvoicePage() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !uploadTargetId) return;
+    if (file.type !== 'image/jpeg') {
+      toast.error('รองรับเฉพาะไฟล์ .jpg/.jpeg เท่านั้น');
+      if (fileRef.current) fileRef.current.value = '';
+      return;
+    }
     setUploading(uploadTargetId);
     setError('');
     try {
@@ -111,7 +117,7 @@ export function FactoryInvoicePage() {
       <input
         ref={fileRef}
         type='file'
-        accept='image/*'
+        accept='image/jpeg,.jpg,.jpeg'
         onChange={handleFileChange}
         className='hidden'
       />
