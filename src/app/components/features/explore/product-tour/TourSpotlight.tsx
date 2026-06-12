@@ -1,3 +1,5 @@
+import { tourAccent, TOUR_THEME } from '@/components/features/explore/product-tour/tourTheme';
+
 export function SpotlightOverlay({
   rect,
   color,
@@ -12,8 +14,10 @@ export function SpotlightOverlay({
   onClickOutside: () => void;
 }) {
   const PAD = pad;
-  const uniqueId = `tour-mask-${color.replace(/[^a-zA-Z0-9]/g, '')}`;
+  const accent = tourAccent(color);
+  const uniqueId = `tour-mask-${accent.replace(/[^a-zA-Z0-9]/g, '')}`;
   const glowId = `tour-glow-${uniqueId}`;
+
   return (
     <svg
       onClick={onClickOutside}
@@ -41,10 +45,9 @@ export function SpotlightOverlay({
             />
           )}
         </mask>
-        {/* Glow filter — 3 layers of blur for a bright neon effect */}
-        <filter id={glowId} x='-40%' y='-40%' width='180%' height='180%'>
-          <feGaussianBlur in='SourceGraphic' stdDeviation='4' result='blur1' />
-          <feGaussianBlur in='SourceGraphic' stdDeviation='10' result='blur2' />
+        <filter id={glowId} x='-60%' y='-60%' width='220%' height='220%'>
+          <feGaussianBlur in='SourceGraphic' stdDeviation='2.5' result='blur1' />
+          <feGaussianBlur in='SourceGraphic' stdDeviation='7' result='blur2' />
           <feMerge>
             <feMergeNode in='blur2' />
             <feMergeNode in='blur1' />
@@ -53,22 +56,27 @@ export function SpotlightOverlay({
         </filter>
       </defs>
 
-      {/* Dark overlay with cutout */}
-      <rect width='100%' height='100%' fill='rgba(0,0,0,0.72)' mask={`url(#${uniqueId})`} />
+      {/* Balanced dim — content visible, focus clear */}
+      <rect width='100%' height='100%' fill={TOUR_THEME.scrimBase} mask={`url(#${uniqueId})`} />
 
       {rect && (
         <>
-          {/* Bright fill inside the spotlight — lifts the content visually */}
+          {/* No white fill — keeps true colors inside spotlight */}
+
+          {/* Outer contrast ring */}
           <rect
-            x={rect.left - PAD}
-            y={rect.top - PAD}
-            width={rect.width + PAD * 2}
-            height={rect.height + PAD * 2}
-            rx={radius}
-            fill='rgba(255,255,255,0.12)'
+            x={rect.left - PAD - 1}
+            y={rect.top - PAD - 1}
+            width={rect.width + PAD * 2 + 2}
+            height={rect.height + PAD * 2 + 2}
+            rx={radius + 1}
+            fill='none'
+            stroke={TOUR_THEME.ringContrast}
+            strokeWidth='1.5'
+            opacity='0.65'
           />
 
-          {/* Outer glow ring (blurred, wider) */}
+          {/* Accent glow */}
           <rect
             x={rect.left - PAD}
             y={rect.top - PAD}
@@ -76,13 +84,13 @@ export function SpotlightOverlay({
             height={rect.height + PAD * 2}
             rx={radius}
             fill='none'
-            stroke={color}
-            strokeWidth='6'
-            opacity='0.5'
+            stroke={accent}
+            strokeWidth='4'
+            opacity='0.55'
             filter={`url(#${glowId})`}
           />
 
-          {/* Main ring — crisp, bright, pulsing */}
+          {/* Crisp accent ring */}
           <rect
             className='tour-ring'
             x={rect.left - PAD}
@@ -91,23 +99,9 @@ export function SpotlightOverlay({
             height={rect.height + PAD * 2}
             rx={radius}
             fill='none'
-            stroke='white'
-            strokeWidth='3.5'
-            opacity='0.9'
-          />
-
-          {/* Colored ring on top — gives the neon tint */}
-          <rect
-            className='tour-ring'
-            x={rect.left - PAD}
-            y={rect.top - PAD}
-            width={rect.width + PAD * 2}
-            height={rect.height + PAD * 2}
-            rx={radius}
-            fill='none'
-            stroke={color}
+            stroke={accent}
             strokeWidth='2.5'
-            opacity='0.85'
+            opacity='1'
           />
         </>
       )}

@@ -1,5 +1,8 @@
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { TourStepDef } from '@/components/features/explore/product-tour/tourTypes';
+import { tourAccent, TOUR_THEME } from '@/components/features/explore/product-tour/tourTheme';
+import { LiquidGlassSurface } from '@/components/ui/liquid-glass-surface';
+import { LiquidButton } from '@/components/ui/liquid-glass-button';
 
 export function TourCard({
   stepIdx,
@@ -23,6 +26,7 @@ export function TourCard({
   const isFirst = stepIdx === 0;
   const isLast = stepIdx === total - 1;
   const wh = typeof window !== 'undefined' ? window.innerHeight : 800;
+  const accent = tourAccent(def.badgeColor);
 
   const placeAtTop = (() => {
     if (def.cardPlacement === 'top') return true;
@@ -30,161 +34,99 @@ export function TourCard({
     return !isMock && rect ? rect.top > wh * 0.5 : false;
   })();
 
-  const shadowDir = placeAtTop
-    ? '0 6px 40px rgba(0,0,0,0.15)'
-    : '0 -6px 40px rgba(0,0,0,0.15)';
-
   return (
-    <div
+    <LiquidGlassSurface
+      filterId='tour-card-glass'
+      tone='tour'
       key={stepIdx}
       onClick={(e) => e.stopPropagation()}
+      className='fixed left-3 right-3 z-[100001] mx-auto max-w-[440px] rounded-[22px] px-4 pb-4 pt-3.5'
       style={{
-        position: 'fixed',
         ...(placeAtTop ? { top: 16 } : { bottom: 16 }),
-        left: 12,
-        right: 12,
-        zIndex: 100001,
-        maxWidth: 440,
-        margin: '0 auto',
-        borderRadius: 22,
-        /* ── Liquid Glass surface ── */
-        background: 'rgba(255, 255, 255, 0.74)',
-        backdropFilter: 'blur(22px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(22px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.6)',
-        boxShadow: [
-          shadowDir,
-          'inset 0 1.5px 0 rgba(255,255,255,0.95)',
-          'inset 0 -1px 0 rgba(0,0,0,0.04)',
-        ].join(', '),
-        padding: '14px 16px 16px',
-        animation: 'tour-card-in 0.22s ease-out both',
+        animation: 'tour-card-in 0.26s cubic-bezier(0.22, 1, 0.36, 1) both',
+        boxShadow: placeAtTop ? TOUR_THEME.cardShadow : TOUR_THEME.cardShadowUp,
       }}
     >
-      {/* ── Header: icon + title + × close ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 9 }}>
-        {/* Emoji icon */}
+      {/* ── Header: icon + title + close ── */}
+      <div className='mb-2.5 flex items-start gap-2.5'>
         <div
+          className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[19px]'
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 18,
-            background: `${def.badgeColor}18`,
-            border: `1px solid ${def.badgeColor}30`,
+            background: `linear-gradient(145deg, color-mix(in srgb, ${accent} 16%, white), color-mix(in srgb, ${accent} 8%, white))`,
+            border: `1px solid color-mix(in srgb, ${accent} 28%, white)`,
+            boxShadow: `0 4px 14px color-mix(in srgb, ${accent} 18%, transparent), inset 0 1px 0 rgba(255,255,255,0.9)`,
           }}
         >
           {def.icon}
         </div>
 
-        {/* Title */}
         <p
-          style={{
-            flex: 1,
-            margin: 0,
-            paddingTop: 1,
-            fontSize: 15,
-            fontWeight: 700,
-            color: 'var(--brand-ink)',
-            lineHeight: 1.35,
-          }}
+          className='m-0 min-w-0 flex-1 pt-1.5 text-[15px] font-bold leading-snug'
+          style={{ color: TOUR_THEME.title }}
         >
           {def.title}
         </p>
 
-        {/* × close button */}
-        <button
+        <LiquidButton
+          type='button'
+          variant='ghost'
+          size='icon'
+          filterId='tour-close-glass'
           onClick={onClose}
           aria-label='ปิดทัวร์'
-          style={{
-            width: 26,
-            height: 26,
-            borderRadius: 99,
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(0,0,0,0.07)',
-            border: 'none',
-            cursor: 'pointer',
-            marginTop: 1,
-          }}
+          className='mt-px size-[26px] min-h-0 rounded-full text-slate-500'
         >
-          <X size={13} color='var(--neutral-subtle)' />
-        </button>
+          <X size={13} />
+        </LiquidButton>
       </div>
 
-      {/* ── Desc (1 sentence, indented under icon) ── */}
+      {/* ── Desc ── */}
       <p
-        style={{
-          fontSize: 13,
-          color: '#4B5563',
-          lineHeight: 1.65,
-          margin: '0 0 12px',
-          paddingLeft: 46,
-        }}
+        className='mb-3.5 text-[13px] leading-relaxed'
+        style={{ color: TOUR_THEME.body }}
       >
         {def.desc}
       </p>
 
-      {/* ── Segmented line progress ── */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
+      {/* ── Segmented progress ── */}
+      <div className='mb-3.5 flex gap-1.5'>
         {Array.from({ length: total }).map((_, i) => (
           <div
             key={i}
+            className='h-1 flex-1 rounded-full transition-all duration-300'
             style={{
-              flex: 1,
-              height: 3,
-              borderRadius: 99,
-              background: i <= stepIdx ? def.badgeColor : 'rgba(0,0,0,0.10)',
-              transition: 'background 0.3s',
+              background: i <= stepIdx ? accent : TOUR_THEME.progressInactive,
+              boxShadow: i === stepIdx ? `0 0 8px color-mix(in srgb, ${accent} 45%, transparent)` : undefined,
+              transform: i === stepIdx ? 'scaleY(1.15)' : undefined,
             }}
           />
         ))}
       </div>
 
-      {/* ── Footer: prev (icon-only) + next/finish ── */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-        {!isFirst && (
-          <button
+      {/* ── Footer ── */}
+      <div className='flex justify-end gap-2'>
+        {!isFirst ? (
+          <LiquidButton
+            type='button'
+            variant='ghost'
+            size='icon'
+            filterId='tour-prev-glass'
             onClick={onPrev}
             aria-label='ย้อนกลับ'
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 99,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(0,0,0,0.06)',
-              border: 'none',
-              cursor: 'pointer',
-            }}
+            className='text-slate-600'
           >
-            <ChevronLeft size={15} color='var(--neutral-subtle)' />
-          </button>
-        )}
+            <ChevronLeft size={15} />
+          </LiquidButton>
+        ) : null}
 
-        <button
-          onClick={isLast ? onClose : onNext}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            fontSize: 13,
-            fontWeight: 700,
-            padding: '8px 20px',
-            borderRadius: 99,
-            border: 'none',
-            background: def.badgeColor,
-            color: '#fff',
-            cursor: 'pointer',
-            boxShadow: `0 4px 14px ${def.badgeColor}55`,
-          }}
+        <LiquidButton
+          type='button'
+          variant='primary'
+          size='default'
+          tint={accent}
+          filterId='tour-next-glass'
+          onClick={onNext}
+          className='min-w-[7.5rem] px-5 shadow-none'
         >
           {isLast ? (
             'ลองเลย ✨'
@@ -193,8 +135,8 @@ export function TourCard({
               ถัดไป <ChevronRight size={13} />
             </>
           )}
-        </button>
+        </LiquidButton>
       </div>
-    </div>
+    </LiquidGlassSurface>
   );
 }

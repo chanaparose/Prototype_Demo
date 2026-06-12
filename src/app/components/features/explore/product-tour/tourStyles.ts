@@ -1,10 +1,10 @@
 const TOUR_CSS = `
 @keyframes tour-card-in {
-  from { opacity:0; transform:translateY(14px); }
-  to   { opacity:1; transform:translateY(0); }
+  from { opacity:0; transform:translateY(12px) scale(0.98); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
 }
 @keyframes tour-ring-pulse {
-  0%,100% { opacity:0.75; }
+  0%,100% { opacity:0.82; }
   50%      { opacity:1; }
 }
 @keyframes tour-mock-in {
