@@ -149,9 +149,9 @@ export function FactoryProfileTabContent({
   );
 
   return (
-    <div className='space-y-3'>
-      {/* ── Lezhin-style tab bar ── */}
-      <div className='-mx-4 sticky top-14 z-20 bg-white border-b border-gray-200 lg:mx-0 lg:static lg:z-auto lg:border-b lg:border-gray-100'>
+    <div>
+      {/* Tab bar — in-flow inside card (avoid sticky + negative margin overlap) */}
+      <div className='border-b border-gray-100 bg-white'>
         <div className='flex overflow-x-auto scrollbar-hide'>
           {TABS.map((tab) => {
             const active = activeTab === tab.id;
@@ -193,7 +193,7 @@ export function FactoryProfileTabContent({
         </div>
       </div>
 
-      <div className='px-0 pb-6 pt-4 lg:px-8 lg:pb-8 lg:pt-6 space-y-3'>
+      <div className='space-y-3 px-4 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-5'>
       {activeTab === 'products' && (
         <div>
           {productItems.length === 0 ? (
