@@ -1,6 +1,9 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import type { KpiCounts } from '@/pages/factory-portal/factory-orders/types';
+import {
+  FactoryMetricCard,
+  FactoryMetricGrid,
+} from '@/pages/factory-portal/components/FactoryMetricCards';
 
 type KpiKey = keyof KpiCounts;
 
@@ -75,45 +78,25 @@ export function FactoryOrdersKpiStrip({
   onSelectKpi: (key: KpiKey) => void;
 }) {
   return (
-    <div className='grid grid-cols-2 gap-3 sm:grid-cols-4 2xl:grid-cols-4'>
+    <FactoryMetricGrid>
       {KPI_CARDS.map(({ id, label, danger, meta }) => {
         const count = kpi[id];
         const { badge, badgeClass, caption } = meta(count, total);
         const isDanger = Boolean(danger && count > 0);
 
         return (
-          <Button
+          <FactoryMetricCard
             key={id}
-            variant='unstyled'
-            type='button'
+            label={label}
+            value={count}
+            badge={badge}
+            badgeClassName={badgeClass}
+            caption={caption}
+            danger={isDanger}
             onClick={() => onSelectKpi(id)}
-            className={`rounded-lg border bg-white p-4 text-left transition-colors hover:border-slate-300 ${
-              isDanger ? 'border-red-100 hover:border-red-200' : 'border-slate-200'
-            }`}
-          >
-            <p className={`text-xs font-medium ${isDanger ? 'text-red-600' : 'text-slate-500'}`}>
-              {label}
-            </p>
-            <div className='mt-3 flex items-end justify-between gap-2'>
-              <p
-                className={`text-2xl font-bold tabular-nums leading-none sm:text-3xl ${
-                  isDanger ? 'text-red-700' : 'text-slate-900'
-                }`}
-              >
-                {count}
-              </p>
-              <div className='flex min-w-0 items-center justify-end gap-1.5'>
-                <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${badgeClass}`}
-                >
-                  {badge}
-                </span>
-                <span className='truncate text-[11px] text-slate-400'>{caption}</span>
-              </div>
-            </div>
-          </Button>
+          />
         );
       })}
-    </div>
+    </FactoryMetricGrid>
   );
 }

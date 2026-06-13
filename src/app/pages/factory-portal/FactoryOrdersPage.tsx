@@ -5,7 +5,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  Search,
   ClipboardList,
   Zap,
   Package,
@@ -23,11 +22,19 @@ import { deriveOrderCardState } from '@/pages/factory-portal/factory-orders/deri
 import { computeKpi, countByTab } from '@/pages/factory-portal/factory-orders/factoryOrderKpi';
 import { matchTab, searchMatch } from '@/pages/factory-portal/factory-orders/factoryOrderFilters';
 import type { FactoryOrderRow, TabId } from '@/pages/factory-portal/factory-orders/types';
-import { FactoryOrderCard, REQUEST_KIND_LABEL } from '@/pages/factory-portal/factory-orders/components/FactoryOrderCard';
+import {
+  FactoryOrderCard,
+  REQUEST_KIND_LABEL,
+} from '@/pages/factory-portal/factory-orders/components/FactoryOrderCard';
 import { FactoryOrdersEmptyState } from '@/pages/factory-portal/factory-orders/components/FactoryOrdersEmptyState';
 import { FactoryOrdersKpiStrip } from '@/pages/factory-portal/factory-orders/components/FactoryOrdersKpiStrip';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import {
+  FactoryStatusBadge,
+  type FactoryStatusTone,
+} from '@/pages/factory-portal/components/FactoryStatusBadge';
+import { FactoryWorklistCard } from '@/pages/factory-portal/components/FactoryWorklistCard';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -41,24 +48,25 @@ import {
   TableSkeletonRows,
 } from '@/components/ui/table';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
+import { factoryButtonClass } from '@/pages/factory-portal/factoryUi';
 
-const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
-  WS: { label: 'รอแนบสลีป', cls: 'bg-yellow-100 text-yellow-700' },
-  WA: { label: 'รอยืนยันสลีป', cls: 'bg-amber-100 text-amber-700' },
-  PP: { label: 'รอชำระเงิน', cls: 'bg-amber-100 text-amber-700' },
-  PE: { label: 'หมดกำหนด', cls: 'bg-red-100 text-red-600' },
-  PD: { label: 'ต้องดำเนินการ', cls: 'bg-orange-100 text-orange-700' },
-  PR: { label: 'กำลังผลิต', cls: 'bg-blue-100 text-blue-700' },
-  QC: { label: 'ตรวจสอบ', cls: 'bg-brand-violet-soft text-brand-purple' },
-  SH: { label: 'จัดส่งแล้ว', cls: 'bg-teal-100 text-teal-700' },
-  CP: { label: 'เสร็จสิ้น', cls: 'bg-emerald-100 text-emerald-700' },
-  CN: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-600' },
-  CC: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-600' },
-  CL: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-600' },
+const STATUS_LABEL: Record<string, { label: string; tone: FactoryStatusTone }> = {
+  WS: { label: 'รอแนบสลีป', tone: 'warning' },
+  WA: { label: 'รอยืนยันสลีป', tone: 'warning' },
+  PP: { label: 'รอชำระเงิน', tone: 'warning' },
+  PE: { label: 'หมดกำหนด', tone: 'danger' },
+  PD: { label: 'ต้องดำเนินการ', tone: 'warning' },
+  PR: { label: 'กำลังผลิต', tone: 'info' },
+  QC: { label: 'ตรวจสอบ', tone: 'brand' },
+  SH: { label: 'จัดส่งแล้ว', tone: 'teal' },
+  CP: { label: 'เสร็จสิ้น', tone: 'success' },
+  CN: { label: 'ยกเลิก', tone: 'danger' },
+  CC: { label: 'ยกเลิก', tone: 'danger' },
+  CL: { label: 'ยกเลิก', tone: 'danger' },
 };
 
 function statusMeta(code: string) {
-  return STATUS_LABEL[code] ?? { label: code, cls: 'bg-gray-100 text-gray-600' };
+  return STATUS_LABEL[code] ?? { label: code, tone: 'neutral' as const };
 }
 
 function SortableHead({ children }: { children: React.ReactNode }) {
@@ -106,7 +114,7 @@ function OrdersTablePagination({
           type='button'
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-[var(--brand-page)] disabled:cursor-not-allowed disabled:opacity-40'
+          className={factoryButtonClass({ variant: 'toolbar', size: 'icon' })}
           aria-label='หน้าก่อน'
         >
           <ChevronLeft className='h-3.5 w-3.5' />
@@ -118,7 +126,9 @@ function OrdersTablePagination({
             type='button'
             onClick={() => onPageChange(p)}
             className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-xs font-semibold transition-colors ${
-              p === page ? 'bg-brand-purple text-white' : 'text-slate-600 hover:bg-[var(--brand-page)]'
+              p === page
+                ? 'bg-brand-purple text-white'
+                : 'text-slate-600 hover:bg-[var(--brand-page)]'
             }`}
             aria-current={p === page ? 'page' : undefined}
           >
@@ -130,7 +140,7 @@ function OrdersTablePagination({
           type='button'
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-[var(--brand-page)] disabled:cursor-not-allowed disabled:opacity-40'
+          className={factoryButtonClass({ variant: 'toolbar', size: 'icon' })}
           aria-label='หน้าถัดไป'
         >
           <ChevronRight className='h-3.5 w-3.5' />
@@ -230,8 +240,7 @@ export function FactoryOrdersPage() {
       .filter((x) => matchTab(x.row, x.derived, statusTab))
       .filter((x) => searchMatch(x.row, q))
       .sort((a, b) => {
-        const diff =
-          new Date(b.row.created_at).getTime() - new Date(a.row.created_at).getTime();
+        const diff = new Date(b.row.created_at).getTime() - new Date(a.row.created_at).getTime();
         return sortDir === 'desc' ? diff : -diff;
       });
   }, [rows, derived, search, sortDir, statusTab]);
@@ -243,7 +252,9 @@ export function FactoryOrdersPage() {
   }, [filteredRows, page]);
 
   // Reset to page 1 when filters change
-  useEffect(() => { setPage(1); }, [filteredRows]);
+  useEffect(() => {
+    setPage(1);
+  }, [filteredRows]);
 
   if (isLoading) {
     return (
@@ -300,189 +311,135 @@ export function FactoryOrdersPage() {
         }}
       />
 
-      {/* Unified card: tabs + filter + table */}
-      <div className='sticky top-14 z-[5] bg-brand-page py-2 -my-1'>
-        <div className='rounded-lg border border-slate-200 bg-white overflow-hidden'>
-          {/* Tab row */}
-          <div
-            className='flex overflow-x-auto overflow-y-hidden border-b border-slate-100 [&::-webkit-scrollbar]:hidden'
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            role='tablist'
-            aria-label='สถานะคำสั่งซื้อ'
+      <FactoryWorklistCard
+        tabs={TAB_DEFS.map((t) => ({
+          key: t.id,
+          label: t.label,
+          shortLabel: t.shortLabel,
+          icon: t.icon,
+          count: tabCounts[t.id] ?? 0,
+        }))}
+        activeTab={statusTab}
+        onTabChange={(key) => setStatusTab(key as TabId)}
+        tabAriaLabel='สถานะคำสั่งซื้อ'
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder='ค้นหา #ออเดอร์ / ชื่อสินค้า / ชื่อลูกค้า...'
+        searchTrailing={
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
+            className='inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-[var(--brand-page)]'
+            title={sortDir === 'desc' ? 'ใหม่สุด → เก่าสุด' : 'เก่าสุด → ใหม่สุด'}
           >
-            {TAB_DEFS.map((t) => {
-              const on = statusTab === t.id;
-              const count = tabCounts[t.id] ?? 0;
-              return (
-                <button
-                  key={t.id}
-                  type='button'
-                  role='tab'
-                  aria-selected={on}
-                  onClick={() => setStatusTab(t.id)}
-                  className='flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-3.5 text-[13px] -mb-px transition-colors focus:outline-none'
-                  style={{
-                    borderBottomColor: on ? 'var(--brand-purple)' : 'transparent',
-                    color: on ? 'var(--brand-purple)' : '#64748b',
-                    fontWeight: on ? 600 : 400,
-                  }}
-                >
-                  {t.icon}
-                  <span className='hidden sm:inline'>{t.label}</span>
-                  <span className='sm:hidden'>{t.shortLabel}</span>
-                  {count > 0 ? (
-                    <span
-                      className='min-w-[18px] rounded-full px-1.5 py-0.5 text-center text-[10px] font-bold tabular-nums'
-                      style={{
-                        background: on ? '#eef2ff' : '#f1f5f9',
-                        color: on ? 'var(--brand-purple)' : '#94a3b8',
-                      }}
-                    >
-                      {count}
-                    </span>
-                  ) : null}
-                </button>
-              );
-            })}
+            <ArrowUpDown className='h-4 w-4' />
+            {sortDir === 'desc' ? 'ใหม่สุด' : 'เก่าสุด'}
+          </Button>
+        }
+      >
+        {filteredRows.length === 0 ? (
+          <div className='mt-3 space-y-2 py-12 text-center'>
+            <PackageX size={38} className='mx-auto text-slate-400' />
+            <p className='text-sm font-bold text-slate-700'>ไม่พบคำสั่งซื้อที่ตรงกับเงื่อนไข</p>
+            <p className='text-xs text-slate-400'>ลองเปลี่ยนแท็บหรือค้นหาใหม่</p>
           </div>
-
-          {/* Filter row */}
-          <div className='px-3 sm:px-4 pt-3 pb-3'>
-            <div className='flex gap-2'>
-              <div className='relative flex-1'>
-                <Search
-                  size={14}
-                  className='pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400'
-                />
-                <input
-                  type='search'
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder='ค้นหา #ออเดอร์ / ชื่อสินค้า / ชื่อลูกค้า...'
-                  className='h-9 w-full appearance-none rounded-lg border border-slate-200 bg-[var(--brand-page)] pl-9 pr-3 text-xs text-slate-800 outline-none transition-all placeholder:text-xs placeholder:text-slate-400 focus:border-brand-purple focus:bg-white focus:ring-2 focus:ring-brand-purple/15 sm:text-[13px]'
-                />
-              </div>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
-                className='h-9 shrink-0 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 inline-flex items-center gap-2 transition-colors hover:bg-[var(--brand-page)]'
-                title={sortDir === 'desc' ? 'ใหม่สุด → เก่าสุด' : 'เก่าสุด → ใหม่สุด'}
-              >
-                <ArrowUpDown className='h-4 w-4' />
-                {sortDir === 'desc' ? 'ใหม่สุด' : 'เก่าสุด'}
-              </Button>
+        ) : (
+          <div className='-mx-3 mt-3 border-t border-slate-100 sm:-mx-4'>
+            <div className='overflow-x-auto'>
+              <Table className='w-full min-w-[760px]'>
+                <TableHeader>
+                  <TableRow className='hover:bg-transparent dark:hover:bg-transparent'>
+                    <SortableHead>Order</SortableHead>
+                    <SortableHead>สินค้า</SortableHead>
+                    <SortableHead>ประเภท</SortableHead>
+                    <SortableHead>ลูกค้า</SortableHead>
+                    <SortableHead>มูลค่า</SortableHead>
+                    <SortableHead>สถานะ</SortableHead>
+                    <SortableHead>กำหนดส่ง</SortableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <TableSkeletonRows columns={7} rows={4} />
+                  ) : (
+                    pageRows.map(({ row }) => {
+                      const meta = statusMeta(row.status);
+                      const deadline = row.estimated_delivery
+                        ? new Date(row.estimated_delivery).toLocaleDateString('th-TH', {
+                            day: 'numeric',
+                            month: 'short',
+                          })
+                        : '-';
+                      return (
+                        <TableRow
+                          key={row.order_id}
+                          className='cursor-pointer'
+                          onClick={() => navigate(`/factory/orders/${row.order_id}`)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              navigate(`/factory/orders/${row.order_id}`);
+                            }
+                          }}
+                          tabIndex={0}
+                          role='link'
+                          aria-label={`คำสั่งซื้อ #${row.order_id}`}
+                        >
+                          <TableCell className='py-2.5 font-mono text-xs font-semibold text-brand-purple'>
+                            #{row.order_id}
+                          </TableCell>
+                          <TableCell className='py-2.5 min-w-[180px]'>
+                            <p className='truncate text-xs font-semibold text-slate-900 group-hover:text-brand-purple'>
+                              {row.rfq?.title ?? `สินค้า #${row.order_id}`}
+                            </p>
+                            {row.rfq ? (
+                              <p className='text-[10px] text-slate-400 mt-0.5'>
+                                {row.rfq.quantity} {row.rfq.unit_name}
+                              </p>
+                            ) : null}
+                          </TableCell>
+                          <TableCell className='py-2.5 min-w-[110px]'>
+                            {row.request_kind && REQUEST_KIND_LABEL[row.request_kind] ? (
+                              <FactoryStatusBadge tone='brand'>
+                                {REQUEST_KIND_LABEL[row.request_kind].label}
+                              </FactoryStatusBadge>
+                            ) : (
+                              <span className='text-[10px] text-slate-400'>-</span>
+                            )}
+                          </TableCell>
+                          <TableCell className='py-2.5 text-xs text-slate-600 min-w-[120px] max-w-[160px] truncate'>
+                            {row.customer?.display_name ?? '-'}
+                          </TableCell>
+                          <TableCell className='py-2.5 text-xs font-semibold text-slate-900 tabular-nums'>
+                            {formatCurrency(row.total_amount)}
+                          </TableCell>
+                          <TableCell className='py-2.5'>
+                            <FactoryStatusBadge tone={meta.tone}>{meta.label}</FactoryStatusBadge>
+                          </TableCell>
+                          <TableCell className='py-2.5 text-xs text-slate-600 whitespace-nowrap'>
+                            <span className='flex items-center gap-1'>
+                              <Clock size={11} className='shrink-0' />
+                              {deadline}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
             </div>
-
-            {/* Empty state or edge-to-edge table */}
-            {filteredRows.length === 0 ? (
-              <div className='mt-3 py-12 text-center space-y-2'>
-                <PackageX size={38} className='mx-auto text-slate-400' />
-                <p className='text-sm font-bold text-slate-700'>ไม่พบคำสั่งซื้อที่ตรงกับเงื่อนไข</p>
-                <p className='text-xs text-slate-400'>ลองเปลี่ยนแท็บหรือค้นหาใหม่</p>
-              </div>
-            ) : (
-              <div className='-mx-3 sm:-mx-4 mt-3 border-t border-slate-100'>
-                <div className='overflow-x-auto'>
-                  <Table className='w-full min-w-[760px]'>
-                    <TableHeader>
-                      <TableRow className='hover:bg-transparent dark:hover:bg-transparent'>
-                        <SortableHead>Order</SortableHead>
-                        <SortableHead>สินค้า</SortableHead>
-                        <SortableHead>ประเภท</SortableHead>
-                        <SortableHead>ลูกค้า</SortableHead>
-                        <SortableHead>มูลค่า</SortableHead>
-                        <SortableHead>สถานะ</SortableHead>
-                        <SortableHead>กำหนดส่ง</SortableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {isLoading ? (
-                        <TableSkeletonRows columns={7} rows={4} />
-                      ) : (
-                        pageRows.map(({ row }) => {
-                          const meta = statusMeta(row.status);
-                          const deadline = row.estimated_delivery
-                            ? new Date(row.estimated_delivery).toLocaleDateString('th-TH', {
-                                day: 'numeric',
-                                month: 'short',
-                              })
-                            : '-';
-                          return (
-                            <TableRow
-                              key={row.order_id}
-                              className='cursor-pointer'
-                              onClick={() => navigate(`/factory/orders/${row.order_id}`)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault();
-                                  navigate(`/factory/orders/${row.order_id}`);
-                                }
-                              }}
-                              tabIndex={0}
-                              role='link'
-                              aria-label={`คำสั่งซื้อ #${row.order_id}`}
-                            >
-                              <TableCell className='py-2.5 font-mono text-xs font-semibold text-brand-purple'>
-                                #{row.order_id}
-                              </TableCell>
-                              <TableCell className='py-2.5 min-w-[180px]'>
-                                <p className='truncate text-xs font-semibold text-slate-900 group-hover:text-brand-purple'>
-                                  {row.rfq?.title ?? `สินค้า #${row.order_id}`}
-                                </p>
-                                {row.rfq ? (
-                                  <p className='text-[10px] text-slate-400 mt-0.5'>
-                                    {row.rfq.quantity} {row.rfq.unit_name}
-                                  </p>
-                                ) : null}
-                              </TableCell>
-                              <TableCell className='py-2.5 min-w-[110px]'>
-                                {row.request_kind && REQUEST_KIND_LABEL[row.request_kind] ? (
-                                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${REQUEST_KIND_LABEL[row.request_kind].cls}`}>
-                                    {REQUEST_KIND_LABEL[row.request_kind].label}
-                                  </span>
-                                ) : (
-                                  <span className='text-[10px] text-slate-400'>-</span>
-                                )}
-                              </TableCell>
-                              <TableCell className='py-2.5 text-xs text-slate-600 min-w-[120px] max-w-[160px] truncate'>
-                                {row.customer?.display_name ?? '-'}
-                              </TableCell>
-                              <TableCell className='py-2.5 text-xs font-semibold text-slate-900 tabular-nums'>
-                                {formatCurrency(row.total_amount)}
-                              </TableCell>
-                              <TableCell className='py-2.5'>
-                                <span
-                                  className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${meta.cls}`}
-                                >
-                                  {meta.label}
-                                </span>
-                              </TableCell>
-                              <TableCell className='py-2.5 text-xs text-slate-600 whitespace-nowrap'>
-                                <span className='flex items-center gap-1'>
-                                  <Clock size={11} className='shrink-0' />
-                                  {deadline}
-                                </span>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-                <OrdersTablePagination
-                  page={page}
-                  totalPages={totalPages}
-                  total={filteredRows.length}
-                  pageSize={PAGE_SIZE}
-                  onPageChange={setPage}
-                />
-              </div>
-            )}
+            <OrdersTablePagination
+              page={page}
+              totalPages={totalPages}
+              total={filteredRows.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setPage}
+            />
           </div>
-        </div>
-      </div>
+        )}
+      </FactoryWorklistCard>
 
       {/* Mobile card list */}
       <ul className='md:hidden grid grid-cols-1 gap-3'>
@@ -617,8 +574,7 @@ export function FactoryOrdersPage() {
               disabled={shipModal.busy || !shipModal.tracking.trim()}
               className='w-full py-2.5 rounded-lg text-white font-semibold disabled:opacity-50'
               style={{
-                background:
-                  'var(--brand-purple)',
+                background: 'var(--brand-purple)',
               }}
               onClick={async () => {
                 setShipModal((prev) => (prev ? { ...prev, busy: true } : prev));

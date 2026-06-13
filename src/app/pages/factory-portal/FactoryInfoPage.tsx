@@ -15,9 +15,22 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { profileFormSchema } from '@/domain/factory/schemas/profileForm.schema';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Building2, CheckCircle, MapPin, Award, Landmark,
-  AlertTriangle, ShieldCheck, Clock, XCircle,
-  Upload, Trash2, ImageIcon, Loader2, Plus, Pencil, X,
+  Building2,
+  CheckCircle,
+  MapPin,
+  Award,
+  Landmark,
+  AlertTriangle,
+  ShieldCheck,
+  Clock,
+  XCircle,
+  Upload,
+  Trash2,
+  ImageIcon,
+  Loader2,
+  Plus,
+  Pencil,
+  X,
 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
@@ -41,12 +54,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import {
+  factoryBadgeClass,
+  factoryButtonClass,
+  factoryCardClass,
+} from '@/pages/factory-portal/factoryUi';
 
 type EditSection = 'info' | null;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function normalizeIds(ids: number[]): number[] {
-  return Array.from(new Set(ids)).filter((id) => Number.isFinite(id) && id > 0).sort((a, b) => a - b);
+  return Array.from(new Set(ids))
+    .filter((id) => Number.isFinite(id) && id > 0)
+    .sort((a, b) => a - b);
 }
 
 type CategoryScope = 'PD' | 'MT' | 'OTHER';
@@ -54,7 +74,15 @@ type CategoryScope = 'PD' | 'MT' | 'OTHER';
 // ─── Shared UI ────────────────────────────────────────────────────────────────
 
 /** Small labeled data field — label above bold value */
-function Field({ label, value, className = '' }: { label: string; value?: React.ReactNode; className?: string }) {
+function Field({
+  label,
+  value,
+  className = '',
+}: {
+  label: string;
+  value?: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div className={`min-w-0 ${className}`}>
       <p className='text-[11px] font-medium text-gray-400 mb-0.5'>{label}</p>
@@ -80,20 +108,22 @@ function InfoCard({
   noPadding?: boolean;
 }) {
   return (
-    <div className={`rounded-lg border border-gray-200 bg-white overflow-hidden ${className}`}>
+    <div className={factoryCardClass({ variant: 'shell', className })}>
       {(title != null || action != null) && (
-        <div className='flex items-center justify-between gap-4 px-6 py-5 border-b border-gray-100'>
+        <div className='flex items-center justify-between gap-4 border-b border-slate-100 px-4 py-4 sm:px-5'>
           {title != null ? (
-            typeof title === 'string' || typeof title === 'number'
-              ? <span className='text-base font-bold text-gray-900'>{title}</span>
-              : <div className='min-w-0 flex-1'>{title}</div>
+            typeof title === 'string' || typeof title === 'number' ? (
+              <span className='text-base font-bold text-gray-900'>{title}</span>
+            ) : (
+              <div className='min-w-0 flex-1'>{title}</div>
+            )
           ) : (
             <span />
           )}
           {action}
         </div>
       )}
-      <div className={noPadding ? '' : 'px-6 py-6'}>{children}</div>
+      <div className={noPadding ? '' : 'p-4 sm:p-5'}>{children}</div>
     </div>
   );
 }
@@ -118,7 +148,7 @@ function SectionEditActions({
         variant='unstyled'
         type='button'
         onClick={onEdit}
-        className='inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
+        className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
       >
         <Pencil size={12} />
         Edit
@@ -132,7 +162,7 @@ function SectionEditActions({
         type='button'
         disabled={saving}
         onClick={onCancel}
-        className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors'
+        className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
       >
         <X size={12} />
         ยกเลิก
@@ -142,13 +172,17 @@ function SectionEditActions({
         type='button'
         disabled={saving}
         onClick={onSave}
-        className='inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50'
-        style={{ background: 'var(--brand-purple)' }}
+        className={factoryButtonClass({ variant: 'primary', size: 'sm', className: 'px-4' })}
       >
-        {saving
-          ? <><Loader2 size={12} className='animate-spin' /> กำลังบันทึก…</>
-          : <><CheckCircle size={12} /> บันทึก</>
-        }
+        {saving ? (
+          <>
+            <Loader2 size={12} className='animate-spin' /> กำลังบันทึก…
+          </>
+        ) : (
+          <>
+            <CheckCircle size={12} /> บันทึก
+          </>
+        )}
       </Button>
     </div>
   );
@@ -156,21 +190,31 @@ function SectionEditActions({
 
 // ─── Avatar uploader (compact, no cover) ─────────────────────────────────────
 function AvatarUploader({
-  imageUrl, uploading, busy,
-  onPick, onRemove,
+  imageUrl,
+  uploading,
+  busy,
+  onPick,
+  onRemove,
 }: {
-  imageUrl: string; uploading: boolean; busy: boolean;
-  onPick: (f: File) => void; onRemove: () => void;
+  imageUrl: string;
+  uploading: boolean;
+  busy: boolean;
+  onPick: (f: File) => void;
+  onRemove: () => void;
 }) {
   const [drag, setDrag] = useState(false);
 
   return (
     <div
       className={`relative shrink-0 ${drag ? 'ring-2 ring-brand-purple ring-offset-2 rounded-full' : ''}`}
-      onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDrag(true);
+      }}
       onDragLeave={() => setDrag(false)}
       onDrop={(e) => {
-        e.preventDefault(); setDrag(false);
+        e.preventDefault();
+        setDrag(false);
         const f = e.dataTransfer.files?.[0];
         if (f?.type.startsWith('image/')) onPick(f);
       }}
@@ -178,18 +222,22 @@ function AvatarUploader({
       <Label
         className={`relative block w-[70px] h-[70px] sm:w-20 sm:h-20 rounded-lg overflow-hidden cursor-pointer border-2 border-white group bg-brand-lavender ${uploading ? 'pointer-events-none' : ''}`}
       >
-        {imageUrl
-          ? <Image src={imageUrl} alt='' className='w-full h-full object-cover' />
-          : (
-            <span className='w-full h-full flex flex-col items-center justify-center gap-1'>
-              <ImageIcon size={20} className='text-brand-muted-purple' strokeWidth={1.5} />
-            </span>
-          )
-        }
-        {uploading
-          ? <div className='absolute inset-0 bg-black/40 flex items-center justify-center'><Loader2 size={18} className='text-white animate-spin' /></div>
-          : <div className='absolute inset-0 opacity-0 group-hover:opacity-100 bg-black/15 transition-opacity flex items-center justify-center'><Upload size={15} className='text-white drop-shadow' /></div>
-        }
+        {imageUrl ? (
+          <Image src={imageUrl} alt='' className='w-full h-full object-cover' />
+        ) : (
+          <span className='w-full h-full flex flex-col items-center justify-center gap-1'>
+            <ImageIcon size={20} className='text-brand-muted-purple' strokeWidth={1.5} />
+          </span>
+        )}
+        {uploading ? (
+          <div className='absolute inset-0 bg-black/40 flex items-center justify-center'>
+            <Loader2 size={18} className='text-white animate-spin' />
+          </div>
+        ) : (
+          <div className='absolute inset-0 opacity-0 group-hover:opacity-100 bg-black/15 transition-opacity flex items-center justify-center'>
+            <Upload size={15} className='text-white drop-shadow' />
+          </div>
+        )}
         <Input
           type='file'
           accept='image/jpeg,image/png,image/webp'
@@ -206,7 +254,10 @@ function AvatarUploader({
         <button
           type='button'
           disabled={busy}
-          onClick={(e) => { e.preventDefault(); onRemove(); }}
+          onClick={(e) => {
+            e.preventDefault();
+            onRemove();
+          }}
           className='absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center border-2 border-white hover:bg-red-600 transition-colors'
           title='ลบรูปโปรไฟล์'
         >
@@ -221,32 +272,23 @@ function AvatarUploader({
 type SubEntryView = { id: number; name: string };
 type CatCardView = { id: number; name: string; subs: SubEntryView[] };
 
-function CategoryViewCard({
-  cat,
-  isMT = false,
-}: {
-  cat: CatCardView;
-  isMT?: boolean;
-}) {
+function CategoryViewCard({ cat, isMT = false }: { cat: CatCardView; isMT?: boolean }) {
   return (
-    <div className='rounded-lg border border-gray-200 bg-white p-4 space-y-2'>
+    <div className={factoryCardClass({ variant: 'list', className: 'space-y-2' })}>
       <h3 className='text-sm font-bold text-gray-900'>{cat.name}</h3>
 
-      {!isMT && (
-        cat.subs.length > 0 ? (
+      {!isMT &&
+        (cat.subs.length > 0 ? (
           <ul className='flex flex-wrap gap-1.5'>
             {cat.subs.map((s) => (
               <li key={s.id}>
-                <span className='inline-flex items-center gap-1 text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-1'>
-                  {s.name}
-                </span>
+                <span className={factoryBadgeClass({ variant: 'status' })}>{s.name}</span>
               </li>
             ))}
           </ul>
         ) : (
           <p className='text-xs text-gray-400'>ยังไม่ได้เลือกหมวดย่อย</p>
-        )
-      )}
+        ))}
     </div>
   );
 }
@@ -261,8 +303,16 @@ export function FactoryInfoPage() {
   const factoryQ = {
     ...initQ,
     data: initQ.data?.factory as Record<string, unknown> | undefined,
-    categoryIds: ((initQ.data?.factory as Record<string, unknown>)?.categories as Array<{ category_id: number }> ?? []).map((c) => c.category_id),
-    subCategoryIds: ((initQ.data?.factory as Record<string, unknown>)?.sub_categories as Array<{ sub_category_id: number }> ?? []).map((s) => s.sub_category_id),
+    categoryIds: (
+      ((initQ.data?.factory as Record<string, unknown>)?.categories as Array<{
+        category_id: number;
+      }>) ?? []
+    ).map((c) => c.category_id),
+    subCategoryIds: (
+      ((initQ.data?.factory as Record<string, unknown>)?.sub_categories as Array<{
+        sub_category_id: number;
+      }>) ?? []
+    ).map((s) => s.sub_category_id),
     refetch: initQ.refetch,
   };
 
@@ -273,16 +323,19 @@ export function FactoryInfoPage() {
   const isRejected = rawVerifyStatus === 'RJ';
   const verifyStatus = isVerified ? 'AP' : isRejected ? 'RJ' : 'PD';
 
-  const initialValues = useMemo<ProfileFormValues>(() => ({
-    image_url: String(factoryQ.data?.image_url ?? '').trim(),
-    cover_image_url: String(factoryQ.data?.background_image_url ?? '').trim(),
-    factory_name: String(factoryQ.data?.factory_name ?? '').trim(),
-    tax_id: String(factoryQ.data?.tax_id ?? '').trim(),
-    description: String(factoryQ.data?.description ?? '').trim(),
-    category_ids: normalizeIds(factoryQ.categoryIds),
-    sub_category_ids: normalizeIds(factoryQ.subCategoryIds),
-    lead_time_desc: String(factoryQ.data?.lead_time_desc ?? '').trim(),
-  }), [factoryQ.data, factoryQ.categoryIds, factoryQ.subCategoryIds, initQ.data]);
+  const initialValues = useMemo<ProfileFormValues>(
+    () => ({
+      image_url: String(factoryQ.data?.image_url ?? '').trim(),
+      cover_image_url: String(factoryQ.data?.background_image_url ?? '').trim(),
+      factory_name: String(factoryQ.data?.factory_name ?? '').trim(),
+      tax_id: String(factoryQ.data?.tax_id ?? '').trim(),
+      description: String(factoryQ.data?.description ?? '').trim(),
+      category_ids: normalizeIds(factoryQ.categoryIds),
+      sub_category_ids: normalizeIds(factoryQ.subCategoryIds),
+      lead_time_desc: String(factoryQ.data?.lead_time_desc ?? '').trim(),
+    }),
+    [factoryQ.data, factoryQ.categoryIds, factoryQ.subCategoryIds, initQ.data],
+  );
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -312,13 +365,18 @@ export function FactoryInfoPage() {
   const handleSaveInfo = useCallback(async () => {
     if (!fid) return;
     const valid = await form.trigger(['factory_name', 'tax_id', 'lead_time_desc', 'description']);
-    if (!valid) { setError('กรุณาตรวจสอบข้อมูลในฟอร์ม'); return; }
+    if (!valid) {
+      setError('กรุณาตรวจสอบข้อมูลในฟอร์ม');
+      return;
+    }
     // ตรวจสอบว่า PD categories ทุกอันมี sub-category เลือกไว้
     if (pdSubErrorsRef.current.size > 0) {
       setError('กรุณาเลือกหมวดย่อยอย่างน้อย 1 รายการสำหรับทุก "หมวดสินค้า (PD)" ที่เลือกไว้');
       return;
     }
-    setSaving(true); setError(''); setOkMsg('');
+    setSaving(true);
+    setError('');
+    setOkMsg('');
     const v = form.getValues();
     const catIds = normalizeIds(v.category_ids);
     const subIds = normalizeIds(v.sub_category_ids);
@@ -342,38 +400,56 @@ export function FactoryInfoPage() {
       form.reset({ ...v, category_ids: catIds, sub_category_ids: subIds });
       setOkMsg('บันทึกข้อมูลพื้นฐานเรียบร้อย');
       setEditSection(null);
-      await refreshUser(); await qc.invalidateQueries({ queryKey: profileInitKey });
-    } catch (e) { setError(e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ'); }
-    finally { setSaving(false); }
+      await refreshUser();
+      await qc.invalidateQueries({ queryKey: profileInitKey });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ');
+    } finally {
+      setSaving(false);
+    }
   }, [fid, form, qc, refreshUser]);
-
 
   // ── Image upload ──────────────────────────────────────────────────────────
-  const handleUploadImage = useCallback(async (file: File) => {
-    if (!file || !fid) return;
-    setUploadingImage(true); setError(''); setOkMsg('');
-    try {
-      const up = await mediaApi.upload(file);
-      const url = String(up?.url ?? '').trim();
-      if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
-      await factoriesApi.patch(fid, { image_url: url });
-      form.setValue('image_url', url, { shouldDirty: false });
-      setOkMsg('อัปโหลดรูปโปรไฟล์แล้ว');
-      await refreshUser(); await qc.invalidateQueries({ queryKey: profileInitKey });
-    } catch (e) { setError(e instanceof Error ? e.message : 'อัปโหลดรูปไม่สำเร็จ'); }
-    finally { setUploadingImage(false); }
-  }, [fid, form, qc, refreshUser]);
+  const handleUploadImage = useCallback(
+    async (file: File) => {
+      if (!file || !fid) return;
+      setUploadingImage(true);
+      setError('');
+      setOkMsg('');
+      try {
+        const up = await mediaApi.upload(file);
+        const url = String(up?.url ?? '').trim();
+        if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
+        await factoriesApi.patch(fid, { image_url: url });
+        form.setValue('image_url', url, { shouldDirty: false });
+        setOkMsg('อัปโหลดรูปโปรไฟล์แล้ว');
+        await refreshUser();
+        await qc.invalidateQueries({ queryKey: profileInitKey });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'อัปโหลดรูปไม่สำเร็จ');
+      } finally {
+        setUploadingImage(false);
+      }
+    },
+    [fid, form, qc, refreshUser],
+  );
 
   const handleRemoveImage = useCallback(async () => {
     if (!fid || !window.confirm('ลบรูปโปรไฟล์โรงงาน?')) return;
-    setUploadingImage(true); setError(''); setOkMsg('');
+    setUploadingImage(true);
+    setError('');
+    setOkMsg('');
     try {
       await factoriesApi.patch(fid, { image_url: '' });
       form.setValue('image_url', '', { shouldDirty: false });
       setOkMsg('ลบรูปโปรไฟล์แล้ว');
-      await refreshUser(); await qc.invalidateQueries({ queryKey: profileInitKey });
-    } catch (e) { setError(e instanceof Error ? e.message : 'ลบรูปไม่สำเร็จ'); }
-    finally { setUploadingImage(false); }
+      await refreshUser();
+      await qc.invalidateQueries({ queryKey: profileInitKey });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'ลบรูปไม่สำเร็จ');
+    } finally {
+      setUploadingImage(false);
+    }
   }, [fid, form, qc, refreshUser]);
 
   const watched = form.watch();
@@ -382,8 +458,10 @@ export function FactoryInfoPage() {
 
   // ── View-mode labels ───────────────────────────────────────────────────────
   const rawCats = (factoryQ.data?.categories as Array<Record<string, unknown>> | undefined) ?? [];
-  const rawSubs = (factoryQ.data?.sub_categories as Array<Record<string, unknown>> | undefined) ?? [];
-  const lbiCategories = (initQ.data?.lbi_categories as Array<Record<string, unknown>> | undefined) ?? [];
+  const rawSubs =
+    (factoryQ.data?.sub_categories as Array<Record<string, unknown>> | undefined) ?? [];
+  const lbiCategories =
+    (initQ.data?.lbi_categories as Array<Record<string, unknown>> | undefined) ?? [];
   const catScopeById = useMemo(() => {
     const map = new Map<number, CategoryScope>();
     lbiCategories.forEach((c) => {
@@ -422,18 +500,27 @@ export function FactoryInfoPage() {
 
   // ── Guards ─────────────────────────────────────────────────────────────────
   if (fid == null) return <p className='text-sm text-red-600'>บัญชีนี้ไม่ใช่โรงงาน</p>;
-  if (isError) return (
-    <div className='py-12 text-center'>
-      <p className='text-sm text-red-600 mb-3'>โหลดข้อมูลไม่สำเร็จ</p>
-      <Button variant='unstyled' type='button' onClick={() => void factoryQ.refetch()} className='px-4 py-2 rounded-lg border border-gray-200 text-sm'>ลองใหม่</Button>
-    </div>
-  );
-  if (isLoading) return (
-    <div className='w-full min-w-0 space-y-4'>
-      <FactoryPageHeader title='ข้อมูลโรงงาน' subtitle='Factory / Info' icon={Building2} />
-      <FormSkeleton sections={4} />
-    </div>
-  );
+  if (isError)
+    return (
+      <div className='py-12 text-center'>
+        <p className='text-sm text-red-600 mb-3'>โหลดข้อมูลไม่สำเร็จ</p>
+        <Button
+          variant='unstyled'
+          type='button'
+          onClick={() => void factoryQ.refetch()}
+          className='px-4 py-2 rounded-lg border border-gray-200 text-sm'
+        >
+          ลองใหม่
+        </Button>
+      </div>
+    );
+  if (isLoading)
+    return (
+      <div className='w-full min-w-0 space-y-4'>
+        <FactoryPageHeader title='ข้อมูลโรงงาน' subtitle='Factory / Info' icon={Building2} />
+        <FormSkeleton sections={4} />
+      </div>
+    );
 
   return (
     <div className='w-full min-w-0 space-y-4 pb-12'>
@@ -461,8 +548,16 @@ export function FactoryInfoPage() {
             <SectionEditActions
               isEditing={editSection === 'info'}
               saving={saving}
-              onEdit={() => { setEditSection('info'); setError(''); setOkMsg(''); }}
-              onCancel={() => { form.reset(initialValues); setEditSection(null); setError(''); }}
+              onEdit={() => {
+                setEditSection('info');
+                setError('');
+                setOkMsg('');
+              }}
+              onCancel={() => {
+                form.reset(initialValues);
+                setEditSection(null);
+                setError('');
+              }}
               onSave={() => void handleSaveInfo()}
             />
           </div>
@@ -483,17 +578,17 @@ export function FactoryInfoPage() {
             </p>
             <div className='mt-2 flex flex-wrap gap-2'>
               {isVerified && (
-                <span className='inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200'>
+                <span className={factoryBadgeClass({ variant: 'verified' })}>
                   <ShieldCheck size={10} /> ยืนยันแล้ว
                 </span>
               )}
               {isRejected && (
-                <span className='inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200'>
+                <span className={factoryBadgeClass({ variant: 'danger' })}>
                   <XCircle size={10} /> ไม่ผ่านการตรวจสอบ
                 </span>
               )}
               {!isVerified && !isRejected && (
-                <span className='inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200'>
+                <span className={factoryBadgeClass({ variant: 'warning' })}>
                   <Clock size={10} /> รอการอนุมัติ
                 </span>
               )}
@@ -502,13 +597,13 @@ export function FactoryInfoPage() {
         </div>
 
         {/* Divider */}
-        <div className='border-t border-gray-100 -mx-6 mb-6' />
+        <div className='-mx-4 mb-5 border-t border-slate-100 sm:-mx-5' />
 
         {editSection === 'info' ? (
           /* ── Edit mode: business info + categories in one form ── */
           <div className='space-y-6'>
             <BusinessInfoSection form={form} />
-            <div className='border-t border-gray-100 -mx-6' />
+            <div className='-mx-4 border-t border-slate-100 sm:-mx-5' />
             <div>
               <div className='flex items-center justify-between gap-2 mb-3'>
                 <p className='text-xs font-semibold text-gray-500'>ข้อมูลการผลิตและหมวดหมู่</p>
@@ -516,7 +611,7 @@ export function FactoryInfoPage() {
                   variant='unstyled'
                   type='button'
                   onClick={() => openCategoryPickerRef.current?.()}
-                  className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
+                  className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
                 >
                   <Plus size={11} /> เพิ่มหมวดหมู่
                 </Button>
@@ -524,10 +619,22 @@ export function FactoryInfoPage() {
               <CategoriesSection
                 form={form}
                 factoryId={fid}
-                onRegisterAdd={(h) => { openCategoryPickerRef.current = h; }}
-                apiCategories={(factoryQ.data?.categories ?? []) as Parameters<typeof CategoriesSection>[0]['apiCategories']}
-                apiSubCategories={(factoryQ.data?.sub_categories ?? []) as Parameters<typeof CategoriesSection>[0]['apiSubCategories']}
-                onPdSubValidation={(invalidIds) => { pdSubErrorsRef.current = invalidIds; }}
+                onRegisterAdd={(h) => {
+                  openCategoryPickerRef.current = h;
+                }}
+                apiCategories={
+                  (factoryQ.data?.categories ?? []) as Parameters<
+                    typeof CategoriesSection
+                  >[0]['apiCategories']
+                }
+                apiSubCategories={
+                  (factoryQ.data?.sub_categories ?? []) as Parameters<
+                    typeof CategoriesSection
+                  >[0]['apiSubCategories']
+                }
+                onPdSubValidation={(invalidIds) => {
+                  pdSubErrorsRef.current = invalidIds;
+                }}
               />
             </div>
           </div>
@@ -538,11 +645,15 @@ export function FactoryInfoPage() {
               <Field label='ชื่อโรงงาน' value={initialValues.factory_name} className='col-span-2' />
               <Field label='เลขประจำตัวผู้เสียภาษี' value={initialValues.tax_id} />
               <Field label='Lead Time' value={initialValues.lead_time_desc} />
-              <Field label='รายละเอียด' value={initialValues.description} className='col-span-2 sm:col-span-4 2xl:col-span-6' />
+              <Field
+                label='รายละเอียด'
+                value={initialValues.description}
+                className='col-span-2 sm:col-span-4 2xl:col-span-6'
+              />
             </div>
 
             {/* Categories sub-section */}
-            <div className='border-t border-gray-100 -mx-6' />
+            <div className='-mx-4 border-t border-slate-100 sm:-mx-5' />
             <div className='space-y-4'>
               <p className='text-xs font-semibold text-gray-500'>ข้อมูลการผลิตและหมวดหมู่</p>
 
@@ -587,7 +698,11 @@ export function FactoryInfoPage() {
         outputWidth={900}
         onCancel={() => setCropFile(null)}
         onConfirm={async (file) => {
-          try { await handleUploadImage(file); } finally { setCropFile(null); }
+          try {
+            await handleUploadImage(file);
+          } finally {
+            setCropFile(null);
+          }
         }}
       />
 
@@ -604,7 +719,11 @@ export function FactoryInfoPage() {
             variant='unstyled'
             type='button'
             onClick={() => openCertAddRef.current?.()}
-            className='flex min-w-[126px] items-center justify-center gap-1.5 px-3 py-2 bg-brand-purple text-white text-sm font-semibold rounded-lg hover:bg-brand-violet-deep transition-colors'
+            className={factoryButtonClass({
+              variant: 'primary',
+              size: 'md',
+              className: 'min-w-[126px]',
+            })}
           >
             <Plus size={13} /> เพิ่มใบรับรอง
           </Button>
@@ -614,7 +733,9 @@ export function FactoryInfoPage() {
         <CertificatesSection
           factoryId={fid}
           certs={(factoryQ.data?.certificates ?? []) as Record<string, unknown>[]}
-          onRegisterAdd={(h) => { openCertAddRef.current = h; }}
+          onRegisterAdd={(h) => {
+            openCertAddRef.current = h;
+          }}
         />
       </InfoCard>
 

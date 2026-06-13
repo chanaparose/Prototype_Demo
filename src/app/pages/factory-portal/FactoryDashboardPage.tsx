@@ -48,6 +48,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatCompactNumber, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import { factoryButtonClass } from '@/pages/factory-portal/factoryUi';
 
 const COLORS = {
   purple: appColors.brand.purple,
@@ -400,8 +401,7 @@ export function FactoryDashboardPage() {
             variant='unstyled'
             type='button'
             onClick={() => void reload()}
-            className='inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white shrink-0 transition-opacity hover:opacity-90'
-            style={{ backgroundColor: COLORS.purple }}
+            className={factoryButtonClass({ variant: 'primary', size: 'md', className: 'px-4' })}
           >
             <RefreshCw size={14} />
             ลองอีกครั้ง
@@ -414,7 +414,7 @@ export function FactoryDashboardPage() {
           <h3 className='text-lg font-bold text-slate-900'>Overview Performance</h3>
           <span className='text-xs text-slate-500'>Factory KPI</span>
         </div>
-        <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5 gap-3'>
+        <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5'>
           {kpis.map((k) => {
             const Icon = k.icon;
             return (
@@ -423,22 +423,22 @@ export function FactoryDashboardPage() {
                 key={k.key}
                 type='button'
                 onClick={() => navigate(k.to)}
-                className='w-full text-left rounded-lg border border-slate-200 bg-white p-4 transition-colors duration-200 hover:border-brand-purple/25 group'
+                className='group w-full rounded-lg border border-slate-200 bg-white p-4 text-left transition-colors duration-200 hover:border-brand-purple/25'
               >
                 <div className='flex items-start justify-between gap-2'>
                   <div
-                    className='rounded-lg p-2.5 flex items-center justify-center shrink-0'
+                    className='flex shrink-0 items-center justify-center rounded-lg p-2.5'
                     style={{ backgroundColor: k.iconBg }}
                   >
                     <Icon size={18} style={{ color: k.accent }} strokeWidth={2} aria-hidden />
                   </div>
                   <ChevronRight
                     size={14}
-                    className='text-gray-300 group-hover:text-gray-500 transition-colors mt-1'
+                    className='mt-1 text-gray-300 transition-colors group-hover:text-gray-500'
                   />
                 </div>
                 <p className='mt-3 text-xs font-medium text-slate-500'>{k.title}</p>
-                <p className='mt-1 text-3xl font-bold tabular-nums break-words leading-none text-slate-900'>
+                <p className='mt-1 break-words text-3xl font-bold leading-none text-slate-900 tabular-nums'>
                   {k.value}
                 </p>
                 {k.sub ? <p className='mt-1 text-xs text-slate-400'>{k.sub}</p> : null}
@@ -583,7 +583,9 @@ export function FactoryDashboardPage() {
           <div className='flex items-center justify-between mb-1'>
             <div>
               <h3 className='text-lg font-bold text-slate-900'>Conversion Funnel</h3>
-              <p className='text-xs text-gray-400 mt-0.5'>RFQ ที่ได้รับ → ตอบกลับ → ออเดอร์ → ปิดสำเร็จ</p>
+              <p className='text-xs text-gray-400 mt-0.5'>
+                RFQ ที่ได้รับ → ตอบกลับ → ออเดอร์ → ปิดสำเร็จ
+              </p>
             </div>
             <Button
               variant='unstyled'
@@ -630,12 +632,7 @@ export function FactoryDashboardPage() {
                   stackId='funnel'
                   fill='var(--brand-mauve-light)'
                 />
-                <Bar
-                  dataKey='ordered'
-                  name='Ordered'
-                  stackId='funnel'
-                  fill='var(--brand-orange)'
-                />
+                <Bar dataKey='ordered' name='Ordered' stackId='funnel' fill='var(--brand-orange)' />
                 <Bar
                   dataKey='closed'
                   name='Closed'
@@ -665,9 +662,7 @@ export function FactoryDashboardPage() {
                 style={{
                   background: performanceTab === tab.id ? '#fff' : 'transparent',
                   color:
-                    performanceTab === tab.id
-                      ? 'var(--brand-navy-deep)'
-                      : 'var(--neutral-subtle)',
+                    performanceTab === tab.id ? 'var(--brand-navy-deep)' : 'var(--neutral-subtle)',
                 }}
               >
                 {tab.label}
@@ -840,8 +835,6 @@ export function FactoryDashboardPage() {
           </div>
         </div>
       </div>
-
-       
     </div>
   );
 }
