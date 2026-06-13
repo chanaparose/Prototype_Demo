@@ -432,7 +432,7 @@ function OrderDetailMobileBody() {
           {activeSection === 'overview' && (
             <div data-tour='order-overview'>
               {quotation ? (
-                <OrderBOQCard quotation={quotation} factoryName={order.factoryName} />
+                <OrderBOQCard quotation={quotation} factoryName={order.factoryName} factoryId={order.factoryId} />
               ) : null}
               {rfq ? (
                 <RfqReferenceCard rfq={rfq} variant='accordion' defaultOpen={false} />

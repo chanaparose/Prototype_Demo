@@ -508,16 +508,20 @@ export function RfqDetailOffersSection({
                   }}
                 >
                   <div className='flex items-start justify-between mb-3'>
-                    <div className='flex items-center gap-2'>
+                    <Link
+                      to={`/factories/${offer.factoryId}`}
+                      className='flex items-center gap-2 min-w-0 flex-1 rounded-xl transition-colors hover:bg-violet-50 -mx-1 px-1 py-0.5'
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div
-                        className='w-9 h-9 rounded-xl flex items-center justify-center text-sm'
+                        className='w-9 h-9 rounded-xl flex items-center justify-center text-sm shrink-0'
                         style={{ background: 'var(--brand-page)' }}
                       >
                         <Factory size={17} className='text-brand-mauve' />
                       </div>
-                      <div>
+                      <div className='min-w-0'>
                         <div className='flex items-center gap-1.5'>
-                          <p className='text-sm text-brand-navy' style={{ fontWeight: 600 }}>
+                          <p className='text-sm text-violet-700 hover:underline truncate' style={{ fontWeight: 600 }}>
                             {offer.factoryName}
                           </p>
                           {offer.verified && (
@@ -538,7 +542,7 @@ export function RfqDetailOffersSection({
                           </span>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                     <div className='flex shrink-0 items-center gap-1.5'>
                       {offer.recommended && (
                         <span

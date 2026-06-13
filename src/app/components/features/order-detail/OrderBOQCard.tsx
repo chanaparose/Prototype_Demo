@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle, Factory } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import type { IQuoteNestedResponse } from '@/types/api';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { CollapsibleCard } from '@/shared/ui/cards/CollapsibleCard';
@@ -11,6 +12,7 @@ import { openImageLightbox } from '@/stores/useLightboxStore';
 interface Props {
   quotation: IQuoteNestedResponse;
   factoryName?: string;
+  factoryId?: string | number;
 }
 
 const fmt = (n: number) => formatCurrency(n, 'THB').replace('฿', '').trim();
@@ -23,8 +25,9 @@ const paymentTermsLabel: Record<string, string> = {
   net_30: 'Net 30 วัน',
 };
 
-export function OrderBOQCard({ quotation, factoryName }: Props) {
+export function OrderBOQCard({ quotation, factoryName, factoryId }: Props) {
   const [open, setOpen] = useState(true);
+  const navigate = useNavigate();
 
   if (!quotation) return null;
 
@@ -61,17 +64,23 @@ export function OrderBOQCard({ quotation, factoryName }: Props) {
       className='mb-3 rounded-2xl border border-gray-100 bg-white overflow-hidden'
     >
       <div className='space-y-4 lg:space-y-5'>
-        <div className='flex items-center gap-2.5 pt-2'>
+        <button
+          type='button'
+          onClick={() => factoryId && navigate(`/factories/${factoryId}`)}
+          className={`flex items-center gap-2.5 pt-2 text-left w-full rounded-xl transition-colors ${factoryId ? 'hover:bg-violet-50 cursor-pointer -mx-1 px-1' : 'cursor-default'}`}
+        >
           <div className='w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-base shrink-0'>
             <Factory size={17} className='text-violet-600' />
           </div>
           <div className='min-w-0'>
-            <p className='text-sm font-semibold text-gray-900 truncate'>
+            <p className={`text-sm font-semibold truncate ${factoryId ? 'text-violet-700 hover:underline' : 'text-gray-900'}`}>
               {factoryName ?? 'โรงงาน'}
             </p>
-            
+            {factoryId && (
+              <p className='text-[10px] text-gray-400 mt-0.5'>ดูโปรไฟล์โรงงาน →</p>
+            )}
           </div>
-        </div>
+        </button>
 
         <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
           {[
