@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { X, Plus, ImageIcon, Truck, FileText, AlertTriangle, CreditCard } from 'lucide-react';
+import { X, Plus, ImageIcon, Truck, FileText, AlertTriangle, CreditCard, FileUp } from 'lucide-react';
 import { mediaApi } from '@/services/api/factoryApi';
 import type { MergedProductionStep } from '@/components/features/production/types';
 import { productionErrorMessage } from '@/components/features/production/productionErrors';
@@ -41,6 +41,9 @@ type Props = {
   ) => Promise<void>;
 };
 
+const ALLOWED_TYPES = ['image/jpeg', 'application/pdf'];
+const isPdfUrl = (url: string) => /\.pdf($|\?)/i.test(url) || url.includes('%2F') && /pdf/i.test(url);
+
 export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: Props) {
   const [notes, setNotes] = useState('');
   const [trackingNo, setTrackingNo] = useState('');
@@ -77,6 +80,13 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
 
   const addFiles = useCallback(async (files: FileList | null) => {
     if (!files?.length) return;
+    // validate MIME ก่อน upload
+    for (let i = 0; i < files.length; i++) {
+      if (!ALLOWED_TYPES.includes(files[i].type)) {
+        setErr('รองรับเฉพาะไฟล์ .jpg/.jpeg หรือ .pdf เท่านั้น');
+        return;
+      }
+    }
     setUploading(true);
     setErr('');
     try {
@@ -275,12 +285,12 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
               <p className='text-[11px] text-gray-400 text-right mt-1'>{notes.length}/500</p>
             </section>
 
-            {/* ── Photos ── */}
+            {/* ── ภาพ/ไฟล์หลักฐาน ── */}
             <section>
               <div className='flex items-center justify-between mb-3'>
                 <div className='flex items-center gap-2'>
                   <ImageIcon size={14} className='text-indigo-400' />
-                  <h3 className='text-xs font-bold text-gray-700 uppercase tracking-wide'>ภาพหลักฐาน</h3>
+                  <h3 className='text-xs font-bold text-gray-700 uppercase tracking-wide'>ภาพ / ไฟล์หลักฐาน</h3>
                 </div>
                 <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
                   urls.length >= minPhotos
@@ -290,16 +300,32 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
                   {urls.length}/{minPhotos} ขั้นต่ำ {urls.length >= minPhotos ? '✓' : ''}
                 </span>
               </div>
+              <p className='text-[10px] text-gray-400 mb-2'>รองรับ JPG และ PDF · สูงสุด 5 ไฟล์</p>
               <div className='grid grid-cols-4 gap-2'>
                 {urls.map((url, idx) => (
                   <div
                     key={`${url}-${idx}`}
-                    className='relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50'
+                    className='relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex flex-col items-center justify-center'
                   >
-                    <Image src={url} alt='' className='w-full h-full object-cover' />
+                    {isPdfUrl(url) ? (
+                      <a
+                        href={url}
+                        target='_blank'
+                        rel='noreferrer'
+                        className='flex flex-col items-center justify-center gap-1 p-2 w-full h-full hover:bg-red-50 transition-colors'
+                        title='เปิด PDF'
+                      >
+                        <FileUp size={22} className='text-red-400 shrink-0' />
+                        <span className='text-[9px] text-red-500 font-medium text-center leading-tight line-clamp-2 break-all px-1'>
+                          PDF
+                        </span>
+                      </a>
+                    ) : (
+                      <Image src={url} alt='' className='w-full h-full object-cover' />
+                    )}
                     <button
                       type='button'
-                      aria-label='ลบภาพ'
+                      aria-label='ลบไฟล์'
                       onClick={() => removeAt(idx)}
                       className='absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-xs flex items-center justify-center hover:bg-black/80 transition-colors'
                     >
@@ -310,12 +336,12 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
                 {urls.length < 5 ? (
                   <Label className='aspect-square rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/40 transition-colors'>
                     <Plus size={18} className='text-gray-400' />
-                    <span className='text-[10px] text-gray-400 mt-1'>
-                      {uploading ? 'กำลังอัปโหลด…' : 'เพิ่มภาพ'}
+                    <span className='text-[10px] text-gray-400 mt-1 text-center leading-tight'>
+                      {uploading ? 'กำลังอัปโหลด…' : 'JPG / PDF'}
                     </span>
                     <Input
                       type='file'
-                      accept='image/jpeg,.jpg,.jpeg'
+                      accept='image/jpeg,.jpg,.jpeg,application/pdf,.pdf'
                       multiple
                       className='hidden'
                       capture={isMobile ? 'environment' : undefined}

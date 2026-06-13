@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Send, Save, Loader2, ImagePlus, Lock, AlertTriangle, X as XIcon } from 'lucide-react';
+import { Send, Save, Loader2, ImagePlus, Lock, AlertTriangle, X as XIcon, FileUp } from 'lucide-react';
 import { FactoryNoteField } from '@/components/factory/FactoryNoteField';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -236,9 +236,19 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       return null;
     }, [factoryHighlight]);
 
+    const ALLOWED_FILE_TYPES = ['image/jpeg', 'application/pdf'];
+    const isPdfUrl = (url: string) => /\.pdf($|\?)/i.test(url);
+
     const handleImageFiles = useCallback(
       async (files: FileList | null) => {
         if (!files || files.length === 0) return;
+        // validate MIME ก่อน upload
+        const invalid = Array.from(files).find((f) => !ALLOWED_FILE_TYPES.includes(f.type));
+        if (invalid) {
+          // toast หรือ ignore file ที่ไม่ใช่ jpg/pdf
+          if (imageInputRef.current) imageInputRef.current.value = '';
+          return;
+        }
         setUploadingImage(true);
         try {
           const uploaded = await Promise.all(
@@ -539,23 +549,37 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
 
         {!readOnly ? (
           <div>
-            <p className='text-xs font-semibold text-gray-600 mb-2'>รูปภาพประกอบ (ถ้ามี)</p>
+            <p className='text-xs font-semibold text-gray-600 mb-1'>รูปภาพ / ไฟล์ประกอบ (ถ้ามี)</p>
+            <p className='text-[10px] text-gray-400 mb-2'>รองรับ JPG และ PDF</p>
 
             {imageUrls.length > 0 ? (
               <div className='grid grid-cols-3 gap-2 mb-2'>
                 {imageUrls.map((url) => (
                   <div
                     key={url}
-                    className='relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200'
+                    className='relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center'
                   >
-                    <Image src={url} alt='' className='w-full h-full object-cover' />
+                    {isPdfUrl(url) ? (
+                      <a
+                        href={url}
+                        target='_blank'
+                        rel='noreferrer'
+                        className='flex flex-col items-center justify-center gap-1 p-2 w-full h-full hover:bg-red-50 transition-colors'
+                        title='เปิด PDF'
+                      >
+                        <FileUp size={22} className='text-red-400' />
+                        <span className='text-[9px] text-red-500 font-medium'>PDF</span>
+                      </a>
+                    ) : (
+                      <Image src={url} alt='' className='w-full h-full object-cover' />
+                    )}
                     <Button
                       variant='unstyled'
                       type='button'
                       onClick={() => removeImage(url)}
                       className='absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center'
-                      aria-label='ลบรูปภาพ'
-                      title='ลบรูปภาพ'
+                      aria-label='ลบไฟล์'
+                      title='ลบไฟล์'
                     >
                       <XIcon size={10} className='text-white' />
                     </Button>
@@ -566,11 +590,11 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             <Input
               ref={imageInputRef}
               type='file'
-              accept='image/jpeg,.jpg,.jpeg'
+              accept='image/jpeg,.jpg,.jpeg,application/pdf,.pdf'
               multiple
               className='hidden'
               onChange={(e) => void handleImageFiles(e.target.files)}
-              aria-label='เลือกรูปภาพ'
+              aria-label='เลือกรูปภาพหรือ PDF'
             />
             <Button
               variant='unstyled'
@@ -587,21 +611,34 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               ) : (
                 <>
                   <ImagePlus size={13} />
-                  เพิ่มรูปภาพ
+                  เพิ่มรูปภาพ / PDF
                 </>
               )}
             </Button>
           </div>
         ) : imageUrls.length > 0 ? (
           <div>
-            <p className='text-xs font-semibold text-gray-600 mb-2'>รูปภาพประกอบ</p>
+            <p className='text-xs font-semibold text-gray-600 mb-2'>รูปภาพ / ไฟล์ประกอบ</p>
             <div className='grid grid-cols-3 gap-2'>
               {imageUrls.map((url) => (
                 <div
                   key={url}
-                  className='aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200'
+                  className='aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center'
                 >
-                  <Image src={url} alt='' className='w-full h-full object-cover' />
+                  {isPdfUrl(url) ? (
+                    <a
+                      href={url}
+                      target='_blank'
+                      rel='noreferrer'
+                      className='flex flex-col items-center justify-center gap-1 p-2 w-full h-full hover:bg-red-50 transition-colors'
+                      title='เปิด PDF'
+                    >
+                      <FileUp size={22} className='text-red-400' />
+                      <span className='text-[9px] text-red-500 font-medium'>PDF</span>
+                    </a>
+                  ) : (
+                    <Image src={url} alt='' className='w-full h-full object-cover' />
+                  )}
                 </div>
               ))}
             </div>
