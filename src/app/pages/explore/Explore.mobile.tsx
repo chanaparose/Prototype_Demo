@@ -78,7 +78,7 @@ export function ExploreMobile({
   const hasMaterialShowcases = materialShowcases.length > 0;
 
   return (
-    <div className='md:hidden pt-4 pb-2 space-y-3'>
+    <div className='md:hidden pt-4 space-y-3'>
       <div className='mx-4 relative rounded-2xl overflow-hidden h-[115px] shadow-md'>
         <ImageWithFallback
           src='/assets/tryly-banner-final.png'

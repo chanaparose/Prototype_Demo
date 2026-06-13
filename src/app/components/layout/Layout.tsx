@@ -27,7 +27,6 @@ import {
 } from '@/hooks/useMobileBottomNavHide';
 import { MobileCreateRfqFab } from '@/components/layout/MobileCreateRfqFab';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
-import { MOBILE_BOTTOM_NAV_CLEARANCE } from '@/hooks/useMobileBottomNavHide';
 import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
@@ -280,14 +279,7 @@ export function Layout() {
         ) : null}
 
         {/* ── Main content ────────────────────────────────────────────────── */}
-        <main
-          className='flex-1 min-w-0 overflow-x-hidden bg-[var(--brand-page)] lg:pb-0'
-          style={
-            hideMobileBottomNav
-              ? undefined
-              : { paddingBottom: `calc(${MOBILE_BOTTOM_NAV_CLEARANCE} + env(safe-area-inset-bottom, 0px))` }
-          }
-        >
+        <main className='flex-1 min-w-0 overflow-x-hidden bg-[var(--brand-page)]'>
           {/* `relative` gives AnimatePresence a positioned ancestor so the
               exiting element doesn't escape the content column. */}
           <div className={`relative ${mainContentMaxWidth} mx-auto min-h-full`}>

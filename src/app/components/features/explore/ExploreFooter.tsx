@@ -2,6 +2,63 @@ import React from 'react';
 import { Facebook, Instagram, Youtube, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+const SUPPORT_LINKS = [
+  'ขั้นตอน "เปิดร้าน"',
+  'เริ่มขายสินค้า/บริการ',
+  'ติดต่อเรา',
+  'ลงทะเบียนธุรกิจ',
+  'ศูนย์ช่วยเหลือลูกค้า',
+] as const;
+
+const CATEGORY_COL_1 = [
+  'โรงพยาบาลสัตว์',
+  'อาบน้ำตัดขน',
+  'รับฝากสัตว์เลี้ยง',
+  'โรงเรียนฝึกสอน',
+  'สระว่ายน้ำสุนัข',
+  'คาเฟ่-ร้านอาหาร',
+] as const;
+
+const CATEGORY_COL_2 = [
+  'อาหารสัตว์',
+  'อุปกรณ์สัตว์เลี้ยง',
+  'ห้องน้ำและทราย',
+  'ทำความสะอาด',
+  'ชุดสัตว์เลี้ยง',
+  'ดูแลสุขภาพ',
+] as const;
+
+const KNOWLEDGE_LINKS = ['คูปอง', 'ค้นหาสถานที่และบริการ', 'บทความ', 'กิจกรรม', 'วิดีโอ'] as const;
+
+const LEGAL_LINKS = [
+  { label: 'เงื่อนไขในการให้บริการ', href: '#' },
+  { label: 'นโยบายความปลอดภัย', href: '#' },
+  { label: 'Cookie Policy', href: '#' },
+] as const;
+
+function FooterLinkList({ items }: { items: readonly string[] }) {
+  return (
+    <ul className='space-y-2 text-[11px] text-slate-600 md:text-xs'>
+      {items.map((item) => (
+        <li key={item}>
+          <a href='#' className='transition-colors hover:text-brand-violet-deep'>
+            {item}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function CategoryGrid() {
+  return (
+    <div className='grid grid-cols-2 gap-2 text-[11px] text-slate-600 md:text-xs'>
+      <FooterLinkList items={CATEGORY_COL_1} />
+      <FooterLinkList items={CATEGORY_COL_2} />
+    </div>
+  );
+}
+
 export function ExploreFooter() {
   const [open, setOpen] = React.useState<null | 'support' | 'categories' | 'knowledge' | 'apps'>(
     null,
@@ -10,146 +67,41 @@ export function ExploreFooter() {
     setOpen((prev) => (prev === key ? null : key));
 
   return (
-    <footer className='w-full bg-neutral-footer border-t border-gray-200 pt-6 md:pt-10 mt-8 md:mt-12 flex-shrink-0'>
-      <div className='max-w-[1600px] mx-auto px-4 md:px-6'>
-        <div className='md:hidden mb-6 space-y-2'>
+    <footer className='mt-8 w-full flex-shrink-0 border-t border-gray-100 bg-[var(--brand-page)] pt-5 md:mt-12 md:border-gray-200 md:bg-neutral-footer md:pt-10'>
+      <div className='mx-auto max-w-[1600px] px-4 md:px-6'>
+        {/* ── Mobile header strip ── */}
+        <div className='mb-4 md:hidden'>
+          <p className='text-[10px] font-semibold uppercase tracking-wider text-brand-orange-deep'>
+            Tryly
+          </p>
+          <h2 className='text-[15px] font-bold text-brand-navy-deep'>ช่วยเหลือ & ลิงก์ด่วน</h2>
+          <p className='mt-1 text-[11px] text-slate-500'>
+            ข้อมูลสำหรับลูกค้าและพาร์ทเนอร์โรงงาน
+          </p>
+        </div>
+
+        {/* ── Mobile accordions ── */}
+        <div className='mb-5 space-y-2 md:hidden'>
           <AccordionItem
             title='ศูนย์ดูแลลูกค้า'
             open={open === 'support'}
             onToggle={() => toggle('support')}
           >
-            <ul className='space-y-2 text-[11px] text-gray-600'>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  ขั้นตอน "เปิดร้าน"
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  เริ่มขายสินค้า/บริการ
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  ติดต่อเรา
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  ลงทะเบียนธุรกิจ
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  ศูนย์ช่วยเหลือลูกค้า
-                </a>
-              </li>
-            </ul>
+            <FooterLinkList items={SUPPORT_LINKS} />
           </AccordionItem>
           <AccordionItem
             title='หมวดหมู่บริการและสินค้า'
             open={open === 'categories'}
             onToggle={() => toggle('categories')}
           >
-            <div className='grid grid-cols-2 gap-2 text-[11px] text-gray-600'>
-              <ul className='space-y-2'>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    โรงพยาบาลสัตว์
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    อาบน้ำตัดขน
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    รับฝากสัตว์เลี้ยง
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    โรงเรียนฝึกสอน
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    สระว่ายน้ำสุนัข
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    คาเฟ่-ร้านอาหาร
-                  </a>
-                </li>
-              </ul>
-              <ul className='space-y-2'>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    อาหารสัตว์
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    อุปกรณ์สัตว์เลี้ยง
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    ห้องน้ำและทราย
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    ทำความสะอาด
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    ชุดสัตว์เลี้ยง
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    ดูแลสุขภาพ
-                  </a>
-                </li>
-              </ul>
-            </div>
+            <CategoryGrid />
           </AccordionItem>
           <AccordionItem
             title='แหล่งความรู้และคูปอง'
             open={open === 'knowledge'}
             onToggle={() => toggle('knowledge')}
           >
-            <ul className='space-y-2 text-[11px] text-gray-600'>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  คูปอง
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  ค้นหาสถานที่และบริการ
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  บทความ
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  กิจกรรม
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  วิดีโอ
-                </a>
-              </li>
-            </ul>
+            <FooterLinkList items={KNOWLEDGE_LINKS} />
           </AccordionItem>
           <AccordionItem
             title='ดาวน์โหลดแอปพลิเคชัน'
@@ -160,223 +112,78 @@ export function ExploreFooter() {
           </AccordionItem>
         </div>
 
-        <div className='hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-7 md:mb-10'>
-          <div>
-            <h3 className='font-bold text-brand-navy-ink mb-2.5 text-sm md:text-base border-b-2 border-brand-magenta pb-1 inline-block'>
-              ศูนย์ดูแลลูกค้า
-            </h3>
-            <ul className='space-y-2 text-[11px] md:text-xs text-gray-600'>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  ขั้นตอน "เปิดร้าน"
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  เริ่มขายสินค้า/บริการ
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  ติดต่อเรา
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  ลงทะเบียนธุรกิจ
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  ศูนย์ช่วยเหลือลูกค้า
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className='font-bold text-brand-navy-ink mb-2.5 text-sm md:text-base'>
-              หมวดหมู่บริการและสินค้า
-            </h3>
-            <div className='grid grid-cols-2 gap-2 text-[11px] md:text-xs text-gray-600'>
-              <ul className='space-y-2'>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    โรงพยาบาลสัตว์
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    อาบน้ำตัดขน
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    รับฝากสัตว์เลี้ยง
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    โรงเรียนฝึกสอน
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    สระว่ายน้ำสุนัข
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    คาเฟ่-ร้านอาหาร
-                  </a>
-                </li>
-              </ul>
-              <ul className='space-y-2'>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    อาหารสัตว์
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    อุปกรณ์สัตว์เลี้ยง
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    ห้องน้ำและทราย
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    ทำความสะอาด
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    ชุดสัตว์เลี้ยง
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-brand-magenta transition-colors'>
-                    ดูแลสุขภาพ
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div>
-            <h3 className='font-bold text-brand-navy-ink mb-2.5 text-sm md:text-base'>
-              แหล่งความรู้และคูปอง
-            </h3>
-            <ul className='space-y-2 text-[11px] md:text-xs text-gray-600'>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  คูปอง
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  ค้นหาสถานที่และบริการ
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  บทความ
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  กิจกรรม
-                </a>
-              </li>
-              <li>
-                <a href='#' className='hover:text-brand-magenta transition-colors'>
-                  วิดีโอ
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className='font-bold text-brand-navy-ink mb-1.5 text-sm md:text-base'>
-              ดาวน์โหลดแอปพลิเคชัน
-            </h3>
+        {/* ── Desktop columns ── */}
+        <div className='mb-7 hidden gap-4 md:grid md:grid-cols-2 md:gap-6 lg:grid-cols-4 lg:mb-10'>
+          <FooterColumn title='ศูนย์ดูแลลูกค้า' accent>
+            <FooterLinkList items={SUPPORT_LINKS} />
+          </FooterColumn>
+          <FooterColumn title='หมวดหมู่บริการและสินค้า'>
+            <CategoryGrid />
+          </FooterColumn>
+          <FooterColumn title='แหล่งความรู้และคูปอง'>
+            <FooterLinkList items={KNOWLEDGE_LINKS} />
+          </FooterColumn>
+          <FooterColumn title='ดาวน์โหลดแอปพลิเคชัน'>
             <AppDownloadBadges />
-          </div>
+          </FooterColumn>
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 py-4 md:py-6 border-t border-gray-300'>
-          <div>
-            <h4 className='font-bold text-brand-navy-ink mb-2.5 text-xs md:text-sm'>ติดตามเรา</h4>
-            <div className='flex items-center gap-3'>
-              <a
-                href='#'
-                className='w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#1877F2] text-white flex items-center justify-center hover:shadow-lg transition-shadow'
-                title='Facebook'
-              >
-                <Facebook size={20} />
-              </a>
-              <a
-                href='#'
-                className='w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#00B900] text-white flex items-center justify-center hover:shadow-lg transition-shadow'
-                title='LINE'
-              >
-                <span className='font-bold text-xs'>LINE</span>
-              </a>
-              <a
-                href='#'
-                className='w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#FF0000] text-white flex items-center justify-center hover:shadow-lg transition-shadow'
-                title='YouTube'
-              >
-                <Youtube size={20} />
-              </a>
-              <a
-                href='#'
-                className='w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#E4405F] text-white flex items-center justify-center hover:shadow-lg transition-shadow'
-                title='Instagram'
-              >
-                <Instagram size={20} />
-              </a>
+        {/* ── Trust & social ── */}
+        <div className='rounded-2xl border border-white/80 bg-white p-4 shadow-[0_4px_20px_rgba(46,34,82,0.04)] md:rounded-none md:border-0 md:border-t md:border-gray-300 md:bg-transparent md:p-0 md:py-6 md:shadow-none'>
+          <div className='grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-6'>
+            <div>
+              <h4 className='mb-3 text-xs font-bold text-brand-navy-deep md:text-sm'>ติดตามเรา</h4>
+              <div className='flex flex-wrap items-center gap-2.5'>
+                <SocialChip href='#' label='Facebook' className='bg-[#1877F2]'>
+                  <Facebook size={18} />
+                </SocialChip>
+                <SocialChip href='#' label='LINE' className='bg-[#00B900]'>
+                  <span className='text-[10px] font-bold'>LINE</span>
+                </SocialChip>
+                <SocialChip href='#' label='YouTube' className='bg-[#FF0000]'>
+                  <Youtube size={18} />
+                </SocialChip>
+                <SocialChip href='#' label='Instagram' className='bg-[#E4405F]'>
+                  <Instagram size={18} />
+                </SocialChip>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <h4 className='font-bold text-brand-navy-ink mb-2.5 text-xs md:text-sm'>การจัดส่ง</h4>
-            <div className='flex flex-wrap items-center gap-2.5 opacity-70 grayscale'>
-              <span className='font-bold text-base md:text-lg italic text-red-600'>KERRY</span>
-              <span className='font-bold text-base md:text-lg italic text-yellow-500'>FLASH</span>
-              <span className='font-bold text-base md:text-lg text-blue-800'>EMS</span>
+            <div>
+              <h4 className='mb-3 text-xs font-bold text-brand-navy-deep md:text-sm'>การจัดส่ง</h4>
+              <div className='flex flex-wrap items-center gap-2'>
+                <TrustChip>KERRY</TrustChip>
+                <TrustChip>FLASH</TrustChip>
+                <TrustChip>EMS</TrustChip>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <h4 className='font-bold text-brand-navy-ink mb-2.5 text-xs md:text-sm'>
-              ช่องทางการชำระเงิน
-            </h4>
-            <div className='flex flex-wrap items-center gap-2.5 opacity-70 grayscale'>
-              <span className='font-bold text-base md:text-lg text-blue-700 italic'>VISA</span>
-              <span className='font-bold text-base md:text-lg'>Mastercard</span>
-              <span className='font-bold text-base md:text-lg text-blue-500'>PromptPay</span>
+            <div>
+              <h4 className='mb-3 text-xs font-bold text-brand-navy-deep md:text-sm'>
+                ช่องทางการชำระเงิน
+              </h4>
+              <div className='flex flex-wrap items-center gap-2'>
+                <TrustChip>VISA</TrustChip>
+                <TrustChip>Mastercard</TrustChip>
+                <TrustChip>PromptPay</TrustChip>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className='bg-brand-navy-ink text-white py-2.5 md:py-3 text-[11px] md:text-xs mt-2 md:mt-3'>
-        <div className='max-w-[1600px] mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3'>
-          <div>&copy; 2026 Tryly Shopping. By Digital Media Advertising Co., Ltd.</div>
-          <div className='flex items-center gap-4 md:gap-6'>
-            <a href='#' className='hover:underline'>
-              เงื่อนไขในการให้บริการ
-            </a>
-            <a href='#' className='hover:underline'>
-              นโยบายความปลอดภัย
-            </a>
-            <a href='#' className='hover:underline'>
-              Cookie Policy
-            </a>
+      {/* ── Copyright bar — extends to screen bottom on mobile (nav floats over) ── */}
+      <div className='mt-4 bg-brand-navy-ink text-white max-md:pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:mt-3'>
+        <div className='mx-auto flex max-w-[1600px] flex-col items-center justify-between gap-3 px-4 py-3 text-[10px] md:flex-row md:gap-3 md:px-6 md:py-3 md:text-xs'>
+          <div className='text-center md:text-left'>
+            &copy; 2026 Tryly Shopping. By Digital Media Advertising Co., Ltd.
+          </div>
+          <div className='flex flex-wrap items-center justify-center gap-3 md:gap-6'>
+            {LEGAL_LINKS.map((link) => (
+              <a key={link.label} href={link.href} className='hover:underline'>
+                {link.label}
+              </a>
+            ))}
           </div>
         </div>
       </div>
@@ -402,23 +209,46 @@ function AppDownloadBadges({ className }: { className?: string }) {
   const badges = [APP_STORE_BADGE, GOOGLE_PLAY_BADGE];
 
   return (
-    <div className={`flex flex-col gap-1 ${className ?? ''}`}>
+    <div className={`flex flex-col gap-1.5 ${className ?? ''}`}>
       {badges.map((badge) => (
         <a
           key={badge.src}
           href='#'
-          className='inline-block w-fit hover:opacity-80 transition-opacity leading-none'
+          className='inline-block w-fit leading-none transition-opacity hover:opacity-80'
         >
           <img
             src={badge.src}
             alt={badge.alt}
             width={badge.width}
             height={badge.height}
-            className='h-11 md:h-12 w-auto max-w-full block'
+            className='block h-10 w-auto max-w-full md:h-12'
             decoding='async'
           />
         </a>
       ))}
+    </div>
+  );
+}
+
+function FooterColumn({
+  title,
+  accent,
+  children,
+}: {
+  title: string;
+  accent?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <h3
+        className={`mb-2.5 inline-block text-sm font-bold text-brand-navy-ink md:text-base ${
+          accent ? 'border-b-2 border-brand-magenta pb-1' : ''
+        }`}
+      >
+        {title}
+      </h3>
+      {children}
     </div>
   );
 }
@@ -435,21 +265,54 @@ function AccordionItem({
   children: React.ReactNode;
 }) {
   return (
-    <div className='rounded-xl border border-gray-200 bg-white overflow-hidden'>
+    <div className='overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_2px_12px_rgba(46,34,82,0.04)]'>
       <Button
         variant='unstyled'
         type='button'
         onClick={onToggle}
-        className='w-full px-3 py-2.5 text-left text-sm font-semibold text-brand-navy-ink flex items-center justify-between'
+        className='flex w-full items-center justify-between gap-2 px-3.5 py-3 text-left text-[13px] font-semibold text-brand-navy-deep'
+        aria-expanded={open}
       >
         <span>{title}</span>
         <ChevronDown
-          size={14}
-          className={`text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`}
+          size={15}
+          className={`shrink-0 text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
           aria-hidden
         />
       </Button>
-      {open ? <div className='px-3 pt-0 pb-2'>{children}</div> : null}
+      {open ? (
+        <div className='border-t border-gray-100 px-3.5 pb-3 pt-2'>{children}</div>
+      ) : null}
     </div>
+  );
+}
+
+function SocialChip({
+  href,
+  label,
+  className,
+  children,
+}: {
+  href: string;
+  label: string;
+  className: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      title={label}
+      className={`flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-sm transition-transform active:scale-95 md:h-11 md:w-11 md:rounded-full md:hover:shadow-md ${className}`}
+    >
+      {children}
+    </a>
+  );
+}
+
+function TrustChip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className='rounded-lg border border-gray-100 bg-[var(--brand-page)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500 md:text-[11px]'>
+      {children}
+    </span>
   );
 }
