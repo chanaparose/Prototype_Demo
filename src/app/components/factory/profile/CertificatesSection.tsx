@@ -155,7 +155,7 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Pr
                     }}
                     variant='outline'
                     size='icon-sm'
-                    className='p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50'
+                    className='p-2 rounded-lg border border-gray-200 text-gray-600 shadow-none hover:bg-gray-50'
                     aria-label='แก้ไข'
                   >
                     <Pencil size={14} />
@@ -164,7 +164,7 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Pr
                     onClick={() => void remove(c)}
                     variant='outline'
                     size='icon-sm'
-                    className='p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50'
+                    className='p-2 rounded-lg border border-red-100 text-red-600 shadow-none hover:bg-red-50'
                     aria-label='ลบ'
                   >
                     <Trash2 size={14} />

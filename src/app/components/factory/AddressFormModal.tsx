@@ -101,7 +101,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
           layout='flex'
           accent='purple'
           primary={{
-            label: mode === 'create' ? 'เพิ่มที่อยู่' : 'บันทึกการแก้ไข',
+            label: mode === 'create' ? 'เพิ่มที่อยู่' : 'บันทึก',
             loadingLabel: 'กำลังบันทึก...',
             loading: saving,
             disabled: saving,
@@ -113,6 +113,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             onClick: onClose,
             disabled: saving,
             tone: 'muted',
+            className: 'flex-1',
           }}
         />
       }
@@ -207,7 +208,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
         />
       </FormField>
 
-      <Label className='inline-flex items-center gap-2 text-sm text-gray-700'>
+      <Label className='inline-flex items-center gap-2 text-xs font-normal text-gray-700'>
         <Controller
           control={control}
           name='is_default'

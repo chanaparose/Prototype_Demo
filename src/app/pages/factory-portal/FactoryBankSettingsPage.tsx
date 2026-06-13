@@ -15,6 +15,13 @@ import type { IBankAccountResponse } from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const THAI_BANKS = [
   'กสิกรไทย',
@@ -143,7 +150,7 @@ export function FactoryBankSettingsPage() {
             variant='unstyled'
             type='button'
             onClick={() => { resetForm(); setShowForm(true); }}
-            className='flex items-center gap-1.5 px-3 py-2 bg-brand-purple text-white text-sm font-semibold rounded-lg hover:bg-brand-violet-deep transition-colors'
+            className='flex min-w-[126px] items-center justify-center gap-1.5 px-3 py-2 bg-brand-purple text-white text-sm font-semibold rounded-lg hover:bg-brand-violet-deep transition-colors'
           >
             <Plus size={14} />
             เพิ่มบัญชี
@@ -166,16 +173,21 @@ export function FactoryBankSettingsPage() {
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
             <div>
               <Label className='text-xs font-semibold text-slate-700'>ธนาคาร</Label>
-              <select
+              <Select
                 value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                className='mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-purple/35'
+                onValueChange={setBankName}
               >
-                <option value=''>เลือกธนาคาร</option>
-                {THAI_BANKS.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
+                <SelectTrigger className='mt-1 w-full text-slate-900'>
+                  <SelectValue placeholder='เลือกธนาคาร' />
+                </SelectTrigger>
+                <SelectContent>
+                  {THAI_BANKS.map((b) => (
+                    <SelectItem key={b} value={b}>
+                      {b}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label className='text-xs font-semibold text-slate-700'>เลขบัญชี</Label>
@@ -202,9 +214,9 @@ export function FactoryBankSettingsPage() {
                 id='is_default'
                 checked={isDefault}
                 onChange={(e) => setIsDefault(e.target.checked)}
-                className='rounded border-slate-300'
+                className='rounded border-slate-300 accent-brand-purple focus:ring-2 focus:ring-brand-purple/25'
               />
-              <label htmlFor='is_default' className='text-sm text-slate-700'>ตั้งเป็นบัญชีหลัก</label>
+              <label htmlFor='is_default' className='text-xs font-normal text-slate-700'>ตั้งเป็นบัญชีหลัก</label>
             </div>
           </div>
           <div className='flex items-center gap-2'>

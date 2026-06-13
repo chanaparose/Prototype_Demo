@@ -127,7 +127,7 @@ export function CertUploadModal({
         mode === 'create' ? (
           <ModalFooter
             layout='flex'
-            accent='success'
+            accent='purple'
             primary={{
               label: 'บันทึก',
               loadingLabel: 'กำลังบันทึก...',
@@ -135,18 +135,19 @@ export function CertUploadModal({
               disabled: submitting,
               onClick: () => void handleSubmit((v) => runSubmit(v, false))(),
               fullWidth: true,
+              className: 'flex-1 h-11 py-0',
             }}
             alternatePrimary={{
               label: 'บันทึกและเพิ่มใบรับรองถัดไป',
               disabled: submitting,
               onClick: () => void handleSubmit((v) => runSubmit(v, true))(),
-              className: 'flex-1',
+              className: 'flex-1 h-11 py-0 shadow-none',
             }}
           />
         ) : (
           <ModalFooter
             layout='flex'
-            accent='success'
+            accent='purple'
             primary={{
               label: 'บันทึก',
               loadingLabel: 'กำลังบันทึก...',
@@ -154,13 +155,14 @@ export function CertUploadModal({
               disabled: submitting,
               onClick: () => void handleSubmit((v) => runSubmit(v, false))(),
               fullWidth: true,
+              className: 'flex-1 h-11 py-0',
             }}
             secondary={{
               label: 'ยกเลิก',
               onClick: onClose,
               disabled: submitting,
               tone: 'outline',
-              className: 'flex-1',
+              className: 'flex-1 h-11 py-0 shadow-none',
             }}
           />
         )
@@ -211,6 +213,7 @@ export function CertUploadModal({
         <Input
           type='file'
           accept='image/*,.pdf'
+          className='text-xs file:text-xs'
           onChange={(e) => {
             const f = e.target.files?.[0] ?? null;
             setValue('file', f, { shouldValidate: true });

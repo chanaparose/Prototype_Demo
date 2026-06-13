@@ -237,8 +237,8 @@ function CategoryViewCard({
           <ul className='flex flex-wrap gap-1.5'>
             {cat.subs.map((s) => (
               <li key={s.id}>
-                <span className='inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-1'>
-                  ✓ {s.name}
+                <span className='inline-flex items-center gap-1 text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-1'>
+                  {s.name}
                 </span>
               </li>
             ))}
@@ -604,9 +604,9 @@ export function FactoryInfoPage() {
             variant='unstyled'
             type='button'
             onClick={() => openCertAddRef.current?.()}
-            className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
+            className='flex min-w-[126px] items-center justify-center gap-1.5 px-3 py-2 bg-brand-purple text-white text-sm font-semibold rounded-lg hover:bg-brand-violet-deep transition-colors'
           >
-            <Plus size={11} /> เพิ่มใบรับรอง
+            <Plus size={13} /> เพิ่มใบรับรอง
           </Button>
         }
       >

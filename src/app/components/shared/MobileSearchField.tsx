@@ -8,6 +8,7 @@ type MobileSearchFieldProps = {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  noShadow?: boolean;
   'data-tour'?: string;
 };
 
@@ -16,6 +17,7 @@ export function MobileSearchField({
   onChange,
   placeholder = 'ค้นหา…',
   className,
+  noShadow = false,
   'data-tour': dataTour,
 }: MobileSearchFieldProps) {
   return (
@@ -23,8 +25,10 @@ export function MobileSearchField({
       data-tour={dataTour}
       className={cn(
         'group flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2',
-        'shadow-sm transition-all duration-200',
-        'focus-within:border-brand-purple focus-within:shadow-md focus-within:ring-2 focus-within:ring-purple-100',
+        'transition-all duration-200',
+        noShadow ? 'shadow-none' : 'shadow-sm',
+        'focus-within:border-brand-purple focus-within:ring-2 focus-within:ring-purple-100',
+        noShadow ? 'focus-within:shadow-none' : 'focus-within:shadow-md',
         className,
       )}
     >

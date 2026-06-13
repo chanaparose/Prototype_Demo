@@ -96,10 +96,10 @@ function StatCard({
   return (
     <div className='rounded-lg border border-gray-100 bg-white p-4'>
       <div
-        className='w-9 h-9 rounded-lg flex items-center justify-center mb-3'
+        className='w-11 h-11 rounded-lg flex items-center justify-center mb-3'
         style={{ backgroundColor: `${accent}1A` }}
       >
-        <Icon size={17} style={{ color: accent }} />
+        <Icon size={22} style={{ color: accent }} />
       </div>
       <p className='text-lg font-bold tabular-nums' style={{ color: NAVY }}>
         {value}
@@ -340,7 +340,7 @@ export function FactoryWalletPage() {
         >
           <p className='font-semibold mb-0.5'>เติมเงิน / ถอนเงิน (PromptPay)</p>
           <p className='text-xs opacity-80 leading-relaxed'>
-            ฟลว์ PromptPay กำลังพัฒนา — ดูยอดและประวัติธุรกรรมด้านล่างได้จาก API ที่มีอยู่
+            โฟลว์ PromptPay กำลังพัฒนา — ดูยอดและประวัติธุรกรรมด้านล่างได้จาก API ที่มีอยู่
           </p>
         </div>
 
@@ -553,8 +553,7 @@ export function FactoryWalletPage() {
                   }}
                   className='flex-1 py-3 rounded-lg text-sm font-bold text-white disabled:opacity-50 transition-all hover:opacity-90'
                   style={{
-                    background:
-                      'var(--brand-purple)',
+                    background: 'var(--brand-purple)',
                   }}
                 >
                   {withdraw.isLoading ? 'กำลังดำเนินการ...' : 'ยืนยันถอนเงิน'}

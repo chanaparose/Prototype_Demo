@@ -71,6 +71,7 @@ export function MessagesDesktop({
             value={searchText}
             onChange={setSearchText}
             placeholder='ค้นหาการสนทนา…'
+            noShadow
           />
         </div>
 
