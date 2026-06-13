@@ -3,7 +3,8 @@ import { Link } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 import type { IExploreCategory } from '@/domain/explore/types/explore.model';
 import { exploreDisplayNameForTile } from '@/utils/exploreCategoriesFromApi';
-import { EXPLORE_CATEGORY_TILES } from '@/components/features/explore/exploreCategoryTilesConfig';
+import { getExploreCategoryTiles } from '@/components/features/explore/exploreCategoryTilesConfig';
+import { CategoryMarqueeStrip } from '@/components/features/explore/CategoryMarqueeStrip';
 import { Button } from '@/components/ui/button';
 
 export type CategoryItem = IExploreCategory;
@@ -28,7 +29,7 @@ export function ExploreCategories({
 }: Readonly<ExploreCategoriesProps>) {
   const tiles = useMemo(
     () =>
-      EXPLORE_CATEGORY_TILES.map((cfg) => ({
+      getExploreCategoryTiles().map((cfg) => ({
         ...cfg,
         displayName: exploreDisplayNameForTile(
           cfg.categoryId,
@@ -94,27 +95,7 @@ export function ExploreCategories({
         </div>
       )}
 
-      <div className='grid grid-cols-3 gap-2 px-3'>
-        {tiles.map((row) => {
-          const Icon = row.icon;
-          return (
-            <Link
-              key={row.categoryId}
-              to={`/factory-ideas?category_id=${encodeURIComponent(row.categoryId)}`}
-              className='bg-white border border-gray-100 rounded-xl p-2 flex flex-col items-center justify-center gap-1.5 hover:shadow-md hover:border-brand-purple/40 transition-all cursor-pointer group'
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${row.color} group-hover:scale-110 transition-transform`}
-              >
-                <Icon size={18} />
-              </div>
-              <span className='text-xs font-medium text-gray-700 text-center leading-tight group-hover:text-brand-navy-deep'>
-                {row.displayName}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
+      <CategoryMarqueeStrip tiles={tiles} />
     </div>
   );
 }

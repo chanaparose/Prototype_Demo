@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { exploreDisplayNameForTile } from '@/utils/exploreCategoriesFromApi';
-import { EXPLORE_CATEGORY_TILES } from '@/components/features/explore/exploreCategoryTilesConfig';
+import { getExploreCategoryTiles } from '@/components/features/explore/exploreCategoryTilesConfig';
+import { CategoryMarqueeStrip } from '@/components/features/explore/CategoryMarqueeStrip';
 import type { CategoryItem } from '@/components/features/explore/ExploreCategories';
 
 type ExploreDesktopCategoriesProps = {
@@ -24,10 +25,9 @@ export function ExploreDesktopCategories({
   onRetryCategoriesApi,
   guestConnecting = false,
 }: ExploreDesktopCategoriesProps) {
-  const navigate = useNavigate();
   const tiles = useMemo(
     () =>
-      EXPLORE_CATEGORY_TILES.map((cfg) => ({
+      getExploreCategoryTiles().map((cfg) => ({
         ...cfg,
         displayName: exploreDisplayNameForTile(
           cfg.categoryId,
@@ -41,19 +41,29 @@ export function ExploreDesktopCategories({
 
   return (
     <section>
+      <div className='mb-3 flex items-center justify-between'>
+        <h2 className='text-[14px] font-bold text-brand-navy-ink'>หมวดหมู่</h2>
+        <Link
+          to='/factory-ideas'
+          className='flex items-center gap-0.5 text-[13px] text-brand-purple hover:underline'
+        >
+          ดูทั้งหมด <ChevronRight size={13} />
+        </Link>
+      </div>
+
       {apiLoading && (
-        <p className='text-sm text-gray-400 mb-3' aria-live='polite'>
+        <p className='mb-3 text-sm text-gray-400' aria-live='polite'>
           กำลังโหลดชื่อหมวดจากฐานข้อมูล…
         </p>
       )}
       {!apiLoading && (guestConnecting || apiError) && (
         <div
-          className='mb-4 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 flex items-start gap-3 text-sm text-amber-900'
+          className='mb-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-sm text-amber-900'
           role={guestConnecting ? 'status' : 'alert'}
           aria-live={guestConnecting ? 'polite' : undefined}
         >
           <span
-            className={`mt-0.5 inline-block h-4 w-4 shrink-0 rounded-full border-2 border-amber-500 border-t-transparent ${guestConnecting ? 'animate-spin' : 'opacity-0 pointer-events-none'}`}
+            className={`mt-0.5 inline-block h-4 w-4 shrink-0 rounded-full border-2 border-amber-500 border-t-transparent ${guestConnecting ? 'animate-spin' : 'pointer-events-none opacity-0'}`}
             aria-hidden
           />
           {guestConnecting ? (
@@ -78,46 +88,8 @@ export function ExploreDesktopCategories({
           )}
         </div>
       )}
-      <div className='grid grid-cols-3 md:grid-cols-6 gap-2.5'>
-        {tiles.map((cfg) => {
-          const Icon = cfg.icon;
-          const href = `/factory-ideas?category_id=${encodeURIComponent(cfg.categoryId)}`;
-          return (
-            <div
-              key={cfg.categoryId}
-              role='button'
-              tabIndex={0}
-              onClick={() => navigate(href)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  navigate(href);
-                }
-              }}
-              className='bg-white border border-gray-100 rounded-xl p-3 flex flex-col items-center justify-center gap-2 hover:shadow-md hover:border-brand-purple/40 transition-all cursor-pointer group'
-            >
-              <div
-                className={`w-11 h-11 rounded-full flex items-center justify-center ${cfg.color} group-hover:scale-110 transition-transform`}
-              >
-                <Icon size={20} />
-              </div>
-              <span className='text-xs font-medium text-gray-700 text-center group-hover:text-brand-navy-deep'>
-                {cfg.displayName}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-      <div className='flex justify-center mt-4'>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => navigate('/factory-ideas')}
-          className='bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-8 py-2 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5'
-        >
-          ดูเพิ่มเติม <ChevronRight size={13} />
-        </Button>
-      </div>
+
+      <CategoryMarqueeStrip tiles={tiles} />
     </section>
   );
 }
