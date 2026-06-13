@@ -115,9 +115,9 @@ for (const step of TOUR_STEPS) {
  */
 export const PATH_TO_PAGE_KEY: Array<{ test: (p: string) => boolean; pageKey: string }> = [
   { test: (p) => p === '/', pageKey: 'explore' },
-  { test: (p) => p === '/factory-ideas' || p.startsWith('/factory-ideas/'), pageKey: 'factory-ideas' },
+  // factory-ideas: ไม่ auto-show tour เมื่อเข้าครั้งแรก (ยังคง step ไว้ใน full tour เท่านั้น)
   { test: (p) => p === '/create-rfq', pageKey: 'create-rfq' },
-  { test: (p) => p.startsWith('/product-detail'), pageKey: 'product-detail' },
+  // product-detail: ไม่ auto-show tour เมื่อเข้าครั้งแรก (ยังคง step ไว้ใน full tour เท่านั้น)
   // /messages list → navigate ไป /messages/:id เพื่อแสดง tour
   { test: (p) => p === '/messages', pageKey: 'messages-list' },
   { test: (p) => p.startsWith('/messages/'), pageKey: 'messages' },

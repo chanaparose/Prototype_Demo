@@ -305,15 +305,8 @@ export function ExploreMobile({
           <div className='px-4'>
             <div className='rounded-xl border border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-white px-4 py-5 text-center'>
               <p className='text-sm font-medium text-gray-600'>ยังไม่มีวัตถุดิบแนะนำในขณะนี้</p>
-              <p className='mt-1 text-xs text-gray-400'>ดูข้อมูลวัตถุดิบได้จากปุ่มด้านล่าง</p>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => navigate('/factory-ideas?type=material')}
-                className='mt-3 w-full rounded-full border border-status-success/40 bg-white py-2 text-sm font-medium text-status-success hover:bg-emerald-50 transition-colors'
-              >
-                ดูวัตถุดิบแนะนำ
-              </Button>
+              <p className='mt-1 text-xs text-gray-400'>จะมีวัตถุดิบเพิ่มเร็วๆนี้</p>
+              
             </div>
           </div>
         )}
