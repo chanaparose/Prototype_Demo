@@ -25,8 +25,7 @@ import { MobileSearchField } from '@/components/shared/MobileSearchField';
 import { Image } from '@/components/ui/image';
 import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
-import { ProductCardSkeleton } from '@/components/skeletons/PageSkeletons';
-import { useMasterUnitMap } from '@/hooks/master/useMasterUnitMap';
+import { ProductCardSkeleton, FactoryCarouselCardSkeleton } from '@/components/skeletons/PageSkeletons';
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
 
 type ExploreMobileProps = {
@@ -69,7 +68,6 @@ export function ExploreMobile({
 }: ExploreMobileProps) {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
-  const unitMap = useMasterUnitMap().data;
 
   const productShowcases = (exploreProducts ?? []).slice(0, 8);
   // const promoShowcases = (explorePromotions ?? []).slice(0, 4);
@@ -184,7 +182,7 @@ export function ExploreMobile({
                       </div>
                       <span className='text-gray-400 text-[9px] shrink-0'>
                         ขั้นต่ำ {item.minOrder ?? 0}{' '}
-                        {resolveUnitLabel(item.unitId, item.moqUnit, unitMap)}
+                        {resolveUnitLabel(item.unitId, item.moqUnit)}
                       </span>
                     </div>
                   </div>
@@ -294,7 +292,7 @@ export function ExploreMobile({
                       </div>
                       <span className='text-gray-400 text-[9px] shrink-0'>
                         ขั้นต่ำ {item.minOrder ?? 0}{' '}
-                        {resolveUnitLabel(item.unitId, item.moqUnit, unitMap)}
+                        {resolveUnitLabel(item.unitId, item.moqUnit)}
                       </span>
                     </div>
                   </div>
@@ -324,12 +322,26 @@ export function ExploreMobile({
       <HowToOrderSection className='mx-4 mt-5' />
 
       <div className='mt-[20px]'>
-        <ExploreFactoryShowcase
-          factories={(factories ?? []).slice(0, 8)}
-          onFactoryClick={(id) => navigate(`/factories/${id}`)}
-          onSeeAll={() => navigate('/factory-ideas?type=factory')}
-          variant='mobile'
-        />
+        {isLoading ? (
+          <section className='mx-4 mb-3 mt-3'>
+            <div className='flex items-end justify-between mb-3 px-1'>
+              <div>
+                <div className='h-5 w-28 bg-gray-200 rounded animate-pulse mb-1' />
+                <div className='h-3 w-44 bg-gray-100 rounded animate-pulse' />
+              </div>
+            </div>
+            <div className='flex gap-3 overflow-x-hidden pb-2'>
+              {[...Array(2)].map((_, i) => <FactoryCarouselCardSkeleton key={i} variant='mobile' />)}
+            </div>
+          </section>
+        ) : (
+          <ExploreFactoryShowcase
+            factories={(factories ?? []).slice(0, 8)}
+            onFactoryClick={(id) => navigate(`/factories/${id}`)}
+            onSeeAll={() => navigate('/factory-ideas?type=factory')}
+            variant='mobile'
+          />
+        )}
       </div>
 
       <div className='mt-[20px]'>

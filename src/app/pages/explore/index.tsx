@@ -57,6 +57,7 @@ export function Explore() {
           exploreMatrials={materialShowcases}
           explorePromoCodes={[]}
           promoSlides={promoSlides}
+          isLoading={isLoading}
           guestConnecting={guestConnecting}
         />
     );

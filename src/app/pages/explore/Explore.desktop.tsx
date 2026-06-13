@@ -25,8 +25,8 @@ import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
 import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
-import { useMasterUnitMap } from '@/hooks/master/useMasterUnitMap';
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
+import { ProductCardSkeleton, FactoryCarouselCardSkeleton } from '@/components/skeletons/PageSkeletons';
 
 type ExploreDesktopProps = {
   searchText: string;
@@ -46,6 +46,7 @@ type ExploreDesktopProps = {
   exploreMatrials?: IExploreShowcase[];
   explorePromoCodes: IExploreSlide[];
   promoSlides: IExploreSlide[];
+  isLoading?: boolean;
   guestConnecting?: boolean;
 };
 
@@ -110,11 +111,11 @@ export function ExploreDesktop({
   explorePromotions: _explorePromotions,
   exploreMatrials,
   promoSlides,
+  isLoading = false,
   guestConnecting = false,
 }: Readonly<Omit<ExploreDesktopProps, 'activeRFQs' | 'recentOrders'>>) {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
-  const unitMap = useMasterUnitMap().data;
   const ideaArticlesList = ideaArticles ?? [];
   const recommendedFactories = useMemo(() => (factories ?? []).slice(0, 10), [factories]);
 
@@ -130,11 +131,11 @@ export function ExploreDesktop({
         factoryId: s.factoryId,
         factoryName: s.factoryName,
         minOrder: s.minOrder,
-        minOrderUnit: resolveUnitLabel(s.unitId, s.moqUnit, unitMap),
+        minOrderUnit: resolveUnitLabel(s.unitId, s.moqUnit),
         factoryRating: s.factoryRating,
         location: s.location,
       })),
-    [exploreProducts, unitMap],
+    [exploreProducts],
   );
 
   // const promoShowcases = useMemo(() => (explorePromotions ?? []).slice(0, 4), [explorePromotions]);
@@ -151,11 +152,11 @@ export function ExploreDesktop({
         factoryId: s.factoryId,
         factoryName: s.factoryName,
         minOrder: s.minOrder,
-        minOrderUnit: resolveUnitLabel(s.unitId, s.moqUnit, unitMap),
+        minOrderUnit: resolveUnitLabel(s.unitId, s.moqUnit),
         factoryRating: s.factoryRating,
         location: s.location,
       })),
-    [exploreMatrials, unitMap],
+    [exploreMatrials],
   );
 
   // Promo slides จาก API เท่านั้น — ไม่มี fallback
@@ -290,38 +291,70 @@ export function ExploreDesktop({
         </div>
 
         <div data-tour='products'>
+          {isLoading ? (
+            <div className='mt-[30px]'>
+              <div className='h-5 w-32 bg-gray-200 rounded animate-pulse mb-3' />
+              <div className='flex gap-3 overflow-x-hidden'>
+                {[...Array(5)].map((_, i) => <ProductCardSkeleton key={i} />)}
+              </div>
+            </div>
+          ) : (
+            <ExploreProductCarouselSection
+              title='สินค้าแนะนำ'
+              items={productShowcases}
+              bannerImg={'assets/tryly_vertical_banner_v5_oval_final.png'}
+              bannerText='คุ้มค่า ถูกใจสัตว์เลี้ยง'
+              onItemClick={(id) => navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)}
+              isLiked={isLiked}
+              onToggleFavorite={toggleFavorite}
+            />
+          )}
+        </div>
+
+        {isLoading ? (
+          <div>
+            <div className='h-5 w-32 bg-gray-200 rounded animate-pulse mb-3' />
+            <div className='flex gap-3 overflow-x-hidden'>
+              {[...Array(5)].map((_, i) => <ProductCardSkeleton key={i} />)}
+            </div>
+          </div>
+        ) : (
           <ExploreProductCarouselSection
-            title='สินค้าแนะนำ'
-            items={productShowcases}
-            bannerImg={'assets/tryly_vertical_banner_v5_oval_final.png'}
-            bannerText='คุ้มค่า ถูกใจสัตว์เลี้ยง'
+            title='วัตถุดิบแนะนำ'
+            theme='material'
+            seeMoreHref='/factory-ideas?type=material'
+            items={materialShowcases}
+            bannerImg={'assets/tryly_vertical_banner_raw_material_v5_oval_final.png'}
+            bannerText='วัตถุดิบคุณภาพสูง'
             onItemClick={(id) => navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)}
             isLiked={isLiked}
             onToggleFavorite={toggleFavorite}
           />
-        </div>
-
-        <ExploreProductCarouselSection
-          title='วัตถุดิบแนะนำ'
-          theme='material'
-          seeMoreHref='/factory-ideas?type=material'
-          items={materialShowcases}
-          bannerImg={'assets/tryly_vertical_banner_raw_material_v5_oval_final.png'}
-          bannerText='วัตถุดิบคุณภาพสูง'
-          onItemClick={(id) => navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)}
-          isLiked={isLiked}
-          onToggleFavorite={toggleFavorite}
-        />
+        )}
 
         <HowToOrderSection className='mx-0' />
 
         <div className='mt-[40px]'>
-          <ExploreFactoryShowcase
-            factories={recommendedFactories}
-            onFactoryClick={(id) => navigate(`/factories/${id}`)}
-            onSeeAll={() => navigate('/factory-ideas?type=factory')}
-            variant='desktop'
-          />
+          {isLoading ? (
+            <section className='mx-4 mb-3 mt-3'>
+              <div className='flex items-end justify-between mb-3 px-1'>
+                <div>
+                  <div className='h-5 w-28 bg-gray-200 rounded animate-pulse mb-1' />
+                  <div className='h-3 w-52 bg-gray-100 rounded animate-pulse' />
+                </div>
+              </div>
+              <div className='flex gap-3 overflow-x-hidden pb-2'>
+                {[...Array(3)].map((_, i) => <FactoryCarouselCardSkeleton key={i} variant='desktop' />)}
+              </div>
+            </section>
+          ) : (
+            <ExploreFactoryShowcase
+              factories={recommendedFactories}
+              onFactoryClick={(id) => navigate(`/factories/${id}`)}
+              onSeeAll={() => navigate('/factory-ideas?type=factory')}
+              variant='desktop'
+            />
+          )}
         </div>
 
         {/* โปรโมชันแนะนำ (PM) — disabled

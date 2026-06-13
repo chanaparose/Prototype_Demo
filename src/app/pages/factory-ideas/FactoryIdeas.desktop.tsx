@@ -23,12 +23,10 @@ import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import { MobileSearchField } from '@/components/shared/MobileSearchField';
-import { useMasterUnitMap } from '@/hooks/master/useMasterUnitMap';
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
 
 export function FactoryIdeasDesktop() {
   const navigate = useNavigate();
-  const unitMap = useMasterUnitMap().data;
   const {
     data,
     isLiked,
@@ -253,7 +251,7 @@ export function FactoryIdeasDesktop() {
                       </div>
                       <span className='text-gray-400 text-[8px] shrink-0'>
                         ขั้นต่ำ {factory.minOrder}{' '}
-                        {resolveUnitLabel(undefined, factory.minOrderUnit, unitMap)}
+                        {resolveUnitLabel(undefined, factory.minOrderUnit)}
                       </span>
                     </div>
                   </div>
@@ -346,7 +344,7 @@ export function FactoryIdeasDesktop() {
                         </div>
                         <span className='text-gray-400 text-[8px] shrink-0'>
                           ขั้นต่ำ {item.minOrder}{' '}
-                          {resolveUnitLabel(item.unitId, item.moqUnit, unitMap)}
+                          {resolveUnitLabel(item.unitId, item.moqUnit)}
                         </span>
                       </div>
                     </div>
@@ -405,7 +403,7 @@ export function FactoryIdeasDesktop() {
                             <span className='font-semibold text-[var(--brand-navy)]'>
                               {item.minOrder}
                             </span>{' '}
-                            {resolveUnitLabel(item.unitId, item.moqUnit, unitMap)}
+                            {resolveUnitLabel(item.unitId, item.moqUnit)}
                           </span>
                         </div>
                       </div>
@@ -505,7 +503,7 @@ export function FactoryIdeasDesktop() {
                           </div>
                           <span className='text-gray-400 text-[8px] shrink-0'>
                             ขั้นต่ำ {item.minOrder}{' '}
-                          {resolveUnitLabel(item.unitId, item.moqUnit, unitMap)}
+                          {resolveUnitLabel(item.unitId, item.moqUnit)}
                           </span>
                         </div>
                       </div>
@@ -580,7 +578,7 @@ export function FactoryIdeasDesktop() {
                         </div>
                         <span className='text-gray-400 text-[8px] shrink-0'>
                           ขั้นต่ำ {factory.minOrder}{' '}
-                        {resolveUnitLabel(undefined, factory.minOrderUnit, unitMap)}
+                        {resolveUnitLabel(undefined, factory.minOrderUnit)}
                         </span>
                       </div>
                     </div>

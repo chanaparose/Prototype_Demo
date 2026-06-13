@@ -94,7 +94,32 @@ export function FactoryGridCardSkeleton() {
   );
 }
 
-// ─── 6. Factory list row (FactoriesList page) ─────────────────────────────────
+// ─── 6a. Factory carousel card (Explore "โรงงานแนะนำ" horizontal scroll) ──────
+export function FactoryCarouselCardSkeleton({ variant = 'mobile' }: { variant?: 'mobile' | 'desktop' }) {
+  const w = variant === 'desktop' ? 400 : 260;
+  const h = variant === 'desktop' ? 180 : 148;
+  return (
+    <div
+      className='flex-shrink-0 rounded-xl overflow-hidden border border-gray-100 bg-white flex'
+      style={{ width: w, height: h }}
+    >
+      {/* text side */}
+      <div className='flex flex-col justify-between p-3 gap-2' style={{ width: variant === 'desktop' ? '55%' : '58%' }}>
+        <div className='space-y-1.5'>
+          <Skeleton className='h-2.5 w-16' />
+          <Skeleton className='h-4 w-4/5' />
+          <Skeleton className='h-3 w-3/5 mt-0.5' />
+          <Skeleton className='h-3 w-2/3' />
+        </div>
+        <Skeleton className='h-5 w-20 rounded-full' />
+      </div>
+      {/* image side */}
+      <Skeleton className='flex-1 h-full rounded-none' />
+    </div>
+  );
+}
+
+// ─── 6b. Factory list row (FactoriesList page) ────────────────────────────────
 export function FactoryListRowSkeleton() {
   return (
     <div className='bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex'>
