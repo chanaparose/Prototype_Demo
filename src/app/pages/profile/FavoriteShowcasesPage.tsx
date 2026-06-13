@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Search, ChevronLeft, Heart, Package, Lightbulb, Tag } from 'lucide-react';
+import { Search, ChevronLeft, Heart, Package, Lightbulb } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useShowcases } from '@/hooks/useShowcases';
@@ -12,33 +12,28 @@ import { Input } from '@/components/ui/input';
 import { NotificationItemSkeleton } from '@/components/skeletons/PageSkeletons';
 import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 
-type FavoritesTab = 'all' | 'product' | 'promotion' | 'idea';
+type FavoritesTab = 'all' | 'product' | 'idea';
 
 const TABS: { id: FavoritesTab; label: string }[] = [
   { id: 'all', label: 'ทั้งหมด' },
   { id: 'product', label: 'สินค้า' },
-  { id: 'promotion', label: 'โปรโมชัน' },
   { id: 'idea', label: 'ไอเดีย' },
 ];
 
 const FAVORITES_TAB_ORDER = TABS.map((t) => t.id);
 
 function detailHref(item: FactoryShowcase): string {
-  if (item.contentType === 'promotion')
-    return `/promotion-detail?showcase_id=${encodeURIComponent(item.id)}`;
   if (item.contentType === 'idea') return `/idea-detail?showcase_id=${encodeURIComponent(item.id)}`;
   return `/product-detail?showcase_id=${encodeURIComponent(item.id)}`;
 }
 
 function typeLabel(type: FactoryShowcase['contentType']): string {
-  if (type === 'promotion') return 'โปรโมชัน';
   if (type === 'idea') return 'ไอเดีย';
   if (type === 'material') return 'วัตถุดิบ';
   return 'สินค้า';
 }
 
 function typeIcon(type: FactoryShowcase['contentType']) {
-  if (type === 'promotion') return Tag;
   if (type === 'idea') return Lightbulb;
   return Package;
 }
@@ -52,7 +47,9 @@ export function FavoriteShowcasesPage() {
 
   const allFavorites = useMemo(() => {
     if (!showcases.length || likedIds.size === 0) return [] as FactoryShowcase[];
-    return showcases.filter((s) => likedIds.has(String(s.id)));
+    return showcases.filter(
+      (s) => likedIds.has(String(s.id)) && s.contentType !== 'promotion',
+    );
   }, [showcases, likedIds]);
 
   const filtered = useMemo(() => {
@@ -108,7 +105,7 @@ export function FavoriteShowcasesPage() {
           />
         </div>
 
-        <div className='mb-3 grid grid-cols-4 gap-2'>
+        <div className='mb-3 grid grid-cols-3 gap-2'>
           {TABS.map((t) => {
             const active = tab === t.id;
             return (
