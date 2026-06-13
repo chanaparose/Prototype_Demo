@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, Outlet } from 'react-router';
 import { Lock } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
+import { factoryBoxClass, factoryButtonClass } from '@/pages/factory-portal/factoryUi';
 
 export type FactoryVerifyStatus = 'AP' | 'PD' | 'RJ';
 
@@ -30,7 +31,7 @@ function FactoryPendingPlaceholder({ status }: { status: 'PD' | 'RJ' }) {
 
   return (
     <div className='max-w-lg mx-auto py-10 sm:py-14 px-4'>
-      <div className='rounded-lg border border-violet-200 bg-violet-50/70 p-6 sm:p-8 text-center'>
+      <div className={factoryBoxClass({ variant: 'violet', className: 'p-6 sm:p-8 text-center' })}>
         <Lock className='w-10 h-10 mx-auto text-violet-600 mb-3' strokeWidth={2} aria-hidden />
         <h2 className='text-lg font-bold text-gray-900 mb-2'>
           {status === 'RJ' ? 'บัญชีโรงงานไม่ผ่านการตรวจสอบ' : 'โรงงานอยู่ระหว่างตรวจสอบ'}
@@ -42,10 +43,7 @@ function FactoryPendingPlaceholder({ status }: { status: 'PD' | 'RJ' }) {
         </p>
         <Link
           to='/factory/profile'
-          className='inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-95'
-          style={{
-            background: 'var(--brand-purple)',
-          }}
+          className={factoryButtonClass({ variant: 'submit', size: 'md' })}
         >
           {status === 'RJ' ? 'แก้ไขและส่งใหม่' : 'ไปที่โปรไฟล์'}
         </Link>

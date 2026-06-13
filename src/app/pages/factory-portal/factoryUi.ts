@@ -1,6 +1,6 @@
 import { cn } from '@lib/utils';
 
-type FactoryButtonVariant = 'primary' | 'secondary' | 'toolbar' | 'ghostIcon' | 'dangerIcon';
+type FactoryButtonVariant = 'primary' | 'secondary' | 'toolbar' | 'ghostIcon' | 'dangerIcon' | 'success' | 'danger' | 'dangerOutline' | 'upload' | 'submit';
 type FactoryButtonSize = 'sm' | 'md' | 'icon';
 
 const buttonBase =
@@ -16,6 +16,11 @@ const buttonVariantClass: Record<FactoryButtonVariant, string> = {
     'border border-slate-200 bg-white text-slate-500 shadow-none hover:border-brand-purple/30 hover:bg-brand-lavender hover:text-brand-purple',
   dangerIcon:
     'border border-red-100 bg-white text-red-500 shadow-none hover:border-red-200 hover:bg-red-50 hover:text-red-600',
+  success: 'bg-emerald-600 text-white hover:bg-emerald-700',
+  danger: 'bg-red-600 text-white hover:bg-red-700',
+  dangerOutline: 'border border-red-200 bg-white text-red-600 shadow-none hover:bg-red-50',
+  upload: 'border border-dashed border-gray-300 bg-white text-gray-500 hover:border-violet-400 hover:text-violet-600',
+  submit: 'bg-brand-purple text-white hover:bg-brand-violet-deep',
 };
 
 const buttonSizeClass: Record<FactoryButtonSize, string> = {
@@ -79,4 +84,30 @@ export function factoryBadgeClass({
   className?: string;
 } = {}) {
   return cn(badgeClass[variant], className);
+}
+
+const inputClass =
+  'w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50';
+
+export function factoryInputClass({ className }: { className?: string } = {}) {
+  return cn(inputClass, className);
+}
+
+type FactoryBoxVariant = 'violet' | 'amber' | 'emerald' | 'neutral';
+
+const boxClass: Record<FactoryBoxVariant, string> = {
+  violet: 'rounded-lg border border-violet-100 bg-violet-50/50',
+  amber: 'rounded-lg border border-amber-100 bg-amber-50',
+  emerald: 'rounded-lg border border-emerald-100 bg-emerald-50',
+  neutral: 'rounded-lg border border-gray-100 bg-gray-50',
+};
+
+export function factoryBoxClass({
+  variant = 'neutral',
+  className,
+}: {
+  variant?: FactoryBoxVariant;
+  className?: string;
+} = {}) {
+  return cn(boxClass[variant], className);
 }

@@ -44,6 +44,8 @@ import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { Button } from '@/components/ui/button';
 import { FactoryNoteInline } from '@/components/factory/FactoryNoteInline';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import { FactoryStatusBadge } from '@/pages/factory-portal/components/FactoryStatusBadge';
+import { factoryButtonClass, factoryBadgeClass } from '@/pages/factory-portal/factoryUi';
 
 function DetailField({
   label,
@@ -175,18 +177,18 @@ function extractShippingInfo(order: Record<string, unknown>): CustomerShippingIn
 function StartWorkButton({ onStart }: { onStart: () => Promise<void> }) {
   const [busy, setBusy] = React.useState(false);
   return (
-    <button
+    <Button
+      variant='unstyled'
       type='button'
       disabled={busy}
       onClick={async () => {
         setBusy(true);
         try { await onStart(); } finally { setBusy(false); }
       }}
-      className='w-full rounded-md py-2.5 text-sm font-bold text-white disabled:opacity-60'
-      style={{ background: 'var(--brand-mauve)' }}
+      className={factoryButtonClass({ variant: 'primary', size: 'md', className: 'w-full' })}
     >
       {busy ? 'กำลังดำเนินการ...' : 'เริ่มงาน'}
-    </button>
+    </Button>
   );
 }
 
@@ -539,7 +541,7 @@ export function FactoryOrderDetailPage() {
                         variant='unstyled'
                         type='button'
                         onClick={handleOpenLabel}
-                        className='w-full rounded-md py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2 bg-brand-purple hover:bg-brand-violet-deep transition-colors'
+                        className={factoryButtonClass({ variant: 'primary', size: 'md', className: 'w-full justify-center gap-2' })}
                       >
                         <Printer size={15} />
                         ทำใบปะหน้าพัสดุ
@@ -684,8 +686,8 @@ export function FactoryOrderDetailPage() {
                           { label: 'มูลค่ารวม', value: <span className='font-semibold tabular-nums'>{formatCurrency(Number(order.total_amount ?? 0))}</span> },
                           { label: 'มัดจำ (Deposit)', value: <span className='font-semibold tabular-nums text-emerald-700'>{formatCurrency(Number(order.deposit_amount ?? 0))}</span> },
                           { label: 'วิธีจัดส่ง', value: shippingMethodName },
-                          ...(requestKindRaw && requestKindLabel[requestKindRaw] ? [{ label: 'ประเภทออเดอร์', value: <span className='text-[12px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full'>{requestKindLabel[requestKindRaw]}</span> }] : []),
-                          ...(trackingNumber ? [{ label: 'Tracking No.', value: <span className='font-mono bg-slate-100 rounded-md px-2 py-0.5 text-xs'>{trackingNumber}</span> }] : []),
+                          ...(requestKindRaw && requestKindLabel[requestKindRaw] ? [{ label: 'ประเภทออเดอร์', value: <FactoryStatusBadge tone='brand'>{requestKindLabel[requestKindRaw]}</FactoryStatusBadge> }] : []),
+                          ...(trackingNumber ? [{ label: 'Tracking No.', value: <span className={factoryBadgeClass({ variant: 'meta' })} style={{ fontFamily: 'monospace' }}>{trackingNumber}</span> }] : []),
                         ].map(({ label, value }, i) => (
                           <tr key={label} className={i % 2 === 0 ? 'bg-white' : 'bg-[var(--brand-page)]/40'}>
                             <td className='px-4 py-2.5 text-[12px] font-medium text-slate-500 w-[40%] align-middle'>
@@ -921,10 +923,10 @@ export function FactoryOrderDetailPage() {
 
 function slipStatusConfig(s: string) {
   const code = s.toUpperCase();
-  if (code === 'AP') return { label: 'ยืนยันแล้ว', border: 'border-emerald-300', bg: 'bg-emerald-50', icon: 'text-emerald-600', title: 'text-emerald-800' };
-  if (code === 'RJ') return { label: 'ปฏิเสธแล้ว', border: 'border-red-300', bg: 'bg-red-50', icon: 'text-red-600', title: 'text-red-800' };
-  if (code === 'PE') return { label: 'รอลูกค้าแนบสลีป', border: 'border-slate-200', bg: 'bg-[var(--brand-page)]', icon: 'text-slate-400', title: 'text-slate-600' };
-  return { label: 'รอตรวจสอบ', border: 'border-amber-300', bg: 'bg-amber-50', icon: 'text-amber-600', title: 'text-amber-800' };
+  if (code === 'AP') return { label: 'ยืนยันแล้ว', tone: 'success' as const, icon: 'text-emerald-600', title: 'text-emerald-800' };
+  if (code === 'RJ') return { label: 'ปฏิเสธแล้ว', tone: 'danger' as const, icon: 'text-red-600', title: 'text-red-800' };
+  if (code === 'PE') return { label: 'รอลูกค้าแนบสลีป', tone: 'neutral' as const, icon: 'text-slate-400', title: 'text-slate-600' };
+  return { label: 'รอตรวจสอบ', tone: 'warning' as const, icon: 'text-amber-600', title: 'text-amber-800' };
 }
 
 function SlipVerificationCard({
@@ -1017,14 +1019,7 @@ function SlipVerificationCard({
             {isWaiting && 'รอลูกค้าแนบสลีปการโอนเงิน'}
           </p>
         </div>
-        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-          isApproved ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-          : isRejected ? 'bg-red-100 text-red-700 border-red-200'
-          : isWaiting ? 'bg-slate-100 text-slate-500 border-slate-200'
-          : 'bg-amber-100 text-amber-700 border-amber-200'
-        }`}>
-          {cfg.label}
-        </span>
+        <FactoryStatusBadge tone={cfg.tone}>{cfg.label}</FactoryStatusBadge>
       </div>
 
       {/* Slip image */}
@@ -1074,7 +1069,7 @@ function SlipVerificationCard({
               type='button'
               disabled={acting}
               onClick={handleApprove}
-              className='flex-1 rounded-md py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-60'
+              className={factoryButtonClass({ variant: 'success', size: 'md', className: 'flex-1' })}
             >
               {acting ? 'กำลังดำเนินการ…' : 'ยืนยันรับเงิน'}
             </Button>
@@ -1083,7 +1078,7 @@ function SlipVerificationCard({
               type='button'
               disabled={acting}
               onClick={() => setShowRejectInput(true)}
-              className='rounded-md py-2.5 px-4 text-sm font-semibold text-red-600 border border-red-200 bg-white hover:bg-red-50 transition-colors disabled:opacity-60'
+              className={factoryButtonClass({ variant: 'dangerOutline', size: 'md' })}
             >
               ปฏิเสธ
             </Button>
@@ -1094,7 +1089,7 @@ function SlipVerificationCard({
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder='ระบุเหตุผลในการปฏิเสธ (อย่างน้อย 5 ตัวอักษร)'
-              className='w-full rounded-md border border-red-200 px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none'
+              className='w-full rounded-lg border border-red-200 px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none'
               rows={2}
             />
             <div className='flex items-center gap-2'>
@@ -1103,7 +1098,7 @@ function SlipVerificationCard({
                 type='button'
                 disabled={acting || rejectReason.trim().length < 5}
                 onClick={handleReject}
-                className='flex-1 rounded-md py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-60'
+                className={factoryButtonClass({ variant: 'danger', size: 'md', className: 'flex-1' })}
               >
                 {acting ? 'กำลังดำเนินการ…' : 'ยืนยันปฏิเสธสลีป'}
               </Button>
@@ -1111,7 +1106,7 @@ function SlipVerificationCard({
                 variant='unstyled'
                 type='button'
                 onClick={() => { setShowRejectInput(false); setRejectReason(''); }}
-                className='rounded-md py-2 px-4 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors'
+                className={factoryButtonClass({ variant: 'toolbar', size: 'md' })}
               >
                 ยกเลิก
               </Button>
@@ -1154,12 +1149,12 @@ function txTypeLabel(type: string): string {
 function txStatusBadge(status: string) {
   const s = status?.toUpperCase();
   if (s === 'SUCCESS' || s === 'CP' || s === 'AP')
-    return <span className='text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200'>สำเร็จ</span>;
+    return <FactoryStatusBadge tone='success'>สำเร็จ</FactoryStatusBadge>;
   if (s === 'PENDING' || s === 'PE' || s === 'ST')
-    return <span className='text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200'>รอดำเนินการ</span>;
+    return <FactoryStatusBadge tone='warning'>รอดำเนินการ</FactoryStatusBadge>;
   if (s === 'FAILED' || s === 'RJ' || s === 'CN')
-    return <span className='text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200'>ล้มเหลว</span>;
-  return <span className='text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200'>{status || '-'}</span>;
+    return <FactoryStatusBadge tone='danger'>ล้มเหลว</FactoryStatusBadge>;
+  return <FactoryStatusBadge tone='neutral'>{status || '-'}</FactoryStatusBadge>;
 }
 
 function PaymentTransactionsTable({ orderId }: { orderId: string | number }) {
@@ -1199,9 +1194,7 @@ function PaymentTransactionsTable({ orderId }: { orderId: string | number }) {
       <div className='px-4 py-3 border-b border-slate-100 flex items-center gap-2'>
         <Handshake size={14} className='text-brand-purple' />
         <h2 className='text-sm font-bold text-slate-900'>ประวัติการชำระเงิน</h2>
-        <span className='text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500'>
-          {txs.length} รายการ
-        </span>
+        <FactoryStatusBadge tone='neutral'>{txs.length} รายการ</FactoryStatusBadge>
       </div>
       <div className='overflow-x-auto'>
         <table className='w-full text-sm'>

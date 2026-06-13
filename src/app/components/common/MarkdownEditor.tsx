@@ -229,7 +229,7 @@ export function MarkdownEditor({
               onClick={() => setTab('write')}
               variant='outline'
               size='xs'
-              className={`px-2 py-1 text-xs rounded-md border ${
+              className={`px-2 py-1 text-xs rounded-md border shadow-none ${
                 tab === 'write'
                   ? 'bg-brand-lavender border-brand-purple/20 text-brand-purple/80'
                   : 'border-gray-200 text-gray-600 hover:bg-gray-50'
@@ -241,7 +241,7 @@ export function MarkdownEditor({
               onClick={() => setTab('preview')}
               variant='outline'
               size='xs'
-              className={`px-2 py-1 text-xs rounded-md border ${
+              className={`px-2 py-1 text-xs rounded-md border shadow-none ${
                 tab === 'preview'
                   ? 'bg-brand-lavender border-brand-purple/20 text-brand-purple/80'
                   : 'border-gray-200 text-gray-600 hover:bg-gray-50'
@@ -404,7 +404,7 @@ export function MarkdownEditor({
                   disabled={disabled}
                   variant='outline'
                   size='sm'
-                  className='inline-flex items-center gap-1.5 p-1.5 px-2.5 rounded-md border border-brand-purple/20 bg-brand-lavender text-[13px] font-medium text-brand-purple transition-colors hover:bg-brand-lavender/60 disabled:opacity-40'
+                  className='inline-flex items-center gap-1.5 p-1.5 px-2.5 rounded-md border border-brand-purple/20 bg-brand-lavender text-[13px] font-medium text-brand-purple transition-colors hover:bg-brand-lavender/60 disabled:opacity-40 shadow-none'
                 >
                   <LayoutTemplate size={14} />
                   เลือกเทมเพลต...

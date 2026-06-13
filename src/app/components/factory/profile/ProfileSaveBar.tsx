@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { factoryButtonClass } from '@/pages/factory-portal/factoryUi';
 
 interface Props {
   isDirty: boolean;
@@ -16,7 +17,7 @@ export function ProfileSaveBar({ isDirty, changeCount, saving, onSave, onDiscard
     <div
       role='region'
       aria-label='แถบบันทึกการเปลี่ยนแปลง'
-      className='fixed bottom-0 inset-x-0 z-40 border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'
+      className='fixed bottom-0 inset-x-0 z-40 border-t border-gray-200 bg-white'
     >
       <div className='max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3'>
         <p className='text-sm text-gray-700'>
@@ -29,21 +30,16 @@ export function ProfileSaveBar({ isDirty, changeCount, saving, onSave, onDiscard
           <Button
             onClick={onDiscard}
             disabled={saving}
-            variant='outline'
-            size='sm'
-            className='inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50'
+            variant='unstyled'
+            className={factoryButtonClass({ variant: 'secondary', size: 'sm', className: 'gap-1' })}
           >
             <X size={14} /> ยกเลิก
           </Button>
           <Button
             onClick={onSave}
             disabled={saving || !isDirty}
-            size='sm'
-            className='inline-flex items-center gap-1 px-4 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50'
-            style={{
-              background:
-                'var(--brand-purple)',
-            }}
+            variant='unstyled'
+            className={factoryButtonClass({ variant: 'submit', size: 'sm', className: 'gap-1' })}
           >
             <Check size={14} /> {saving ? 'กำลังบันทึก…' : 'บันทึกทั้งหมด'}
           </Button>

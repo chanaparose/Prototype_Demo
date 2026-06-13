@@ -102,9 +102,9 @@ export function UnitPicker({ units, value, onChange }: Props) {
         variant='unstyled'
         type='button'
         onClick={() => setOpen(true)}
-        className='w-[130px] shrink-0 flex items-center justify-between gap-1 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-sm font-normal text-gray-900 hover:border-brand-purple/40 transition-colors'
+        className='w-[130px] shrink-0 flex items-center justify-between gap-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-normal text-gray-900 hover:border-brand-purple/40 transition-colors'
       >
-        <span className='truncate'>{triggerLabel}</span>
+        <span className='truncate text-xs'>{triggerLabel}</span>
         <ChevronDown size={14} className='shrink-0 text-gray-400' />
       </Button>
 

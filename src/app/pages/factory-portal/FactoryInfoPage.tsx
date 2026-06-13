@@ -83,11 +83,12 @@ function Field({
   value?: React.ReactNode;
   className?: string;
 }) {
+  const displayValue = value && String(value).trim() ? value : <span className='text-gray-300 font-normal'>—</span>;
   return (
     <div className={`min-w-0 ${className}`}>
       <p className='text-[11px] font-medium text-gray-400 mb-0.5'>{label}</p>
       <p className='text-sm font-semibold text-gray-800 break-words leading-snug'>
-        {value ?? <span className='text-gray-300 font-normal'>—</span>}
+        {displayValue}
       </p>
     </div>
   );
@@ -151,7 +152,7 @@ function SectionEditActions({
         className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
       >
         <Pencil size={12} />
-        Edit
+        แก้ไข
       </Button>
     );
   }

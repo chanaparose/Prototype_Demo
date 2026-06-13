@@ -37,6 +37,7 @@ import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
 import { UnitPicker, type UnitOption } from '@/pages/rfq/steps/UnitPicker';
 import { masterApi } from '@/services/api/masterApi';
+import { factoryInputClass, factoryBoxClass, factoryButtonClass, factoryCardClass } from '@/pages/factory-portal/factoryUi';
 
 const LOCKED_PAYMENT_TERMS = 'lc_at_sight';
 
@@ -356,11 +357,11 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           e.preventDefault();
           void submit();
         }}
-        className='bg-white rounded-lg border border-gray-100 p-4 space-y-4'
+        className={factoryCardClass({ variant: 'section', className: 'space-y-4' })}
       >
         {showHeading ? <h3 className='text-sm font-bold text-gray-900'>ยื่นใบเสนอราคา</h3> : null}
 
-        <div className='rounded-lg border border-gray-200 p-3 space-y-3'>
+        <div className={factoryCardClass({ variant: 'section', className: 'space-y-3 p-3' })}>
           <p className='text-xs font-semibold text-gray-800'>ราคาและจำนวนที่เสนอ</p>
 
           {rfqQuantity != null && (
@@ -391,7 +392,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 value={factoryQty ?? ''}
                 onChange={(e) => setFactoryQty(e.target.value ? Number(e.target.value) : null)}
                 placeholder={rfqQuantity != null ? String(rfqQuantity) : 'จำนวนที่เสนอ'}
-                className='flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+                className={factoryInputClass({ className: 'flex-1' })}
               />
               <UnitPicker units={units} value={factoryUnitId} onChange={setFactoryUnitId} />
             </div>
@@ -414,7 +415,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               min={0}
               disabled={readOnly}
               placeholder='0.00'
-              className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+              className={factoryInputClass()}
               {...form.register('price_per_piece')}
             />
           </FormField>
@@ -424,7 +425,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             if (!Number.isFinite(p) || p <= 0 || effectiveQty <= 0) return null;
             const total = p * effectiveQty;
             return (
-              <div className='rounded-lg border border-violet-100 bg-violet-50/50 px-3 py-2'>
+              <div className={factoryBoxClass({ variant: 'violet', className: 'px-3 py-2' })}>
                 <p className='text-xs font-semibold text-gray-800'>
                   สรุปข้อเสนอ: {formatCompactNumber(effectiveQty)} {factoryUnitLabel} ×{' '}
                   {formatCurrency(p)} = <span className='text-violet-700'>{fmt(total)} บาท</span>
@@ -449,7 +450,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 min={0}
                 disabled={readOnly}
                 placeholder='0'
-                className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+                className={factoryInputClass()}
                 {...form.register('shipping_cost')}
               />
             </FormField>
@@ -460,7 +461,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 min={0}
                 disabled={readOnly}
                 placeholder='0'
-                className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+                className={factoryInputClass()}
                 {...form.register('packaging_cost')}
               />
             </FormField>
@@ -471,7 +472,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 min={0}
                 disabled={readOnly}
                 placeholder='0'
-                className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+                className={factoryInputClass()}
                 {...form.register('tooling_mold_cost')}
               />
             </FormField>
@@ -492,7 +493,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               min={1}
               disabled={readOnly}
               placeholder='30'
-              className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+              className={factoryInputClass()}
               {...form.register('lead_time_days')}
             />
           </FormField>
@@ -505,13 +506,13 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               min={1}
               disabled={readOnly}
               placeholder='14'
-              className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+              className={factoryInputClass()}
               {...form.register('validity_days')}
             />
           </FormField>
         </div>
 
-        <div className='rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5'>
+        <div className={factoryBoxClass({ variant: 'neutral', className: 'px-3 py-2.5' })}>
           <div className='flex items-center justify-between gap-2 mb-1'>
             <span className='text-xs font-medium text-gray-500'>เงื่อนไขการชำระเงิน</span>
             <Lock size={14} className='text-gray-400 shrink-0' aria-hidden />
@@ -582,7 +583,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               type='button'
               disabled={uploadingImage}
               onClick={() => imageInputRef.current?.click()}
-              className='inline-flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-xs text-gray-500 hover:border-violet-400 hover:text-violet-600 disabled:opacity-50'
+              className={factoryButtonClass({ variant: 'upload', size: 'sm', className: 'gap-1.5' })}
             >
               {uploadingImage ? (
                 <>
@@ -614,7 +615,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         ) : null}
 
         {(preview || previewLoading) && effectiveQty > 0 ? (
-          <div className='rounded-lg border border-violet-100 bg-violet-50/60 p-3 space-y-1.5'>
+          <div className={factoryBoxClass({ variant: 'violet', className: 'p-3 space-y-1.5' })}>
             <div className='flex items-center justify-between mb-1'>
               <p className='text-[11px] font-bold text-violet-700 uppercase tracking-wide'>
                 สรุปค่าใช้จ่าย (ประมาณ)
@@ -684,7 +685,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                   (factoryNote ?? '') === (initialFactoryNote ?? '')) ||
                 Boolean(highlightError)
               }
-              className='w-full rounded-lg text-white py-2.5 text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2 bg-brand-purple hover:bg-brand-violet-deep'
+              className={factoryButtonClass({ variant: 'submit', size: 'md', className: 'w-full justify-center gap-2' })}
             >
               {saving ? (
                 <>

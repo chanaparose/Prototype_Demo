@@ -110,7 +110,7 @@ export function CategoryCard({
                   key={s.id}
                   className='inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-1'
                 >
-                  ✓ {s.name}
+                  {s.name}
                 </li>
               ))}
             </ul>
