@@ -474,12 +474,13 @@ export function FactoryOrderDetailPage() {
             />
 
             {(isCompleted || showLabelCard || step4?.update.status === 'CD') && (
-              <div className='grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.8fr)] gap-4 lg:gap-5 mb-4'>
+              <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_550px] 2xl:grid-cols-[minmax(0,1fr)_600px] gap-4 lg:gap-5 mb-4 items-start'>
                 {isCompleted ? (
-                  <section className='rounded-md bg-emerald-50 border border-emerald-200 p-5 text-center space-y-1'>
-                    <CheckCircle2 size={24} className='mx-auto text-emerald-600' />
-                    <p className='text-sm font-bold text-emerald-800'>ออเดอร์นี้เสร็จสิ้นแล้ว</p>
-                    <p className='text-xs text-emerald-600'>ขอบคุณที่ดำเนินการเสร็จสิ้น</p>
+                  <section className='rounded-md bg-emerald-50 border border-emerald-200 p-5 text-center space-y-2 flex flex-col items-center justify-center min-h-[200px]'>
+                    <CheckCircle2 size={32} className='text-emerald-600' />
+                    <p className='text-base font-bold text-emerald-800'>ออเดอร์นี้เสร็จสิ้นแล้ว</p>
+                    <p className='text-sm text-emerald-600'>ขอบคุณที่ดำเนินการเสร็จสิ้น</p>
+                    <p className='text-sm text-emerald-600'>และจัดส่งแล้ว</p>
                   </section>
                 ) : (
                   <div />

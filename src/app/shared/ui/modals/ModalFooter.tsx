@@ -53,13 +53,13 @@ const LAYOUT_CLASS: Record<ModalFooterLayout, string> = {
   stack: 'w-full space-y-2',
 };
 
-const PRIMARY_CLASS = 'py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-60';
+const PRIMARY_CLASS = 'w-full py-3 rounded-lg text-white text-sm font-medium disabled:opacity-60';
 
 const OUTLINE_SECONDARY_CLASS =
-  'py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:opacity-60';
+  'w-full py-3 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 disabled:opacity-50 disabled:opacity-60';
 
 const MUTED_SECONDARY_CLASS =
-  'px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 disabled:opacity-50';
+  'px-4 py-3 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 disabled:opacity-50';
 
 function renderPrimary({
   label,

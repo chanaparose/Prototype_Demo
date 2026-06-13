@@ -45,7 +45,7 @@ export function LbiAddressPicker({ value, onChange, onZipCodeAutoFill, disabled 
   }, [selectedSub]);
 
   return (
-    <div className='grid gap-3 sm:grid-cols-3'>
+    <div className='contents'>
       <Cell
         label='จังหวัด *'
         value={value.provinceId}

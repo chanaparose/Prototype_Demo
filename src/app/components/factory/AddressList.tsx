@@ -73,10 +73,7 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
           variant='unstyled'
           type='button'
           onClick={onCreate}
-          className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90'
-          style={{
-            background: 'var(--brand-purple)',
-          }}
+          className='flex items-center gap-1.5 px-3 py-2 bg-brand-purple text-white text-sm font-semibold rounded-lg hover:bg-brand-violet-deep transition-colors'
         >
           <Plus size={13} />
           เพิ่มที่อยู่

@@ -122,38 +122,53 @@ export function CertUploadModal({
       dismissible={!submitting}
       className='max-h-[min(90vh,100dvh)]'
       bodyClassName='p-4 sm:p-5 pb-6 space-y-4'
-      footerClassName='p-4 sm:p-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2'
+      footerClassName='p-4 sm:p-5 pt-2 flex gap-2'
       footer={
-        <ModalFooter
-          layout='grid'
-          accent='success'
-          primary={{
-            label: 'บันทึก',
-            loadingLabel: 'กำลังบันทึก...',
-            loading: submitting,
-            disabled: submitting,
-            onClick: () => void handleSubmit((v) => runSubmit(v, false))(),
-          }}
-          alternatePrimary={
-            mode === 'create'
-              ? {
-                  label: 'บันทึกและเพิ่มใบรับรองถัดไป',
-                  disabled: submitting,
-                  onClick: () => void handleSubmit((v) => runSubmit(v, true))(),
-                }
-              : undefined
-          }
-          secondary={
-            mode === 'edit'
-              ? { label: 'ยกเลิก', onClick: onClose, disabled: submitting }
-              : undefined
-          }
-        />
+        mode === 'create' ? (
+          <ModalFooter
+            layout='flex'
+            accent='success'
+            primary={{
+              label: 'บันทึก',
+              loadingLabel: 'กำลังบันทึก...',
+              loading: submitting,
+              disabled: submitting,
+              onClick: () => void handleSubmit((v) => runSubmit(v, false))(),
+              fullWidth: true,
+            }}
+            alternatePrimary={{
+              label: 'บันทึกและเพิ่มใบรับรองถัดไป',
+              disabled: submitting,
+              onClick: () => void handleSubmit((v) => runSubmit(v, true))(),
+              className: 'flex-1',
+            }}
+          />
+        ) : (
+          <ModalFooter
+            layout='flex'
+            accent='success'
+            primary={{
+              label: 'บันทึก',
+              loadingLabel: 'กำลังบันทึก...',
+              loading: submitting,
+              disabled: submitting,
+              onClick: () => void handleSubmit((v) => runSubmit(v, false))(),
+              fullWidth: true,
+            }}
+            secondary={{
+              label: 'ยกเลิก',
+              onClick: onClose,
+              disabled: submitting,
+              tone: 'outline',
+              className: 'flex-1',
+            }}
+          />
+        )
       }
     >
       {rootError || fieldError ? <ErrorAlert>{rootError ?? fieldError}</ErrorAlert> : null}
 
-      <FormField label='ประเภทใบรับรอง' required error={errors.cert_id?.message}>
+      <FormField label='ประเภทใบรับรอง *' error={errors.cert_id?.message}>
         <Controller
           control={control}
           name='cert_id'
@@ -176,15 +191,13 @@ export function CertUploadModal({
 
       <FormField label='เลขที่เอกสาร (ถ้ามี)' error={errors.cert_number?.message}>
         <Input
-          className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm'
           {...register('cert_number')}
         />
       </FormField>
 
-      <FormField label='วันหมดอายุ' required error={errors.expire_date?.message}>
+      <FormField label='วันหมดอายุ *' error={errors.expire_date?.message}>
         <Input
           type='date'
-          className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm'
           {...register('expire_date')}
         />
       </FormField>
@@ -198,7 +211,6 @@ export function CertUploadModal({
         <Input
           type='file'
           accept='image/*,.pdf'
-          className='text-sm block w-full'
           onChange={(e) => {
             const f = e.target.files?.[0] ?? null;
             setValue('file', f, { shouldValidate: true });

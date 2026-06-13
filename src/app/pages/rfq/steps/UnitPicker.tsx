@@ -25,12 +25,12 @@ type UnitGroup = {
 
 /* WMS / Logistics category mapping */
 const GROUP_META: UnitGroup[] = [
-  { key: 'นับจำนวน', label_th: 'นับจำนวน', label_en: 'Counting', icon: Hash,     color: '#6366f1', bg: '#eef2ff' },
-  { key: 'น้ำหนัก',   label_th: 'น้ำหนัก',   label_en: 'Weight',   icon: Weight,   color: '#f59e0b', bg: '#fffbeb' },
-  { key: 'ปริมาตร',  label_th: 'ปริมาตร',  label_en: 'Volume',   icon: Droplets, color: '#06b6d4', bg: '#ecfeff' },
-  { key: 'ความยาว',  label_th: 'ความยาว',  label_en: 'Length',   icon: Ruler,    color: '#10b981', bg: '#ecfdf5' },
-  { key: 'พื้นที่',     label_th: 'พื้นที่',     label_en: 'Area',     icon: Grid3X3,  color: '#8b5cf6', bg: '#f5f3ff' },
-  { key: 'บรรจุภัณฑ์', label_th: 'บรรจุภัณฑ์', label_en: 'Packaging', icon: Package,  color: '#ef4444', bg: '#fef2f2' },
+  { key: 'นับจำนวน', label_th: 'นับจำนวน', label_en: 'Counting', icon: Hash,     color: '#a238ff', bg: '#f5f0ff' },
+  { key: 'น้ำหนัก',   label_th: 'น้ำหนัก',   label_en: 'Weight',   icon: Weight,   color: '#f28a2e', bg: '#fffbeb' },
+  { key: 'ปริมาตร',  label_th: 'ปริมาตร',  label_en: 'Volume',   icon: Droplets, color: '#7c3aed', bg: '#f5f0ff' },
+  { key: 'ความยาว',  label_th: 'ความยาว',  label_en: 'Length',   icon: Ruler,    color: '#0d9488', bg: '#ecfdf5' },
+  { key: 'พื้นที่',     label_th: 'พื้นที่',     label_en: 'Area',     icon: Grid3X3,  color: '#a238ff', bg: '#f5f0ff' },
+  { key: 'บรรจุภัณฑ์', label_th: 'บรรจุภัณฑ์', label_en: 'Packaging', icon: Package,  color: '#f28a2e', bg: '#fffbeb' },
 ];
 
 function getGroupMeta(group_th: string): UnitGroup {
@@ -102,7 +102,7 @@ export function UnitPicker({ units, value, onChange }: Props) {
         variant='unstyled'
         type='button'
         onClick={() => setOpen(true)}
-        className='w-[130px] shrink-0 flex items-center justify-between gap-1 rounded-xl border border-gray-200 bg-[var(--neutral-warm-surface)]/50 px-3 py-2 text-sm font-medium text-brand-navy-deep hover:border-gray-300 transition-colors'
+        className='w-[130px] shrink-0 flex items-center justify-between gap-1 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-sm font-normal text-gray-900 hover:border-brand-purple/40 transition-colors'
       >
         <span className='truncate'>{triggerLabel}</span>
         <ChevronDown size={14} className='shrink-0 text-gray-400' />
@@ -123,7 +123,7 @@ export function UnitPicker({ units, value, onChange }: Props) {
               variant='unstyled'
               type='button'
               onClick={() => handleSelect(null)}
-              className='flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors'
+              className='flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors'
             >
               ใช้ค่าเริ่มต้น (ชิ้น)
             </Button>
@@ -131,7 +131,7 @@ export function UnitPicker({ units, value, onChange }: Props) {
               variant='unstyled'
               type='button'
               onClick={() => setOpen(false)}
-              className='flex-1 py-2.5 rounded-xl bg-brand-royal text-sm font-semibold text-white hover:bg-brand-royal/90 transition-colors'
+              className='flex-1 py-2.5 rounded-xl bg-brand-purple text-sm font-semibold text-white hover:bg-brand-purple/90 transition-colors'
             >
               ยืนยัน
             </Button>
@@ -168,9 +168,9 @@ export function UnitPicker({ units, value, onChange }: Props) {
             <button
               type='button'
               onClick={() => setActiveGroup(null)}
-              className={`shrink-0 px-3 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
+              className={`shrink-0 px-3 py-2.5 text-xs font-medium border-b-2 transition-colors ${
                 activeGroup === null
-                  ? 'border-brand-royal text-brand-royal'
+                  ? 'border-brand-purple text-brand-purple'
                   : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}
             >
@@ -186,7 +186,7 @@ export function UnitPicker({ units, value, onChange }: Props) {
                   onClick={() => setActiveGroup(g.key)}
                   className={`shrink-0 flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
                     isActive
-                      ? 'border-brand-royal text-brand-royal'
+                      ? 'border-brand-purple text-brand-purple'
                       : 'border-transparent text-gray-400 hover:text-gray-600'
                   }`}
                 >
@@ -214,7 +214,7 @@ export function UnitPicker({ units, value, onChange }: Props) {
                       >
                         <Icon size={13} style={{ color: g.color }} />
                       </div>
-                      <span className='text-xs font-bold text-gray-700'>{g.label_th}</span>
+                      <span className='text-xs font-semibold text-gray-700'>{g.label_th}</span>
                       <span className='text-[10px] text-gray-400'>{g.label_en}</span>
                     </div>
                     <div className='grid grid-cols-3 gap-2'>
@@ -227,21 +227,21 @@ export function UnitPicker({ units, value, onChange }: Props) {
                             onClick={() => handleSelect(u)}
                             className={`relative flex flex-col items-center gap-0.5 p-3 rounded-xl border text-center transition-all active:scale-[0.97] ${
                               isSelected
-                                ? 'border-brand-royal bg-indigo-50 ring-2 ring-brand-royal/20'
+                                ? 'border-brand-purple bg-indigo-50 ring-2 ring-brand-purple/20'
                                 : 'border-gray-150 bg-white hover:border-gray-300 hover:bg-gray-50'
                             }`}
                           >
                             {isSelected && (
                               <div className='absolute top-1.5 right-1.5'>
-                                <Check size={12} className='text-brand-royal' />
+                                <Check size={12} className='text-brand-purple' />
                               </div>
                             )}
-                            <span className='text-sm font-bold text-gray-800'>{u.name_th}</span>
+                            <span className='text-sm font-semibold text-gray-800'>{u.name_th}</span>
                             <span className='text-[10px] text-gray-400 leading-tight'>
                               {u.name_en}
                             </span>
                             <span
-                              className='mt-0.5 inline-block rounded-md px-1.5 py-0.5 text-[10px] font-mono font-semibold'
+                              className='mt-0.5 inline-block rounded-md px-1.5 py-0.5 text-[10px] font-mono font-medium'
                               style={{ backgroundColor: g.bg, color: g.color }}
                             >
                               {u.code}
@@ -273,13 +273,13 @@ export function UnitPicker({ units, value, onChange }: Props) {
                     onClick={() => handleSelect(u)}
                     className={`relative flex flex-col items-center gap-0.5 p-3 rounded-xl border text-center transition-all active:scale-[0.97] ${
                       isSelected
-                        ? 'border-brand-royal bg-indigo-50 ring-2 ring-brand-royal/20'
+                        ? 'border-brand-purple bg-indigo-50 ring-2 ring-brand-purple/20'
                         : 'border-gray-150 bg-white hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
                     {isSelected && (
                       <div className='absolute top-1.5 right-1.5'>
-                        <Check size={12} className='text-brand-royal' />
+                        <Check size={12} className='text-brand-purple' />
                       </div>
                     )}
                     <span className='text-sm font-bold text-gray-800'>{u.name_th}</span>
