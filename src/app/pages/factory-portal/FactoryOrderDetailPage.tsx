@@ -43,6 +43,7 @@ import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { Button } from '@/components/ui/button';
 import { FactoryNoteInline } from '@/components/factory/FactoryNoteInline';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 
 function DetailField({
   label,
@@ -71,7 +72,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className='rounded-2xl bg-white border border-slate-200 shadow-sm p-4'>
+    <section className='rounded-md bg-white border border-slate-200 p-4'>
       <div className='flex items-center gap-2 mb-3'>
         {icon}
         <h2 className='text-sm font-bold text-slate-900'>{title}</h2>
@@ -181,7 +182,7 @@ function StartWorkButton({ onStart }: { onStart: () => Promise<void> }) {
         setBusy(true);
         try { await onStart(); } finally { setBusy(false); }
       }}
-      className='w-full rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-60'
+      className='w-full rounded-md py-2.5 text-sm font-bold text-white disabled:opacity-60'
       style={{ background: 'var(--brand-mauve)' }}
     >
       {busy ? 'กำลังดำเนินการ...' : 'เริ่มงาน'}
@@ -438,33 +439,44 @@ export function FactoryOrderDetailPage() {
 
   return (
     <div className='space-y-4 pb-24'>
-      <header className='sticky top-0 z-[99999] -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 -mt-4 sm:-mt-5 lg:-mt-6 flex w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'>
-        <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8'>
+      <header className='sticky top-0 z-[99999] -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 2xl:-mx-10 -mt-4 sm:-mt-5 lg:-mt-6 flex w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] 2xl:w-[calc(100%+5rem)] border-b border-slate-200 bg-white/95 backdrop-blur'>
+        <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 2xl:px-10'>
           <Button
             variant='unstyled'
             type='button'
             onClick={() => navigate('/factory/orders')}
-            className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
+            className='flex shrink-0 items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 transition-colors'
           >
             <ChevronLeft size={18} />
             กลับ
           </Button>
+          <div className='hidden sm:flex items-center gap-2 text-xs text-slate-500'>
+            <Package size={14} className='text-brand-purple' />
+            <span>Factory / Orders</span>
+          </div>
         </div>
       </header>
 
-      <div className='w-full max-w-7xl mx-auto'>
+      <div className='w-full max-w-[1500px] mx-auto space-y-4'>
         {error ? <ErrorAlert className='mb-4'>{error}</ErrorAlert> : null}
 
         {loading && !order.status ? (
           <div className='flex justify-center py-16'>
-            <div className='w-10 h-10 border-3 border-brand-indigo border-t-transparent rounded-full animate-spin' />
+            <div className='w-10 h-10 border-3 border-brand-purple border-t-transparent rounded-full animate-spin' />
           </div>
         ) : (
           <>
+            <FactoryPageHeader
+              title={title}
+              subtitle={`คำสั่งซื้อ #${orderCode}`}
+              icon={Package}
+              count={statusLabel(status)}
+            />
+
             {(isCompleted || showLabelCard || step4?.update.status === 'CD') && (
-              <div className='grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-5 mb-4'>
+              <div className='grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.8fr)] gap-4 lg:gap-5 mb-4'>
                 {isCompleted ? (
-                  <section className='rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center space-y-1'>
+                  <section className='rounded-md bg-emerald-50 border border-emerald-200 p-5 text-center space-y-1'>
                     <CheckCircle2 size={24} className='mx-auto text-emerald-600' />
                     <p className='text-sm font-bold text-emerald-800'>ออเดอร์นี้เสร็จสิ้นแล้ว</p>
                     <p className='text-xs text-emerald-600'>ขอบคุณที่ดำเนินการเสร็จสิ้น</p>
@@ -474,8 +486,8 @@ export function FactoryOrderDetailPage() {
                 )}
 
                 {showLabelCard ? (
-                  <section className='rounded-2xl overflow-hidden border border-orange-200 shadow-sm'>
-                    <div className='px-4 py-2.5 flex items-center gap-2 bg-[#ee4d2d]'>
+                  <section className='rounded-md overflow-hidden border border-slate-200 bg-white'>
+                    <div className='px-4 py-2.5 flex items-center gap-2 bg-brand-purple'>
                       <Printer size={15} className='text-white' />
                       <p className='text-sm font-bold text-white flex-1'>ใบปะหน้าพัสดุ</p>
                       <span className='text-[10px] font-semibold bg-white/20 text-white px-2 py-0.5 rounded-full'>
@@ -483,7 +495,7 @@ export function FactoryOrderDetailPage() {
                       </span>
                     </div>
                     <div className='bg-white px-4 py-3 space-y-3'>
-                      <div className='rounded-xl border border-orange-100 bg-orange-50 px-3 py-2.5'>
+                      <div className='rounded-md border border-slate-200 bg-[var(--brand-page)] px-3 py-2.5'>
                         <p className='text-[9px] font-bold text-orange-600 uppercase tracking-wide mb-1.5'>
                           ผู้รับ
                         </p>
@@ -526,7 +538,7 @@ export function FactoryOrderDetailPage() {
                         variant='unstyled'
                         type='button'
                         onClick={handleOpenLabel}
-                        className='w-full rounded-xl py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2 bg-[#ee4d2d] hover:opacity-90 transition-opacity'
+                        className='w-full rounded-md py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2 bg-brand-purple hover:bg-brand-violet-deep transition-colors'
                       >
                         <Printer size={15} />
                         ทำใบปะหน้าพัสดุ
@@ -538,8 +550,8 @@ export function FactoryOrderDetailPage() {
                     </div>
                   </section>
                 ) : step4?.update.status === 'CD' ? (
-                  <section className='rounded-2xl overflow-hidden border border-emerald-200 shadow-sm bg-white'>
-                    <div className='px-4 py-2.5 flex items-center gap-2 bg-emerald-50'>
+                  <section className='rounded-md overflow-hidden border border-slate-200 bg-white'>
+                    <div className='px-4 py-2.5 flex items-center gap-2 bg-emerald-50/80'>
                       <Truck size={15} className='text-emerald-700' />
                       <p className='text-sm font-bold text-emerald-800 flex-1'>จัดส่งแล้ว</p>
                       <span className='text-[10px] font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200'>
@@ -547,13 +559,13 @@ export function FactoryOrderDetailPage() {
                       </span>
                     </div>
                     <div className='px-4 py-3 space-y-2.5'>
-                      <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5'>
+                      <div className='rounded-md border border-slate-200 bg-[var(--brand-page)] px-3 py-2.5'>
                         <p className='text-[10px] text-slate-500 mb-1'>บริษัทขนส่ง</p>
                         <p className='text-sm font-semibold text-slate-900'>
                           {shippedCourier || <span className='text-slate-400 font-normal'>-</span>}
                         </p>
                       </div>
-                      <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5'>
+                      <div className='rounded-md border border-slate-200 bg-[var(--brand-page)] px-3 py-2.5'>
                         <p className='text-[10px] text-slate-500 mb-1'>เลขพัสดุ</p>
                         <p className='text-sm font-semibold text-slate-900 font-mono break-all'>
                           {shippedTrackingNo || (
@@ -568,9 +580,9 @@ export function FactoryOrderDetailPage() {
                 )}
               </div>
             )}
-          <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_550px] gap-4 lg:gap-5 items-start'>
+            <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_550px] 2xl:grid-cols-[minmax(0,1fr)_600px] gap-4 lg:gap-5 items-start'>
             <div className='space-y-4 min-w-0'>
-              <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
+              <div className='rounded-md border border-slate-200 bg-white p-5'>
                 <div className='flex items-start justify-between gap-2 mb-3'>
                   <div className='min-w-0'>
                     <h2 className='text-base font-bold text-slate-900 truncate'>{title}</h2>
@@ -585,35 +597,35 @@ export function FactoryOrderDetailPage() {
                   <div className='mb-4'>
                     <div className='flex items-center justify-between text-xs text-slate-500 mb-1.5'>
                       <span>ความคืบหน้า</span>
-                      <span className='font-semibold text-indigo-700'>
+                      <span className='font-semibold text-brand-purple'>
                         {progressPct}% ({completedCount}/{totalSteps} ขั้นตอน)
                       </span>
                     </div>
                     <div className='h-2 rounded-full bg-slate-100 overflow-hidden'>
                       <progress
-                        className='block h-full w-full appearance-none rounded-full overflow-hidden [&::-webkit-progress-bar]:bg-slate-100 [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-brand-indigo [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-brand-indigo'
+                        className='block h-full w-full appearance-none rounded-full overflow-hidden [&::-webkit-progress-bar]:bg-slate-100 [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-brand-purple [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-brand-purple'
                         value={progressPct}
                         max={100}
                         aria-label='ความคืบหน้าการผลิต'
                       />
                     </div>
-        </div>
-      ) : null}
+                  </div>
+                ) : null}
 
                 <div className='grid grid-cols-3 gap-3'>
-                  <div className='rounded-xl bg-slate-50 px-3 py-2.5'>
+                  <div className='rounded-md bg-[var(--brand-page)] px-3 py-2.5'>
                     <p className='text-[10px] text-slate-500 uppercase tracking-wide'>มูลค่ารวม</p>
                     <p className='font-bold text-slate-900 text-sm mt-0.5'>
                       {formatCurrency(Number(order.total_amount ?? 0))}
                     </p>
                   </div>
-                  <div className='rounded-xl bg-slate-50 px-3 py-2.5'>
+                  <div className='rounded-md bg-[var(--brand-page)] px-3 py-2.5'>
                     <p className='text-[10px] text-slate-500 uppercase tracking-wide'>ชำระแล้ว</p>
                     <p className='font-bold text-emerald-700 text-sm mt-0.5'>
                       {formatCurrency(Number(order.total_amount ?? order.deposit_amount ?? 0))}
                     </p>
                   </div>
-                  <div className='rounded-xl bg-slate-50 px-3 py-2.5'>
+                  <div className='rounded-md bg-[var(--brand-page)] px-3 py-2.5'>
                     <p className='text-[10px] text-slate-500 uppercase tracking-wide'>กำหนดส่ง</p>
                     <p className='font-bold text-slate-900 text-sm mt-0.5'>
                       {formatDate(order.estimated_delivery as string | Date | null | undefined)}
@@ -623,10 +635,10 @@ export function FactoryOrderDetailPage() {
               </div>
 
               {/* ── Tabbed detail card ── */}
-              <div className='rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden'>
+              <div className='rounded-md border border-slate-200 bg-white overflow-hidden'>
                 {/* Tab row */}
                 <div
-                  className='flex overflow-x-auto [&::-webkit-scrollbar]:hidden border-b border-slate-100'
+                  className='flex overflow-x-auto [&::-webkit-scrollbar]:hidden border-b border-slate-100 bg-[var(--brand-page)]/50'
                   style={{ scrollbarWidth: 'none' }}
                   role='tablist'
                 >
@@ -644,10 +656,10 @@ export function FactoryOrderDetailPage() {
                         role='tab'
                         aria-selected={on}
                         onClick={() => setDetailTab(t.id)}
-                        className='flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-5 py-3.5 text-[13px] -mb-px transition-colors focus:outline-none'
+                        className='flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-3 text-[13px] -mb-px transition-colors focus:outline-none'
                         style={{
-                          borderBottomColor: on ? 'var(--brand-indigo)' : 'transparent',
-                          color: on ? 'var(--brand-indigo)' : '#64748b',
+                          borderBottomColor: on ? 'var(--brand-purple)' : 'transparent',
+                          color: on ? 'var(--brand-purple)' : '#64748b',
                           fontWeight: on ? 600 : 400,
                         }}
                       >
@@ -664,7 +676,7 @@ export function FactoryOrderDetailPage() {
                     <table className='w-full text-sm'>
                       <tbody className='divide-y divide-slate-100'>
                         {[
-                          { label: 'Order No.', value: <span className='font-mono font-semibold text-indigo-600'>#{orderCode}</span> },
+                          { label: 'Order No.', value: <span className='font-mono font-semibold text-brand-purple'>#{orderCode}</span> },
                           { label: 'สถานะ', value: <StatusBadge variant={badgeVariant} size='sm'>{statusLabel(status)}</StatusBadge> },
                           { label: 'วันที่สั่งซื้อ', value: formatDateTime(order.created_at as string | Date | null | undefined) },
                           { label: 'กำหนดส่งสินค้า', value: formatDateTime(order.estimated_delivery as string | Date | null | undefined) },
@@ -672,9 +684,9 @@ export function FactoryOrderDetailPage() {
                           { label: 'มัดจำ (Deposit)', value: <span className='font-semibold tabular-nums text-emerald-700'>{formatCurrency(Number(order.deposit_amount ?? 0))}</span> },
                           { label: 'วิธีจัดส่ง', value: shippingMethodName },
                           ...(requestKindRaw && requestKindLabel[requestKindRaw] ? [{ label: 'ประเภทออเดอร์', value: <span className='text-[12px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full'>{requestKindLabel[requestKindRaw]}</span> }] : []),
-                          ...(trackingNumber ? [{ label: 'Tracking No.', value: <span className='font-mono bg-slate-100 rounded px-2 py-0.5 text-xs'>{trackingNumber}</span> }] : []),
+                          ...(trackingNumber ? [{ label: 'Tracking No.', value: <span className='font-mono bg-slate-100 rounded-md px-2 py-0.5 text-xs'>{trackingNumber}</span> }] : []),
                         ].map(({ label, value }, i) => (
-                          <tr key={label} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
+                          <tr key={label} className={i % 2 === 0 ? 'bg-white' : 'bg-[var(--brand-page)]/40'}>
                             <td className='px-4 py-2.5 text-[12px] font-medium text-slate-500 w-[40%] align-middle'>
                               {label}
                             </td>
@@ -688,7 +700,7 @@ export function FactoryOrderDetailPage() {
 
                     {/* RFQ reference — inline inside tab */}
                     {rfq ? (
-                      <div className='px-4 py-3 bg-slate-50/40'>
+                      <div className='px-4 py-3 bg-[var(--brand-page)]/35'>
                         <RfqReferenceCard rfq={rfq} variant='accordion' collapsible={false} />
                       </div>
                     ) : null}
@@ -705,7 +717,7 @@ export function FactoryOrderDetailPage() {
                           { label: 'เบอร์โทร', value: customerPhone || '-' },
                           { label: 'วิธีจัดส่ง', value: shippingMethodName },
                         ].map(({ label, value }, i) => (
-                          <tr key={label} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
+                          <tr key={label} className={i % 2 === 0 ? 'bg-white' : 'bg-[var(--brand-page)]/40'}>
                             <td className='px-4 py-2.5 text-[12px] font-medium text-slate-500 w-[40%] align-middle'>
                               {label}
                             </td>
@@ -717,9 +729,9 @@ export function FactoryOrderDetailPage() {
                       </tbody>
                     </table>
                     {/* ที่อยู่จัดส่ง */}
-                    <div className='px-4 py-3 bg-slate-50/40'>
+                    <div className='px-4 py-3 bg-[var(--brand-page)]/35'>
                       <p className='text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5'>
-                        <MapPin size={11} className='text-indigo-500' /> ที่อยู่จัดส่ง
+                        <MapPin size={11} className='text-brand-purple' /> ที่อยู่จัดส่ง
                       </p>
                       {fullShippingAddress ? (
                         <div className='space-y-1'>
@@ -770,15 +782,15 @@ export function FactoryOrderDetailPage() {
 
             <aside className='space-y-4 xl:sticky xl:top-20'>
 
-              <section className='rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-3'>
+              <section className='rounded-md bg-white border border-slate-200 p-4 space-y-3'>
                 <div className='flex items-center gap-2'>
-                  <Flag size={14} className='text-indigo-600' />
+                  <Flag size={14} className='text-brand-purple' />
                   <h2 className='text-sm font-bold text-slate-900'>ความคืบหน้าการผลิต</h2>
                 </div>
 
                 {updQ.isLoading ? (
                   <div className='flex items-center gap-2 py-6 justify-center text-gray-500 text-sm'>
-                    <div className='w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin' />
+                    <div className='w-5 h-5 border-2 border-brand-purple border-t-transparent rounded-full animate-spin' />
                     กำลังโหลด…
                   </div>
                 ) : merged.length === 0 ? (
@@ -790,7 +802,7 @@ export function FactoryOrderDetailPage() {
                       <StartWorkButton onStart={() => handleStepSubmit({ step_id: 0, status: 'CD', image_urls: [] })} />
                     )}
                     {step0Accepted ? (
-                      <div className='rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 flex items-center justify-between gap-2'>
+                      <div className='rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2.5 flex items-center justify-between gap-2'>
                         <div className='flex items-center gap-2 min-w-0'>
                           <Handshake size={16} className='shrink-0 text-emerald-600' />
                           <div className='min-w-0'>
@@ -833,7 +845,7 @@ export function FactoryOrderDetailPage() {
                       </div>
                     ) : !step0Accepted && order.estimated_delivery ? (
                       /* ยังไม่รับงาน: แสดง estimated_delivery อย่างเดียว */
-                      <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 flex items-center justify-between gap-2'>
+                      <div className='rounded-md border border-slate-200 bg-[var(--brand-page)] px-3 py-2 flex items-center justify-between gap-2'>
                         <div className='flex items-center gap-1.5'>
                           <CalendarClock size={14} className='text-slate-500' />
                           <p className='text-xs text-slate-600'>กำหนดส่ง</p>
@@ -910,7 +922,7 @@ function slipStatusConfig(s: string) {
   const code = s.toUpperCase();
   if (code === 'AP') return { label: 'ยืนยันแล้ว', border: 'border-emerald-300', bg: 'bg-emerald-50', icon: 'text-emerald-600', title: 'text-emerald-800' };
   if (code === 'RJ') return { label: 'ปฏิเสธแล้ว', border: 'border-red-300', bg: 'bg-red-50', icon: 'text-red-600', title: 'text-red-800' };
-  if (code === 'PE') return { label: 'รอลูกค้าแนบสลีป', border: 'border-slate-200', bg: 'bg-slate-50', icon: 'text-slate-400', title: 'text-slate-600' };
+  if (code === 'PE') return { label: 'รอลูกค้าแนบสลีป', border: 'border-slate-200', bg: 'bg-[var(--brand-page)]', icon: 'text-slate-400', title: 'text-slate-600' };
   return { label: 'รอตรวจสอบ', border: 'border-amber-300', bg: 'bg-amber-50', icon: 'text-amber-600', title: 'text-amber-800' };
 }
 
@@ -992,7 +1004,7 @@ function SlipVerificationCard({
   };
 
   return (
-    <div className={`rounded-2xl border-2 ${cfg.border} ${cfg.bg} p-4 space-y-3`}>
+    <div className={`rounded-md border ${cfg.border} ${cfg.bg} p-4 space-y-3`}>
       {/* Header */}
       <div className='flex items-center justify-between gap-2'>
         <div className='flex items-center gap-2'>
@@ -1020,7 +1032,7 @@ function SlipVerificationCard({
           <img
             src={String(slipData.slip_url)}
             alt='สลีปการโอนเงิน'
-            className={`rounded-xl border max-h-52 object-contain cursor-pointer hover:opacity-80 transition-opacity ${
+            className={`rounded-md border max-h-52 object-contain cursor-pointer hover:opacity-80 transition-opacity ${
               isApproved ? 'border-emerald-200' : isRejected ? 'border-red-200' : 'border-amber-200'
             }`}
           />
@@ -1029,7 +1041,7 @@ function SlipVerificationCard({
 
       {/* Slip note */}
       {slipData.slip_note ? (
-        <p className={`text-xs rounded-lg px-3 py-1.5 ${
+        <p className={`text-xs rounded-md px-3 py-1.5 ${
           isApproved ? 'text-emerald-700 bg-emerald-100'
           : isRejected ? 'text-red-700 bg-red-100'
           : 'text-amber-700 bg-amber-100'
@@ -1061,7 +1073,7 @@ function SlipVerificationCard({
               type='button'
               disabled={acting}
               onClick={handleApprove}
-              className='flex-1 rounded-xl py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-60'
+              className='flex-1 rounded-md py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-60'
             >
               {acting ? 'กำลังดำเนินการ…' : 'ยืนยันรับเงิน'}
             </Button>
@@ -1070,7 +1082,7 @@ function SlipVerificationCard({
               type='button'
               disabled={acting}
               onClick={() => setShowRejectInput(true)}
-              className='rounded-xl py-2.5 px-4 text-sm font-semibold text-red-600 border border-red-200 bg-white hover:bg-red-50 transition-colors disabled:opacity-60'
+              className='rounded-md py-2.5 px-4 text-sm font-semibold text-red-600 border border-red-200 bg-white hover:bg-red-50 transition-colors disabled:opacity-60'
             >
               ปฏิเสธ
             </Button>
@@ -1081,7 +1093,7 @@ function SlipVerificationCard({
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder='ระบุเหตุผลในการปฏิเสธ (อย่างน้อย 5 ตัวอักษร)'
-              className='w-full rounded-xl border border-red-200 px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none'
+              className='w-full rounded-md border border-red-200 px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none'
               rows={2}
             />
             <div className='flex items-center gap-2'>
@@ -1090,7 +1102,7 @@ function SlipVerificationCard({
                 type='button'
                 disabled={acting || rejectReason.trim().length < 5}
                 onClick={handleReject}
-                className='flex-1 rounded-xl py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-60'
+                className='flex-1 rounded-md py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-60'
               >
                 {acting ? 'กำลังดำเนินการ…' : 'ยืนยันปฏิเสธสลีป'}
               </Button>
@@ -1098,7 +1110,7 @@ function SlipVerificationCard({
                 variant='unstyled'
                 type='button'
                 onClick={() => { setShowRejectInput(false); setRejectReason(''); }}
-                className='rounded-xl py-2 px-4 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors'
+                className='rounded-md py-2 px-4 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors'
               >
                 ยกเลิก
               </Button>
@@ -1110,7 +1122,7 @@ function SlipVerificationCard({
       {/* Fullscreen preview modal */}
       {previewUrl ? (
         <div className='fixed inset-0 z-[99999] bg-black/70 flex items-center justify-center p-4' onClick={() => setPreviewUrl(null)}>
-          <div className='relative max-w-3xl max-h-[90vh]' onClick={(e) => e.stopPropagation()}>
+          <div className='relative max-w-5xl max-h-[90vh]' onClick={(e) => e.stopPropagation()}>
             <button
               type='button'
               onClick={() => setPreviewUrl(null)}
@@ -1118,7 +1130,7 @@ function SlipVerificationCard({
             >
               ✕
             </button>
-            <img src={previewUrl} alt='สลีปเต็ม' className='max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl' />
+            <img src={previewUrl} alt='สลีปเต็ม' className='max-w-full max-h-[85vh] object-contain rounded-md shadow-sm' />
           </div>
         </div>
       ) : null}
@@ -1170,10 +1182,10 @@ function PaymentTransactionsTable({ orderId }: { orderId: string | number }) {
 
   if (loading) {
     return (
-      <div className='rounded-2xl border border-slate-200 bg-white p-4'>
+      <div className='rounded-md border border-slate-200 bg-white p-4'>
         <div className='h-5 w-40 bg-slate-100 rounded animate-pulse mb-3' />
         <div className='space-y-2'>
-          {[1, 2].map((i) => <div key={i} className='h-10 bg-slate-50 rounded animate-pulse' />)}
+          {[1, 2].map((i) => <div key={i} className='h-10 bg-[var(--brand-page)] rounded animate-pulse' />)}
         </div>
       </div>
     );
@@ -1182,9 +1194,9 @@ function PaymentTransactionsTable({ orderId }: { orderId: string | number }) {
   if (txs.length === 0) return null;
 
   return (
-    <div className='rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden'>
+    <div className='rounded-md border border-slate-200 bg-white overflow-hidden'>
       <div className='px-4 py-3 border-b border-slate-100 flex items-center gap-2'>
-        <Handshake size={14} className='text-indigo-600' />
+        <Handshake size={14} className='text-brand-purple' />
         <h2 className='text-sm font-bold text-slate-900'>ประวัติการชำระเงิน</h2>
         <span className='text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500'>
           {txs.length} รายการ
@@ -1193,7 +1205,7 @@ function PaymentTransactionsTable({ orderId }: { orderId: string | number }) {
       <div className='overflow-x-auto'>
         <table className='w-full text-sm'>
           <thead>
-            <tr className='bg-slate-50 text-[11px] font-semibold text-slate-500 uppercase tracking-wide'>
+            <tr className='bg-[var(--brand-page)] text-[11px] font-semibold text-slate-500 uppercase tracking-wide'>
               <th className='px-4 py-2.5 text-left'>วันที่</th>
               <th className='px-4 py-2.5 text-left'>ประเภท</th>
               <th className='px-4 py-2.5 text-right'>จำนวนเงิน</th>
@@ -1205,7 +1217,7 @@ function PaymentTransactionsTable({ orderId }: { orderId: string | number }) {
             {txs.map((tx, i) => {
               const txId = String(tx.payment_id ?? tx.tx_id ?? tx.id ?? i);
               return (
-                <tr key={txId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}>
+                <tr key={txId} className={i % 2 === 0 ? 'bg-white' : 'bg-[var(--brand-page)]/40'}>
                   <td className='px-4 py-2.5 text-[12px] text-slate-600 whitespace-nowrap'>
                     {formatDateTime(String(tx.created_at ?? tx.paid_at ?? '-'))}
                   </td>

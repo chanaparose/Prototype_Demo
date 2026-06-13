@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 
 const NAVY = appColors.brand.navy;
-const ORANGE = appColors.brand.indigo;
+const ORANGE = appColors.brand.purple;
 const TEAL = appColors.brand.teal;
 
 type TxRow = Record<string, unknown>;
@@ -94,9 +94,9 @@ function StatCard({
   accent: string;
 }) {
   return (
-    <div className='rounded-2xl border border-gray-100 bg-white shadow-sm p-4'>
+    <div className='rounded-lg border border-gray-100 bg-white p-4'>
       <div
-        className='w-9 h-9 rounded-xl flex items-center justify-center mb-3'
+        className='w-9 h-9 rounded-lg flex items-center justify-center mb-3'
         style={{ backgroundColor: `${accent}1A` }}
       >
         <Icon size={17} style={{ color: accent }} />
@@ -122,7 +122,7 @@ function TxRow({ t }: { t: NormTx }) {
   return (
     <div className='flex items-center gap-3 px-4 py-3 border-t border-gray-50 hover:bg-brand-page transition-colors'>
       <div
-        className='w-9 h-9 rounded-xl flex items-center justify-center shrink-0'
+        className='w-9 h-9 rounded-lg flex items-center justify-center shrink-0'
         style={{ backgroundColor: credit ? 'rgba(5,150,105,0.1)' : 'rgba(220,38,38,0.1)' }}
       >
         {credit ? (
@@ -235,10 +235,10 @@ export function FactoryWalletPage() {
       <div className='space-y-4'>
         <FactoryPageHeader title='กระเป๋าเงิน' subtitle='Factory / Wallet' icon={Wallet} />
         <div className='space-y-4'>
-          <div className='h-48 rounded-2xl bg-white animate-pulse' />
+          <div className='h-48 rounded-lg bg-white animate-pulse' />
           <div className='grid grid-cols-3 gap-3'>
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className='h-24 rounded-2xl bg-white animate-pulse' />
+              <div key={i} className='h-24 rounded-lg bg-white animate-pulse' />
             ))}
           </div>
         </div>
@@ -260,7 +260,7 @@ export function FactoryWalletPage() {
             variant='unstyled'
             type='button'
             onClick={() => void load()}
-            className='flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 hover:bg-gray-50 transition-colors font-medium'
+            className='flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 hover:bg-gray-50 transition-colors font-medium'
           >
             <RefreshCw size={12} />
             รีเฟรช
@@ -268,24 +268,24 @@ export function FactoryWalletPage() {
         </div>
 
         {error ? (
-          <div className='flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3'>
+          <div className='flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-4 py-3'>
             <AlertCircle size={16} className='shrink-0' />
             <span>{error} — แสดงข้อมูลตัวอย่างแทน</span>
           </div>
         ) : null}
 
-        <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
+        <div className='rounded-lg border border-slate-200 bg-white p-5'>
           <p className='text-sm text-slate-500 mb-0.5'>ยอดคงเหลือ</p>
           <p className='text-4xl font-bold tabular-nums text-slate-900'>{balanceDisplay}</p>
 
           <div className='mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3'>
-            <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2'>
+            <div className='rounded-lg border border-slate-200 bg-[var(--brand-page)] px-3 py-2'>
               <p className='text-xs text-slate-500'>รอดำเนินการ</p>
               <p className='text-base font-semibold tabular-nums text-slate-800'>
                 {pendingDisplay}
               </p>
             </div>
-            <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2'>
+            <div className='rounded-lg border border-slate-200 bg-[var(--brand-page)] px-3 py-2'>
               <p className='text-xs text-slate-500'>รายได้รวมเดือนนี้</p>
               <p className='text-base font-semibold tabular-nums text-slate-800'>
                 {formatCurrency(thisMonthEarned)}
@@ -301,7 +301,7 @@ export function FactoryWalletPage() {
                 setWithdrawAmount('');
                 withdraw.openModal();
               }}
-              className='flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors'
+              className='flex-1 py-2.5 rounded-lg text-sm font-semibold text-white bg-brand-purple hover:bg-brand-violet-deep transition-colors'
             >
               ถอนเงิน
             </Button>
@@ -311,7 +311,7 @@ export function FactoryWalletPage() {
               onClick={() =>
                 document.getElementById('tx-section')?.scrollIntoView({ behavior: 'smooth' })
               }
-              className='flex-1 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors'
+              className='flex-1 py-2.5 rounded-lg text-sm font-semibold border border-slate-200 text-slate-700 hover:bg-[var(--brand-page)] transition-colors'
             >
               ประวัติการถอน
             </Button>
@@ -335,7 +335,7 @@ export function FactoryWalletPage() {
         </div>
 
         <div
-          className='rounded-2xl border px-4 py-3 text-sm'
+          className='rounded-lg border px-4 py-3 text-sm'
           style={{ borderColor: '#C4B5D4', backgroundColor: '#F3EEF8', color: '#4A267D' }}
         >
           <p className='font-semibold mb-0.5'>เติมเงิน / ถอนเงิน (PromptPay)</p>
@@ -345,7 +345,7 @@ export function FactoryWalletPage() {
         </div>
 
         {pendingWithdrawals.length > 0 && (
-          <section className='rounded-2xl border border-amber-100 bg-amber-50 overflow-hidden'>
+          <section className='rounded-lg border border-amber-100 bg-amber-50 overflow-hidden'>
             <div className='px-4 py-3 border-b border-amber-100 flex items-center gap-2'>
               <Clock size={15} style={{ color: 'var(--status-warning-deep)' }} />
               <h2 className='text-sm font-bold' style={{ color: '#92400E' }}>
@@ -387,7 +387,7 @@ export function FactoryWalletPage() {
 
         <section
           id='tx-section'
-          className='rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden'
+          className='rounded-lg border border-gray-100 bg-white overflow-hidden'
         >
           <div className='px-4 pt-4 pb-3 border-b border-gray-50'>
             <div className='flex items-center justify-between mb-3'>
@@ -412,13 +412,12 @@ export function FactoryWalletPage() {
                     key={key}
                     type='button'
                     onClick={() => setFilterType(key)}
-                    className='px-3 py-1.5 rounded-xl text-xs font-semibold transition-all'
+                    className='px-3 py-1.5 rounded-lg text-xs font-semibold transition-all'
                     style={
                       active
                         ? {
                             backgroundColor: ORANGE,
                             color: 'var(--neutral-white)',
-                            boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
                           }
                         : { backgroundColor: 'var(--neutral-muted)', color: '#4B5563' }
                     }
@@ -451,7 +450,7 @@ export function FactoryWalletPage() {
             className='absolute inset-0 bg-black/50'
             onClick={() => withdraw.closeModal()}
           />
-          <div className='absolute inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[420px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl overflow-hidden'>
+          <div className='absolute inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[420px] bottom-4 rounded-lg bg-white border border-gray-100 overflow-hidden'>
             <div className='flex justify-center pt-3 pb-1'>
               <div className='w-10 h-1 rounded-full bg-gray-200' />
             </div>
@@ -464,14 +463,14 @@ export function FactoryWalletPage() {
                   variant='unstyled'
                   type='button'
                   onClick={() => withdraw.closeModal()}
-                  className='p-1.5 rounded-xl hover:bg-gray-100 transition-colors'
+                  className='p-1.5 rounded-lg hover:bg-gray-100 transition-colors'
                 >
                   <X size={18} className='text-gray-500' />
                 </Button>
               </div>
 
               <div
-                className='rounded-xl p-3 flex items-center justify-between'
+                className='rounded-lg p-3 flex items-center justify-between'
                 style={{ backgroundColor: `${TEAL}15` }}
               >
                 <p className='text-sm' style={{ color: TEAL }}>
@@ -500,14 +499,14 @@ export function FactoryWalletPage() {
                       withdraw.clearError();
                     }}
                     placeholder='500'
-                    className='w-full pl-7 pr-3 py-3 rounded-xl border border-gray-200 text-sm font-semibold focus:outline-none focus:border-brand-teal'
+                    className='w-full pl-7 pr-3 py-3 rounded-lg border border-gray-200 text-sm font-semibold focus:outline-none focus:border-brand-teal'
                     style={{ color: NAVY }}
                   />
                 </div>
                 <p className='text-xs text-gray-400 mt-1'>ขั้นต่ำ ฿500</p>
               </div>
 
-              <div className='rounded-xl border border-gray-100 bg-gray-50 px-3 py-3'>
+              <div className='rounded-lg border border-gray-100 bg-gray-50 px-3 py-3'>
                 <p className='text-xs font-semibold text-gray-500 mb-0.5'>บัญชีปลายทาง</p>
                 <p className='text-sm font-medium' style={{ color: NAVY }}>
                   PromptPay — จากโปรไฟล์
@@ -527,7 +526,7 @@ export function FactoryWalletPage() {
                   variant='unstyled'
                   type='button'
                   onClick={() => withdraw.closeModal()}
-                  className='flex-1 py-3 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors'
+                  className='flex-1 py-3 rounded-lg text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors'
                 >
                   ยกเลิก
                 </Button>
@@ -552,11 +551,10 @@ export function FactoryWalletPage() {
                     });
                     if (ok !== undefined) withdraw.closeModal();
                   }}
-                  className='flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all hover:opacity-90'
+                  className='flex-1 py-3 rounded-lg text-sm font-bold text-white disabled:opacity-50 transition-all hover:opacity-90'
                   style={{
                     background:
-                      'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-                    boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+                      'var(--brand-purple)',
                   }}
                 >
                   {withdraw.isLoading ? 'กำลังดำเนินการ...' : 'ยืนยันถอนเงิน'}

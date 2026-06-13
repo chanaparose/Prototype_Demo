@@ -33,7 +33,7 @@ const KPI_CARDS: KpiCardDef[] = [
     label: 'กำลังผลิต',
     meta: (count, total) => ({
       badge: total > 0 ? `${Math.round((count / total) * 100)}%` : '0%',
-      badgeClass: 'bg-indigo-50 text-indigo-700',
+      badgeClass: 'bg-brand-lavender text-brand-purple',
       caption: 'จากทั้งหมด',
     }),
   },
@@ -75,7 +75,7 @@ export function FactoryOrdersKpiStrip({
   onSelectKpi: (key: KpiKey) => void;
 }) {
   return (
-    <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
+    <div className='grid grid-cols-2 gap-3 sm:grid-cols-4 2xl:grid-cols-4'>
       {KPI_CARDS.map(({ id, label, danger, meta }) => {
         const count = kpi[id];
         const { badge, badgeClass, caption } = meta(count, total);
@@ -87,7 +87,7 @@ export function FactoryOrdersKpiStrip({
             variant='unstyled'
             type='button'
             onClick={() => onSelectKpi(id)}
-            className={`rounded-2xl border bg-white p-4 text-left shadow-sm transition-colors hover:border-slate-300 ${
+            className={`rounded-lg border bg-white p-4 text-left transition-colors hover:border-slate-300 ${
               isDanger ? 'border-red-100 hover:border-red-200' : 'border-slate-200'
             }`}
           >

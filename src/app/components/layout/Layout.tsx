@@ -173,6 +173,8 @@ export function Layout() {
     location.pathname.startsWith('/chat-room/') ||
     location.pathname.startsWith('/messages/');
   const isWideOrderDetail = location.pathname.startsWith('/orders/');
+  const isWideFactoryPortal =
+    location.pathname === '/factory' || location.pathname.startsWith('/factory/');
   const isWidePublicDetail =
     location.pathname === '/product-detail' ||
     location.pathname === '/promotion-detail' ||
@@ -185,6 +187,7 @@ export function Layout() {
     wideContentPaths.includes(location.pathname) ||
     isWideChatRoom ||
     isWideOrderDetail ||
+    isWideFactoryPortal ||
     isWidePublicDetail
       ? 'max-w-[1600px]'
       : 'max-w-7xl';
@@ -193,7 +196,7 @@ export function Layout() {
     return <Navigate to='/admin/dashboard' replace />;
   }
 
-  const brandActive = isFactory ? 'var(--brand-indigo)' : 'var(--brand-purple)';
+  const brandActive = 'var(--brand-purple)';
 
   /** Mobile FAB — whitelist only (Explore home = `/`) */
   const createRfqFabPaths = [

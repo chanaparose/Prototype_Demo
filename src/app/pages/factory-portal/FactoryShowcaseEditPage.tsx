@@ -526,7 +526,7 @@ export function FactoryShowcaseEditPage() {
           variant='unstyled'
           type='button'
           onClick={() => void refetch()}
-          className='px-4 py-2 rounded-xl border text-sm'
+          className='px-4 py-2 rounded-lg border text-sm'
         >
           ลองใหม่
         </Button>
@@ -541,8 +541,8 @@ export function FactoryShowcaseEditPage() {
       style={{ backgroundColor: 'var(--brand-page)' }}
     >
       {/* Full-width sticky header — escapes FactoryPortalLayout padding */}
-      <header className='sticky top-0 z-[99999] -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 -mt-4 sm:-mt-5 lg:-mt-6 flex w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'>
-        <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8'>
+      <header className='sticky top-0 z-[99999] -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 2xl:-mx-10 -mt-4 sm:-mt-5 lg:-mt-6 flex w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] 2xl:w-[calc(100%+5rem)] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'>
+        <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 2xl:px-10'>
           <Button
             variant='unstyled'
             type='button'
@@ -568,10 +568,10 @@ export function FactoryShowcaseEditPage() {
               type='button'
               onClick={() => void save('AC')}
               disabled={saving || !canPublish}
-              className='rounded-lg px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-all disabled:opacity-50'
+              className='rounded-lg px-3 py-1.5 text-sm font-semibold text-white transition-all disabled:opacity-50'
               style={{
                 background:
-                  'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
+                  'var(--brand-purple)',
               }}
             >
               {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
@@ -580,7 +580,7 @@ export function FactoryShowcaseEditPage() {
         </div>
       </header>
 
-      <div className='max-w-6xl mx-auto px-0 py-5'>
+      <div className='max-w-[1500px] mx-auto px-0 py-5'>
         <ImageCropModal
           open={cropFile != null}
           file={cropFile}
@@ -609,13 +609,15 @@ export function FactoryShowcaseEditPage() {
 
         <div
           className={`grid auto-rows-min gap-5 ${
-            contentType === 'ID' ? 'lg:grid-cols-3' : 'lg:grid-cols-2'
+            contentType === 'ID'
+              ? 'lg:grid-cols-3 2xl:grid-cols-4'
+              : 'lg:grid-cols-2 2xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)]'
           }`}
         >
           {/* Image — col 1 */}
           {/* Col 1: RelatedShowcasePicker (ID) or ImageManager (others) */}
           {contentType === 'ID' ? (
-            <section className='h-full rounded-2xl border border-gray-100 bg-white p-5 shadow-sm space-y-3 lg:order-2 lg:col-span-1'>
+            <section className='h-full rounded-lg border border-gray-100 bg-white p-5 space-y-3 lg:order-2 lg:col-span-1'>
               <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
                 <p className='text-sm font-bold text-gray-800'>อ้างอิงสินค้า / โปรโมชัน</p>
               </div>
@@ -644,8 +646,8 @@ export function FactoryShowcaseEditPage() {
 
           {/* Col 2: Form fields */}
           <section
-            className={`rounded-2xl border border-gray-100 bg-white p-5 shadow-sm space-y-5 ${
-              contentType === 'ID' ? 'lg:order-1 lg:col-span-2' : ''
+            className={`rounded-lg border border-gray-100 bg-white p-5 space-y-5 ${
+              contentType === 'ID' ? 'lg:order-1 lg:col-span-2 2xl:col-span-3' : ''
             }`}
           >
             <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
@@ -669,7 +671,7 @@ export function FactoryShowcaseEditPage() {
             <Label className='block'>
               <span className='text-xs text-gray-500 font-medium'>ชื่อ *</span>
               <Input
-                className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-normal text-gray-900 placeholder:text-xs placeholder:font-normal placeholder:text-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/50'
+                className='mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm font-normal text-gray-900 placeholder:text-xs placeholder:font-normal placeholder:text-gray-400 shadow-none focus:outline-none focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10 focus-visible:border-brand-purple/40'
                 placeholder='ชื่อสินค้า / ไอเดีย'
                 {...form.register('title', { required: true })}
               />
@@ -706,7 +708,7 @@ export function FactoryShowcaseEditPage() {
 
           {/* ราคา / MOQ / Lead time — separate card, full width (non-ID only) */}
           {contentType !== 'ID' && (
-            <section className='lg:col-span-2 rounded-2xl bg-white border border-gray-100 shadow-sm p-5 space-y-5'>
+            <section className='lg:col-span-2 2xl:col-span-2 rounded-lg bg-white border border-gray-100 p-5 space-y-5'>
               <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
                 <p className='text-sm font-bold text-gray-800'>ราคา & การผลิต</p>
               </div>
@@ -717,7 +719,7 @@ export function FactoryShowcaseEditPage() {
                   <Input
                     type='number'
                     step='0.01'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    className='mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10 focus-visible:border-brand-purple/40'
                     value={form.watch('base_price') ?? ''}
                     onChange={(e) => form.setValue('base_price', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
                   />
@@ -726,7 +728,7 @@ export function FactoryShowcaseEditPage() {
                   <span className='text-xs text-gray-500'>MOQ (จำนวนขั้นต่ำ)</span>
                   <Input
                     type='number'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    className='mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10 focus-visible:border-brand-purple/40'
                     value={form.watch('moq') ?? ''}
                     onChange={(e) => form.setValue('moq', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
                   />
@@ -747,7 +749,7 @@ export function FactoryShowcaseEditPage() {
                   <span className='text-xs text-gray-500'>Lead time (วัน)</span>
                   <Input
                     type='number'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    className='mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10 focus-visible:border-brand-purple/40'
                     value={form.watch('lead_time_days') ?? ''}
                     onChange={(e) => form.setValue('lead_time_days', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
                   />
@@ -757,22 +759,28 @@ export function FactoryShowcaseEditPage() {
               {contentType === 'PM' && (
                 <div className='grid gap-3 pt-3 border-t border-dashed border-purple-100 sm:grid-cols-2 xl:grid-cols-3'>
                   <Label className='block'>
-                    <span className='text-xs font-medium text-indigo-600'>ราคาโปรโมชัน (฿) *</span>
-                    <Input
-                      type='number'
-                      placeholder='0.00'
-                      className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
-                      value={form.watch('promo_price') ?? ''}
-                    onChange={(e) => form.setValue('promo_price', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
+                    <span className='text-xs font-medium text-brand-purple'>ราคาโปรโมชัน (฿) *</span>
+                  <Input
+                    type='number'
+                    placeholder='0.00'
+                    className='mt-1 w-full rounded-lg border border-brand-purple/20 px-3 py-2 text-sm shadow-none focus-visible:shadow-none focus:ring-1 focus:ring-brand-purple/10 focus:outline-none'
+                    value={form.watch('promo_price') ?? ''}
+                    onChange={(e) =>
+                      form.setValue(
+                        'promo_price',
+                        e.target.value === '' ? null : Number(e.target.value),
+                        { shouldDirty: true },
+                      )
+                    }
                     />
                   </Label>
                   <Label className='block'>
-                    <span className='text-xs font-medium text-indigo-600'>วันที่เริ่มโปร *</span>
-                    <Input type='date' className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none' {...form.register('start_date')} />
+                    <span className='text-xs font-medium text-brand-purple'>วันที่เริ่มโปร *</span>
+                    <Input type='date' className='mt-1 w-full rounded-lg border border-brand-purple/20 px-3 py-2 text-sm shadow-none focus-visible:shadow-none focus:ring-1 focus:ring-brand-purple/10 focus:outline-none' {...form.register('start_date')} />
                   </Label>
                   <Label className='block'>
-                    <span className='text-xs font-medium text-indigo-600'>วันที่สิ้นสุดโปร *</span>
-                    <Input type='date' className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none' {...form.register('end_date')} />
+                    <span className='text-xs font-medium text-brand-purple'>วันที่สิ้นสุดโปร *</span>
+                    <Input type='date' className='mt-1 w-full rounded-lg border border-brand-purple/20 px-3 py-2 text-sm shadow-none focus-visible:shadow-none focus:ring-1 focus:ring-brand-purple/10 focus:outline-none' {...form.register('end_date')} />
                   </Label>
                 </div>
               )}
@@ -781,7 +789,11 @@ export function FactoryShowcaseEditPage() {
 
           {/* Markdown — full width */}
           <section
-            className={contentType === 'ID' ? 'lg:order-3 lg:col-span-3' : 'lg:order-3 lg:col-span-2'}
+            className={
+              contentType === 'ID'
+                ? 'lg:order-3 lg:col-span-3 2xl:col-span-4'
+                : 'lg:order-3 lg:col-span-2'
+            }
           >
             <Controller
               control={form.control}

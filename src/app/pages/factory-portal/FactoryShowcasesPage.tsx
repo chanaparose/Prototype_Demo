@@ -178,7 +178,7 @@ export function FactoryShowcasesPage() {
         action={{ label: btnLabel, to: `/factory/showcases/new?type=${activeType}` }}
       />
 
-      <div className='overflow-hidden rounded-2xl border border-slate-100 bg-white'>
+      <div className='overflow-hidden rounded-lg border border-slate-100 bg-white'>
         {/* Filter bar */}
         <div className='flex flex-wrap items-center gap-3 border-b border-slate-100 px-4 pb-3 pt-4'>
           {/* Tabs */}
@@ -196,7 +196,7 @@ export function FactoryShowcasesPage() {
                   className='whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium flex items-center justify-center gap-1.5'
                   style={{
                     transition: 'background-color 0.15s ease, color 0.15s ease',
-                    backgroundColor: active ? 'var(--brand-indigo)' : 'transparent',
+                    backgroundColor: active ? 'var(--brand-purple)' : 'transparent',
                     color: active ? '#fff' : '#475569',
                     fontWeight: active ? 700 : 500,
                   }}
@@ -238,7 +238,7 @@ export function FactoryShowcasesPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder='ค้นหา showcase'
-                className='h-9 w-full rounded-xl border border-slate-200 bg-white pl-8 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100'
+                className='h-9 w-full rounded-lg border border-slate-200 bg-white pl-8 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-brand-purple/15'
               />
             </div>
  
@@ -248,7 +248,7 @@ export function FactoryShowcasesPage() {
               variant='unstyled'
               type='button'
               onClick={() => setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
-              className='h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 inline-flex items-center gap-2 transition-colors hover:bg-slate-50'
+              className='h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 inline-flex items-center gap-2 transition-colors hover:bg-[var(--brand-page)]'
               title={sortDir === 'desc' ? 'ใหม่สุด → เก่าสุด' : 'เก่าสุด → ใหม่สุด'}
             >
               <ArrowUpDown className='h-4 w-4' />
@@ -262,21 +262,21 @@ export function FactoryShowcasesPage() {
           {error ? <ErrorAlert>{error}</ErrorAlert> : null}
 
           {loading ? (
-            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6 gap-4'>
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className='rounded-2xl overflow-hidden border border-gray-100 bg-white'>
+            <div key={i} className='rounded-lg overflow-hidden border border-gray-100 bg-white'>
               <div className='aspect-video bg-gray-100 animate-pulse' />
               <div className='p-3 space-y-2'>
                 <div className='h-4 bg-gray-100 rounded-lg animate-pulse w-3/4' />
                 <div className='h-3 bg-gray-100 rounded-lg animate-pulse w-1/2' />
-                <div className='h-8 bg-gray-100 rounded-xl animate-pulse mt-3' />
+                <div className='h-8 bg-gray-100 rounded-lg animate-pulse mt-3' />
               </div>
             </div>
           ))}
         </div>
       ) : displayRows.length === 0 ? (
-        <div className='rounded-2xl border border-gray-100 bg-white px-4 py-14 text-center space-y-4'>
-          <ShowcaseTypeIcon type={activeType} size={42} className='mx-auto text-indigo-500' />
+        <div className='rounded-lg border border-gray-100 bg-white px-4 py-14 text-center space-y-4'>
+          <ShowcaseTypeIcon type={activeType} size={42} className='mx-auto text-brand-purple' />
           <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
             {empty}
           </p>
@@ -285,14 +285,14 @@ export function FactoryShowcasesPage() {
             variant='unstyled'
             type='button'
             onClick={() => navigate(`/factory/showcases/new?type=${activeType}`)}
-            className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 transition-colors'
+            className='inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-semibold bg-brand-purple hover:bg-brand-violet-deep transition-colors'
           >
             <Plus size={15} />
             {btnLabel}
           </Button>
         </div>
       ) : (
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6 gap-4'>
           {displayRows.map((r) => {
                 const id = rowId(r);
             const img = firstImage(r);
@@ -318,8 +318,8 @@ export function FactoryShowcasesPage() {
                     key={id}
                 className={
                   isIdea
-                    ? 'group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200'
-                    : 'bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'
+                    ? 'group rounded-lg bg-white border border-gray-100 overflow-hidden transition-all duration-200'
+                    : 'bg-white rounded-lg overflow-hidden border border-gray-100 transition-all group cursor-pointer flex flex-col'
                 }
               >
                 {!isIdea ? (
@@ -414,8 +414,8 @@ export function FactoryShowcasesPage() {
                         state: { from: `${location.pathname}${location.search}` },
                       })
                     }
-                    className='flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors'
-                    style={{ backgroundColor: '#EEF2FF', color: 'var(--brand-indigo-dark)' }}
+                    className='flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-colors'
+                    style={{ backgroundColor: '#EEF2FF', color: 'var(--brand-violet-deep)' }}
                   >
                     <Pencil size={13} />
                     แก้ไข
@@ -425,7 +425,7 @@ export function FactoryShowcasesPage() {
                     type='button'
                     onClick={() => void remove(r)}
                     disabled={isDeleting}
-                    className='p-2 rounded-xl border border-red-100 text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-40'
+                    className='p-2 rounded-lg border border-red-100 text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-40'
                     aria-label='ลบ'
                     title='ลบ'
                   >

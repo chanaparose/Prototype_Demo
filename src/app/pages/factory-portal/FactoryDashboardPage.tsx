@@ -50,9 +50,9 @@ import {
 import { formatCompactNumber, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 
 const COLORS = {
-  purple: appColors.brand.indigo,
+  purple: appColors.brand.purple,
   purpleLight: appColors.brand.mauveLight,
-  orange: appColors.brand.indigo,
+  orange: appColors.brand.orange,
   navy: appColors.brand.navy,
   pageBg: appColors.brand.page,
   teal: appColors.brand.teal,
@@ -65,8 +65,8 @@ const TIMEFRAMES: { id: AnalyticsTimeframe; label: string }[] = [
   { id: 'monthly', label: 'เดือน' },
 ];
 
-const PURPLE = appColors.brand.indigo;
-const ORANGE = appColors.brand.indigo;
+const PURPLE = appColors.brand.purple;
+const ORANGE = appColors.brand.orange;
 const GREEN = appColors.status.success;
 const SLATE = appColors.neutral.slate;
 
@@ -90,7 +90,7 @@ type ChartTooltipProps = {
 function MoneyTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div className='rounded-xl border border-gray-100 bg-white px-3 py-2 text-xs shadow-lg'>
+    <div className='rounded-lg border border-gray-100 bg-white px-3 py-2 text-xs'>
       <p className='font-semibold text-gray-800 mb-1'>{label}</p>
       <ul className='space-y-0.5'>
         {payload.map((p) => (
@@ -115,7 +115,7 @@ function MoneyTooltip({ active, payload, label }: ChartTooltipProps) {
 function CountTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div className='rounded-xl border border-gray-100 bg-white px-3 py-2 text-xs shadow-lg'>
+    <div className='rounded-lg border border-gray-100 bg-white px-3 py-2 text-xs'>
       <p className='font-semibold text-gray-800 mb-1'>{label}</p>
       <ul className='space-y-0.5'>
         {payload.map((p) => (
@@ -155,7 +155,7 @@ function kpiRows(summary: AnalyticsSummary) {
       sub: 'บัญชีรับโอนจากลูกค้า',
       icon: Wallet,
       accent: ORANGE,
-      iconBg: 'rgba(227,136,68,0.12)',
+      iconBg: 'rgba(242,138,46,0.12)',
       to: '/factory/bank-settings',
     },
     {
@@ -174,8 +174,8 @@ function kpiRows(summary: AnalyticsSummary) {
       value: formatCompactNumber(summary.rfq_received_total),
       sub: `ส่งตอบแล้ว ${formatCompactNumber(summary.rfq_replies_total)}`,
       icon: ClipboardList,
-      accent: '#0EA5E9',
-      iconBg: 'rgba(14,165,233,0.12)',
+      accent: 'var(--brand-purple)',
+      iconBg: 'rgba(162,56,255,0.08)',
       to: '/factory/rfqs',
     },
     {
@@ -210,38 +210,32 @@ function VerificationStepper({
 
   return (
     <div
-      className='rounded-2xl p-5 relative overflow-hidden text-white shadow-md'
+      className='rounded-lg border p-5'
       style={{
-        background: isRejected
-          ? 'linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%)'
-          : 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)',
+        background: isRejected ? 'var(--status-danger-soft)' : 'var(--brand-panel-hover)',
+        borderColor: isRejected ? 'rgba(239,68,68,0.24)' : 'rgba(162,56,255,0.18)',
       }}
     >
-      <div
-        className='absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-20 blur-3xl'
-        style={{ backgroundColor: isRejected ? '#FF5555' : ORANGE }}
-      />
-      <div
-        className='absolute -left-6 -bottom-10 w-32 h-32 rounded-full opacity-10 blur-2xl'
-        style={{ backgroundColor: 'var(--neutral-white)' }}
-      />
-
-      <div className='relative z-10'>
+      <div>
         <div className='flex items-start gap-3 mb-5'>
           <div
-            className='p-2.5 rounded-xl shrink-0'
+            className='p-2.5 rounded-lg shrink-0'
             style={{
-              backgroundColor: isRejected ? 'rgba(255,100,100,0.2)' : 'rgba(227,136,68,0.2)',
-              border: `1px solid ${isRejected ? 'rgba(255,100,100,0.35)' : 'rgba(227,136,68,0.35)'}`,
+              backgroundColor: isRejected ? 'rgba(239,68,68,0.10)' : 'rgba(162,56,255,0.08)',
+              border: `1px solid ${isRejected ? 'rgba(239,68,68,0.20)' : 'rgba(162,56,255,0.16)'}`,
             }}
           >
-            <AlertTriangle size={18} className='text-white' strokeWidth={2} />
+            <AlertTriangle
+              size={18}
+              style={{ color: isRejected ? 'var(--status-danger)' : 'var(--brand-purple)' }}
+              strokeWidth={2}
+            />
           </div>
           <div className='flex-1 min-w-0'>
-            <p className='font-bold text-base leading-snug'>
+            <p className='font-bold text-base leading-snug text-brand-navy-deep'>
               {isRejected ? 'บัญชีโรงงานไม่ผ่านการตรวจสอบ' : 'กำลังรอการอนุมัติจากแอดมิน'}
             </p>
-            <p className='mt-1 text-sm opacity-80 leading-relaxed'>
+            <p className='mt-1 text-sm leading-relaxed text-neutral-subtle'>
               {isRejected
                 ? verifyReason || 'กรุณาปรับข้อมูลและส่งตรวจสอบใหม่จากหน้าโปรไฟล์'
                 : 'เมื่อแอดมินอนุมัติแล้ว คุณจะเข้าถึง RFQ ใบเสนอราคา และออเดอร์ได้'}
@@ -259,16 +253,22 @@ function VerificationStepper({
                   <div
                     className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                       done
-                        ? 'bg-teal-400 text-white'
+                        ? 'bg-status-success text-white'
                         : active
-                          ? 'bg-white/20 text-white border-2 border-white/60'
-                          : 'bg-white/10 text-white/50'
+                          ? 'bg-brand-purple text-white'
+                          : 'bg-white text-neutral-subtle border border-brand-purple/15'
                     }`}
                   >
                     {done ? '✓' : step.id}
                   </div>
                   <span
-                    className={`text-[10px] text-center leading-tight max-w-[56px] ${done ? 'text-teal-300' : active ? 'text-white' : 'text-white/50'}`}
+                    className={`text-[10px] text-center leading-tight max-w-[56px] ${
+                      done
+                        ? 'text-status-success'
+                        : active
+                          ? 'text-brand-purple'
+                          : 'text-neutral-subtle'
+                    }`}
                   >
                     {step.label}
                   </span>
@@ -277,7 +277,7 @@ function VerificationStepper({
                   <div
                     className='h-0.5 flex-1 mb-5 mx-1'
                     style={{
-                      backgroundColor: done ? 'rgba(52,211,153,0.6)' : 'rgba(255,255,255,0.15)',
+                      backgroundColor: done ? 'var(--status-success)' : 'rgba(162,56,255,0.14)',
                     }}
                   />
                 )}
@@ -288,10 +288,9 @@ function VerificationStepper({
 
         <Link
           to='/factory/profile'
-          className='inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-5 py-2.5 transition-all hover:opacity-90 active:scale-95'
+          className='inline-flex items-center gap-2 text-sm font-semibold rounded-lg px-5 py-2.5 transition-all hover:opacity-90 active:scale-95 text-white'
           style={{
-            backgroundColor: isRejected ? 'rgba(255,100,100,0.25)' : 'rgba(227,136,68,0.9)',
-            border: `1px solid ${isRejected ? 'rgba(255,100,100,0.45)' : 'rgba(227,136,68,1)'}`,
+            backgroundColor: isRejected ? 'var(--status-danger)' : 'var(--brand-purple)',
           }}
         >
           {isRejected ? 'แก้ไขข้อมูลโรงงาน' : 'ตรวจสอบข้อมูลโรงงาน'}
@@ -368,7 +367,7 @@ export function FactoryDashboardPage() {
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className='h-24 rounded-2xl bg-white border border-gray-100 animate-pulse'
+              className='h-24 rounded-lg bg-white border border-gray-100 animate-pulse'
             />
           ))}
         </div>
@@ -394,15 +393,15 @@ export function FactoryDashboardPage() {
       {verifySt !== 'AP' && <VerificationStepper verifySt={verifySt} verifyReason={verifyReason} />}
 
       {error ? (
-        <div className='flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900'>
+        <div className='flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900'>
           <AlertTriangle size={16} className='shrink-0 text-amber-600' />
           <p className='flex-1'>{error}</p>
           <Button
             variant='unstyled'
             type='button'
             onClick={() => void reload()}
-            className='inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white shrink-0 transition-opacity hover:opacity-90'
-            style={{ backgroundColor: COLORS.orange, boxShadow: '0 2px 8px rgba(227,136,68,0.35)' }}
+            className='inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white shrink-0 transition-opacity hover:opacity-90'
+            style={{ backgroundColor: COLORS.purple }}
           >
             <RefreshCw size={14} />
             ลองอีกครั้ง
@@ -410,13 +409,13 @@ export function FactoryDashboardPage() {
         </div>
       ) : null}
 
-      <section className='rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
+      <section className='rounded-lg border border-gray-100 bg-white p-5'>
         <div className='flex items-center justify-between mb-4'>
           <h3 className='text-lg font-bold text-slate-900'>Overview Performance</h3>
           <span className='text-xs text-slate-500'>Factory KPI</span>
         </div>
-        <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3'>
-          {kpis.slice(0, 4).map((k) => {
+        <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5 gap-3'>
+          {kpis.map((k) => {
             const Icon = k.icon;
             return (
               <Button
@@ -424,11 +423,11 @@ export function FactoryDashboardPage() {
                 key={k.key}
                 type='button'
                 onClick={() => navigate(k.to)}
-                className='w-full text-left rounded-2xl border border-slate-200 bg-white p-4 hover:shadow-md transition-all duration-200 group'
+                className='w-full text-left rounded-lg border border-slate-200 bg-white p-4 transition-colors duration-200 hover:border-brand-purple/25 group'
               >
                 <div className='flex items-start justify-between gap-2'>
                   <div
-                    className='rounded-xl p-2.5 flex items-center justify-center shrink-0'
+                    className='rounded-lg p-2.5 flex items-center justify-center shrink-0'
                     style={{ backgroundColor: k.iconBg }}
                   >
                     <Icon size={18} style={{ color: k.accent }} strokeWidth={2} aria-hidden />
@@ -459,7 +458,7 @@ export function FactoryDashboardPage() {
           </p>
         </div>
         <div
-          className='flex p-1 rounded-xl shrink-0'
+          className='flex p-1 rounded-lg shrink-0'
           style={{ backgroundColor: 'rgba(46,34,82,0.07)' }}
           role='tablist'
           aria-label='ช่วงเวลา'
@@ -481,7 +480,6 @@ export function FactoryDashboardPage() {
                         backgroundColor: COLORS.orange,
                         color: COLORS.white,
                         fontWeight: 700,
-                        boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
                       }
                     : {
                         backgroundColor: 'transparent',
@@ -497,13 +495,13 @@ export function FactoryDashboardPage() {
         </div>
       </div>
 
-      <section className='rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
+      <section className='rounded-lg border border-gray-100 bg-white p-5'>
         <div className='flex items-center justify-between mb-2'>
           <div>
             <h3 className='text-lg font-bold text-slate-900'>Users & Revenue Statistics</h3>
             <p className='text-sm text-slate-500'>รายได้ มัดจำ และออเดอร์ตามช่วงเวลา</p>
           </div>
-          <div className='flex p-1 rounded-xl bg-slate-100'>
+          <div className='flex p-1 rounded-lg bg-slate-100'>
             {[
               { id: 'monthly', label: 'Monthly' },
               { id: 'quarterly', label: 'Quarterly' },
@@ -516,7 +514,8 @@ export function FactoryDashboardPage() {
                 className='px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors'
                 style={{
                   background: statsRange === item.id ? '#fff' : 'transparent',
-                  color: statsRange === item.id ? '#0F172A' : '#64748B',
+                  color:
+                    statsRange === item.id ? 'var(--brand-navy-deep)' : 'var(--neutral-subtle)',
                 }}
               >
                 {item.label}
@@ -552,7 +551,7 @@ export function FactoryDashboardPage() {
                 yAxisId='count'
                 dataKey='total_orders'
                 name='Orders'
-                fill='rgba(99,102,241,0.25)'
+                fill='rgba(162,56,255,0.14)'
                 radius={[6, 6, 0, 0]}
                 maxBarSize={20}
               />
@@ -579,8 +578,8 @@ export function FactoryDashboardPage() {
         </div>
       </section>
 
-      <div className='grid gap-5 lg:grid-cols-5'>
-        <div className='lg:col-span-3 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
+      <div className='grid gap-5 lg:grid-cols-5 2xl:grid-cols-12'>
+        <div className='lg:col-span-3 2xl:col-span-7 rounded-lg border border-gray-100 bg-white p-5'>
           <div className='flex items-center justify-between mb-1'>
             <div>
               <h3 className='text-lg font-bold text-slate-900'>Conversion Funnel</h3>
@@ -619,20 +618,40 @@ export function FactoryDashboardPage() {
                 />
                 <Tooltip content={<CountTooltip />} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey='received' name='RFQ Received' stackId='funnel' fill='#3730A3' />
-                <Bar dataKey='replied' name='Replied' stackId='funnel' fill='#4F46E5' />
-                <Bar dataKey='ordered' name='Ordered' stackId='funnel' fill='#818CF8' />
-                <Bar dataKey='closed' name='Closed' stackId='funnel' fill='#BFDBFE' />
+                <Bar
+                  dataKey='received'
+                  name='RFQ Received'
+                  stackId='funnel'
+                  fill='var(--brand-purple)'
+                />
+                <Bar
+                  dataKey='replied'
+                  name='Replied'
+                  stackId='funnel'
+                  fill='var(--brand-mauve-light)'
+                />
+                <Bar
+                  dataKey='ordered'
+                  name='Ordered'
+                  stackId='funnel'
+                  fill='var(--brand-orange)'
+                />
+                <Bar
+                  dataKey='closed'
+                  name='Closed'
+                  stackId='funnel'
+                  fill='var(--status-success-bright)'
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className='lg:col-span-2 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
+        <div className='lg:col-span-2 2xl:col-span-5 rounded-lg border border-gray-100 bg-white p-5'>
           <div className='flex items-center justify-between mb-3'>
             <h3 className='text-lg font-bold text-slate-900'>Product Performance</h3>
           </div>
-          <div className='grid grid-cols-3 rounded-xl bg-slate-100 p-1 mb-3'>
+          <div className='grid grid-cols-3 rounded-lg bg-slate-100 p-1 mb-3'>
             {[
               { id: 'daily', label: 'Daily Sales' },
               { id: 'online', label: 'Online Sales' },
@@ -645,14 +664,17 @@ export function FactoryDashboardPage() {
                 className='rounded-lg py-2 text-xs font-semibold transition-colors'
                 style={{
                   background: performanceTab === tab.id ? '#fff' : 'transparent',
-                  color: performanceTab === tab.id ? '#0F172A' : '#64748B',
+                  color:
+                    performanceTab === tab.id
+                      ? 'var(--brand-navy-deep)'
+                      : 'var(--neutral-subtle)',
                 }}
               >
                 {tab.label}
               </button>
             ))}
           </div>
-          <div className='rounded-xl border border-slate-200 p-3 mb-3 grid grid-cols-2 gap-3'>
+          <div className='rounded-lg border border-slate-200 p-3 mb-3 grid grid-cols-2 gap-3'>
             <div>
               <p className='text-xs text-slate-500'>RFQ ตอบกลับ</p>
               <p className='text-3xl font-bold text-slate-900 tabular-nums'>
@@ -666,7 +688,7 @@ export function FactoryDashboardPage() {
               </p>
             </div>
           </div>
-          <div className='rounded-xl border border-slate-200 p-3'>
+          <div className='rounded-lg border border-slate-200 p-3'>
             <p className='text-xs text-slate-500 mb-1'>Average Daily Orders</p>
             <p className='text-2xl font-bold text-slate-900 tabular-nums mb-3'>
               {summary.total_orders_total > 0
@@ -685,7 +707,12 @@ export function FactoryDashboardPage() {
                   />
                   <YAxis hide />
                   <Tooltip content={<CountTooltip />} />
-                  <Bar dataKey='total_orders' fill='#4F46E5' radius={[6, 6, 0, 0]} maxBarSize={24} />
+                  <Bar
+                    dataKey='total_orders'
+                    fill='var(--brand-purple)'
+                    radius={[6, 6, 0, 0]}
+                    maxBarSize={24}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -693,8 +720,8 @@ export function FactoryDashboardPage() {
         </div>
       </div>
 
-      <div className='grid gap-5 lg:grid-cols-5'>
-        <div className='lg:col-span-3 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
+      <div className='grid gap-5 lg:grid-cols-5 2xl:grid-cols-12'>
+        <div className='lg:col-span-3 2xl:col-span-7 rounded-lg border border-gray-100 bg-white p-5'>
           <div className='flex items-center justify-between mb-1'>
             <div>
               <h3 className='text-sm font-bold' style={{ color: COLORS.navy }}>
@@ -753,7 +780,7 @@ export function FactoryDashboardPage() {
           </div>
         </div>
 
-        <div className='lg:col-span-2 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
+        <div className='lg:col-span-2 2xl:col-span-5 rounded-lg border border-gray-100 bg-white p-5'>
           <div className='flex items-center justify-between mb-1'>
             <div>
               <h3 className='text-sm font-bold' style={{ color: COLORS.navy }}>

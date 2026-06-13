@@ -162,7 +162,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }
       </div>
 
       {deliveryAddress ? (
-        <div className='rounded-lg border border-gray-100 bg-gray-50/70 px-3 py-2'>
+        <div className='rounded-md border border-slate-200 bg-[var(--brand-page)]/60 px-3 py-2'>
           <p className='text-[11px] text-gray-500 mb-1'>ที่อยู่จัดส่ง</p>
           <p className='text-xs text-gray-900 leading-5 line-clamp-2 break-words' style={{ fontWeight: 600 }}>
             {deliveryAddress}
@@ -182,7 +182,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }
                 key={url}
                 type='button'
                 onClick={() => openImageLightbox(url)}
-                className='aspect-square rounded-lg overflow-hidden bg-gray-100 focus:outline-none active:opacity-80'
+                className='aspect-square rounded-md overflow-hidden bg-gray-100 focus:outline-none active:opacity-80'
                 aria-label='ดูรูปขนาดใหญ่'
               >
                 <Image src={url} alt='' className='w-full h-full object-cover' />
@@ -197,7 +197,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }
           <p className='text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-2'>
             รายละเอียด
           </p>
-          <div className='rounded-xl border border-violet-100 bg-violet-50/80 px-3 py-2.5'>
+          <div className='rounded-md border border-slate-200 bg-[var(--brand-page)]/60 px-3 py-2.5'>
             <p className='text-sm leading-relaxed text-violet-950 whitespace-pre-wrap'>{description}</p>
           </div>
         </div>
@@ -225,7 +225,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }
   );
 
   return (
-    <section className='my-3 rounded-2xl border border-gray-100 bg-white'>
+    <section className='my-3 rounded-md border border-slate-200 bg-white'>
       {collapsible ? (
         <>
           <Button

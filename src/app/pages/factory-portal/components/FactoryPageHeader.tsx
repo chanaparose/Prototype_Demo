@@ -17,11 +17,11 @@ export function FactoryPageHeader({
   action?: { label: string; to: string };
 }) {
   return (
-    <div className='rounded-2xl border border-slate-200 bg-white px-4 py-4 sm:px-5 sm:py-5 shadow-sm'>
+    <div className='rounded-md border border-slate-200 bg-white px-4 py-4 sm:px-5 sm:py-5'>
       <div className='flex items-start justify-between gap-3'>
         <div className='min-w-0 flex items-start gap-3'>
           {Icon ? (
-            <div className='w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0'>
+            <div className='w-10 h-10 rounded-md bg-brand-lavender text-brand-purple flex items-center justify-center shrink-0'>
               <Icon size={20} />
             </div>
           ) : null}
@@ -40,7 +40,7 @@ export function FactoryPageHeader({
           {action ? (
             <Link
               to={action.to}
-              className='inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700'
+              className='inline-flex items-center gap-1 rounded-md bg-brand-purple px-3 py-2 text-xs font-semibold text-white hover:bg-brand-violet-deep'
             >
               {action.label}
               <ChevronRight size={14} />

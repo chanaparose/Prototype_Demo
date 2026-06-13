@@ -176,7 +176,7 @@ export function CertUploadModal({
 
       <FormField label='เลขที่เอกสาร (ถ้ามี)' error={errors.cert_number?.message}>
         <Input
-          className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm'
           {...register('cert_number')}
         />
       </FormField>
@@ -184,7 +184,7 @@ export function CertUploadModal({
       <FormField label='วันหมดอายุ' required error={errors.expire_date?.message}>
         <Input
           type='date'
-          className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm'
           {...register('expire_date')}
         />
       </FormField>

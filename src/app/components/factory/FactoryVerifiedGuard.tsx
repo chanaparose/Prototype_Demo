@@ -30,7 +30,7 @@ function FactoryPendingPlaceholder({ status }: { status: 'PD' | 'RJ' }) {
 
   return (
     <div className='max-w-lg mx-auto py-10 sm:py-14 px-4'>
-      <div className='rounded-2xl border border-violet-200 bg-violet-50/70 p-6 sm:p-8 text-center shadow-sm'>
+      <div className='rounded-lg border border-violet-200 bg-violet-50/70 p-6 sm:p-8 text-center'>
         <Lock className='w-10 h-10 mx-auto text-violet-600 mb-3' strokeWidth={2} aria-hidden />
         <h2 className='text-lg font-bold text-gray-900 mb-2'>
           {status === 'RJ' ? 'บัญชีโรงงานไม่ผ่านการตรวจสอบ' : 'โรงงานอยู่ระหว่างตรวจสอบ'}
@@ -42,9 +42,9 @@ function FactoryPendingPlaceholder({ status }: { status: 'PD' | 'RJ' }) {
         </p>
         <Link
           to='/factory/profile'
-          className='inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-95'
+          className='inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-95'
           style={{
-            background: 'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-violet) 100%)',
+            background: 'var(--brand-purple)',
           }}
         >
           {status === 'RJ' ? 'แก้ไขและส่งใหม่' : 'ไปที่โปรไฟล์'}

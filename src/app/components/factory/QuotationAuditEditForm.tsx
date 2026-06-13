@@ -167,7 +167,7 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
       >
         {error ? <ErrorAlert>{error}</ErrorAlert> : null}
 
-        <div className='rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden'>
+        <div className='rounded-lg bg-white border border-gray-100 overflow-hidden'>
           <div className='bg-brand-page px-4 py-2.5 flex gap-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wide'>
             <span className='flex-1'>รายการ</span>
             <span className='w-28 text-right'>ค่า</span>
@@ -180,7 +180,7 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
                 type='number'
                 step='0.01'
                 disabled={isLocked}
-                className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
+                className='w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-purple focus:ring-1 focus:ring-brand-purple/20 outline-none transition-colors disabled:bg-gray-50'
                 {...form.register('price_per_piece')}
               />
               {formErrors.price_per_piece?.message ? (
@@ -195,7 +195,7 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
               <Input
                 type='number'
                 disabled={isLocked}
-                className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
+                className='w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-purple focus:ring-1 focus:ring-brand-purple/20 outline-none transition-colors disabled:bg-gray-50'
                 {...form.register('mold_cost')}
               />
             </Label>
@@ -207,7 +207,7 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
               <Input
                 type='number'
                 disabled={isLocked}
-                className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
+                className='w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-purple focus:ring-1 focus:ring-brand-purple/20 outline-none transition-colors disabled:bg-gray-50'
                 {...form.register('lead_time_days')}
               />
               {formErrors.lead_time_days?.message ? (
@@ -230,32 +230,29 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
           </div>
         </div>
 
-        <div
-          className='rounded-2xl p-4 space-y-2 text-white shadow-md'
-          style={{ background: 'linear-gradient(135deg, var(--brand-navy) 0%, #4A267D 100%)' }}
-        >
-          <p className='text-[10px] font-semibold uppercase tracking-wide opacity-60'>
+        <div className='rounded-lg border border-brand-purple/15 bg-brand-lavender p-4 space-y-2 text-brand-navy-deep'>
+          <p className='text-[10px] font-semibold uppercase tracking-wide text-brand-muted-purple'>
             สรุปใบเสนอราคา
           </p>
           <div className='flex justify-between text-sm'>
-            <span className='opacity-80'>ราคาต่อหน่วย</span>
+            <span className='text-neutral-subtle'>ราคาต่อหน่วย</span>
             <span className='font-semibold'>
               {formatCurrency(Number(form.watch('price_per_piece') || 0))}
             </span>
           </div>
           <div className='flex justify-between text-sm'>
-            <span className='opacity-80'>ค่าแม่พิมพ์</span>
+            <span className='text-neutral-subtle'>ค่าแม่พิมพ์</span>
             <span className='font-semibold'>
               {formatCurrency(Number(form.watch('mold_cost') || 0))}
             </span>
           </div>
           <div className='flex justify-between text-sm'>
-            <span className='opacity-80'>Lead time</span>
+            <span className='text-neutral-subtle'>Lead time</span>
             <span className='font-semibold'>{form.watch('lead_time_days') || '—'} วัน</span>
           </div>
         </div>
 
-        <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
+        <section className='rounded-lg bg-white border border-gray-100 p-4 space-y-4'>
           <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>
             เหตุผลการแก้ไข
           </p>
@@ -266,7 +263,7 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
             <Textarea
               disabled={isLocked}
               rows={3}
-              className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50 resize-none'
+              className='w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-purple focus:ring-1 focus:ring-brand-purple/20 outline-none transition-colors disabled:bg-gray-50 resize-none'
               placeholder='เช่น ปรับลดราคาตามเจรจาลูกค้า'
               {...form.register('reason')}
             />
@@ -283,8 +280,8 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
               type='button'
               disabled={isLocked || saving}
               onClick={() => void submit()}
-              className='flex-1 py-3 rounded-xl font-semibold text-sm border-2 disabled:opacity-50 inline-flex items-center justify-center gap-2'
-              style={{ borderColor: 'var(--brand-indigo)', color: 'var(--brand-indigo)' }}
+              className='flex-1 py-3 rounded-lg font-semibold text-sm border-2 disabled:opacity-50 inline-flex items-center justify-center gap-2'
+              style={{ borderColor: 'var(--brand-purple)', color: 'var(--brand-purple)' }}
             >
               <Save size={14} /> บันทึกร่าง
             </Button>
@@ -293,11 +290,9 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
               type='button'
               disabled={isLocked || saving || !form.formState.isDirty}
               onClick={() => void submit()}
-              className='flex-1 py-3 rounded-xl text-white font-semibold text-sm disabled:opacity-50 inline-flex items-center justify-center gap-2'
+              className='flex-1 py-3 rounded-lg text-white font-semibold text-sm disabled:opacity-50 inline-flex items-center justify-center gap-2'
               style={{
-                background:
-                  'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-                boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+                background: 'var(--brand-purple)',
               }}
             >
               {saving ? 'กำลังบันทึก…' : 'ส่ง'}

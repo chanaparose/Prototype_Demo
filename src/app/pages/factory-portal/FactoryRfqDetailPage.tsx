@@ -423,8 +423,8 @@ export function FactoryRfqDetailPage() {
   return (
     <div className='min-h-screen pb-24'>
       {/* ── Sticky Header ── */}
-      <header className='sticky top-0 z-[99999] -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 -mt-4 sm:-mt-5 lg:-mt-6 flex w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'>
-        <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8'>
+      <header className='sticky top-0 z-[99999] -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 2xl:-mx-10 -mt-4 sm:-mt-5 lg:-mt-6 flex w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] 2xl:w-[calc(100%+5rem)] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'>
+        <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 2xl:px-10'>
           <Button
             variant='unstyled'
             type='button'
@@ -437,10 +437,10 @@ export function FactoryRfqDetailPage() {
         </div>
       </header>
 
-      <div className='w-full max-w-6xl mx-auto px-0 py-5'>
+      <div className='w-full max-w-[1500px] mx-auto px-0 py-5'>
         {loading ? (
           <div className='flex justify-center py-16'>
-            <div className='w-10 h-10 border-[3px] border-indigo-500 border-t-transparent rounded-full animate-spin' />
+            <div className='w-10 h-10 border-[3px] border-brand-purple border-t-transparent rounded-full animate-spin' />
           </div>
         ) : null}
 
@@ -450,7 +450,7 @@ export function FactoryRfqDetailPage() {
             {/* My-quote status banner */}
             {myQuote ? (
               <div
-                className='flex items-center gap-3 rounded-2xl border px-4 py-3'
+                className='flex items-center gap-3 rounded-lg border px-4 py-3'
                 style={{
                   borderColor: myStatus === 'AC' ? '#86efac' : myStatus === 'RJ' ? '#fca5a5' : '#fde68a',
                   backgroundColor: myStatus === 'AC' ? '#f0fdf4' : myStatus === 'RJ' ? '#fff1f2' : '#fffbeb',
@@ -462,20 +462,20 @@ export function FactoryRfqDetailPage() {
                 <p className='text-xs text-gray-600'>สถานะใบเสนอราคาของคุณ</p>
               </div>
             ) : (
-              <div className='flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3'>
+              <div className='flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3'>
                 <ClipboardList size={18} className='shrink-0 text-amber-700' />
                 <p className='text-sm font-medium text-amber-800'>คุณยังไม่ได้ส่งใบเสนอราคาสำหรับ RFQ นี้</p>
               </div>
             )}
 
             {/* RFQ card + quote form — equal height on lg */}
-            <div className='grid min-w-0 gap-5 lg:grid-cols-2 lg:items-stretch [&>*]:min-h-0'>
+            <div className='grid min-w-0 gap-5 lg:grid-cols-2 2xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)] lg:items-stretch [&>*]:min-h-0'>
               {/* ── Main RFQ card (merged: overview + detail + conditions) ── */}
-              <section className='flex min-h-0 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden'>
+              <section className='flex min-h-0 flex-col rounded-lg border border-slate-200 bg-white overflow-hidden'>
                 {/* Card header */}
                 <div className='flex items-center justify-between border-b border-slate-100 px-5 py-4'>
                   <div className='flex items-center gap-2'>
-                    <span className='rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-700'>
+                    <span className='rounded-full border border-brand-purple/20 bg-brand-lavender px-2.5 py-0.5 text-[11px] font-semibold text-brand-purple'>
                       {rfqStatusLabel(rfqStatus)}
                     </span>
                     {rfqBody.isTargeted || rfqBody.is_targeted ? (
@@ -490,7 +490,7 @@ export function FactoryRfqDetailPage() {
                       type='button'
                       disabled={chatBusy}
                       onClick={() => void openChatToCustomer()}
-                      className='flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-indigo-300 hover:text-indigo-700 disabled:opacity-50'
+                      className='flex shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-brand-purple/30 hover:text-brand-purple disabled:opacity-50'
                     >
                       <MessageCircle size={15} />
                       แชทลูกค้า
@@ -509,19 +509,19 @@ export function FactoryRfqDetailPage() {
                   {/* Highlight metric boxes */}
                   <div className='grid grid-cols-2 sm:grid-cols-3 gap-3'>
                     {budgetPerPiece != null ? (
-                      <div className='rounded-xl bg-indigo-50 border border-indigo-100 px-4 py-3'>
-                        <p className='text-[10px] font-semibold uppercase tracking-wide text-indigo-500 mb-1'>งบ / {unitName}</p>
-                        <p className='text-base font-bold text-indigo-800'>{formatCurrency(budgetPerPiece)}</p>
+                      <div className='rounded-lg bg-brand-lavender border border-brand-purple/15 px-4 py-3'>
+                        <p className='text-[10px] font-semibold uppercase tracking-wide text-brand-purple mb-1'>งบ / {unitName}</p>
+                        <p className='text-base font-bold text-brand-violet-ink'>{formatCurrency(budgetPerPiece)}</p>
                       </div>
                     ) : null}
                     {quantity != null ? (
-                      <div className='rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3'>
+                      <div className='rounded-lg bg-emerald-50 border border-emerald-100 px-4 py-3'>
                         <p className='text-[10px] font-semibold uppercase tracking-wide text-emerald-600 mb-1'>จำนวน</p>
                         <p className='text-base font-bold text-emerald-800'>{formatCompactNumber(quantity)} {unitName}</p>
                       </div>
                     ) : null}
                     {revenueApprox != null ? (
-                      <div className='rounded-xl bg-amber-50 border border-amber-100 px-4 py-3'>
+                      <div className='rounded-lg bg-amber-50 border border-amber-100 px-4 py-3'>
                         <p className='text-[10px] font-semibold uppercase tracking-wide text-amber-600 mb-1'>รวมประเมิน</p>
                         <p className='text-base font-bold text-amber-800'>≈ {formatCurrencyNoDecimals(Math.round(revenueApprox))}</p>
                       </div>
@@ -529,7 +529,7 @@ export function FactoryRfqDetailPage() {
                   </div>
 
                   {/* Product + Customer detail rows */}
-                  <div className='rounded-xl border border-slate-100 bg-slate-50/60 divide-y divide-slate-100'>
+                  <div className='rounded-lg border border-slate-100 bg-[var(--brand-page)]/60 divide-y divide-slate-100'>
                     <div className='flex items-center justify-between gap-4 px-4 py-2.5'>
                       <span className='text-xs text-slate-500 shrink-0'>หมวดหมู่</span>
                       <span className='text-xs font-medium text-right text-slate-900'>{breadcrumb}</span>
@@ -565,7 +565,7 @@ export function FactoryRfqDetailPage() {
                     <div className='flex items-center justify-between gap-4 px-4 py-2.5'>
                       <span className='text-xs text-slate-500 shrink-0'>คู่แข่งที่เสนอราคา</span>
                       <div className='flex items-center gap-1.5'>
-                        <span className='text-sm font-bold text-indigo-700'>{competitorCount} ราย</span>
+                        <span className='text-sm font-bold text-brand-purple'>{competitorCount} ราย</span>
                         <span className='text-[11px] text-slate-400'>(ซ่อนราคา)</span>
                       </div>
                     </div>
@@ -589,7 +589,7 @@ export function FactoryRfqDetailPage() {
                   {(rfqBody.details ?? rfqBody.description) ? (
                     <div>
                       <p className='text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-2'>รายละเอียดเพิ่มเติม</p>
-                      <div className='rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3'>
+                      <div className='rounded-lg border border-brand-purple/15 bg-brand-lavender px-4 py-3'>
                         <p className='text-sm leading-relaxed text-slate-800 break-words'>
                           {String(rfqBody.details ?? rfqBody.description ?? '—')}
                         </p>
@@ -608,13 +608,13 @@ export function FactoryRfqDetailPage() {
                             variant='unstyled'
                             type='button'
                             onClick={() => setLightbox(i)}
-                            className='w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-indigo'
+                            className='w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border border-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple'
                           >
                             <Image src={url} alt='' className='w-full h-full object-cover' />
                           </Button>
                         ))}
                         {imageUrls.length > 5 ? (
-                          <div className='w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-500'>
+                          <div className='w-16 h-16 sm:w-20 sm:h-20 rounded-lg border border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-500'>
                             +{imageUrls.length - 5}
                           </div>
                         ) : null}
@@ -625,7 +625,7 @@ export function FactoryRfqDetailPage() {
               </section>
 
               {/* Quote form card */}
-              <section className='flex min-h-0 flex-col rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
+              <section className='flex min-h-0 flex-col rounded-lg bg-white border border-gray-100 p-4 space-y-3'>
                 <div className='flex items-center justify-between gap-2'>
                   <p className='text-xs font-semibold uppercase tracking-wide text-gray-400'>
                     {myQuote && canEdit ? 'แก้ไขใบเสนอราคา' : myQuote ? 'ดูใบเสนอราคา' : 'ส่งใบเสนอราคา'}
@@ -713,7 +713,7 @@ export function FactoryRfqDetailPage() {
                     type='button'
                     disabled={cancelBusy}
                     onClick={() => void cancelQuote()}
-                    className='w-full py-3 rounded-xl border border-red-200 text-red-600 text-sm font-semibold disabled:opacity-50'
+                    className='w-full py-3 rounded-lg border border-red-200 text-red-600 text-sm font-semibold disabled:opacity-50'
                   >
                     ถอนใบเสนอราคา
                   </Button>
@@ -740,7 +740,7 @@ export function FactoryRfqDetailPage() {
               <div className='flex flex-col lg:flex-row gap-5 items-start'>
                 {/* Send QT in chat — fixed height, ไม่ยืดตาม history */}
                 {customerId > 0 && fid != null ? (
-                  <div className='w-full lg:flex-1 self-start rounded-2xl border border-indigo-100 bg-indigo-50/40 p-3'>
+                  <div className='w-full lg:flex-1 self-start rounded-lg border border-brand-purple/15 bg-brand-lavender/40 p-3'>
                     <div className='flex items-center justify-between gap-3'>
                       <div className='min-w-0'>
                         <p className='text-[13px] font-semibold text-slate-800'>ส่งใบเสนอราคาให้ลูกค้า</p>
@@ -751,7 +751,7 @@ export function FactoryRfqDetailPage() {
                         type='button'
                         disabled={chatBusy || !myQuote}
                         onClick={() => void sendQuoteMessageToCustomer()}
-                        className='shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-indigo-dark)_100%)]'
+                        className='shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-white text-sm font-semibold disabled:opacity-50 bg-brand-purple hover:bg-brand-violet-deep'
                       >
                         <MessageCircle size={15} />
                         ส่งในแชท

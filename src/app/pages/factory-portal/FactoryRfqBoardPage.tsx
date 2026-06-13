@@ -57,7 +57,7 @@ function FilterDropdown({
         variant='unstyled'
         type='button'
         onClick={onToggle}
-        className='h-9 w-full rounded-xl border border-slate-200 bg-white px-2.5 text-left hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100'
+        className='h-9 w-full rounded-lg border border-slate-200 bg-white px-2.5 text-left hover:border-brand-purple/30 focus:outline-none focus:ring-2 focus:ring-brand-purple/15'
       >
         <div className='flex items-center justify-between gap-1.5'>
           <span className='shrink-0 text-[10px] text-slate-500'>{label}</span>
@@ -73,7 +73,7 @@ function FilterDropdown({
         </div>
       </Button>
       {isOpen ? (
-        <div className='absolute left-0 right-0 top-[calc(100%+4px)] z-20 max-h-52 overflow-auto rounded-lg border border-slate-200 bg-white p-0.5 shadow-lg'>
+        <div className='absolute left-0 right-0 top-[calc(100%+4px)] z-20 max-h-52 overflow-auto rounded-lg border border-slate-200 bg-white p-0.5 shadow-md'>
           {options.map((opt) => {
             const isSelected = opt.value === value;
             return (
@@ -85,15 +85,15 @@ function FilterDropdown({
                   onChange(opt.value);
                   onClose();
                 }}
-                className='flex w-full items-center justify-between gap-1.5 rounded-md px-2 py-1 text-left transition-colors hover:bg-slate-50'
+                className='flex w-full items-center justify-between gap-1.5 rounded-md px-2 py-1 text-left transition-colors hover:bg-[var(--brand-page)]'
                 style={{ background: isSelected ? '#EEF2FF' : 'transparent' }}
               >
                 <span
-                  className={`text-[11px] ${isSelected ? 'font-semibold text-indigo-700' : 'text-slate-700'}`}
+                  className={`text-[11px] ${isSelected ? 'font-semibold text-brand-purple' : 'text-slate-700'}`}
                 >
                   {opt.label}
                 </span>
-                {isSelected ? <Check size={11} className='shrink-0 text-indigo-600' /> : null}
+                {isSelected ? <Check size={11} className='shrink-0 text-brand-purple' /> : null}
               </Button>
             );
           })}
@@ -380,7 +380,7 @@ export function FactoryRfqBoardPage() {
         <div className='flex justify-center items-start pt-8'>
           <div
             className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
-            style={{ borderColor: 'var(--brand-indigo)', borderTopColor: 'transparent' }}
+            style={{ borderColor: 'var(--brand-purple)', borderTopColor: 'transparent' }}
           />
         </div>
       </div>
@@ -403,7 +403,7 @@ export function FactoryRfqBoardPage() {
             variant='unstyled'
             type='button'
             onClick={() => void reload()}
-            className='text-sm font-semibold px-4 py-2 rounded-xl border border-red-200 text-red-700 shrink-0'
+            className='text-sm font-semibold px-4 py-2 rounded-lg border border-red-200 text-red-700 shrink-0'
           >
             ลองอีกครั้ง
           </Button>
@@ -411,18 +411,17 @@ export function FactoryRfqBoardPage() {
       ) : null}
 
       {noFactoryCategories ? (
-        <div className='rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-5 text-center space-y-3'>
+        <div className='rounded-lg border border-amber-200 bg-amber-50/80 px-4 py-5 text-center space-y-3'>
           <p className='text-sm font-semibold text-amber-950'>เลือกหมวดหมู่ที่โรงงานรับผลิตก่อน</p>
           <p className='text-xs text-amber-900/90'>
             กระดานนี้แสดง RFQ ที่ตรงกับหมวดหมู่ของโรงงาน — ตั้งค่าโปรไฟล์เพื่อรับ RFQ ที่เหมาะสม
           </p>
           <Link
             to='/factory/profile'
-            className='inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold text-white'
+            className='inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-semibold text-white'
             style={{
               background:
-                'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-              boxShadow: '0 2px 8px rgba(79,70,229,0.35)',
+                'var(--brand-purple)',
             }}
           >
             ไปที่ข้อมูลโรงงาน
@@ -442,9 +441,9 @@ export function FactoryRfqBoardPage() {
                   key={k.key}
                   type='button'
                   onClick={() => setKindFilter((prev) => (prev === k.key ? '' : k.key))}
-                  className={`rounded-2xl border bg-white p-3 text-left transition-colors ${
+                  className={`rounded-lg border bg-white p-3 text-left transition-colors ${
                     active
-                      ? 'border-indigo-400 ring-2 ring-indigo-100'
+                      ? 'border-brand-purple ring-2 ring-brand-purple/15'
                       : 'border-slate-200 hover:border-slate-300'
                   }`}
                 >
@@ -484,7 +483,7 @@ export function FactoryRfqBoardPage() {
           ) : null}
 
           <div className='sticky top-14 z-[5] bg-brand-page py-2 -my-1'>
-            <div className='rounded-2xl border border-slate-200 bg-white overflow-hidden'>
+            <div className='rounded-lg border border-slate-200 bg-white overflow-hidden'>
               {!narrowTabs ? (
                 <div
                   className='flex overflow-x-auto overflow-y-hidden border-b border-slate-100 [&::-webkit-scrollbar]:hidden'
@@ -503,8 +502,8 @@ export function FactoryRfqBoardPage() {
                         onClick={() => setStatusTab(t.key)}
                         className='flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-3.5 text-[13px] -mb-px transition-colors focus:outline-none'
                         style={{
-                          borderBottomColor: on ? 'var(--brand-indigo)' : 'transparent',
-                          color: on ? 'var(--brand-indigo)' : '#64748b',
+                          borderBottomColor: on ? 'var(--brand-purple)' : 'transparent',
+                          color: on ? 'var(--brand-purple)' : '#64748b',
                           fontWeight: on ? 600 : 400,
                         }}
                       >
@@ -516,7 +515,7 @@ export function FactoryRfqBoardPage() {
                             className='min-w-[18px] rounded-full px-1.5 py-0.5 text-center text-[10px] font-bold tabular-nums'
                             style={{
                               background: on ? '#eef2ff' : '#f1f5f9',
-                              color: on ? 'var(--brand-indigo)' : '#94a3b8',
+                              color: on ? 'var(--brand-purple)' : '#94a3b8',
                             }}
                           >
                             {t.count}
@@ -540,7 +539,7 @@ export function FactoryRfqBoardPage() {
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder='ค้นหา RFQ, ชื่อสินค้า, เลขอ้างอิง...'
-                      className='h-9 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs text-slate-800 outline-none transition-all placeholder:text-xs placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100 sm:text-[13px]'
+                      className='h-9 w-full appearance-none rounded-lg border border-slate-200 bg-[var(--brand-page)] pl-9 pr-3 text-xs text-slate-800 outline-none transition-all placeholder:text-xs placeholder:text-slate-400 focus:border-brand-purple focus:bg-white focus:ring-2 focus:ring-brand-purple/15 sm:text-[13px]'
                     />
                   </div>
                 </div>
@@ -577,8 +576,8 @@ export function FactoryRfqBoardPage() {
                       onClick={clearFilters}
                       className='shrink-0 px-3 py-2 rounded-full text-xs font-semibold border'
                       style={{
-                        borderColor: 'var(--brand-indigo)',
-                        color: 'var(--brand-indigo)',
+                        borderColor: 'var(--brand-purple)',
+                        color: 'var(--brand-purple)',
                         backgroundColor: '#F3E8FF',
                       }}
                     >
@@ -633,7 +632,7 @@ export function FactoryRfqBoardPage() {
                 ) : null}
 
               {showDismissed ? (
-                <div className='mt-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-3'>
+                <div className='mt-3 rounded-lg border border-slate-200 bg-[var(--brand-page)]/60 p-4 space-y-3'>
                   <div className='flex items-center gap-2'>
                     <EyeOff size={14} className='text-slate-400' />
                     <p className='text-[12px] font-semibold text-slate-500 uppercase tracking-wide'>
@@ -651,7 +650,7 @@ export function FactoryRfqBoardPage() {
                       {dismissedRows.map((r) => (
                         <li
                           key={r.id}
-                          className='flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5'
+                          className='flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5'
                         >
                           <button
                             type='button'
@@ -674,7 +673,7 @@ export function FactoryRfqBoardPage() {
               ) : null}
 
               {pipeline.length === 0 ? (
-                <div className='mt-3 rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4'>
+                <div className='mt-3 rounded-lg border border-gray-100 bg-white px-4 py-12 text-center space-y-4'>
                   <SearchX size={44} className='mx-auto text-slate-400' />
                   <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
                     {statusTab === 'direct'
@@ -695,11 +694,10 @@ export function FactoryRfqBoardPage() {
                       variant='unstyled'
                       type='button'
                       onClick={clearFilters}
-                      className='inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white'
+                      className='inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold text-white'
                       style={{
                         background:
-                          'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-                        boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+                          'var(--brand-purple)',
                       }}
                     >
                       ล้างตัวกรอง
@@ -707,11 +705,10 @@ export function FactoryRfqBoardPage() {
                   ) : rows.length === 0 ? (
                     <Link
                       to='/factory/profile'
-                      className='inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white'
+                      className='inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold text-white'
                       style={{
                         background:
-                          'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-                        boxShadow: '0 2px 8px rgba(79,70,229,0.35)',
+                          'var(--brand-purple)',
                       }}
                     >
                       ปรับหมวดหมู่ในโปรไฟล์

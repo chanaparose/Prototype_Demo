@@ -30,7 +30,7 @@ export function FactoryQuotationsPage() {
         <div className='flex justify-center items-start pt-8'>
           <div
             className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
-            style={{ borderColor: 'var(--brand-indigo)', borderTopColor: 'transparent' }}
+            style={{ borderColor: 'var(--brand-purple)', borderTopColor: 'transparent' }}
           />
         </div>
       </div>
@@ -47,13 +47,13 @@ export function FactoryQuotationsPage() {
       />
 
       {error ? (
-        <p className='text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3'>
+        <p className='text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-4 py-3'>
           โหลดรายการใบเสนอราคาไม่สำเร็จ — ฟีเจอร์นี้อาจยังไม่พร้อมบนเซิร์ฟเวอร์
         </p>
       ) : null}
 
       {rows.length === 0 && !error ? (
-        <div className='rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4'>
+        <div className='rounded-lg border border-gray-100 bg-white px-4 py-12 text-center space-y-4'>
           <FileX size={44} className='mx-auto text-slate-400' />
           <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
             ยังไม่มีใบเสนอราคา
@@ -61,11 +61,10 @@ export function FactoryQuotationsPage() {
           <p className='text-sm text-gray-400'>ไปที่กระดาน RFQ เพื่อเริ่มเสนอราคา</p>
           <Link
             to='/factory/rfqs'
-            className='inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white'
+            className='inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold text-white'
             style={{
               background:
-                'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-              boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+                'var(--brand-purple)',
             }}
           >
             ดูกระดาน RFQ
@@ -80,7 +79,7 @@ export function FactoryQuotationsPage() {
             const badge = QUOTATION_STATUS_BADGE_FACTORY[st] ?? QUOTATION_STATUS_BADGE_FACTORY.PD;
             return (
               <li key={id || String(idx)}>
-                <div className='flex items-center justify-between gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 sm:p-4 min-w-0 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200'>
+                <div className='flex items-center justify-between gap-3 bg-white rounded-lg border border-gray-100 p-3.5 sm:p-4 min-w-0 transition-all duration-200'>
                   <div className='min-w-0 flex-1 space-y-1'>
                     <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>
                       #{id}
@@ -102,11 +101,10 @@ export function FactoryQuotationsPage() {
                   {canEdit && id ? (
                     <Link
                       to={`/factory/quotations/${id}/edit`}
-                      className='shrink-0 inline-flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-xl text-white'
+                      className='shrink-0 inline-flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg text-white'
                       style={{
                         background:
-                          'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-                        boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+                          'var(--brand-purple)',
                       }}
                     >
                       แก้ไข

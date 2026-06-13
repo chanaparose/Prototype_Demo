@@ -31,7 +31,7 @@ export function ProfileSaveBar({ isDirty, changeCount, saving, onSave, onDiscard
             disabled={saving}
             variant='outline'
             size='sm'
-            className='inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50'
+            className='inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50'
           >
             <X size={14} /> ยกเลิก
           </Button>
@@ -39,10 +39,10 @@ export function ProfileSaveBar({ isDirty, changeCount, saving, onSave, onDiscard
             onClick={onSave}
             disabled={saving || !isDirty}
             size='sm'
-            className='inline-flex items-center gap-1 px-4 py-2 rounded-xl text-white text-sm font-semibold disabled:opacity-50'
+            className='inline-flex items-center gap-1 px-4 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50'
             style={{
               background:
-                'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-violet) 100%)',
+                'var(--brand-purple)',
             }}
           >
             <Check size={14} /> {saving ? 'กำลังบันทึก…' : 'บันทึกทั้งหมด'}

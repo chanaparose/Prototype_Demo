@@ -49,7 +49,7 @@ const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   PE: { label: 'หมดกำหนด', cls: 'bg-red-100 text-red-600' },
   PD: { label: 'ต้องดำเนินการ', cls: 'bg-orange-100 text-orange-700' },
   PR: { label: 'กำลังผลิต', cls: 'bg-blue-100 text-blue-700' },
-  QC: { label: 'ตรวจสอบ', cls: 'bg-indigo-100 text-indigo-700' },
+  QC: { label: 'ตรวจสอบ', cls: 'bg-brand-violet-soft text-brand-purple' },
   SH: { label: 'จัดส่งแล้ว', cls: 'bg-teal-100 text-teal-700' },
   CP: { label: 'เสร็จสิ้น', cls: 'bg-emerald-100 text-emerald-700' },
   CN: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-600' },
@@ -106,7 +106,7 @@ function OrdersTablePagination({
           type='button'
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
+          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-[var(--brand-page)] disabled:cursor-not-allowed disabled:opacity-40'
           aria-label='หน้าก่อน'
         >
           <ChevronLeft className='h-3.5 w-3.5' />
@@ -118,7 +118,7 @@ function OrdersTablePagination({
             type='button'
             onClick={() => onPageChange(p)}
             className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-xs font-semibold transition-colors ${
-              p === page ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-50'
+              p === page ? 'bg-brand-purple text-white' : 'text-slate-600 hover:bg-[var(--brand-page)]'
             }`}
             aria-current={p === page ? 'page' : undefined}
           >
@@ -130,7 +130,7 @@ function OrdersTablePagination({
           type='button'
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
+          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-[var(--brand-page)] disabled:cursor-not-allowed disabled:opacity-40'
           aria-label='หน้าถัดไป'
         >
           <ChevronRight className='h-3.5 w-3.5' />
@@ -251,11 +251,12 @@ export function FactoryOrdersPage() {
         <FactoryPageHeader
           title='คำสั่งซื้อ'
           subtitle='Factory / คำสั่งซื้อ'
+          icon={ClipboardList}
           count={`${rows.length} รายการ`}
         />
         <div className='space-y-3'>
-          <div className='h-24 rounded-2xl border border-gray-100 bg-white animate-pulse' />
-          <div className='h-96 rounded-2xl border border-gray-100 bg-white animate-pulse' />
+          <div className='h-24 rounded-lg border border-gray-100 bg-white animate-pulse' />
+          <div className='h-96 rounded-lg border border-gray-100 bg-white animate-pulse' />
         </div>
       </div>
     );
@@ -266,6 +267,7 @@ export function FactoryOrdersPage() {
       <FactoryPageHeader
         title='คำสั่งซื้อ'
         subtitle='Factory / คำสั่งซื้อ'
+        icon={ClipboardList}
         count={`${rows.length} รายการ`}
       />
 
@@ -277,7 +279,7 @@ export function FactoryOrdersPage() {
           <Button
             variant='unstyled'
             type='button'
-            className='shrink-0 text-sm font-semibold px-4 py-2 rounded-xl border border-red-200 text-red-700'
+            className='shrink-0 text-sm font-semibold px-4 py-2 rounded-lg border border-red-200 text-red-700'
             onClick={() => void refetch()}
           >
             ลองใหม่
@@ -300,7 +302,7 @@ export function FactoryOrdersPage() {
 
       {/* Unified card: tabs + filter + table */}
       <div className='sticky top-14 z-[5] bg-brand-page py-2 -my-1'>
-        <div className='rounded-2xl border border-slate-200 bg-white overflow-hidden'>
+        <div className='rounded-lg border border-slate-200 bg-white overflow-hidden'>
           {/* Tab row */}
           <div
             className='flex overflow-x-auto overflow-y-hidden border-b border-slate-100 [&::-webkit-scrollbar]:hidden'
@@ -320,8 +322,8 @@ export function FactoryOrdersPage() {
                   onClick={() => setStatusTab(t.id)}
                   className='flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-3.5 text-[13px] -mb-px transition-colors focus:outline-none'
                   style={{
-                    borderBottomColor: on ? 'var(--brand-indigo)' : 'transparent',
-                    color: on ? 'var(--brand-indigo)' : '#64748b',
+                    borderBottomColor: on ? 'var(--brand-purple)' : 'transparent',
+                    color: on ? 'var(--brand-purple)' : '#64748b',
                     fontWeight: on ? 600 : 400,
                   }}
                 >
@@ -333,7 +335,7 @@ export function FactoryOrdersPage() {
                       className='min-w-[18px] rounded-full px-1.5 py-0.5 text-center text-[10px] font-bold tabular-nums'
                       style={{
                         background: on ? '#eef2ff' : '#f1f5f9',
-                        color: on ? 'var(--brand-indigo)' : '#94a3b8',
+                        color: on ? 'var(--brand-purple)' : '#94a3b8',
                       }}
                     >
                       {count}
@@ -357,14 +359,14 @@ export function FactoryOrdersPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder='ค้นหา #ออเดอร์ / ชื่อสินค้า / ชื่อลูกค้า...'
-                  className='h-9 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs text-slate-800 outline-none transition-all placeholder:text-xs placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100 sm:text-[13px]'
+                  className='h-9 w-full appearance-none rounded-lg border border-slate-200 bg-[var(--brand-page)] pl-9 pr-3 text-xs text-slate-800 outline-none transition-all placeholder:text-xs placeholder:text-slate-400 focus:border-brand-purple focus:bg-white focus:ring-2 focus:ring-brand-purple/15 sm:text-[13px]'
                 />
               </div>
               <Button
                 variant='unstyled'
                 type='button'
                 onClick={() => setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
-                className='h-9 shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 inline-flex items-center gap-2 transition-colors hover:bg-slate-50'
+                className='h-9 shrink-0 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 inline-flex items-center gap-2 transition-colors hover:bg-[var(--brand-page)]'
                 title={sortDir === 'desc' ? 'ใหม่สุด → เก่าสุด' : 'เก่าสุด → ใหม่สุด'}
               >
                 <ArrowUpDown className='h-4 w-4' />
@@ -421,11 +423,11 @@ export function FactoryOrdersPage() {
                               role='link'
                               aria-label={`คำสั่งซื้อ #${row.order_id}`}
                             >
-                              <TableCell className='py-2.5 font-mono text-xs font-semibold text-indigo-600'>
+                              <TableCell className='py-2.5 font-mono text-xs font-semibold text-brand-purple'>
                                 #{row.order_id}
                               </TableCell>
                               <TableCell className='py-2.5 min-w-[180px]'>
-                                <p className='truncate text-xs font-semibold text-slate-900 group-hover:text-indigo-700'>
+                                <p className='truncate text-xs font-semibold text-slate-900 group-hover:text-brand-purple'>
                                   {row.rfq?.title ?? `สินค้า #${row.order_id}`}
                                 </p>
                                 {row.rfq ? (
@@ -494,7 +496,7 @@ export function FactoryOrdersPage() {
           filteredRows.map(({ row, derived: d }) => (
             <li
               key={row.order_id}
-              className='rounded-2xl border border-gray-100 bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200'
+              className='rounded-lg border border-gray-100 bg-white transition-all duration-200'
             >
               <FactoryOrderCard
                 row={row}
@@ -520,7 +522,7 @@ export function FactoryOrdersPage() {
             className='absolute inset-0 bg-black/40'
             onClick={() => setUpdateModal(null)}
           />
-          <div className='absolute inset-x-4 sm:inset-x-auto sm:right-6 sm:w-[460px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl p-4 space-y-3'>
+          <div className='absolute inset-x-4 sm:inset-x-auto sm:right-6 sm:w-[460px] bottom-4 rounded-lg bg-white border border-gray-100 p-4 space-y-3'>
             <div className='flex items-center justify-between'>
               <h2 className='font-bold text-slate-900'>
                 อัปเดตขั้น {updateModal.row.production_summary?.current_step_name_th}
@@ -535,7 +537,7 @@ export function FactoryOrdersPage() {
               </Button>
             </div>
             <Textarea
-              className='w-full min-h-[90px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-brand-indigo'
+              className='w-full min-h-[90px] rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-brand-purple'
               placeholder='รายละเอียดความคืบหน้า'
               value={updateModal.notes}
               onChange={(e) =>
@@ -546,9 +548,9 @@ export function FactoryOrdersPage() {
               variant='unstyled'
               type='button'
               disabled={updateModal.busy || !updateModal.notes.trim()}
-              className='w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50'
+              className='w-full py-2.5 rounded-lg text-white font-semibold disabled:opacity-50'
               style={{
-                background: 'linear-gradient(135deg, var(--brand-indigo) 0%, #334155 100%)',
+                background: 'var(--brand-purple)',
               }}
               onClick={async () => {
                 setUpdateModal((prev) => (prev ? { ...prev, busy: true } : prev));
@@ -581,7 +583,7 @@ export function FactoryOrdersPage() {
             className='absolute inset-0 bg-black/40'
             onClick={() => setShipModal(null)}
           />
-          <div className='absolute inset-x-4 sm:inset-x-auto sm:right-6 sm:w-[460px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl p-4 space-y-3'>
+          <div className='absolute inset-x-4 sm:inset-x-auto sm:right-6 sm:w-[460px] bottom-4 rounded-lg bg-white border border-gray-100 p-4 space-y-3'>
             <div className='flex items-center justify-between'>
               <h2 className='font-bold text-slate-900'>บันทึกจัดส่ง #{shipModal.row.order_id}</h2>
               <Button
@@ -594,7 +596,7 @@ export function FactoryOrdersPage() {
               </Button>
             </div>
             <Input
-              className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-brand-indigo'
+              className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-brand-purple'
               placeholder='เลขพัสดุ'
               value={shipModal.tracking}
               onChange={(e) =>
@@ -602,7 +604,7 @@ export function FactoryOrdersPage() {
               }
             />
             <Textarea
-              className='w-full min-h-[72px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-brand-indigo'
+              className='w-full min-h-[72px] rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-brand-purple'
               placeholder='หมายเหตุ (ไม่บังคับ)'
               value={shipModal.note}
               onChange={(e) =>
@@ -613,10 +615,10 @@ export function FactoryOrdersPage() {
               variant='unstyled'
               type='button'
               disabled={shipModal.busy || !shipModal.tracking.trim()}
-              className='w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50'
+              className='w-full py-2.5 rounded-lg text-white font-semibold disabled:opacity-50'
               style={{
                 background:
-                  'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
+                  'var(--brand-purple)',
               }}
               onClick={async () => {
                 setShipModal((prev) => (prev ? { ...prev, busy: true } : prev));

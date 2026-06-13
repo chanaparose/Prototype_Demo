@@ -182,7 +182,7 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
           <div className='space-y-4 max-h-[55vh] overflow-y-auto pr-1'>
             {pdCategories.length > 0 && renderGroup(
               'หมวดสินค้า (PD)', pdCategories,
-              'text-indigo-600',
+              'text-brand-purple',
               'border-[var(--brand-purple)] bg-[var(--brand-purple)] font-semibold text-white shadow-sm',
               'border-[var(--brand-lavender-muted,#e5e0f0)] bg-white text-[var(--neutral-subtle,#6b7280)] hover:border-[var(--brand-mauve,#9c84c0)] hover:text-[var(--brand-purple,#7c3aed)]',
             )}

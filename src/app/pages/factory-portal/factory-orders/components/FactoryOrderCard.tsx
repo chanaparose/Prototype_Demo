@@ -39,7 +39,7 @@ const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: L
   PE: { label: 'หมดกำหนดชำระ', badgeClass: 'bg-red-100 text-red-800', icon: Ban },
   PD: { label: 'ชำระมัดจำแล้ว', badgeClass: 'bg-teal-100 text-teal-800', icon: CircleDollarSign },
   PR: { label: 'กำลังผลิต', badgeClass: 'bg-violet-100 text-violet-800', icon: Settings },
-  QC: { label: 'ตรวจสอบคุณภาพ', badgeClass: 'bg-indigo-100 text-indigo-800', icon: ScanSearch },
+  QC: { label: 'ตรวจสอบคุณภาพ', badgeClass: 'bg-brand-violet-soft text-brand-violet-ink', icon: ScanSearch },
   SH: { label: 'จัดส่งแล้ว', badgeClass: 'bg-sky-100 text-sky-800', icon: PackageCheck },
   CP: { label: 'เสร็จสิ้น', badgeClass: 'bg-emerald-100 text-emerald-800', icon: Check },
   CN: { label: 'ยกเลิก', badgeClass: 'bg-gray-100 text-gray-700', icon: Ban },
@@ -59,7 +59,7 @@ export function FactoryOrderCard({
   const statusCfg = STATUS_CONFIG[row.status] ?? DEFAULT_STATUS_CONFIG;
   const StatusIcon = statusCfg.icon;
   return (
-    <article className='bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 hover:shadow-sm min-w-0'>
+    <article className='bg-white rounded-lg border border-gray-100 p-3.5 sm:p-4 min-w-0'>
       <div className='flex items-start justify-between gap-2'>
         <div className='min-w-0'>
           <p className='font-semibold text-gray-900 text-sm leading-snug truncate'>
@@ -131,14 +131,14 @@ export function FactoryOrderCard({
             disabled={derived.primaryCta.kind === 'waiting_customer'}
             onClick={() => onPrimaryCta(row, derived.primaryCta)}
             size='sm'
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
               derived.primaryCta.kind === 'waiting_customer'
                 ? 'bg-gray-100 text-gray-500'
                 : derived.primaryCta.kind === 'mark_shipped'
                   ? 'bg-sky-600 text-white'
                   : derived.primaryCta.kind === 'start_qc'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-brand-indigo text-white'
+                    ? 'bg-brand-purple text-white'
+                    : 'bg-brand-purple text-white'
             }`}
           >
             {derived.primaryCta.kind === 'update_step'

@@ -125,10 +125,10 @@ export function FactoryNoteField({
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className={`rounded-2xl border border-indigo-200 bg-indigo-50/50 overflow-hidden ${className}`}>
+    <div className={`rounded-lg border border-brand-purple/20 bg-brand-lavender/50 overflow-hidden ${className}`}>
       {/* Header */}
-      <div className='flex items-center gap-2 px-4 py-2.5 border-b border-indigo-100'>
-        <span className='flex flex-1 items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-indigo-700'>
+      <div className='flex items-center gap-2 px-4 py-2.5 border-b border-brand-purple/15'>
+        <span className='flex flex-1 items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-brand-purple'>
           <Lock size={11} />
           Note (สำหรับโรงงานเท่านั้น)
         </span>
@@ -138,7 +138,7 @@ export function FactoryNoteField({
             <button
               type='button'
               onClick={() => { setTab('write'); setEditing(true); }}
-              className='inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors'
+              className='inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium text-brand-purple hover:bg-brand-violet-soft transition-colors'
             >
               <Pencil size={11} /> แก้ไข
             </button>
@@ -150,7 +150,7 @@ export function FactoryNoteField({
               type='button'
               onClick={handleCancel}
               disabled={saving}
-              className='inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium text-slate-500 hover:bg-indigo-100 disabled:opacity-60 transition-colors'
+              className='inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium text-slate-500 hover:bg-brand-violet-soft disabled:opacity-60 transition-colors'
             >
               <X size={11} /> ยกเลิก
             </button>
@@ -158,7 +158,7 @@ export function FactoryNoteField({
               type='button'
               onClick={() => void handleConfirm()}
               disabled={saving}
-              className='inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-white bg-indigo-500 hover:bg-indigo-600 disabled:opacity-60 transition-colors'
+              className='inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-white bg-brand-purple hover:bg-brand-purple disabled:opacity-60 transition-colors'
             >
               <Check size={11} />
               {isAsync ? (saving ? 'กำลังบันทึก…' : 'บันทึก') : 'ตกลง'}
@@ -182,7 +182,7 @@ export function FactoryNoteField({
           )}
         </div>
       ) : (
-        <div className='rounded-b-2xl border-t border-indigo-100 bg-white overflow-hidden'>
+        <div className='rounded-b-2xl border-t border-brand-purple/15 bg-white overflow-hidden'>
           {/* Write / Preview tabs */}
           <div className='flex items-center gap-2 px-3 pt-2 pb-2 border-b border-gray-100'>
             <Button
@@ -192,7 +192,7 @@ export function FactoryNoteField({
               size='xs'
               className={`px-2 py-1 text-xs rounded-md border ${
                 tab === 'write'
-                  ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                  ? 'bg-brand-lavender border-brand-purple/20 text-brand-purple'
                   : 'border-gray-200 text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -205,7 +205,7 @@ export function FactoryNoteField({
               size='xs'
               className={`px-2 py-1 text-xs rounded-md border ${
                 tab === 'preview'
-                  ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                  ? 'bg-brand-lavender border-brand-purple/20 text-brand-purple'
                   : 'border-gray-200 text-gray-600 hover:bg-gray-50'
               }`}
             >

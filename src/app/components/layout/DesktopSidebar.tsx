@@ -52,6 +52,14 @@ const customerNavLinks = [
   { path: '/messages', icon: MessageCircle, label: 'ข้อความ' },
 ];
 
+const sidebarTheme = {
+  activeText: 'var(--brand-purple)',
+  inactiveText: 'var(--neutral-subtle)',
+  activeBg: 'rgba(162,56,255,0.08)',
+  softBorder: 'rgba(162,56,255,0.14)',
+  mutedPurple: 'var(--brand-muted-purple)',
+} as const;
+
 function RoleSwitcher({ isFactory }: { isFactory: boolean }) {
   const navigate = useNavigate();
   const switchRole = useAuthStore((s) => s.switchRole);
@@ -92,7 +100,11 @@ function RoleSwitcher({ isFactory }: { isFactory: boolean }) {
         type='button'
         disabled={switching}
         onClick={() => void handleSwitch()}
-        className='flex items-center gap-2 w-full px-3 py-2.5 rounded-xl border border-dashed border-gray-300 text-xs font-medium text-gray-600 hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700 transition-all'
+        className='flex items-center gap-2 w-full px-3 py-2.5 rounded-xl border border-dashed text-xs font-medium transition-all hover:bg-[var(--brand-panel-hover)] hover:text-brand-purple active:scale-[0.99]'
+        style={{
+          borderColor: isFactory ? sidebarTheme.softBorder : 'var(--neutral-border)',
+          color: sidebarTheme.mutedPurple,
+        }}
       >
         {switching ? (
           <Loader2 size={15} className='animate-spin shrink-0' />
@@ -171,19 +183,20 @@ export function DesktopSidebar() {
                   }}
                   className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all duration-150 ${
                     locked ? 'cursor-not-allowed opacity-60' : ''
-                  } ${active ? 'border-l-4 border-indigo-600 pl-3' : 'border-l-4 border-transparent'}`}
+                  }`}
                   style={{
-                    color: active ? 'var(--brand-indigo-dark)' : '#475569',
-                    background: active ? '#EEF2FF' : 'transparent',
+                    color: active ? sidebarTheme.activeText : sidebarTheme.inactiveText,
+                    background: active ? sidebarTheme.activeBg : 'transparent',
                     fontWeight: active ? 600 : 500,
                   }}
+                  aria-current={active ? 'page' : undefined}
                 >
                   <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
                   <span className='flex-1 text-left'>{item.label}</span>
                   {locked ? (
                     <Lock
                       size={16}
-                      className='shrink-0 text-slate-500'
+                      className='shrink-0 text-brand-muted-purple'
                       strokeWidth={2}
                       aria-hidden
                     />
@@ -244,28 +257,29 @@ export function DesktopSidebar() {
       {isFactory ? (
         <Link
           to='/factory/wallet'
-          className='mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden block text-left transition-opacity hover:opacity-95 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 bg-slate-50 border-slate-200'
+          className='mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden block text-left transition-all hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(46,34,82,0.10)] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple/35 focus-visible:ring-offset-2'
+          style={{ background: 'var(--brand-panel-hover)', borderColor: 'rgba(162,56,255,0.20)' }}
         >
           <div
             className='absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl'
-            style={{ background: 'rgba(79,70,229,0.10)' }}
+            style={{ background: 'rgba(162,56,255,0.10)' }}
           ></div>
           <div className='flex items-center justify-between gap-2 mb-1.5'>
             <div className='flex items-center gap-1.5'>
-              <Wallet size={13} style={{ color: 'var(--brand-indigo)' }} />
+              <Wallet size={13} style={{ color: 'var(--brand-orange)' }} />
               <span className='text-[11px] font-medium text-gray-500'>กระเป๋าเงิน</span>
             </div>
             <span
               className='text-[10px] font-semibold shrink-0'
-              style={{ color: 'var(--brand-indigo)' }}
+              style={{ color: 'var(--brand-purple)' }}
             >
               ดูรายละเอียด →
             </span>
           </div>
-          <p className='text-base font-bold' style={{ color: '#0F172A' }}>
+          <p className='text-base font-bold' style={{ color: 'var(--brand-navy-deep)' }}>
             {formatCurrencyNoDecimals(currentUser?.walletBalance ?? 0)}
           </p>
-          <p className='text-[10px] mt-0.5 font-medium' style={{ color: 'var(--brand-indigo)' }}>
+          <p className='text-[10px] mt-0.5 font-medium' style={{ color: 'var(--brand-purple)' }}>
             รอดำเนินการ {formatCurrencyNoDecimals(currentUser?.pendingBalance ?? 0)}
           </p>
         </Link>
@@ -352,7 +366,7 @@ export function DesktopSidebar() {
               variant='unstyled'
               type='button'
               onClick={() => navigate('/profile')}
-              className='flex items-center gap-2.5 flex-1 min-w-0 p-2 rounded-xl hover:bg-gray-50 transition-colors'
+              className='flex items-center gap-2.5 flex-1 min-w-0 p-2 rounded-xl hover:bg-[var(--brand-panel-hover)] transition-colors'
             >
               <span className='relative block w-8 h-8 rounded-xl overflow-hidden shrink-0 bg-brand-lavender-muted'>
                 <Image
@@ -364,7 +378,7 @@ export function DesktopSidebar() {
               <div className='flex-1 text-left min-w-0'>
                 <p
                   className='text-xs font-semibold truncate'
-                  style={{ color: isFactory ? '#0F172A' : 'var(--brand-navy-deep)' }}
+                  style={{ color: 'var(--brand-navy-deep)' }}
                 >
                   {currentUser?.name}
                 </p>
@@ -373,12 +387,9 @@ export function DesktopSidebar() {
             </Button>
             <Link
               to='/notifications'
-              className='relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors shrink-0'
+              className='relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[var(--brand-panel-hover)] transition-colors shrink-0'
             >
-              <Bell
-                size={17}
-                style={{ color: isFactory ? 'var(--brand-indigo)' : 'var(--brand-purple)' }}
-              />
+              <Bell size={17} style={{ color: 'var(--brand-purple)' }} />
               {unreadNotifications > 0 ? (
                 <span
                   className='absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-white text-[9px] flex items-center justify-center font-bold border-2 border-white tabular-nums'

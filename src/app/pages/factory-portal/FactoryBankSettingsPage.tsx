@@ -143,7 +143,7 @@ export function FactoryBankSettingsPage() {
             variant='unstyled'
             type='button'
             onClick={() => { resetForm(); setShowForm(true); }}
-            className='flex items-center gap-1.5 px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors'
+            className='flex items-center gap-1.5 px-3 py-2 bg-brand-purple text-white text-sm font-semibold rounded-lg hover:bg-brand-violet-deep transition-colors'
           >
             <Plus size={14} />
             เพิ่มบัญชี
@@ -159,7 +159,7 @@ export function FactoryBankSettingsPage() {
 
       {/* Add/Edit form */}
       {showForm && (
-        <div className='bg-white rounded-xl border border-indigo-200 shadow-sm p-5 space-y-4'>
+        <div className='bg-white rounded-lg border border-brand-purple/20 p-5 space-y-4'>
           <h3 className='text-sm font-bold text-slate-900'>
             {editingId ? 'แก้ไขบัญชี' : 'เพิ่มบัญชีใหม่'}
           </h3>
@@ -169,7 +169,7 @@ export function FactoryBankSettingsPage() {
               <select
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
-                className='mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                className='mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-purple/35'
               >
                 <option value=''>เลือกธนาคาร</option>
                 {THAI_BANKS.map((b) => (
@@ -213,7 +213,7 @@ export function FactoryBankSettingsPage() {
               type='button'
               onClick={handleSave}
               disabled={saving}
-              className='flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60'
+              className='flex items-center gap-2 px-4 py-2 bg-brand-purple text-white text-sm font-semibold rounded-lg hover:bg-brand-violet-deep transition-colors disabled:opacity-60'
             >
               {saving ? <Loader2 size={13} className='animate-spin' /> : null}
               {editingId ? 'บันทึก' : 'เพิ่มบัญชี'}
@@ -235,14 +235,14 @@ export function FactoryBankSettingsPage() {
       {loading ? (
         <div className='space-y-3'>
           {[1, 2].map((i) => (
-            <div key={i} className='bg-white rounded-xl border border-slate-200 p-5'>
+            <div key={i} className='bg-white rounded-lg border border-slate-200 p-5'>
               <div className='h-5 w-32 bg-slate-100 rounded animate-pulse mb-2' />
               <div className='h-4 w-48 bg-slate-100 rounded animate-pulse' />
             </div>
           ))}
         </div>
       ) : accounts.length === 0 && !showForm ? (
-        <div className='bg-white rounded-xl border border-slate-200 p-10 text-center'>
+        <div className='bg-white rounded-lg border border-slate-200 p-10 text-center'>
           <Building2 size={36} className='mx-auto text-slate-300 mb-3' />
           <p className='text-sm text-slate-500'>ยังไม่มีบัญชีธนาคาร</p>
           <p className='text-xs text-slate-400 mt-1'>เพิ่มบัญชีเพื่อให้ลูกค้าโอนเงินได้</p>
@@ -252,8 +252,8 @@ export function FactoryBankSettingsPage() {
           {accounts.map((acc) => (
             <div
               key={acc.account_id}
-              className={`bg-white rounded-xl border shadow-sm p-5 ${
-                acc.is_default ? 'border-indigo-200 ring-1 ring-indigo-100' : 'border-slate-200'
+              className={`bg-white rounded-lg border p-5 ${
+                acc.is_default ? 'border-brand-purple/20 ring-1 ring-brand-purple/15' : 'border-slate-200'
               }`}
             >
               <div className='flex items-start justify-between'>
@@ -262,7 +262,7 @@ export function FactoryBankSettingsPage() {
                     <Building2 size={14} className='text-slate-400' />
                     <span className='text-sm font-bold text-slate-900'>{acc.bank_name}</span>
                     {acc.is_default && (
-                      <span className='flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-bold'>
+                      <span className='flex items-center gap-1 px-2 py-0.5 bg-brand-violet-soft text-brand-purple rounded-full text-[10px] font-bold'>
                         <Star size={9} />
                         หลัก
                       </span>
@@ -273,7 +273,7 @@ export function FactoryBankSettingsPage() {
                     <button
                       type='button'
                       onClick={() => handleCopy(acc.account_number, `num-${acc.account_id}`)}
-                      className='text-slate-400 hover:text-indigo-600 transition-colors'
+                      className='text-slate-400 hover:text-brand-purple transition-colors'
                       title='คัดลอกเลขบัญชี'
                     >
                       {copiedField === `num-${acc.account_id}` ? <Check size={13} className='text-emerald-500' /> : <Copy size={13} />}
@@ -284,7 +284,7 @@ export function FactoryBankSettingsPage() {
                     <button
                       type='button'
                       onClick={() => handleCopy(acc.account_name, `name-${acc.account_id}`)}
-                      className='text-slate-400 hover:text-indigo-600 transition-colors'
+                      className='text-slate-400 hover:text-brand-purple transition-colors'
                       title='คัดลอกชื่อบัญชี'
                     >
                       {copiedField === `name-${acc.account_id}` ? <Check size={13} className='text-emerald-500' /> : <Copy size={13} />}
@@ -295,7 +295,7 @@ export function FactoryBankSettingsPage() {
                   <button
                     type='button'
                     onClick={() => openEdit(acc)}
-                    className='p-1.5 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors'
+                    className='p-1.5 rounded text-slate-400 hover:text-brand-purple hover:bg-brand-lavender transition-colors'
                   >
                     <Pencil size={14} />
                   </button>

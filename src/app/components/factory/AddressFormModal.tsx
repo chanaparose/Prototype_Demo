@@ -185,7 +185,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
           error={errors.zip_code?.message}
         >
           <Input
-            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+            className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm'
             inputMode='numeric'
             maxLength={5}
             placeholder='10110'
@@ -203,7 +203,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
           error={errors.address_detail?.message}
         >
           <Textarea
-            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]'
+            className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm min-h-[80px]'
             placeholder='บ้านเลขที่ หมู่ ซอย ถนน'
             {...register('address_detail')}
           />

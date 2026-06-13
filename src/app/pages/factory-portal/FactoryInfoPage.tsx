@@ -42,9 +42,6 @@ import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-const PRIMARY = '#3C50E0';
-
 type EditSection = 'info' | null;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -83,7 +80,7 @@ function InfoCard({
   noPadding?: boolean;
 }) {
   return (
-    <div className={`rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden ${className}`}>
+    <div className={`rounded-lg border border-gray-200 bg-white overflow-hidden ${className}`}>
       {(title != null || action != null) && (
         <div className='flex items-center justify-between gap-4 px-6 py-5 border-b border-gray-100'>
           {title != null ? (
@@ -121,7 +118,7 @@ function SectionEditActions({
         variant='unstyled'
         type='button'
         onClick={onEdit}
-        className='inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
+        className='inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
       >
         <Pencil size={12} />
         Edit
@@ -135,7 +132,7 @@ function SectionEditActions({
         type='button'
         disabled={saving}
         onClick={onCancel}
-        className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors'
+        className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors'
       >
         <X size={12} />
         ยกเลิก
@@ -145,8 +142,8 @@ function SectionEditActions({
         type='button'
         disabled={saving}
         onClick={onSave}
-        className='inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50'
-        style={{ background: `linear-gradient(135deg, ${PRIMARY} 0%, #6366f1 100%)` }}
+        className='inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50'
+        style={{ background: 'var(--brand-purple)' }}
       >
         {saving
           ? <><Loader2 size={12} className='animate-spin' /> กำลังบันทึก…</>
@@ -169,7 +166,7 @@ function AvatarUploader({
 
   return (
     <div
-      className={`relative shrink-0 ${drag ? 'ring-2 ring-indigo-400 ring-offset-2 rounded-full' : ''}`}
+      className={`relative shrink-0 ${drag ? 'ring-2 ring-brand-purple ring-offset-2 rounded-full' : ''}`}
       onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
       onDragLeave={() => setDrag(false)}
       onDrop={(e) => {
@@ -179,13 +176,13 @@ function AvatarUploader({
       }}
     >
       <Label
-        className={`relative block w-[70px] h-[70px] sm:w-20 sm:h-20 rounded-2xl overflow-hidden cursor-pointer border-2 border-white shadow-md group bg-indigo-50 ${uploading ? 'pointer-events-none' : ''}`}
+        className={`relative block w-[70px] h-[70px] sm:w-20 sm:h-20 rounded-lg overflow-hidden cursor-pointer border-2 border-white group bg-brand-lavender ${uploading ? 'pointer-events-none' : ''}`}
       >
         {imageUrl
           ? <Image src={imageUrl} alt='' className='w-full h-full object-cover' />
           : (
             <span className='w-full h-full flex flex-col items-center justify-center gap-1'>
-              <ImageIcon size={20} className='text-indigo-300' strokeWidth={1.5} />
+              <ImageIcon size={20} className='text-brand-muted-purple' strokeWidth={1.5} />
             </span>
           )
         }
@@ -210,7 +207,7 @@ function AvatarUploader({
           type='button'
           disabled={busy}
           onClick={(e) => { e.preventDefault(); onRemove(); }}
-          className='absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center shadow border-2 border-white hover:bg-red-600 transition-colors'
+          className='absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center border-2 border-white hover:bg-red-600 transition-colors'
           title='ลบรูปโปรไฟล์'
         >
           <X size={9} />
@@ -232,7 +229,7 @@ function CategoryViewCard({
   isMT?: boolean;
 }) {
   return (
-    <div className='rounded-2xl border border-gray-200 bg-white p-4 space-y-2'>
+    <div className='rounded-lg border border-gray-200 bg-white p-4 space-y-2'>
       <h3 className='text-sm font-bold text-gray-900'>{cat.name}</h3>
 
       {!isMT && (
@@ -428,7 +425,7 @@ export function FactoryInfoPage() {
   if (isError) return (
     <div className='py-12 text-center'>
       <p className='text-sm text-red-600 mb-3'>โหลดข้อมูลไม่สำเร็จ</p>
-      <Button variant='unstyled' type='button' onClick={() => void factoryQ.refetch()} className='px-4 py-2 rounded-xl border border-gray-200 text-sm'>ลองใหม่</Button>
+      <Button variant='unstyled' type='button' onClick={() => void factoryQ.refetch()} className='px-4 py-2 rounded-lg border border-gray-200 text-sm'>ลองใหม่</Button>
     </div>
   );
   if (isLoading) return (
@@ -444,13 +441,13 @@ export function FactoryInfoPage() {
 
       {/* Alerts */}
       {error && (
-        <div className='flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3'>
+        <div className='flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3'>
           <AlertTriangle size={15} className='text-red-500 shrink-0 mt-0.5' />
           <p className='text-sm text-red-700'>{error}</p>
         </div>
       )}
       {okMsg && (
-        <div className='flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3'>
+        <div className='flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3'>
           <CheckCircle size={15} className='text-emerald-500 shrink-0 mt-0.5' />
           <p className='text-sm text-emerald-700'>{okMsg}</p>
         </div>
@@ -519,7 +516,7 @@ export function FactoryInfoPage() {
                   variant='unstyled'
                   type='button'
                   onClick={() => openCategoryPickerRef.current?.()}
-                  className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
+                  className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
                 >
                   <Plus size={11} /> เพิ่มหมวดหมู่
                 </Button>
@@ -537,11 +534,11 @@ export function FactoryInfoPage() {
         ) : (
           /* ── View mode: data grid + category tags ── */
           <div className='space-y-6'>
-            <div className='grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6'>
+            <div className='grid grid-cols-2 sm:grid-cols-4 2xl:grid-cols-6 gap-x-8 gap-y-6'>
               <Field label='ชื่อโรงงาน' value={initialValues.factory_name} className='col-span-2' />
               <Field label='เลขประจำตัวผู้เสียภาษี' value={initialValues.tax_id} />
               <Field label='Lead Time' value={initialValues.lead_time_desc} />
-              <Field label='รายละเอียด' value={initialValues.description} className='col-span-2 sm:col-span-4' />
+              <Field label='รายละเอียด' value={initialValues.description} className='col-span-2 sm:col-span-4 2xl:col-span-6' />
             </div>
 
             {/* Categories sub-section */}
@@ -552,8 +549,8 @@ export function FactoryInfoPage() {
               {/* PD categories */}
               {categoryCardsByScope.PD.length > 0 ? (
                 <div className='space-y-2.5'>
-                  <p className='text-sm font-bold text-indigo-700'>หมวดสินค้า (PD)</p>
-                  <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3'>
+                  <p className='text-sm font-bold text-brand-purple'>หมวดสินค้า (PD)</p>
+                  <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3'>
                     {categoryCardsByScope.PD.map((cat) => (
                       <CategoryViewCard key={`pd-${cat.id}`} cat={cat} />
                     ))}
@@ -565,7 +562,7 @@ export function FactoryInfoPage() {
               {categoryCardsByScope.MT.length > 0 ? (
                 <div className='space-y-2.5'>
                   <p className='text-sm font-bold text-emerald-700'>หมวดวัตถุดิบ (MT)</p>
-                  <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3'>
+                  <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3'>
                     {categoryCardsByScope.MT.map((cat) => (
                       <CategoryViewCard key={`mt-${cat.id}`} cat={cat} isMT />
                     ))}
@@ -607,7 +604,7 @@ export function FactoryInfoPage() {
             variant='unstyled'
             type='button'
             onClick={() => openCertAddRef.current?.()}
-            className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
+            className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
           >
             <Plus size={11} /> เพิ่มใบรับรอง
           </Button>

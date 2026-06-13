@@ -119,14 +119,14 @@ export function FactoryInvoicePage() {
       {loading ? (
         <div className='space-y-3'>
           {[1, 2, 3].map((i) => (
-            <div key={i} className='bg-white rounded-xl border border-slate-200 p-5'>
+            <div key={i} className='bg-white rounded-lg border border-slate-200 p-5'>
               <div className='h-5 w-40 bg-slate-100 rounded animate-pulse mb-2' />
               <div className='h-4 w-56 bg-slate-100 rounded animate-pulse' />
             </div>
           ))}
         </div>
       ) : invoices.length === 0 ? (
-        <div className='bg-white rounded-xl border border-slate-200 p-10 text-center'>
+        <div className='bg-white rounded-lg border border-slate-200 p-10 text-center'>
           <FileText size={36} className='mx-auto text-slate-300 mb-3' />
           <p className='text-sm text-slate-500'>ยังไม่มี invoice</p>
         </div>
@@ -138,13 +138,13 @@ export function FactoryInvoicePage() {
             const canAttach = inv.status?.trim() === 'ST';
             const isUp = uploading === inv.invoice_id;
             return (
-              <div key={inv.invoice_id} className='bg-white rounded-xl border border-slate-200 shadow-sm p-5'>
+              <div key={inv.invoice_id} className='bg-white rounded-lg border border-slate-200 p-5'>
                 <div className='flex items-start justify-between'>
                   <div>
                     <button
                       type='button'
                       onClick={() => openDetail(inv)}
-                      className='text-sm font-bold text-indigo-700 hover:underline'
+                      className='text-sm font-bold text-brand-purple hover:underline'
                     >
                       {MONTHS_TH[inv.period_month]} {inv.period_year} — Invoice #{inv.invoice_id}
                     </button>
@@ -161,8 +161,8 @@ export function FactoryInvoicePage() {
                         <p className='text-sm font-semibold text-slate-700'>{formatCurrencyNoDecimals(inv.vat_amount)}</p>
                       </div>
                       <div>
-                        <p className='text-[10px] text-indigo-500 uppercase font-semibold'>ยอดชำระ</p>
-                        <p className='text-sm font-bold text-indigo-700'>{formatCurrencyNoDecimals(inv.grand_total)}</p>
+                        <p className='text-[10px] text-brand-purple uppercase font-semibold'>ยอดชำระ</p>
+                        <p className='text-sm font-bold text-brand-purple'>{formatCurrencyNoDecimals(inv.grand_total)}</p>
                       </div>
                     </div>
                   </div>
@@ -177,7 +177,7 @@ export function FactoryInvoicePage() {
                         type='button'
                         disabled={isUp}
                         onClick={() => triggerUpload(inv.invoice_id)}
-                        className='flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60'
+                        className='flex items-center gap-1.5 px-3 py-1.5 bg-brand-purple text-white text-xs font-semibold rounded-lg hover:bg-brand-violet-deep transition-colors disabled:opacity-60'
                       >
                         {isUp ? <Loader2 size={12} className='animate-spin' /> : <Upload size={12} />}
                         แนบสลีปค่า Comm
@@ -187,7 +187,7 @@ export function FactoryInvoicePage() {
                       <button
                         type='button'
                         onClick={() => setPreviewSlip(inv.slip_url!)}
-                        className='flex items-center gap-1 text-xs text-indigo-600 hover:underline'
+                        className='flex items-center gap-1 text-xs text-brand-purple hover:underline'
                       >
                         <Image size={11} />
                         ดูสลีปที่แนบ
@@ -204,7 +204,7 @@ export function FactoryInvoicePage() {
       {/* Detail modal */}
       {detailInvoice && (
         <div className='fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4' onClick={() => setDetailInvoice(null)}>
-          <div className='bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-auto' onClick={(e) => e.stopPropagation()}>
+          <div className='bg-white rounded-lg shadow-md w-full max-w-lg max-h-[80vh] overflow-auto' onClick={(e) => e.stopPropagation()}>
             <div className='flex items-center justify-between px-6 py-4 border-b border-slate-100'>
               <h3 className='text-base font-bold text-slate-900'>
                 Invoice #{detailInvoice.invoice_id} — {MONTHS_TH[detailInvoice.period_month]} {detailInvoice.period_year}
@@ -215,17 +215,17 @@ export function FactoryInvoicePage() {
             </div>
             <div className='px-6 py-4 space-y-3'>
               <div className='grid grid-cols-3 gap-2 text-center'>
-                <div className='p-2 bg-slate-50 rounded-lg'>
+                <div className='p-2 bg-[var(--brand-page)] rounded-lg'>
                   <p className='text-[10px] text-slate-400'>Commission</p>
                   <p className='font-bold'>{formatCurrencyNoDecimals(detailInvoice.commission_amount)}</p>
                 </div>
-                <div className='p-2 bg-slate-50 rounded-lg'>
+                <div className='p-2 bg-[var(--brand-page)] rounded-lg'>
                   <p className='text-[10px] text-slate-400'>VAT</p>
                   <p className='font-bold'>{formatCurrencyNoDecimals(detailInvoice.vat_amount)}</p>
                 </div>
-                <div className='p-2 bg-indigo-50 rounded-lg'>
-                  <p className='text-[10px] text-indigo-500'>ยอดชำระ</p>
-                  <p className='font-bold text-indigo-700'>{formatCurrencyNoDecimals(detailInvoice.grand_total)}</p>
+                <div className='p-2 bg-brand-lavender rounded-lg'>
+                  <p className='text-[10px] text-brand-purple'>ยอดชำระ</p>
+                  <p className='font-bold text-brand-purple'>{formatCurrencyNoDecimals(detailInvoice.grand_total)}</p>
                 </div>
               </div>
               <table className='w-full text-sm'>
@@ -256,7 +256,7 @@ export function FactoryInvoicePage() {
       {/* Slip preview */}
       {previewSlip && (
         <div className='fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4' onClick={() => setPreviewSlip(null)}>
-          <div className='relative max-w-3xl max-h-[90vh] bg-white rounded-xl overflow-hidden shadow-2xl' onClick={(e) => e.stopPropagation()}>
+          <div className='relative max-w-3xl max-h-[90vh] bg-white rounded-lg overflow-hidden shadow-md' onClick={(e) => e.stopPropagation()}>
             <button type='button' onClick={() => setPreviewSlip(null)} className='absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70'>
               <X size={16} />
             </button>

@@ -26,7 +26,11 @@ import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLo
 import { hoursUntilDeadline } from '@/utils/rfqDeadline';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryHighlightField } from '@/components/features/factory-rfq/FactoryHighlightField';
-import { formatCompactNumber, formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import {
+  formatCompactNumber,
+  formatCurrency,
+  formatCurrencyNoDecimals,
+} from '@/utils/formatting/formatCurrency';
 import { FormField } from '@/shared/ui/forms/FormField';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -115,25 +119,28 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       initialFactoryUnitId ?? undefined,
     );
     useEffect(() => {
-      masterApi.getUnits().then((raw) => {
-        const list: unknown[] = Array.isArray(raw)
-          ? raw
-          : Array.isArray((raw as Record<string, unknown>)?.data)
-            ? ((raw as Record<string, unknown>).data as unknown[])
-            : [];
-        setUnits(
-          (list as Record<string, unknown>[])
-            .map((u) => ({
-              unit_id: Number(u.unit_id ?? u.id ?? 0),
-              name_th: String(u.name_th ?? u.unit_name ?? ''),
-              name_en: String(u.name_en ?? ''),
-              code: String(u.code ?? ''),
-              group_th: String(u.group_th ?? 'อื่นๆ'),
-              group_en: String(u.group_en ?? 'Other'),
-            }))
-            .filter((u) => u.unit_id > 0),
-        );
-      }).catch(() => {});
+      masterApi
+        .getUnits()
+        .then((raw) => {
+          const list: unknown[] = Array.isArray(raw)
+            ? raw
+            : Array.isArray((raw as Record<string, unknown>)?.data)
+              ? ((raw as Record<string, unknown>).data as unknown[])
+              : [];
+          setUnits(
+            (list as Record<string, unknown>[])
+              .map((u) => ({
+                unit_id: Number(u.unit_id ?? u.id ?? 0),
+                name_th: String(u.name_th ?? u.unit_name ?? ''),
+                name_en: String(u.name_en ?? ''),
+                code: String(u.code ?? ''),
+                group_th: String(u.group_th ?? 'อื่นๆ'),
+                group_en: String(u.group_en ?? 'Other'),
+              }))
+              .filter((u) => u.unit_id > 0),
+          );
+        })
+        .catch(() => {});
     }, []);
     const shippingMethodsQ = useShippingMethods(!lockedShippingMethodName);
     const shipId = lockedShippingMethodId ?? 0;
@@ -349,11 +356,11 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           e.preventDefault();
           void submit();
         }}
-        className='bg-white rounded-2xl border border-gray-100 p-4 space-y-4'
+        className='bg-white rounded-lg border border-gray-100 p-4 space-y-4'
       >
         {showHeading ? <h3 className='text-sm font-bold text-gray-900'>ยื่นใบเสนอราคา</h3> : null}
 
-        <div className='rounded-xl border border-gray-200 p-3 space-y-3'>
+        <div className='rounded-lg border border-gray-200 p-3 space-y-3'>
           <p className='text-xs font-semibold text-gray-800'>ราคาและจำนวนที่เสนอ</p>
 
           {rfqQuantity != null && (
@@ -363,7 +370,10 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 {formatCompactNumber(rfqQuantity)} {rfqUnitLabel}
               </strong>
               {budgetPerPiece != null ? (
-                <span> • งบ ~{formatCurrency(budgetPerPiece)}/{rfqUnitLabel}</span>
+                <span>
+                  {' '}
+                  • งบ ~{formatCurrency(budgetPerPiece)}/{rfqUnitLabel}
+                </span>
               ) : null}
             </p>
           )}
@@ -381,7 +391,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 value={factoryQty ?? ''}
                 onChange={(e) => setFactoryQty(e.target.value ? Number(e.target.value) : null)}
                 placeholder={rfqQuantity != null ? String(rfqQuantity) : 'จำนวนที่เสนอ'}
-                className='flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+                className='flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
               />
               <UnitPicker units={units} value={factoryUnitId} onChange={setFactoryUnitId} />
             </div>
@@ -404,7 +414,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               min={0}
               disabled={readOnly}
               placeholder='0.00'
-              className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+              className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
               {...form.register('price_per_piece')}
             />
           </FormField>
@@ -417,8 +427,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               <div className='rounded-lg border border-violet-100 bg-violet-50/50 px-3 py-2'>
                 <p className='text-xs font-semibold text-gray-800'>
                   สรุปข้อเสนอ: {formatCompactNumber(effectiveQty)} {factoryUnitLabel} ×{' '}
-                  {formatCurrency(p)} ={' '}
-                  <span className='text-violet-700'>{fmt(total)} บาท</span>
+                  {formatCurrency(p)} = <span className='text-violet-700'>{fmt(total)} บาท</span>
                 </p>
                 <p className='text-[10px] text-gray-500 mt-0.5'>
                   {hasQtyOverride
@@ -440,7 +449,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 min={0}
                 disabled={readOnly}
                 placeholder='0'
-                className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+                className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
                 {...form.register('shipping_cost')}
               />
             </FormField>
@@ -451,7 +460,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 min={0}
                 disabled={readOnly}
                 placeholder='0'
-                className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+                className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
                 {...form.register('packaging_cost')}
               />
             </FormField>
@@ -462,7 +471,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 min={0}
                 disabled={readOnly}
                 placeholder='0'
-                className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+                className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
                 {...form.register('tooling_mold_cost')}
               />
             </FormField>
@@ -483,7 +492,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               min={1}
               disabled={readOnly}
               placeholder='30'
-              className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+              className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
               {...form.register('lead_time_days')}
             />
           </FormField>
@@ -496,13 +505,13 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               min={1}
               disabled={readOnly}
               placeholder='14'
-              className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+              className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
               {...form.register('validity_days')}
             />
           </FormField>
         </div>
 
-        <div className='rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5'>
+        <div className='rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5'>
           <div className='flex items-center justify-between gap-2 mb-1'>
             <span className='text-xs font-medium text-gray-500'>เงื่อนไขการชำระเงิน</span>
             <Lock size={14} className='text-gray-400 shrink-0' aria-hidden />
@@ -530,11 +539,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
 
         {/* factory_note — shown only when creating (edit mode uses FactoryNoteInline) */}
         {!patchQuotationId ? (
-          <FactoryNoteField
-            value={factoryNote}
-            onChange={setFactoryNote}
-            disabled={readOnly}
-          />
+          <FactoryNoteField value={factoryNote} onChange={setFactoryNote} disabled={readOnly} />
         ) : null}
 
         {!readOnly ? (
@@ -546,7 +551,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 {imageUrls.map((url) => (
                   <div
                     key={url}
-                    className='relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200'
+                    className='relative aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center'
                   >
                     <Image src={url} alt='' className='w-full h-full object-cover' />
                     <Button
@@ -577,7 +582,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               type='button'
               disabled={uploadingImage}
               onClick={() => imageInputRef.current?.click()}
-              className='inline-flex items-center gap-1.5 rounded-xl border border-dashed border-gray-300 px-3 py-2 text-xs text-gray-500 hover:border-violet-400 hover:text-violet-600 disabled:opacity-50'
+              className='inline-flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-xs text-gray-500 hover:border-violet-400 hover:text-violet-600 disabled:opacity-50'
             >
               {uploadingImage ? (
                 <>
@@ -599,7 +604,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               {imageUrls.map((url) => (
                 <div
                   key={url}
-                  className='aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200'
+                  className='aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center'
                 >
                   <Image src={url} alt='' className='w-full h-full object-cover' />
                 </div>
@@ -609,7 +614,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         ) : null}
 
         {(preview || previewLoading) && effectiveQty > 0 ? (
-          <div className='rounded-xl border border-violet-100 bg-violet-50/60 p-3 space-y-1.5'>
+          <div className='rounded-lg border border-violet-100 bg-violet-50/60 p-3 space-y-1.5'>
             <div className='flex items-center justify-between mb-1'>
               <p className='text-[11px] font-bold text-violet-700 uppercase tracking-wide'>
                 สรุปค่าใช้จ่าย (ประมาณ)
@@ -655,7 +660,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         ) : null}
 
         {formWarnings.length > 0 ? (
-          <ul className='text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 space-y-1'>
+          <ul className='text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 space-y-1'>
             {formWarnings.map((w) => (
               <li key={w} className='flex items-start gap-1.5'>
                 <AlertTriangle size={13} className='mt-0.5 shrink-0' />
@@ -679,7 +684,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                   (factoryNote ?? '') === (initialFactoryNote ?? '')) ||
                 Boolean(highlightError)
               }
-              className='w-full rounded-xl text-white py-2.5 text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2 bg-gradient-to-br from-brand-purple to-brand-violet'
+              className='w-full rounded-lg text-white py-2.5 text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2 bg-brand-purple hover:bg-brand-violet-deep'
             >
               {saving ? (
                 <>
