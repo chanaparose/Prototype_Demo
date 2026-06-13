@@ -11,19 +11,38 @@ import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
  * ถ้ามี notification ประเภท `specificType` สำหรับ reference_id เดียวกัน
  * → ซ่อน notification ประเภท `broadType` ของ reference_id นั้นออก
  *
- * ปรับ type codes ตามที่ backend ส่งมาจริง เช่น:
- *   { broadType: 'rfq_new_category',    specificType: 'rfq_new_subcategory' }
- *   { broadType: 'RC',                  specificType: 'RS' }  ← ถ้า backend ใช้ CHAR(2)
+ * `groupBy` กำหนดว่าจะ group ด้วย field ไหน:
+ *   'rfq_id'   — ใช้สำหรับ RFQ-level dedup (category vs subcategory match)
+ *   'order_id' — ใช้สำหรับ order-level dedup (status overlap, production vs status)
+ *
+ * ปรับ type codes ตามที่ backend ส่งมาจริง (ดูจาก Network tab → GET /notifications → field `type`)
+ * เช่น:
+ *   rfq_id  : { broadType: 'rfq_new_category',   specificType: 'rfq_new_subcategory' }
+ *   rfq_id  : { broadType: 'RC',                 specificType: 'RS' }  ← CHAR(2) code
+ *   order_id: { broadType: 'order_status_changed', specificType: 'production_updated' }
  */
 export const NOTI_SUPERSEDE_RULES: Array<{
-  /** notification ประเภทกว้าง (category-level) — จะถูกซ่อนถ้ามี specificType อยู่ */
+  /** notification ประเภทกว้าง — จะถูกซ่อนถ้ามี specificType อยู่ */
   broadType: string;
-  /** notification ประเภทเฉพาะ (subcategory-level) — เมื่อมีแล้ว broadType จะถูก suppress */
+  /** notification ประเภทเฉพาะ — เมื่อมีแล้ว broadType จะถูก suppress */
   specificType: string;
+  /** field ที่ใช้ grouping — default 'rfq_id' */
+  groupBy?: 'rfq_id' | 'order_id';
 }> = [
+  // ── RFQ-level: category match ถูก suppress เมื่อมี subcategory match ──────────
   // TODO: ใส่ type codes จริงจาก backend เช่น:
-  // { broadType: 'rfq_new_category', specificType: 'rfq_new_subcategory' },
-  // { broadType: 'RC',               specificType: 'RS' },
+  // { broadType: 'rfq_new_category', specificType: 'rfq_new_subcategory', groupBy: 'rfq_id' },
+  // { broadType: 'RC',               specificType: 'RS',                  groupBy: 'rfq_id' },
+
+  // ── Order-level: ซ้อนทับกันสำหรับ order_id เดียวกัน ──────────────────────────
+  // เคส 1: order_confirmed + order_status_changed — ตอน confirm order บาง backend ส่งทั้งคู่
+  // { broadType: 'order_confirmed',      specificType: 'order_status_changed', groupBy: 'order_id' },
+
+  // เคส 2: order_status_changed + production_updated — progress update ส่งซ้ำกัน
+  // { broadType: 'order_status_changed', specificType: 'production_updated',   groupBy: 'order_id' },
+
+  // เคส 3: payment_due + order_status_changed — payment milestone trigger status change
+  // { broadType: 'order_status_changed', specificType: 'payment_due',          groupBy: 'order_id' },
 ];
 
 function extractRows(raw: unknown): Record<string, unknown>[] {
@@ -70,29 +89,38 @@ export function mapNotificationFromApi(row: Record<string, unknown>): INotificat
 }
 
 /**
- * Suppress broad-type notifications when a more-specific type exists for the same rfq_id.
+ * Suppress broad-type notifications when a more-specific type exists for the same group key.
+ * รองรับทั้ง rfq_id และ order_id — กำหนดผ่าน rule.groupBy (default: 'rfq_id')
  * ใช้ NOTI_SUPERSEDE_RULES เป็น config — ต้องใส่ type codes จริงก่อนถึงจะทำงาน
  */
 function applySupersedeDeduplicate(items: INotificationModel[]): INotificationModel[] {
   if (NOTI_SUPERSEDE_RULES.length === 0) return items;
 
-  // สร้าง Set ของ (specificType + rfq_id) ที่มีอยู่จริงใน list
+  // helper: ดึง group key value จาก item ตาม groupBy
+  const getGroupValue = (item: INotificationModel, groupBy: 'rfq_id' | 'order_id'): string | undefined =>
+    groupBy === 'order_id' ? item.order_id : item.rfq_id;
+
+  // สร้าง Set ของ "(specificType)__(groupBy)__(groupValue)" ที่มีอยู่จริงใน list
   const specificKeys = new Set<string>();
   for (const item of items) {
     for (const rule of NOTI_SUPERSEDE_RULES) {
-      if (item.type === rule.specificType && item.rfq_id) {
-        specificKeys.add(`${rule.specificType}__${item.rfq_id}`);
+      const gb = rule.groupBy ?? 'rfq_id';
+      const val = getGroupValue(item, gb);
+      if (item.type === rule.specificType && val) {
+        specificKeys.add(`${rule.specificType}__${gb}__${val}`);
       }
     }
   }
 
   if (specificKeys.size === 0) return items;
 
-  // กรอง broad-type ออกถ้ามี specific-type สำหรับ rfq_id เดียวกัน
+  // กรอง broad-type ออกถ้ามี specific-type สำหรับ group key เดียวกัน
   return items.filter((item) => {
     for (const rule of NOTI_SUPERSEDE_RULES) {
-      if (item.type === rule.broadType && item.rfq_id) {
-        const key = `${rule.specificType}__${item.rfq_id}`;
+      const gb = rule.groupBy ?? 'rfq_id';
+      const val = getGroupValue(item, gb);
+      if (item.type === rule.broadType && val) {
+        const key = `${rule.specificType}__${gb}__${val}`;
         if (specificKeys.has(key)) return false; // suppress
       }
     }

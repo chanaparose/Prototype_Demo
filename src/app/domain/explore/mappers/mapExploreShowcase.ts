@@ -1,4 +1,4 @@
-import { exploreApi } from '@/services/api/exploreApi';
+import { exploreApi, EXPLORE_PREVIEW_LIMIT } from '@/services/api/exploreApi';
 import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
 import {
   EMPTY_EXPLORE_PAGE_DATA,
@@ -49,7 +49,10 @@ function mapRowToExploreShowcase(row: IExploreShowcaseResponse): IExploreShowcas
 }
 
 function mapShowcaseList(rows: IExploreShowcaseResponse[]): IExploreShowcase[] {
-  return rows.map(mapRowToExploreShowcase).filter((s) => s.id && s.title);
+  return rows
+    .slice(0, EXPLORE_PREVIEW_LIMIT)                    // FE safeguard — cap ที่ 10 เสมอ
+    .map(mapRowToExploreShowcase)
+    .filter((s) => s.id && s.title);
 }
 
 function normSlide(r: IPromoSlideResponse | Record<string, unknown>): IExploreSlide {
@@ -102,7 +105,9 @@ export async function fetchExplorePageData(): Promise<IExplorePageData> {
       .map(normSlide)
       .filter((sl) => sl.id && sl.title),
     promoCodes: [],
-    factories: (Array.isArray(data.factories) ? data.factories : []).map(mapExploreFactory),
+    factories: (Array.isArray(data.factories) ? data.factories : [])
+      .slice(0, EXPLORE_PREVIEW_LIMIT)                  // FE safeguard — cap ที่ 10 เสมอ
+      .map(mapExploreFactory),
   };
 }
 

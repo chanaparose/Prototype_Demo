@@ -61,9 +61,24 @@ export const frontendApi = {
   getPromoCodes: () => httpClient.get<unknown[]>('/frontend/promo-codes'),
 };
 
+/** จำนวน showcase/factory สูงสุดที่แสดงบนหน้า Explore (preview section) */
+export const EXPLORE_PREVIEW_LIMIT = 10;
+
 /** GET /api/v1/explore — single call: categories + showcases (PD/MT/PM/ID) + promoSlides */
 export const exploreApi = {
-  get: () => httpClient.get<IExploreApiResponse>('/explore'),
+  /**
+   * @param showcaseLimit - จำกัดจำนวน showcase แต่ละ type ที่ backend ส่งมา (default: EXPLORE_PREVIEW_LIMIT)
+   * @param factoryLimit  - จำกัดจำนวน factory ที่ backend ส่งมา (default: EXPLORE_PREVIEW_LIMIT)
+   */
+  get: (
+    showcaseLimit = EXPLORE_PREVIEW_LIMIT,
+    factoryLimit = EXPLORE_PREVIEW_LIMIT,
+  ) => {
+    const p = new URLSearchParams();
+    p.set('showcase_limit', String(showcaseLimit));
+    p.set('factory_limit', String(factoryLimit));
+    return httpClient.get<IExploreApiResponse>(`/explore?${p}`);
+  },
 };
 
 /** GET /api/v1/showcases?types=...&page=N&limit=N — paginated flat showcase list */
