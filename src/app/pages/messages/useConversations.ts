@@ -40,11 +40,12 @@ export function useConversations() {
   return {
     items,
     loading: enabled ? conversationsQ.isLoading : false,
-    error: conversationsQ.error
-      ? conversationsQ.error instanceof Error
-        ? conversationsQ.error.message
-        : 'โหลดข้อความไม่สำเร็จ'
-      : null,
+    error:
+      enabled && conversationsQ.isError
+        ? conversationsQ.error instanceof Error
+          ? conversationsQ.error.message
+          : 'โหลดข้อความไม่สำเร็จ'
+        : null,
     reload,
   };
 }

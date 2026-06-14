@@ -217,6 +217,7 @@ export function ProductTour() {
   }, []);
 
   const purgeTourQueryCache = useCallback(() => {
+    void queryClient.cancelQueries({ queryKey: chatKeys.all });
     queryClient.removeQueries({ queryKey: chatKeys.all });
     queryClient.removeQueries({ queryKey: factoryIdeasKeys.all });
     queryClient.removeQueries({ queryKey: showcaseKeys.all });
@@ -225,6 +226,12 @@ export function ProductTour() {
     queryClient.removeQueries({ queryKey: ['wallet', 'me'] });
     queryClient.removeQueries({ queryKey: ['orderReviewState', '17'] });
   }, []);
+
+  const endTourSession = useCallback(() => {
+    setTourActive(false);
+    clearTourMocks();
+    purgeTourQueryCache();
+  }, [purgeTourQueryCache]);
 
   const closeTo = useCallback(
     (target: string) => {
@@ -237,17 +244,15 @@ export function ProductTour() {
         const pageKey = getPageKey(location.pathname);
         if (pageKey) markPageTourSeen(pageKey);
       }
-      clearTourMocks();
-      purgeTourQueryCache();
+      endTourSession();
       setOpen(false);
       setTargetRect(null);
 
       if (location.pathname !== target) {
         navigate(target, { replace: true });
       }
-      window.setTimeout(() => setTourActive(false), 50);
     },
-    [mode, location.pathname, navigate, purgeTourQueryCache],
+    [mode, location.pathname, navigate, endTourSession],
   );
 
   const handleClose = useCallback(() => {
@@ -258,20 +263,18 @@ export function ProductTour() {
       // fallback: ถ้า originPath ≠ current → mark current page ด้วย
       const curPageKey = getPageKey(location.pathname);
       if (curPageKey && curPageKey !== originPageKey) markPageTourSeen(curPageKey);
-      clearTourMocks();
-      purgeTourQueryCache();
+      endTourSession();
       setOpen(false);
       setTargetRect(null);
       // navigating page tour: กลับไปหน้าเดิมที่เริ่ม tour
       if (allowNav && location.pathname !== originPath.current) {
         navigate(originPath.current, { replace: true });
       }
-      window.setTimeout(() => setTourActive(false), 50);
       return;
     }
     const target = isPublicRoute(originPath.current) ? originPath.current : '/';
     closeTo(target);
-  }, [mode, allowNav, location.pathname, navigate, closeTo, isPublicRoute, purgeTourQueryCache]);
+  }, [mode, allowNav, location.pathname, navigate, closeTo, isPublicRoute, endTourSession]);
 
   const handleFinish = useCallback(() => {
     if (mode === 'page') {
