@@ -128,6 +128,12 @@ export const PATH_TO_PAGE_KEY: Array<{ test: (p: string) => boolean; pageKey: st
 ];
 
 /**
+ * pathname ที่ไม่ auto-show page tour เมื่อเข้าครั้งแรก
+ * (ยังคง step ไว้ใน full tour / orders-journey ที่ใช้ mock route อื่น)
+ */
+export const PAGE_TOUR_SKIP_PATHS = new Set(['/rfqs/2', '/orders/2']);
+
+/**
  * pageKey ที่ tour จะ navigate ข้ามหน้า (เหมือน full tour แต่เฉพาะ steps ของตัวเอง)
  * เมื่อปิด tour จะ navigate กลับไปยัง originPath
  */
@@ -146,6 +152,7 @@ PAGE_TOUR_STEPS['orders-journey'] = [
 export const PAGE_TOUR_SEEN_PREFIX = 'tryly_page_tour_v1:';
 
 export function getPageKey(pathname: string): string | null {
+  if (PAGE_TOUR_SKIP_PATHS.has(pathname)) return null;
   for (const { test, pageKey } of PATH_TO_PAGE_KEY) {
     if (test(pathname)) return pageKey;
   }
