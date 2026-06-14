@@ -641,8 +641,6 @@ export function MessageBubble({
   }
 
   const refChip =
-    msg.reference_type &&
-    ['PD', 'PM', 'ID', 'RQ', 'OD'].includes(msg.reference_type) &&
     msg.reference_id > 0 ? (
       <ReferenceChip
         reference={{ type: msg.reference_type, id: msg.reference_id } as ChatReference}

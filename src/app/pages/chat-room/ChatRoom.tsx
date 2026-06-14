@@ -299,6 +299,9 @@ function ChatRoomBody({
             const optimistic = prev.find((m) => m.key === tempKey);
             const mergedServerRow: RoomMessage = {
               ...serverRow,
+              // ถ้า BE ไม่ส่ง reference กลับมา ให้ fallback จาก optimistic message
+              reference_type: serverRow.reference_type || optimistic?.reference_type || '',
+              reference_id: serverRow.reference_id > 0 ? serverRow.reference_id : (optimistic?.reference_id ?? 0),
               reference_title: serverRow.reference_title ?? optimistic?.reference_title,
               status: 'ok' as const,
             };

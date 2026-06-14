@@ -36,6 +36,11 @@ export interface IMessageResponse {
   sender_id: number;
   sender_role: 'CT' | 'FT';
   body: string;
+  content?: string;
+  message_type?: string;
+  reference_type?: string;
+  reference_id?: number;
+  reference_title?: string;
   created_at: string;
   read_at?: string | null;
   attachments?: Array<{

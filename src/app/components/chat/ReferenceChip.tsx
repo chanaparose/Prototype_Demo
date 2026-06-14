@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import { showcasesApi } from '@/services/api/factoryApi';
 import type { ChatReference } from '@/utils/chatContract';
 
 type Props = {
   reference: ChatReference;
-
   titleFallback?: string;
 };
 
@@ -22,7 +23,7 @@ function hrefFor(ref: ChatReference): string {
     case 'OD':
       return `/orders/${id}`;
     default:
-      return '#';
+      return `/product-detail?showcase_id=${id}`;
   }
 }
 
@@ -54,17 +55,37 @@ export function labelFor(ref: ChatReference, titleFallback?: string): string {
   }
 }
 
+/** Fetch showcase title only when no title provided and reference_id is a showcase */
+function useShowcaseTitle(referenceId: number, skip: boolean) {
+  return useQuery({
+    queryKey: ['showcase-title', referenceId],
+    queryFn: async () => {
+      const res = await showcasesApi.get(referenceId);
+      return (res as { title?: string }).title ?? '';
+    },
+    enabled: !skip && referenceId > 0,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
 export function ReferenceChip({ reference, titleFallback }: Props) {
-  const rt = reference.type;
-  if (
-    !['PD', 'PM', 'ID', 'RQ', 'OD'].includes(rt) ||
-    !Number.isFinite(reference.id) ||
-    reference.id <= 0
-  ) {
+  const hasTitle = Boolean(reference.title?.trim() || titleFallback?.trim());
+  // Fetch from API only for showcase types (PD, PM, ID) or unknown type when no title
+  const isShowcaseType =
+    !reference.type || ['PD', 'PM', 'ID'].includes(reference.type);
+  const { data: fetchedTitle } = useShowcaseTitle(
+    reference.id,
+    hasTitle || !isShowcaseType,
+  );
+
+  if (!Number.isFinite(reference.id) || reference.id <= 0) {
     return null;
   }
+
+  const resolvedTitle = reference.title?.trim() || titleFallback?.trim() || fetchedTitle;
   const to = hrefFor(reference);
-  const label = labelFor(reference, titleFallback);
+  const label = labelFor({ ...reference, title: resolvedTitle }, resolvedTitle);
+
   return (
     <Link
       to={to}
