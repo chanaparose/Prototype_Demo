@@ -549,7 +549,7 @@ export function FactoryShowcaseEditPage() {
             variant='unstyled'
             type='button'
             onClick={onBack}
-            className={factoryButtonClass({ variant: 'toolbar', size: 'sm' })}
+            className='flex shrink-0 items-center gap-1.5 text-sm text-slate-600 transition-colors hover:text-slate-900'
           >
             <ChevronLeft size={18} />
             กลับ

@@ -96,6 +96,10 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
       }}
       title={mode === 'create' ? 'เพิ่มที่อยู่' : 'แก้ไขที่อยู่'}
       variant='sheet'
+      size='lg'
+      className='max-h-[min(90vh,100dvh)]'
+      bodyClassName='p-4 sm:p-5 pb-6'
+      footerClassName='p-4 sm:p-5 pt-2 flex gap-2'
       footer={
         <ModalFooter
           layout='flex'

@@ -422,8 +422,8 @@ export function FactoryWalletPage() {
             className='absolute inset-0 bg-black/50'
             onClick={() => withdraw.closeModal()}
           />
-          <div className='absolute inset-x-4 bottom-4 overflow-hidden rounded-lg border border-slate-200 bg-white sm:inset-x-auto sm:left-1/2 sm:w-[420px] sm:-translate-x-1/2'>
-            <div className='flex justify-center pt-3 pb-1'>
+          <div className='absolute inset-x-4 bottom-4 overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-2xl sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:w-[520px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl'>
+            <div className='flex justify-center pt-3 pb-1 sm:hidden'>
               <div className='w-10 h-1 rounded-full bg-gray-200' />
             </div>
             <div className='p-5 space-y-4'>

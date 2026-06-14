@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Building2, Plus, Pencil, Trash2, Star, Loader2, Copy, Check } from 'lucide-react';
+import { Building2, Plus, Pencil, Trash2, Star, Copy, Check } from 'lucide-react';
 import { bankAccountApi } from '@/services/api/factoryApi';
 import type { IBankAccountResponse } from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AppDialog } from '@/components/ui/app-dialog';
+import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import {
   Select,
   SelectContent,
@@ -84,6 +86,7 @@ export function FactoryBankSettingsPage({
 
   const openAdd = useCallback(() => {
     resetForm();
+    setError('');
     setShowForm(true);
   }, [resetForm]);
 
@@ -92,6 +95,7 @@ export function FactoryBankSettingsPage({
   }, [onRegisterAdd, openAdd]);
 
   const openEdit = (acc: IBankAccountResponse) => {
+    setError('');
     setBankName(acc.bank_name);
     setAccountNumber(acc.account_number);
     setAccountName(acc.account_name);
@@ -179,23 +183,52 @@ export function FactoryBankSettingsPage({
         />
       )}
 
-      {error && (
+      {error && !showForm && (
         <div className='rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700'>
           {error}
         </div>
       )}
 
-      {/* Add/Edit form */}
-      {showForm && (
-        <div
-          className={factoryCardClass({
-            variant: 'section',
-            className: 'space-y-4 border-brand-purple/20',
-          })}
-        >
-          <h3 className='text-sm font-bold text-slate-900'>
-            {editingId ? 'แก้ไขบัญชี' : 'เพิ่มบัญชีใหม่'}
-          </h3>
+      <AppDialog
+        open={showForm}
+        onOpenChange={(v) => {
+          if (!v) resetForm();
+        }}
+        title={editingId ? 'แก้ไขบัญชีธนาคาร' : 'เพิ่มบัญชีธนาคาร'}
+        variant='sheet'
+        size='lg'
+        dismissible={!saving}
+        className='max-h-[min(90vh,100dvh)]'
+        bodyClassName='p-4 sm:p-5 pb-6'
+        footerClassName='p-4 sm:p-5 pt-2 flex gap-2'
+        footer={
+          <ModalFooter
+            layout='flex'
+            accent='purple'
+            primary={{
+              label: editingId ? 'บันทึก' : 'เพิ่มบัญชี',
+              loadingLabel: 'กำลังบันทึก...',
+              loading: saving,
+              disabled: saving,
+              onClick: () => void handleSave(),
+              className: 'flex-1 h-11 py-0',
+            }}
+            secondary={{
+              label: 'ยกเลิก',
+              onClick: resetForm,
+              disabled: saving,
+              tone: 'outline',
+              className: 'flex-1 h-11 py-0 shadow-none',
+            }}
+          />
+        }
+      >
+        <div className='space-y-4'>
+          {error ? (
+            <div className='rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700'>
+              {error}
+            </div>
+          ) : null}
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
             <div>
               <Label className='text-xs font-semibold text-slate-700'>ธนาคาร</Label>
@@ -247,32 +280,8 @@ export function FactoryBankSettingsPage({
               </label>
             </div>
           </div>
-          <div className='flex items-center gap-2'>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={handleSave}
-              disabled={saving}
-              className={factoryButtonClass({ variant: 'primary', size: 'md', className: 'px-4' })}
-            >
-              {saving ? <Loader2 size={13} className='animate-spin' /> : null}
-              {editingId ? 'บันทึก' : 'เพิ่มบัญชี'}
-            </Button>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={resetForm}
-              className={factoryButtonClass({
-                variant: 'secondary',
-                size: 'md',
-                className: 'px-4',
-              })}
-            >
-              ยกเลิก
-            </Button>
-          </div>
         </div>
-      )}
+      </AppDialog>
 
       {/* Account list */}
       {loading ? (
