@@ -1,37 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronLeft, ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react';
+import { ChevronLeft, ArrowDownLeft, ArrowUpRight, Search, ChevronRight } from 'lucide-react';
 import { profileApi } from '@/services/api/userApi';
 import { useAuth } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { formatDateTime } from '@/utils/formatting/formatDate';
+import { parseWalletTransaction, type WalletTransactionView } from '@/utils/walletTransaction';
 
-type TxItem = {
-  id: string;
-  description: string;
-  amount: number;
-  direction: 'in' | 'out';
+type TxItem = WalletTransactionView & {
   status_label: string;
   created_at: string;
 };
-
-function mapTxDescription(row: Record<string, unknown>): string {
-  const txType = String(row.type ?? row.transaction_type ?? '').toUpperCase();
-  const refType = String(row.reference_type ?? '').toLowerCase();
-  const refId = Number(row.reference_id ?? 0);
-  if (txType === 'BU') {
-    if (refType === 'order' && Number.isFinite(refId) && refId > 0)
-      return `สั่งซื้อ Order #${refId}`;
-    return 'สั่งซื้อ';
-  }
-  if (txType === 'DP') return 'มัดจำ';
-  if (txType === 'WD') return 'ถอนเงิน';
-  if (txType === 'SC') return 'รับเงิน';
-  if (txType === 'RF') return 'คืนเงิน';
-  return String(row.description ?? row.type_label ?? row.type ?? 'รายการ');
-}
 
 export function TransactionHistoryPage() {
   const navigate = useNavigate();
@@ -58,25 +39,9 @@ export function TransactionHistoryPage() {
         setItems(
           data
             .map((row) => {
-              // Customer BU is spending (negative) even if API direction says "in".
-              const txType = String(row.type ?? '').toUpperCase();
-              const apiDir = String(row.direction ?? '').toLowerCase();
-              const amount = Number(row.amount ?? 0);
-              const effectiveDirection: 'in' | 'out' =
-                amount < 0
-                  ? 'out'
-                  : amount > 0
-                    ? 'in'
-                    : isCustomer && txType === 'BU'
-                      ? 'out'
-                      : apiDir === 'in'
-                        ? 'in'
-                        : 'out';
+              const parsed = parseWalletTransaction(row, isCustomer);
               return {
-                id: String(row.tx_id ?? row.transaction_id ?? row.id ?? ''),
-                description: mapTxDescription(row),
-                amount,
-                direction: effectiveDirection,
+                ...parsed,
                 status_label: String(row.status_label ?? row.status ?? '-'),
                 created_at: String(row.created_at ?? row.date ?? ''),
               };
@@ -162,32 +127,76 @@ export function TransactionHistoryPage() {
               ยังไม่มีรายการ
             </div>
           ) : (
-            items.map((t) => (
-              <div
-                key={t.id}
-                className='rounded-lg border border-slate-100 bg-white px-4 py-3 flex items-center gap-3'
-              >
-                <div className='shrink-0'>
-                  {t.direction === 'in' ? (
-                    <ArrowDownLeft size={16} className='text-green-600' />
-                  ) : (
-                    <ArrowUpRight size={16} className='text-red-600' />
-                  )}
-                </div>
-                <div className='flex-1 min-w-0'>
-                  <p className='text-sm text-slate-800 truncate font-medium'>{t.description}</p>
-                  <p className='text-[11px] text-slate-500'>
-                    {t.status_label} · {t.created_at ? formatDateTime(t.created_at) : '-'}
+            items.map((t) => {
+              const meta = `${t.status_label} · ${t.created_at ? formatDateTime(t.created_at) : '-'}`;
+
+              if (t.isOrderHistory) {
+                const row = (
+                  <div className='flex min-w-0 flex-1 items-center justify-between gap-3'>
+                    <div className='min-w-0'>
+                      <p className='truncate text-sm text-slate-800'>{t.label}</p>
+                      <p className='text-[11px] text-slate-500'>{meta}</p>
+                    </div>
+                    <div className='flex shrink-0 items-center gap-1'>
+                      {t.amount > 0 && (
+                        <p className={`whitespace-nowrap text-sm font-semibold tabular-nums ${t.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
+                          {t.type === 'credit' ? '+' : '-'}{formatCurrency(t.amount)}
+                        </p>
+                      )}
+                      {t.orderHref ? (
+                        <ChevronRight size={16} className='text-slate-300' />
+                      ) : null}
+                    </div>
+                  </div>
+                );
+
+                return t.orderHref ? (
+                  <Button
+                    key={t.id}
+                    variant='unstyled'
+                    type='button'
+                    onClick={() => navigate(t.orderHref!)}
+                    className='flex w-full items-center gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3 text-left transition-colors hover:bg-slate-50'
+                  >
+                    {row}
+                  </Button>
+                ) : (
+                  <div
+                    key={t.id}
+                    className='flex items-center gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3'
+                  >
+                    {row}
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={t.id}
+                  className='flex items-center gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3'
+                >
+                  <div className='shrink-0'>
+                    {t.type === 'credit' ? (
+                      <ArrowDownLeft size={16} className='text-green-600' />
+                    ) : (
+                      <ArrowUpRight size={16} className='text-red-600' />
+                    )}
+                  </div>
+                  <div className='min-w-0 flex-1'>
+                    <p className='truncate text-sm font-medium text-slate-800'>{t.label}</p>
+                    <p className='text-[11px] text-slate-500'>{meta}</p>
+                  </div>
+                  <p
+                    className={`whitespace-nowrap text-sm font-semibold tabular-nums ${
+                      t.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                    }`}
+                  >
+                    {t.type === 'credit' ? '+' : '-'}
+                    {formatCurrency(t.amount)}
                   </p>
                 </div>
-                <p
-                  className={`text-sm font-semibold whitespace-nowrap ${t.direction === 'in' ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {t.direction === 'in' ? '+' : '-'}
-                  {formatCurrency(Math.abs(t.amount))}
-                </p>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 

@@ -2,13 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ChevronRight,
-  Bell,
   Shield,
   HelpCircle,
   LogOut,
   Star,
-  Heart,
-  FileText,
   Settings,
   User,
   ArrowUpRight,
@@ -32,6 +29,7 @@ import { Button } from '@/components/ui/button';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
+import { parseWalletTransaction, type WalletTransactionView } from '@/utils/walletTransaction';
 
 type ProfileMenuItem = {
   icon: typeof User;
@@ -62,35 +60,6 @@ const menuSections: { title?: string; items: ProfileMenuItem[] }[] = [
         bg: 'var(--status-warning-soft)',
         to: '/profile/reviews',
       },
-      {
-        icon: Bell,
-        label: 'การแจ้งเตือน',
-        sub: 'จัดการการแจ้งเตือน',
-        color: 'var(--status-info)',
-        bg: 'var(--status-info-soft)',
-        to: '/notifications',
-      },
-    ],
-  },
-  {
-    title: 'ธุรกิจ',
-    items: [
-      {
-        icon: FileText,
-        label: 'คำขอราคา & คำสั่งซื้อ ทั้งหมด',
-        sub: 'ดูประวัติการขอใบเสนอราคา',
-        color: '#8B5CF6',
-        bg: '#EDE9FF',
-        to: '/orders',
-      },
-      {
-        icon: Heart,
-        label: 'รายการโปรด',
-        sub: 'สินค้า / โปรโมชัน / ไอเดีย ที่บันทึกไว้',
-        color: '#EC4899',
-        bg: '#FCE7F3',
-        to: '/profile/favorites',
-      },
     ],
   },
   {
@@ -120,62 +89,6 @@ const menuSections: { title?: string; items: ProfileMenuItem[] }[] = [
     ],
   },
 ];
-
-type WalletTransaction = {
-  id: string;
-  label: string;
-  amount: number;
-  date: string;
-  type: 'credit' | 'debit';
-};
-
-function mapTxLabel(row: Record<string, unknown>): string {
-  const txType = String(row.transaction_type ?? row.type ?? '').toUpperCase();
-  const refType = String(row.reference_type ?? '').toLowerCase();
-  const refId = Number(row.reference_id ?? 0);
-  if (txType === 'BU') {
-    if (refType === 'order' && Number.isFinite(refId) && refId > 0)
-      return `สั่งซื้อ Order #${refId}`;
-    return 'สั่งซื้อ';
-  }
-  if (txType === 'DP') return 'มัดจำ';
-  if (txType === 'WD') return 'ถอนเงิน';
-  if (txType === 'SC') return 'รับเงิน';
-  if (txType === 'RF') return 'คืนเงิน';
-  return String(row.description ?? row.type_label ?? row.label ?? row.note ?? 'รายการ');
-}
-
-function normTransaction(r: Record<string, unknown>, isCustomer: boolean): WalletTransaction {
-  const amount = Number(r.amount ?? 0);
-  const direction = String(r.direction ?? '').toLowerCase();
-  const txTypeRaw = String(r.transaction_type ?? r.type ?? '').toUpperCase();
-  let type: 'credit' | 'debit';
-  if (amount < 0) type = 'debit';
-  else if (amount > 0) type = 'credit';
-  else if (isCustomer && txTypeRaw === 'BU') type = 'debit';
-  else if (direction === 'in') type = 'credit';
-  else if (direction === 'out') type = 'debit';
-  else {
-    const txType = String(r.transaction_type ?? r.type ?? '').toLowerCase();
-    type = txType === 'credit' || txType === 'topup' || txType === 'refund' ? 'credit' : 'debit';
-  }
-  const rawDate = String(r.created_at ?? r.date ?? '');
-  let date = rawDate;
-  if (rawDate && !Number.isNaN(Date.parse(rawDate))) {
-    date = new Date(rawDate).toLocaleDateString('th-TH', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  }
-  return {
-    id: String(r.tx_id ?? r.transaction_id ?? r.id ?? ''),
-    label: mapTxLabel(r),
-    amount: Math.abs(amount),
-    date,
-    type,
-  };
-}
 
 function MobileRoleSwitcher() {
   const navigate = useNavigate();
@@ -225,6 +138,27 @@ function MobileRoleSwitcher() {
   );
 }
 
+function mapAddressTypeLabel(type: string): string {
+  switch (type.toUpperCase()) {
+    case 'S': return 'ที่อยู่จัดส่ง';
+    case 'B': return 'ที่อยู่ออกใบกำกับ';
+    case 'H': return 'บ้าน';
+    case 'W': return 'ที่ทำงาน';
+    default: return type || 'ที่อยู่';
+  }
+}
+
+function buildFullAddress(r: Record<string, unknown>): string {
+  const parts = [
+    String(r.address_detail ?? r.detail ?? ''),
+    String(r.sub_district_name ?? ''),
+    String(r.district_name ?? ''),
+    String(r.province_name ?? ''),
+    String(r.zip_code ?? ''),
+  ].filter(Boolean);
+  return parts.join(' ');
+}
+
 export function ProfileMobile() {
   const navigate = useNavigate();
   const data = useData();
@@ -239,10 +173,10 @@ export function ProfileMobile() {
   const completedOrders = data.orders.filter((o) => o.status === 'completed').length;
   const totalSpent = data.orders.reduce((s, o) => s + o.depositPaid, 0);
 
-  const [walletTransactions, setWalletTransactions] = useState<WalletTransaction[]>([]);
+  const [walletTransactions, setWalletTransactions] = useState<WalletTransactionView[]>([]);
   const [txLoading, setTxLoading] = useState(true);
 
-  type Address = { id: string; label: string; detail: string; isDefault: boolean };
+  type Address = { id: string; label: string; detail: string; fullAddress: string; isDefault: boolean };
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [addressesLoading, setAddressesLoading] = useState(true);
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -270,8 +204,9 @@ export function ProfileMobile() {
         raw
           .map((r) => ({
             id: String(r.address_id ?? r.id ?? ''),
-            label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
+            label: mapAddressTypeLabel(String(r.address_type ?? r.label ?? '')),
             detail: String(r.address_detail ?? r.detail ?? ''),
+            fullAddress: buildFullAddress(r),
             isDefault: Boolean(r.is_default ?? false),
           }))
           .filter((a) => a.id),
@@ -299,8 +234,9 @@ export function ProfileMobile() {
           arr
             .map((r) => ({
               id: String(r.address_id ?? r.id ?? ''),
-              label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
+              label: mapAddressTypeLabel(String(r.address_type ?? r.label ?? '')),
               detail: String(r.address_detail ?? r.detail ?? ''),
+              fullAddress: buildFullAddress(r),
               isDefault: Boolean(r.is_default ?? false),
             }))
             .filter((a) => a.id),
@@ -325,7 +261,7 @@ export function ProfileMobile() {
         const data = Array.isArray(raw.data) ? (raw.data as Record<string, unknown>[]) : [];
         setWalletTransactions(
           data
-            .map((row) => normTransaction(row, isCustomer))
+            .map((row) => parseWalletTransaction(row, isCustomer))
             .filter((t) => t.id)
             .slice(0, 5),
         );
@@ -437,40 +373,81 @@ export function ProfileMobile() {
                 <p className='text-xs text-gray-400'>ยังไม่มีรายการธุรกรรม</p>
               </div>
             ) : (
-              walletTransactions.map((tx, idx) => (
-                <div
-                  key={tx.id}
-                  className={`flex items-center justify-between py-2.5 ${idx < walletTransactions.length - 1 ? 'border-b border-gray-100' : ''}`}
-                >
-                  <div className='flex min-w-0 items-center gap-2.5'>
-                    <div
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                        tx.type === 'credit' ? 'bg-green-50' : 'bg-red-50'
+              walletTransactions.map((tx, idx) => {
+                const rowClass = `flex items-center justify-between py-2.5 ${idx < walletTransactions.length - 1 ? 'border-b border-gray-100' : ''}`;
+
+                if (tx.isOrderHistory) {
+                  const content = (
+                    <div className='flex w-full items-center justify-between gap-2 text-left'>
+                      <div className='min-w-0 flex-1'>
+                        <p className='truncate text-left text-sm text-gray-800'>{tx.label}</p>
+                        <p className='mt-0.5 text-left text-[10px] text-gray-400'>{tx.date}</p>
+                      </div>
+                      <div className='flex shrink-0 items-center gap-1'>
+                        {tx.amount > 0 && (
+                          <p
+                            className={`whitespace-nowrap text-sm font-semibold tabular-nums ${tx.type === 'credit' ? 'text-green-600' : 'text-red-500'}`}
+                          >
+                            {tx.type === 'credit' ? '+' : '-'}
+                            {formatCurrencyNoDecimals(tx.amount)}
+                          </p>
+                        )}
+                        {tx.orderHref ? (
+                          <ChevronRight size={16} className='text-gray-300' />
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+
+                  return tx.orderHref ? (
+                    <Button
+                      key={tx.id}
+                      variant='unstyled'
+                      type='button'
+                      className={`${rowClass} w-full text-left transition-colors hover:bg-gray-50`}
+                      onClick={() => navigate(tx.orderHref!)}
+                    >
+                      {content}
+                    </Button>
+                  ) : (
+                    <div key={tx.id} className={rowClass}>
+                      {content}
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={tx.id} className={rowClass}>
+                    <div className='flex min-w-0 items-center gap-2.5'>
+                      <div
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                          tx.type === 'credit' ? 'bg-green-50' : 'bg-red-50'
+                        }`}
+                      >
+                        {tx.type === 'credit' ? (
+                          <ArrowDownLeft size={13} className='text-green-600' />
+                        ) : (
+                          <ArrowUpRight size={13} className='text-red-500' />
+                        )}
+                      </div>
+                      <div className='min-w-0'>
+                        <p className='max-w-[180px] truncate text-sm font-medium text-gray-800'>
+                          {tx.label}
+                        </p>
+                        <p className='mt-0.5 text-[10px] text-gray-400'>{tx.date}</p>
+                      </div>
+                    </div>
+                    <p
+                      className={`shrink-0 text-sm font-bold tabular-nums ${
+                        tx.type === 'credit' ? 'text-green-600' : 'text-red-500'
                       }`}
                     >
-                      {tx.type === 'credit' ? (
-                        <ArrowDownLeft size={13} className='text-green-600' />
-                      ) : (
-                        <ArrowUpRight size={13} className='text-red-500' />
-                      )}
-                    </div>
-                    <div className='min-w-0'>
-                      <p className='max-w-[180px] truncate text-sm font-medium text-gray-800'>
-                        {tx.label}
-                      </p>
-                      <p className='mt-0.5 text-[10px] text-gray-400'>{tx.date}</p>
-                    </div>
+                      {tx.type === 'credit' ? '+' : '-'}
+                      {formatCurrencyNoDecimals(tx.amount)}
+                    </p>
                   </div>
-                  <p
-                    className={`shrink-0 text-sm font-bold tabular-nums ${
-                      tx.type === 'credit' ? 'text-green-600' : 'text-red-500'
-                    }`}
-                  >
-                    {tx.type === 'credit' ? '+' : '-'}
-                    {formatCurrencyNoDecimals(tx.amount)}
-                  </p>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
@@ -555,8 +532,8 @@ export function ProfileMobile() {
                 <div key={addr.id} className='flex items-start gap-2.5 px-4 py-3'>
                   <MapPin size={14} className='mt-0.5 shrink-0 text-brand-violet-deep' />
                   <div className='min-w-0 flex-1'>
-                    <p className='text-sm font-medium capitalize text-gray-800'>{addr.label}</p>
-                    <p className='mt-0.5 line-clamp-2 text-[11px] text-gray-400'>{addr.detail}</p>
+                    <p className='text-sm font-medium text-gray-800'>{addr.label}</p>
+                    <p className='mt-0.5 line-clamp-2 text-[11px] text-gray-400'>{addr.fullAddress || addr.detail}</p>
                   </div>
                   {addr.isDefault && (
                     <span className='shrink-0 rounded-md border border-gray-200 px-1.5 py-0.5 text-[10px] font-semibold text-brand-violet-deep'>
