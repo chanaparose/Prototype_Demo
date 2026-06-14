@@ -175,6 +175,7 @@ export function Layout() {
   const isWideOrderDetail = location.pathname.startsWith('/orders/');
   const isWideFactoryPortal =
     location.pathname === '/factory' || location.pathname.startsWith('/factory/');
+  const isProfileShell = location.pathname === '/profile';
   const isWidePublicDetail =
     location.pathname === '/product-detail' ||
     location.pathname === '/promotion-detail' ||
@@ -188,6 +189,7 @@ export function Layout() {
     isWideChatRoom ||
     isWideOrderDetail ||
     isWideFactoryPortal ||
+    isProfileShell ||
     isWidePublicDetail
       ? 'max-w-[1600px]'
       : 'max-w-7xl';
@@ -199,13 +201,7 @@ export function Layout() {
   const brandActive = 'var(--brand-purple)';
 
   /** Mobile FAB — whitelist only (Explore home = `/`) */
-  const createRfqFabPaths = [
-    '/',
-    '/factory-ideas',
-    '/orders',
-    '/messages',
-    '/profile',
-  ] as const;
+  const createRfqFabPaths = ['/', '/factory-ideas', '/orders', '/messages', '/profile'] as const;
 
   const showCreateRfqFab =
     !isFactory &&
@@ -266,7 +262,14 @@ export function Layout() {
                       ariaLabel='รายการโปรด'
                       tone='rose'
                       active={onFavoritesPage}
-                      onClick={!isAuthenticated ? (e: React.MouseEvent) => { e.preventDefault(); openLoginModal('/profile/favorites'); } : undefined}
+                      onClick={
+                        !isAuthenticated
+                          ? (e: React.MouseEvent) => {
+                              e.preventDefault();
+                              openLoginModal('/profile/favorites');
+                            }
+                          : undefined
+                      }
                     >
                       <Heart
                         size={15}
@@ -298,13 +301,21 @@ export function Layout() {
           style={
             hideMobileBottomNav
               ? undefined
-              : { paddingBottom: `calc(${MOBILE_BOTTOM_NAV_CLEARANCE} + env(safe-area-inset-bottom, 0px))` }
+              : {
+                  paddingBottom: `calc(${MOBILE_BOTTOM_NAV_CLEARANCE} + env(safe-area-inset-bottom, 0px))`,
+                }
           }
         >
           {/* `relative` gives AnimatePresence a positioned ancestor so the
               exiting element doesn't escape the content column. */}
           <div className={`relative ${mainContentMaxWidth} mx-auto min-h-full`}>
-            <AnimatedOutlet />
+            <AnimatedOutlet
+              className={
+                isProfileShell
+                  ? 'w-full px-5 sm:px-5 md:px-6 lg:px-8 2xl:px-10 pt-4 sm:pt-5 lg:pt-6 pb-[max(2rem,env(safe-area-inset-bottom,0px))]'
+                  : undefined
+              }
+            />
           </div>
         </main>
       </div>

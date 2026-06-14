@@ -66,7 +66,7 @@ const customerNavLinks = [
 const sidebarTheme = {
   activeText: 'var(--brand-purple)',
   inactiveText: 'var(--neutral-subtle)',
-  activeBg: 'rgba(162,56,255,0.05)',
+  activeBg: 'rgba(162,56,255,0.08)',
   softBorder: 'rgba(162,56,255,0.14)',
   mutedPurple: 'var(--brand-muted-purple)',
 } as const;
@@ -212,7 +212,7 @@ export function DesktopSidebar() {
                     if (locked) return;
                     navigate(item.href);
                   }}
-                  className={`relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-colors duration-150 hover:bg-slate-50 ${
+                  className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all duration-150 hover:bg-slate-50 ${
                     locked ? 'cursor-not-allowed opacity-60' : ''
                   }`}
                   style={{
@@ -222,16 +222,7 @@ export function DesktopSidebar() {
                   }}
                   aria-current={active ? 'page' : undefined}
                 >
-                  {active ? (
-                    <span
-                      className='h-1.5 w-1.5 shrink-0 rounded-full'
-                      style={{ background: sidebarTheme.activeText }}
-                      aria-hidden
-                    />
-                  ) : (
-                    <span className='h-1.5 w-1.5 shrink-0' aria-hidden />
-                  )}
-                  <Icon size={18} strokeWidth={active ? 2.1 : 1.8} />
+                  <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
                   <span className='flex-1 text-left'>{item.label}</span>
                   {locked ? (
                     <Lock

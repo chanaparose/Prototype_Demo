@@ -128,9 +128,7 @@ export function MessagesDesktop({
                         view={conv.view}
                         density='row'
                         previewLine={
-                          conv.hasQuote
-                            ? 'มีใบเสนอราคาใหม่'
-                            : conv.lastMessage?.trim() || undefined
+                          conv.hasQuote ? 'มีใบเสนอราคาใหม่' : conv.lastMessage?.trim() || undefined
                         }
                         previewEmphasis={
                           conv.hasQuote ? 'quote' : conv.unread > 0 ? 'unread' : 'muted'
@@ -177,12 +175,7 @@ export function MessagesDesktop({
           </div>
         ) : (
           <div className='flex flex-col items-center justify-center flex-1'>
-            <div
-              className='w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5'
-              style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep), #4A267D)' }}
-            >
-              <MessageSquareDot size={36} style={{ color: '#EBD3FF' }} />
-            </div>
+            <MessageSquareDot size={44} className='mx-auto mb-5 text-slate-300' strokeWidth={1.8} />
             <h3 className='font-bold text-lg mb-2' style={{ color: 'var(--brand-navy)' }}>
               เลือกการสนทนา
             </h3>

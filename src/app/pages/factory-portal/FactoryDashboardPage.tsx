@@ -440,7 +440,7 @@ export function FactoryDashboardPage() {
                   />
                 </div>
                 <p className='mt-3 text-xs font-medium text-slate-500'>{k.title}</p>
-                <p className='mt-1 break-words text-3xl font-bold leading-none text-slate-900 tabular-nums'>
+                <p className='mt-1 break-words text-2xl font-bold leading-tight text-slate-900 tabular-nums'>
                   {k.value}
                 </p>
                 {k.sub ? <p className='mt-1 text-xs text-slate-400'>{k.sub}</p> : null}
