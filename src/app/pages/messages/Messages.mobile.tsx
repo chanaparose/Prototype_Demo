@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { BadgeCheck, MessageCircle, RefreshCw } from 'lucide-react';
+import { BadgeCheck, MessageCircle, MessageSquareDot, RefreshCw } from 'lucide-react';
 import { cn } from '@lib/utils';
 import type { UiConversation } from '@/pages/messages/types';
 import { formatConversationListTime } from '@/pages/messages/types';
@@ -9,15 +9,6 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Avatar } from '@/components/ui/avatar';
 import { FACTORY_FALLBACK_AVATAR } from '@/utils/counterparty';
 import { MobileSearchField } from '@/components/shared/MobileSearchField';
-import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
-
-const MESSAGE_TAB_ORDER = ['all', 'unread'] as const;
-type MessageTab = (typeof MESSAGE_TAB_ORDER)[number];
-
-const MESSAGE_TABS: { id: MessageTab; label: string }[] = [
-  { id: 'all', label: 'ทั้งหมด' },
-  { id: 'unread', label: 'ยังไม่อ่าน' },
-];
 
 type MessagesMobileProps = {
   searchText: string;
@@ -31,19 +22,16 @@ type MessagesMobileProps = {
 
 function ListSkeleton() {
   return (
-    <div className='space-y-2'>
+    <div className='overflow-hidden rounded-xl border border-gray-200 bg-white divide-y divide-gray-100'>
       {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-        <div
-          key={i}
-          className='flex animate-pulse items-center gap-3.5 rounded-xl border border-gray-200 bg-white px-4 py-3.5'
-        >
-          <div className='h-12 w-12 shrink-0 rounded-full bg-[var(--brand-lavender)]' />
-          <div className='flex-1 space-y-1.5'>
+        <div key={i} className='flex animate-pulse items-center gap-3 px-3.5 py-2.5'>
+          <div className='h-10 w-10 shrink-0 rounded-full bg-[var(--brand-lavender)]' />
+          <div className='min-w-0 flex-1 space-y-1.5'>
             <div className='flex justify-between gap-2'>
-              <div className='h-3.5 w-24 rounded-full bg-[var(--brand-lavender-muted)]' />
-              <div className='h-3 w-8 rounded-full bg-[var(--brand-lavender)]' />
+              <div className='h-3 w-28 rounded-full bg-[var(--brand-lavender-muted)]' />
+              <div className='h-2.5 w-8 rounded-full bg-[var(--brand-lavender)]' />
             </div>
-            <div className='h-3 w-[70%] rounded-full bg-[var(--brand-lavender)]' />
+            <div className='h-2.5 w-[75%] rounded-full bg-[var(--brand-lavender)]' />
           </div>
         </div>
       ))}
@@ -61,12 +49,12 @@ export function MessagesMobile({
   onReload,
 }: MessagesMobileProps) {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<MessageTab>('all');
+  const [unreadOnly, setUnreadOnly] = useState(false);
 
-  const tabFiltered = useMemo(() => {
-    if (tab === 'unread') return filtered.filter((c) => c.unread > 0);
-    return filtered;
-  }, [filtered, tab]);
+  const visibleConversations = useMemo(() => {
+    if (!unreadOnly) return filtered;
+    return filtered.filter((c) => c.unread > 0);
+  }, [filtered, unreadOnly]);
 
   return (
     <div className='md:hidden flex min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-20'>
@@ -77,98 +65,66 @@ export function MessagesMobile({
           </p>
           <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>ข้อความ</h1>
         </div>
-        <div className='px-4 pb-3'>
+        <div className='flex items-center gap-2 px-4 pb-3'>
           <MobileSearchField
-            className='min-h-9 py-1.5'
+            className='min-h-9 min-w-0 flex-1 py-1.5'
             value={searchText}
             onChange={setSearchText}
             placeholder='ค้นหาการสนทนา…'
           />
-        </div>
-      </div>
-
-      {/* ── Tabs ── */}
-      <div className='sticky top-14 z-20 border-b border-gray-100 bg-white'>
-        <div className='flex'>
-          {MESSAGE_TABS.map((t) => {
-            const active = tab === t.id;
-            return (
-              <button
-                key={t.id}
-                type='button'
-                onClick={() => setTab(t.id)}
-                className='relative min-w-0 flex-1 px-2 py-2.5 text-center'
-              >
-                <span
-                  className={cn(
-                    'inline-flex items-center justify-center gap-1.5 whitespace-nowrap text-[13px] leading-none',
-                    active ? 'font-bold text-[var(--brand-navy)]' : 'font-medium text-gray-400',
-                  )}
-                >
-                  {t.label}
-                  {t.id === 'unread' && totalUnread > 0 ? (
-                    <span
-                      className={cn(
-                        'min-w-[18px] rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums leading-none',
-                        active
-                          ? 'bg-[var(--brand-purple)] text-white'
-                          : 'bg-gray-100 text-gray-500',
-                      )}
-                    >
-                      {totalUnread > 99 ? '99+' : totalUnread}
-                    </span>
-                  ) : null}
-                </span>
-                {active ? (
-                  <span
-                    className='absolute bottom-0 left-1/2 h-[3px] w-8 -translate-x-1/2 rounded-full'
-                    style={{ background: 'var(--brand-purple)' }}
-                  />
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── List ── */}
-      <div className='flex min-h-0 flex-1 flex-col bg-[var(--brand-page)] px-4 pt-3'>
-        <TabSwipeContent
-          activeKey={tab}
-          tabOrder={MESSAGE_TAB_ORDER}
-          className='flex min-h-0 flex-1 flex-col'
-        >
-          <div className='flex min-h-0 flex-1 flex-col bg-[var(--brand-page)]'>
-            {loading ? (
-              <ListSkeleton />
-            ) : error ? (
-              <div className='flex flex-1 flex-col items-center justify-center gap-3 px-6 py-14 text-center'>
-                <p className='text-sm text-[var(--neutral-subtle)]'>{error}</p>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  onClick={() => void onReload()}
-                  className='inline-flex items-center gap-2 rounded-xl bg-[var(--brand-mauve)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm'
-                >
-                  <RefreshCw size={16} />
-                  ลองอีกครั้ง
-                </Button>
-              </div>
-            ) : tabFiltered.length === 0 ? (
-              <MobileEmptyState tab={tab} />
-            ) : (
-              <div className='space-y-2'>
-                {tabFiltered.map((conv) => (
-                  <ConversationRow
-                    key={conv.id}
-                    conv={conv}
-                    onClick={() => navigate(`/chat-room/${conv.id}`)}
-                  />
-                ))}
-              </div>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => setUnreadOnly((v) => !v)}
+            aria-label={unreadOnly ? 'แสดงทั้งหมด' : 'กรองเฉพาะยังไม่อ่าน'}
+            aria-pressed={unreadOnly}
+            title={unreadOnly ? 'แสดงทั้งหมด' : 'เฉพาะยังไม่อ่าน'}
+            className={cn(
+              'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors',
+              unreadOnly
+                ? 'border-brand-purple/35 bg-[var(--brand-page)] text-brand-purple'
+                : 'border-gray-200 text-gray-500 active:bg-gray-50',
             )}
+          >
+            <MessageSquareDot size={17} strokeWidth={2.25} />
+            {!unreadOnly && totalUnread > 0 ? (
+              <span className='absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--brand-purple)] px-1 text-[9px] font-bold leading-none text-white'>
+                {totalUnread > 99 ? '99+' : totalUnread}
+              </span>
+            ) : null}
+          </Button>
+        </div>
+      </div>
+
+      <div className='flex min-h-0 flex-1 flex-col bg-[var(--brand-page)] px-4 pt-3'>
+        {loading ? (
+          <ListSkeleton />
+        ) : error ? (
+          <div className='flex flex-1 flex-col items-center justify-center gap-3 px-6 py-14 text-center'>
+            <p className='text-sm text-[var(--neutral-subtle)]'>{error}</p>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => void onReload()}
+              className='inline-flex items-center gap-2 rounded-xl bg-[var(--brand-mauve)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm'
+            >
+              <RefreshCw size={16} />
+              ลองอีกครั้ง
+            </Button>
           </div>
-        </TabSwipeContent>
+        ) : visibleConversations.length === 0 ? (
+          <MobileEmptyState unreadOnly={unreadOnly} />
+        ) : (
+          <div className='overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm divide-y divide-gray-100'>
+            {visibleConversations.map((conv) => (
+              <ConversationRow
+                key={conv.id}
+                conv={conv}
+                onClick={() => navigate(`/chat-room/${conv.id}`)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -193,46 +149,40 @@ function ConversationRow({
       variant='unstyled'
       type='button'
       onClick={onClick}
-      className='flex w-full items-center gap-3.5 rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-left transition-all active:scale-[0.99] active:bg-gray-50/80'
+      className={cn(
+        'flex w-full min-h-[58px] items-center gap-3 px-3.5 py-2.5 text-left transition-colors active:bg-gray-50/90',
+        hasUnread && 'bg-[var(--brand-page)]/35',
+      )}
     >
-      {/* Avatar */}
-      <div className='relative shrink-0'>
-        <Avatar
-          src={conv.view.avatarUrl}
-          alt={conv.view.title}
-          fallbackSrc={FACTORY_FALLBACK_AVATAR}
-          fallback={conv.view.title.slice(0, 1)}
-          className='h-12 w-12 rounded-full'
-          imageClassName='object-cover'
-        />
-        {/* Unread dot on avatar */}
-        {hasUnread ? (
-          <span className='absolute bottom-0 right-0 h-3 w-3 rounded-full bg-[var(--brand-purple)] ring-2 ring-white' />
-        ) : null}
-      </div>
+      <Avatar
+        src={conv.view.avatarUrl}
+        alt={conv.view.title}
+        fallbackSrc={FACTORY_FALLBACK_AVATAR}
+        fallback={conv.view.title.slice(0, 1)}
+        className='h-10 w-10 shrink-0 rounded-full'
+        imageClassName='object-cover'
+      />
 
-      {/* Text content */}
       <div className='min-w-0 flex-1'>
-        {/* Row 1: name + timestamp */}
-        <div className='flex items-baseline justify-between gap-2'>
+        <div className='flex items-center justify-between gap-2'>
           <div className='flex min-w-0 items-center gap-1'>
             <p
               className={cn(
-                'truncate text-[14.5px] leading-tight text-[var(--brand-navy)]',
+                'truncate text-[13px] leading-tight text-[var(--brand-navy)]',
                 hasUnread ? 'font-bold' : 'font-semibold',
               )}
             >
               {conv.view.title}
             </p>
             {conv.view.verified ? (
-              <BadgeCheck size={13} className='shrink-0 text-[var(--brand-purple)]' />
+              <BadgeCheck size={12} className='shrink-0 text-[var(--brand-purple)]' />
             ) : null}
           </div>
           {time ? (
             <span
               className={cn(
-                'shrink-0 text-[12px] tabular-nums leading-none',
-                hasUnread ? 'text-[var(--brand-purple)] font-semibold' : 'text-[var(--neutral-placeholder)]',
+                'shrink-0 text-[11px] tabular-nums leading-none',
+                hasUnread ? 'font-semibold text-[var(--brand-purple)]' : 'text-gray-400',
               )}
             >
               {time}
@@ -240,23 +190,22 @@ function ConversationRow({
           ) : null}
         </div>
 
-        {/* Row 2: preview + unread count */}
-        <div className='mt-0.5 flex items-center justify-between gap-2'>
+        <div className='mt-0.5 flex items-center gap-2'>
           <p
             className={cn(
-              'min-w-0 flex-1 truncate text-[13px] leading-tight',
+              'min-w-0 flex-1 truncate text-[12px] leading-tight',
               conv.hasQuote
                 ? 'font-medium text-[var(--brand-orange-deep)]'
                 : hasUnread
-                  ? 'font-medium text-[var(--brand-navy)]/80'
-                  : 'text-[var(--neutral-placeholder)]',
+                  ? 'font-medium text-gray-600'
+                  : 'text-gray-400',
             )}
           >
             {preview}
           </p>
           {hasUnread ? (
             <span
-              className='flex h-5 min-w-[20px] shrink-0 items-center justify-center rounded-full bg-[var(--brand-purple)] px-1.5 text-[10px] font-bold leading-none text-white'
+              className='flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full bg-[var(--brand-purple)] px-1 text-[10px] font-bold leading-none text-white'
               aria-label={`${conv.unread} ข้อความใหม่`}
             >
               {conv.unread > 99 ? '99+' : conv.unread}
@@ -268,15 +217,14 @@ function ConversationRow({
   );
 }
 
-function MobileEmptyState({ tab }: { tab: MessageTab }) {
-  const isUnreadTab = tab === 'unread';
+function MobileEmptyState({ unreadOnly }: { unreadOnly: boolean }) {
   return (
     <div className='flex min-h-0 flex-1 flex-col items-center justify-center px-4'>
       <EmptyState
-        title={isUnreadTab ? 'ไม่มีข้อความที่ยังไม่อ่าน' : 'ยังไม่มีข้อความ'}
+        title={unreadOnly ? 'ไม่มีข้อความที่ยังไม่อ่าน' : 'ยังไม่มีข้อความ'}
         description={
-          isUnreadTab
-            ? 'ข้อความใหม่จะแสดงในแท็บนี้'
+          unreadOnly
+            ? 'ข้อความใหม่จะแสดงเมื่อมีการตอบกลับจากโรงงาน'
             : 'ข้อความจากโรงงานจะปรากฏที่นี่หลังจากที่คุณส่ง RFQ'
         }
         className='py-10'
