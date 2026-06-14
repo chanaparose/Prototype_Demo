@@ -31,7 +31,8 @@ export function AnimatedOutlet({ className }: AnimatedOutletProps) {
   const skipYMotion =
     routeKey === '/create-rfq' ||
     routeKey === '/product-detail' ||
-    routeKey === '/idea-detail';
+    routeKey === '/idea-detail' ||
+    routeKey === '/orders';
 
   // Scroll to top on every route change so new pages start at the top.
   useEffect(() => {
