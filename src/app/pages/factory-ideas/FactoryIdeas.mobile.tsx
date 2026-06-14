@@ -15,6 +15,7 @@ import {
   ShowcaseListItemSkeleton,
   IdeaListItemSkeleton,
   FactoryGridCardSkeleton,
+  FactoryListRowSkeleton,
 } from '@/components/skeletons/PageSkeletons';
 import { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
 import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasPageState';
@@ -283,9 +284,17 @@ export function FactoryIdeasMobile() {
         <TabSwipeContent activeKey={selectedType} tabOrder={factoryIdeasTabOrder}>
         {showcasesLoading || factoriesLoading ? (
           isFactoryTab ? (
+            viewMode === 'list' ? (
+              <div className='space-y-3'>
+                {[...Array(4)].map((_, i) => (
+                  <FactoryListRowSkeleton key={i} />
+                ))}
+              </div>
+            ) : (
             <div className='grid grid-cols-2 gap-2'>
               {[...Array(6)].map((_, i) => <FactoryGridCardSkeleton key={i} />)}
             </div>
+            )
           ) : selectedType === 'idea' ? (
             <div className='grid grid-cols-1 gap-2'>
               {[...Array(4)].map((_, i) => <IdeaListItemSkeleton key={i} />)}
@@ -317,59 +326,117 @@ export function FactoryIdeasMobile() {
           </div>
         ) : isFactoryTab ? (
           <TabSwipeContent activeKey={factoryScope} tabOrder={factoryIdeasFactoryScopeOrder}>
-          <div className='grid grid-cols-2 md:grid-cols-3 gap-2'>
-            {visibleFactories.map((factory) => (
-              <article
-                key={factory.id}
-                className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98]'
-                onClick={() => navigate(`/factories/${factory.id}`)}
-              >
-                <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
-                  <ImageWithFallback
-                    src={factory.image}
-                    alt={factory.name}
-                    className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                  />
-                  {factory.verified && (
-                    <div className='absolute top-1 left-1 z-[1] flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5'>
-                      <BadgeCheck className='h-2.5 w-2.5 shrink-0 text-[var(--brand-purple)]' />
-                      <span className='text-[8px] font-medium text-[var(--brand-purple)]'>
-                        ยืนยัน
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                  <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                    {factory.name}
-                  </p>
-                  <div className='flex items-center gap-0.5'>
-                    <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                    <span className='text-gray-500 text-[10px] truncate'>
-                      {(factory.provinceName ?? factory.location).trim() || '—'}
-                    </span>
-                  </div>
-
-                  <div className='mt-auto pt-1 border-t border-gray-50'>
-                    <div className='flex items-center justify-between min-w-0'>
-                      <div className='flex items-center gap-0.5 shrink-0'>
-                        <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                        <span className='text-gray-700 text-[10px] font-semibold'>
-                          {factory.rating}
-                        </span>
-                        <span className='text-gray-400 text-[9px]'>({factory.reviews})</span>
+            {viewMode === 'list' ? (
+              <div className='space-y-3'>
+                {visibleFactories.map((factory) => (
+                  <article
+                    key={factory.id}
+                    className='h-[130px] cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-transform active:scale-[0.99]'
+                    onClick={() => navigate(`/factories/${factory.id}`)}
+                  >
+                    <div className='flex h-full gap-3 p-3'>
+                      <div className='relative w-[100px] shrink-0 overflow-hidden rounded-xl bg-gray-100'>
+                        <ImageWithFallback
+                          src={factory.image}
+                          alt={factory.name}
+                          className='h-full w-full object-cover'
+                        />
+                        {factory.verified ? (
+                          <div className='absolute left-1.5 top-1.5 z-[1] flex items-center gap-0.5 rounded-full bg-white/90 px-1.5 py-0.5 backdrop-blur-sm'>
+                            <BadgeCheck className='h-2.5 w-2.5 shrink-0 text-[var(--brand-purple)]' />
+                            <span className='text-[8px] font-medium text-[var(--brand-purple)]'>
+                              ยืนยัน
+                            </span>
+                          </div>
+                        ) : null}
                       </div>
-                      <span className='text-gray-400 text-[8px] shrink-0'>
-                        ขั้นต่ำ {factory.minOrder}{' '}
-                        {resolveUnitLabel(undefined, factory.minOrderUnit)}
-                      </span>
+
+                      <div className='flex min-w-0 flex-1 flex-col justify-between'>
+                        <div className='min-w-0'>
+                          <h3 className='line-clamp-2 text-[12px] font-bold leading-snug text-[var(--brand-navy)]'>
+                            {factory.name}
+                          </h3>
+                          <div className='mt-1 flex items-center gap-0.5'>
+                            <MapPin className='h-2.5 w-2.5 shrink-0 text-gray-400' />
+                            <span className='truncate text-[10px] text-gray-500'>
+                              {(factory.provinceName ?? factory.location).trim() || '—'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className='mt-auto flex min-w-0 items-center justify-between gap-2 border-t border-gray-50 pt-1.5'>
+                          <div className='flex shrink-0 items-center gap-0.5'>
+                            <Star className='h-2.5 w-2.5 shrink-0 fill-amber-400 text-amber-400' />
+                            <span className='text-[10px] font-semibold text-gray-700'>
+                              {factory.rating}
+                            </span>
+                            <span className='text-[9px] text-gray-400'>({factory.reviews})</span>
+                          </div>
+                          <span className='shrink-0 text-[9px] text-gray-400'>
+                            ขั้นต่ำ {factory.minOrder}{' '}
+                            {resolveUnitLabel(undefined, factory.minOrderUnit)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className='grid grid-cols-2 gap-2 md:grid-cols-3'>
+                {visibleFactories.map((factory) => (
+                  <article
+                    key={factory.id}
+                    className='group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-all active:scale-[0.98] hover:shadow-md'
+                    onClick={() => navigate(`/factories/${factory.id}`)}
+                  >
+                    <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
+                      <ImageWithFallback
+                        src={factory.image}
+                        alt={factory.name}
+                        className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
+                      />
+                      {factory.verified ? (
+                        <div className='absolute left-1 top-1 z-[1] flex items-center gap-0.5 rounded-full bg-white/90 px-1.5 py-0.5 backdrop-blur-sm'>
+                          <BadgeCheck className='h-2.5 w-2.5 shrink-0 text-[var(--brand-purple)]' />
+                          <span className='text-[8px] font-medium text-[var(--brand-purple)]'>
+                            ยืนยัน
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div className='flex flex-1 flex-col justify-between gap-0.5 p-2'>
+                      <p className='mb-0.5 truncate text-xs font-medium leading-tight text-gray-700 transition-colors group-hover:text-brand-purple'>
+                        {factory.name}
+                      </p>
+                      <div className='flex items-center gap-0.5'>
+                        <MapPin className='h-2.5 w-2.5 shrink-0 text-gray-400' />
+                        <span className='truncate text-[10px] text-gray-500'>
+                          {(factory.provinceName ?? factory.location).trim() || '—'}
+                        </span>
+                      </div>
+
+                      <div className='mt-auto border-t border-gray-50 pt-1'>
+                        <div className='flex min-w-0 items-center justify-between'>
+                          <div className='flex shrink-0 items-center gap-0.5'>
+                            <Star className='h-2.5 w-2.5 shrink-0 fill-amber-400 text-amber-400' />
+                            <span className='text-[10px] font-semibold text-gray-700'>
+                              {factory.rating}
+                            </span>
+                            <span className='text-[9px] text-gray-400'>({factory.reviews})</span>
+                          </div>
+                          <span className='shrink-0 text-[8px] text-gray-400'>
+                            ขั้นต่ำ {factory.minOrder}{' '}
+                            {resolveUnitLabel(undefined, factory.minOrderUnit)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </TabSwipeContent>
         ) : selectedType === 'idea' ? (
           <div className='grid grid-cols-1 gap-2'>

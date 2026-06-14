@@ -205,7 +205,61 @@ export function FactoryIdeasDesktop() {
             <p className='text-[12px] text-gray-400 mt-1'>กรุณากลับมาดูอีกครั้งในเร็วๆ นี้</p>
           </div>
         ) : isFactoryTab ? (
-          <div className='grid grid-cols-4 2xl:grid-cols-5 gap-3'>
+          viewMode === 'list' ? (
+            <div className='space-y-2'>
+              {visibleFactories.map((factory) => (
+                <article
+                  key={factory.id}
+                  className='group cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:shadow-md'
+                  onClick={() => navigate(`/factories/${factory.id}`)}
+                >
+                  <div className='flex items-center gap-4 p-4'>
+                    <div className='relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gray-100'>
+                      <ImageWithFallback
+                        src={factory.image}
+                        alt={factory.name}
+                        className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
+                      />
+                      {factory.verified ? (
+                        <div className='absolute left-1 top-1 z-[1] flex items-center gap-0.5 rounded-full bg-white/90 px-1.5 py-0.5 backdrop-blur-sm'>
+                          <BadgeCheck className='h-2.5 w-2.5 shrink-0 text-[var(--brand-purple)]' />
+                          <span className='text-[8px] font-medium text-[var(--brand-purple)]'>
+                            ยืนยัน
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className='min-w-0 flex-1'>
+                      <h3 className='truncate text-[13px] font-bold text-[var(--brand-navy)]'>
+                        {factory.name}
+                      </h3>
+                      <div className='mt-1 flex items-center gap-1 text-[11px] text-gray-500'>
+                        <MapPin className='h-3 w-3 shrink-0 text-gray-400' />
+                        <span className='truncate'>
+                          {(factory.provinceName ?? factory.location).trim() || '—'}
+                        </span>
+                      </div>
+                      <div className='mt-2 flex items-center justify-between gap-3 text-[11px] text-gray-400'>
+                        <span className='inline-flex items-center gap-0.5 font-semibold text-gray-700'>
+                          <Star className='h-3 w-3 fill-amber-400 text-amber-400' />
+                          {factory.rating}
+                          <span className='font-normal text-gray-400'>({factory.reviews})</span>
+                        </span>
+                        <span>
+                          MOQ{' '}
+                          <span className='font-semibold text-[var(--brand-navy)]'>
+                            {factory.minOrder}
+                          </span>{' '}
+                          {resolveUnitLabel(undefined, factory.minOrderUnit)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+          <div className='grid grid-cols-4 gap-3 2xl:grid-cols-5'>
             {visibleFactories.map((factory) => (
               <article
                 key={factory.id}
@@ -259,6 +313,7 @@ export function FactoryIdeasDesktop() {
               </article>
             ))}
           </div>
+          )
         ) : selectedType === 'idea' ? (
           <div className='grid grid-cols-2 gap-4'>
             {visibleIdeaItems.map((item) => {
