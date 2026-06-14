@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   ChevronRight,
   Shield,
@@ -24,10 +25,15 @@ import { useAuth, useAuthStore } from '@/stores/useAuthStore';
 import { getAvailableRoles } from '@/services/api/authApi';
 import { profileApi } from '@/services/api/userApi';
 import { addressesApi } from '@/services/api/masterApi';
+import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
+import { useMyAddresses } from '@/hooks/factory/useMyAddresses';
+import {
+  formatAddressLabel,
+  mapAddressFromApi,
+} from '@/domain/shared/mappers/mapAddressFromApi';
 import { resolveCustomerAvatarSrc } from '@/utils/customerAvatar';
 import { Button } from '@/components/ui/button';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
-import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
 import { parseWalletTransaction, type WalletTransactionView } from '@/utils/walletTransaction';
 
@@ -148,19 +154,9 @@ function mapAddressTypeLabel(type: string): string {
   }
 }
 
-function buildFullAddress(r: Record<string, unknown>): string {
-  const parts = [
-    String(r.address_detail ?? r.detail ?? ''),
-    String(r.sub_district_name ?? ''),
-    String(r.district_name ?? ''),
-    String(r.province_name ?? ''),
-    String(r.zip_code ?? ''),
-  ].filter(Boolean);
-  return parts.join(' ');
-}
-
 export function ProfileMobile() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const data = useData();
   const { logout, user: authUser } = useAuth();
   const currentUser = data.currentUser;
@@ -176,80 +172,35 @@ export function ProfileMobile() {
   const [walletTransactions, setWalletTransactions] = useState<WalletTransactionView[]>([]);
   const [txLoading, setTxLoading] = useState(true);
 
-  type Address = { id: string; label: string; detail: string; fullAddress: string; isDefault: boolean };
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [addressesLoading, setAddressesLoading] = useState(true);
-  const [showAddressForm, setShowAddressForm] = useState(false);
-  const [newAddress, setNewAddress] = useState('');
-  const [addingAddress, setAddingAddress] = useState(false);
+  const { data: addressRows = [], isLoading: addressesLoading } = useMyAddresses();
+  const addresses = useMemo(
+    () => addressRows.map(mapAddressFromApi).filter((a) => a != null),
+    [addressRows],
+  );
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
 
-  const addAddress = async () => {
-    if (!newAddress.trim() || addingAddress) return;
-    setAddingAddress(true);
-    try {
-      await addressesApi.create({
-        address_type: 'S',
-        address_detail: newAddress.trim(),
-        sub_district_id: 0,
-        district_id: 0,
-        province_id: 0,
-        zip_code: '',
-        is_default: addresses.length === 0,
-      });
-      setNewAddress('');
-      setShowAddressForm(false);
-      // refetch
-      const raw = (await addressesApi.list()) as Record<string, unknown>[];
-      setAddresses(
-        raw
-          .map((r) => ({
-            id: String(r.address_id ?? r.id ?? ''),
-            label: mapAddressTypeLabel(String(r.address_type ?? r.label ?? '')),
-            detail: String(r.address_detail ?? r.detail ?? ''),
-            fullAddress: buildFullAddress(r),
-            isDefault: Boolean(r.is_default ?? false),
-          }))
-          .filter((a) => a.id),
-      );
-    } catch {
-      // silent fail
-    } finally {
-      setAddingAddress(false);
-    }
-  };
+  const handleAddAddress = useCallback(
+    async (payload: AddressFormPayload) => {
+      setSavingAddress(true);
+      try {
+        await addressesApi.create({
+          ...payload,
+          is_default: addresses.length === 0 ? true : payload.is_default,
+        });
+        await queryClient.invalidateQueries({ queryKey: ['addresses', 'me'] });
+        setAddressModalOpen(false);
+      } finally {
+        setSavingAddress(false);
+      }
+    },
+    [addresses.length, queryClient],
+  );
 
   const profileAvatarSrc = resolveCustomerAvatarSrc(
     currentUser?.id ?? authUser?.id,
     192,
   );
-
-  useEffect(() => {
-    let cancelled = false;
-    addressesApi
-      .list()
-      .then((raw) => {
-        if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        setAddresses(
-          arr
-            .map((r) => ({
-              id: String(r.address_id ?? r.id ?? ''),
-              label: mapAddressTypeLabel(String(r.address_type ?? r.label ?? '')),
-              detail: String(r.address_detail ?? r.detail ?? ''),
-              fullAddress: buildFullAddress(r),
-              isDefault: Boolean(r.is_default ?? false),
-            }))
-            .filter((a) => a.id),
-        );
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setAddressesLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -496,44 +447,39 @@ export function ProfileMobile() {
             <Button
               variant='unstyled'
               type='button'
-              onClick={() => setShowAddressForm((v) => !v)}
+              onClick={() => setAddressModalOpen(true)}
               className='flex items-center gap-1 text-xs font-semibold text-brand-violet-deep transition-colors hover:text-brand-violet-deep/80'
             >
               <Plus size={14} /> เพิ่ม
             </Button>
           </div>
-          {showAddressForm && (
-            <div className='flex gap-2 border-t border-gray-100 px-4 py-3'>
-              <Input
-                type='text'
-                value={newAddress}
-                onChange={(e) => setNewAddress(e.target.value)}
-                placeholder='กรอกที่อยู่จัดส่ง...'
-                className='flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-violet-deep/30'
-              />
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={addAddress}
-                disabled={addingAddress || !newAddress.trim()}
-                className='rounded-lg bg-brand-violet-deep px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-violet-deep/90 disabled:opacity-50'
-              >
-                {addingAddress ? '...' : 'บันทึก'}
-              </Button>
-            </div>
-          )}
           {addressesLoading ? (
             <p className='py-4 text-center text-xs text-gray-400'>กำลังโหลด...</p>
           ) : addresses.length === 0 ? (
-            <p className='py-4 text-center text-xs text-gray-400'>ยังไม่มีที่อยู่</p>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => setAddressModalOpen(true)}
+              className='flex w-full flex-col items-center gap-2 border-t border-gray-100 px-4 py-6 text-center transition-colors hover:bg-gray-50'
+            >
+              <div className='flex h-10 w-10 items-center justify-center rounded-full bg-violet-50'>
+                <Plus size={18} className='text-brand-violet-deep' />
+              </div>
+              <span className='text-sm font-medium text-gray-600'>เพิ่มที่อยู่จัดส่ง</span>
+              <span className='text-[11px] text-gray-400'>กรอกที่อยู่สำหรับรับสินค้า</span>
+            </Button>
           ) : (
             <div className='divide-y divide-gray-100'>
               {addresses.map((addr) => (
                 <div key={addr.id} className='flex items-start gap-2.5 px-4 py-3'>
                   <MapPin size={14} className='mt-0.5 shrink-0 text-brand-violet-deep' />
                   <div className='min-w-0 flex-1'>
-                    <p className='text-sm font-medium text-gray-800'>{addr.label}</p>
-                    <p className='mt-0.5 line-clamp-2 text-[11px] text-gray-400'>{addr.fullAddress || addr.detail}</p>
+                    <p className='text-sm font-medium text-gray-800'>
+                      {mapAddressTypeLabel(addr.addressType)}
+                    </p>
+                    <p className='mt-0.5 line-clamp-2 text-[11px] text-gray-400'>
+                      {formatAddressLabel(addr)}
+                    </p>
                   </div>
                   {addr.isDefault && (
                     <span className='shrink-0 rounded-md border border-gray-200 px-1.5 py-0.5 text-[10px] font-semibold text-brand-violet-deep'>
@@ -545,6 +491,16 @@ export function ProfileMobile() {
             </div>
           )}
         </div>
+
+        <AddressFormModal
+          open={addressModalOpen}
+          mode='create'
+          saving={savingAddress}
+          onClose={() => {
+            if (!savingAddress) setAddressModalOpen(false);
+          }}
+          onSubmit={handleAddAddress}
+        />
 
         <MobileRoleSwitcher />
 
