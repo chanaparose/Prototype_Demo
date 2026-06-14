@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Search, Hash, Weight, Droplets, Ruler, Grid3X3, Package, ChevronDown, Check, X } from 'lucide-react';
+import { cn } from '@lib/utils';
 import { AppSheetDialog } from '@/components/ui/app-sheet-dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -49,9 +50,10 @@ type Props = {
   units: UnitOption[];
   value: number | undefined;
   onChange: (unitId: number | undefined) => void;
+  triggerClassName?: string;
 };
 
-export function UnitPicker({ units, value, onChange }: Props) {
+export function UnitPicker({ units, value, onChange, triggerClassName }: Props) {
   const [open, setOpen] = useState(false);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -102,7 +104,11 @@ export function UnitPicker({ units, value, onChange }: Props) {
         variant='unstyled'
         type='button'
         onClick={() => setOpen(true)}
-        className='w-[130px] shrink-0 flex items-center justify-between gap-1 rounded-xl border border-gray-200 bg-[var(--neutral-warm-surface)]/50 px-3 py-2 text-sm font-medium text-brand-navy-deep hover:border-gray-300 transition-colors'
+        className={cn(
+          'flex w-[130px] shrink-0 items-center justify-between gap-1 text-left transition-colors',
+          triggerClassName ??
+            'rounded-xl border border-gray-200 bg-[var(--neutral-warm-surface)]/50 px-3 py-2 text-sm font-medium text-brand-navy-deep hover:border-gray-300',
+        )}
       >
         <span className='truncate'>{triggerLabel}</span>
         <ChevronDown size={14} className='shrink-0 text-gray-400' />

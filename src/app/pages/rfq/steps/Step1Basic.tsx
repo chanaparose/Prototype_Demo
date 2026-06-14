@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { cn } from '@lib/utils';
 import { RFQ_BORDER, RFQ_FIELD_CLASS, RFQ_RADIUS } from '@/pages/rfq/rfqCreateWizardUi';
 import { UnitPicker, type UnitOption } from '@/pages/rfq/steps/UnitPicker';
 
@@ -269,6 +270,7 @@ export function Step1Basic({
               units={units}
               value={draft.unit_id}
               onChange={(unitId) => setDraft({ unit_id: unitId })}
+              triggerClassName={cn(fieldClass, 'w-[130px]')}
             />
           </div>
         </label>
