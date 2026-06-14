@@ -81,7 +81,7 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
           className={factoryButtonClass({
             variant: 'primary',
             size: 'md',
-            className: 'min-w-[126px]',
+            className: 'min-w-[126px] font-normal',
           })}
         >
           <Plus size={13} />

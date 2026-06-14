@@ -34,7 +34,7 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
   },
   {
     key: 'factory-info',
-    label: 'Factory Info',
+    label: 'ข้อมูลโรงงาน',
     icon: IdCard,
     href: '/factory/info',
     activeMatch: 'prefix',
@@ -42,7 +42,7 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
   },
   {
     key: 'factory-showcases',
-    label: 'Showcases',
+    label: 'สินค้าและผลงาน',
     icon: Images,
     href: '/factory/showcases?type=PD',
     activeMatch: 'prefix',

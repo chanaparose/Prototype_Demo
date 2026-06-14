@@ -55,7 +55,7 @@ const customerNavLinks = [
 const sidebarTheme = {
   activeText: 'var(--brand-purple)',
   inactiveText: 'var(--neutral-subtle)',
-  activeBg: 'rgba(162,56,255,0.08)',
+  activeBg: 'rgba(162,56,255,0.05)',
   softBorder: 'rgba(162,56,255,0.14)',
   mutedPurple: 'var(--brand-muted-purple)',
 } as const;
@@ -143,7 +143,11 @@ export function DesktopSidebar() {
   const { data: rfqListResult } = useRfqListQuery();
   const rfqList = rfqListResult?.rfqs ?? [];
   const activeRfqCount = rfqList.filter(
-    (r) => r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'expired' && r.status !== 'closed',
+    (r) =>
+      r.status !== 'completed' &&
+      r.status !== 'cancelled' &&
+      r.status !== 'expired' &&
+      r.status !== 'closed',
   ).length;
 
   const avatarFromApi = [currentUser?.avatar, authUser?.avatar]
@@ -181,7 +185,7 @@ export function DesktopSidebar() {
                     if (locked) return;
                     navigate(item.href);
                   }}
-                  className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all duration-150 ${
+                  className={`relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-colors duration-150 hover:bg-slate-50 ${
                     locked ? 'cursor-not-allowed opacity-60' : ''
                   }`}
                   style={{
@@ -191,7 +195,16 @@ export function DesktopSidebar() {
                   }}
                   aria-current={active ? 'page' : undefined}
                 >
-                  <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
+                  {active ? (
+                    <span
+                      className='h-1.5 w-1.5 shrink-0 rounded-full'
+                      style={{ background: sidebarTheme.activeText }}
+                      aria-hidden
+                    />
+                  ) : (
+                    <span className='h-1.5 w-1.5 shrink-0' aria-hidden />
+                  )}
+                  <Icon size={18} strokeWidth={active ? 2.1 : 1.8} />
                   <span className='flex-1 text-left'>{item.label}</span>
                   {locked ? (
                     <Lock

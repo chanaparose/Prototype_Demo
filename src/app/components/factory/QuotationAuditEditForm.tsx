@@ -280,7 +280,7 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
               type='button'
               disabled={isLocked || saving}
               onClick={() => void submit()}
-              className='flex-1 py-3 rounded-lg font-semibold text-sm border-2 disabled:opacity-50 inline-flex items-center justify-center gap-2'
+              className='flex-1 py-3 rounded-lg font-normal text-sm border-2 disabled:opacity-50 inline-flex items-center justify-center gap-2'
               style={{ borderColor: 'var(--brand-purple)', color: 'var(--brand-purple)' }}
             >
               <Save size={14} /> บันทึกร่าง
@@ -290,7 +290,7 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
               type='button'
               disabled={isLocked || saving || !form.formState.isDirty}
               onClick={() => void submit()}
-              className='flex-1 py-3 rounded-lg text-white font-semibold text-sm disabled:opacity-50 inline-flex items-center justify-center gap-2'
+              className='flex-1 py-3 rounded-lg text-white font-normal text-sm disabled:opacity-50 inline-flex items-center justify-center gap-2'
               style={{
                 background: 'var(--brand-purple)',
               }}

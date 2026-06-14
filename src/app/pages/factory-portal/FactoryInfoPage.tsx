@@ -518,14 +518,24 @@ export function FactoryInfoPage() {
   if (isLoading)
     return (
       <div className='w-full min-w-0 space-y-4'>
-        <FactoryPageHeader title='ข้อมูลโรงงาน' subtitle='Factory / Info' icon={Building2} />
+        <FactoryPageHeader
+          title='ข้อมูลโรงงาน'
+          subtitle='Factory / Info'
+          icon={Building2}
+          variant='minimal'
+        />
         <FormSkeleton sections={4} />
       </div>
     );
 
   return (
     <div className='w-full min-w-0 space-y-4 pb-12'>
-      <FactoryPageHeader title='ข้อมูลโรงงาน' subtitle='Factory / Info' icon={Building2} />
+      <FactoryPageHeader
+        title='ข้อมูลโรงงาน'
+        subtitle='Factory / Info'
+        icon={Building2}
+        variant='minimal'
+      />
 
       {/* Alerts */}
       {error && (
@@ -723,7 +733,7 @@ export function FactoryInfoPage() {
             className={factoryButtonClass({
               variant: 'primary',
               size: 'md',
-              className: 'min-w-[126px]',
+              className: 'min-w-[126px] font-normal',
             })}
           >
             <Plus size={13} /> เพิ่มใบรับรอง
@@ -751,7 +761,7 @@ export function FactoryInfoPage() {
             className={factoryButtonClass({
               variant: 'primary',
               size: 'md',
-              className: 'min-w-[126px]',
+              className: 'min-w-[126px] font-normal',
             })}
           >
             <Plus size={13} /> เพิ่มบัญชี

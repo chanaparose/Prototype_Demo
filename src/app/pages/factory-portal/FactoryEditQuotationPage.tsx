@@ -6,7 +6,11 @@ import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 import { useShippingMethods } from '@/hooks/master/useShippingMethods';
-import { factoryButtonClass, factoryCardClass, factoryBoxClass } from '@/pages/factory-portal/factoryUi';
+import {
+  factoryButtonClass,
+  factoryCardClass,
+  factoryBoxClass,
+} from '@/pages/factory-portal/factoryUi';
 import {
   useQuotationDetailQuery,
   useQuotationHistoryQuery,
@@ -80,7 +84,7 @@ export function FactoryEditQuotationPage() {
 
   return (
     <div style={{ backgroundColor: 'var(--brand-page)' }} className='min-h-screen pb-28'>
-      <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3'>
+      <div className='sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-gray-100 bg-white/95 px-4 backdrop-blur'>
         <Button
           variant='unstyled'
           type='button'
@@ -111,10 +115,20 @@ export function FactoryEditQuotationPage() {
         )}
 
         <div className='flex items-center gap-2 text-xs text-gray-500'>
-          <span className={factoryBoxClass({ variant: 'neutral', className: 'px-2.5 py-1 font-medium' })}>
+          <span
+            className={factoryBoxClass({
+              variant: 'neutral',
+              className: 'px-2.5 py-1 font-medium',
+            })}
+          >
             สถานะ: <strong className='text-gray-900'>{status}</strong>
           </span>
-          <span className={factoryBoxClass({ variant: 'neutral', className: 'px-2.5 py-1 font-medium' })}>
+          <span
+            className={factoryBoxClass({
+              variant: 'neutral',
+              className: 'px-2.5 py-1 font-medium',
+            })}
+          >
             เวอร์ชัน: <strong className='text-gray-900'>{version}</strong>
           </span>
         </div>
@@ -179,7 +193,11 @@ export function FactoryEditQuotationPage() {
             type='button'
             disabled={isLocked || saving}
             onClick={() => void formRef.current?.submit()}
-            className={factoryButtonClass({ variant: 'secondary', size: 'md', className: 'flex-1 justify-center gap-2' })}
+            className={factoryButtonClass({
+              variant: 'secondary',
+              size: 'md',
+              className: 'flex-1 justify-center gap-2',
+            })}
           >
             <Save size={14} /> บันทึกร่าง
           </Button>
@@ -188,7 +206,11 @@ export function FactoryEditQuotationPage() {
             type='button'
             disabled={isLocked || saving || !isDirty}
             onClick={() => void formRef.current?.submit()}
-            className={factoryButtonClass({ variant: 'submit', size: 'md', className: 'flex-1 justify-center gap-2' })}
+            className={factoryButtonClass({
+              variant: 'submit',
+              size: 'md',
+              className: 'flex-1 justify-center gap-2',
+            })}
           >
             {saving ? 'กำลังบันทึก…' : 'ส่ง'}
           </Button>

@@ -347,6 +347,7 @@ export function FactoryRfqBoardPage() {
           subtitle='Factory / RFQ'
           icon={FileText}
           count={`${counts.all} รายการ`}
+          variant='minimal'
         />
         <div className='flex justify-center items-start pt-8'>
           <div
@@ -365,6 +366,7 @@ export function FactoryRfqBoardPage() {
         subtitle='Factory / RFQ'
         icon={FileText}
         count={`${counts.all} รายการ`}
+        variant='minimal'
       />
 
       {error ? (
@@ -597,7 +599,7 @@ export function FactoryRfqBoardPage() {
             {pipeline.length === 0 ? (
               <div className='mt-3 rounded-lg border border-gray-100 bg-white px-4 py-12 text-center space-y-4'>
                 <SearchX size={44} className='mx-auto text-slate-400' />
-                <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
+                <p className='text-base font-normal' style={{ color: 'var(--brand-navy)' }}>
                   {statusTab === 'direct'
                     ? 'ยังไม่มี RFQ ที่ส่งถึงคุณโดยตรง'
                     : rows.length === 0

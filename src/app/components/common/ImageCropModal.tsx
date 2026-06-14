@@ -355,7 +355,7 @@ export function ImageCropModal({
                 setSubmitting(false);
               }
             }}
-            className='px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50'
+            className='px-3 py-2 rounded-lg text-sm font-normal text-white disabled:opacity-50'
             style={{ background: 'var(--brand-indigo)' }}
           >
             {submitting ? (

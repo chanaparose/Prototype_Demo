@@ -214,7 +214,12 @@ export function FactoryWalletPage() {
   if (loading) {
     return (
       <div className='space-y-4'>
-        <FactoryPageHeader title='กระเป๋าเงิน' subtitle='Factory / Wallet' icon={Wallet} />
+        <FactoryPageHeader
+          title='กระเป๋าเงิน'
+          subtitle='Factory / Wallet'
+          icon={Wallet}
+          variant='minimal'
+        />
         <div className='space-y-4'>
           <div className='h-48 rounded-lg bg-white animate-pulse' />
           <div className='grid grid-cols-3 gap-3'>
@@ -232,7 +237,12 @@ export function FactoryWalletPage() {
 
   return (
     <div className='space-y-4 pb-8'>
-      <FactoryPageHeader title='กระเป๋าเงิน' subtitle='Factory / Wallet' icon={Wallet} />
+      <FactoryPageHeader
+        title='กระเป๋าเงิน'
+        subtitle='Factory / Wallet'
+        icon={Wallet}
+        variant='minimal'
+      />
 
       <div className='space-y-5'>
         <div className='flex items-center justify-between text-xs text-gray-500'>

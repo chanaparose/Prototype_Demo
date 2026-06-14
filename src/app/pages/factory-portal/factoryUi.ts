@@ -1,10 +1,20 @@
 import { cn } from '@lib/utils';
 
-type FactoryButtonVariant = 'primary' | 'secondary' | 'toolbar' | 'ghostIcon' | 'dangerIcon' | 'success' | 'danger' | 'dangerOutline' | 'upload' | 'submit';
+type FactoryButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'toolbar'
+  | 'ghostIcon'
+  | 'dangerIcon'
+  | 'success'
+  | 'danger'
+  | 'dangerOutline'
+  | 'upload'
+  | 'submit';
 type FactoryButtonSize = 'sm' | 'md' | 'icon';
 
 const buttonBase =
-  'inline-flex shrink-0 items-center justify-center rounded-lg font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60';
+  'inline-flex shrink-0 items-center justify-center rounded-lg font-normal transition-colors disabled:cursor-not-allowed disabled:opacity-60';
 
 const buttonVariantClass: Record<FactoryButtonVariant, string> = {
   primary: 'bg-brand-purple text-white hover:bg-brand-violet-deep',
@@ -19,7 +29,8 @@ const buttonVariantClass: Record<FactoryButtonVariant, string> = {
   success: 'bg-emerald-600 text-white hover:bg-emerald-700',
   danger: 'bg-red-600 text-white hover:bg-red-700',
   dangerOutline: 'border border-red-200 bg-white text-red-600 shadow-none hover:bg-red-50',
-  upload: 'border border-dashed border-gray-300 bg-white text-gray-500 hover:border-violet-400 hover:text-violet-600',
+  upload:
+    'border border-dashed border-gray-300 bg-white text-gray-500 hover:border-violet-400 hover:text-violet-600',
   submit: 'bg-brand-purple text-white hover:bg-brand-violet-deep',
 };
 
@@ -86,8 +97,7 @@ export function factoryBadgeClass({
   return cn(badgeClass[variant], className);
 }
 
-const inputClass =
-  'w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50';
+const inputClass = 'w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50';
 
 export function factoryInputClass({ className }: { className?: string } = {}) {
   return cn(inputClass, className);

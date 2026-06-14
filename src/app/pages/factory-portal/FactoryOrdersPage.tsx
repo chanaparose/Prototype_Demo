@@ -264,6 +264,7 @@ export function FactoryOrdersPage() {
           subtitle='Factory / คำสั่งซื้อ'
           icon={ClipboardList}
           count={`${rows.length} รายการ`}
+          variant='minimal'
         />
         <div className='space-y-3'>
           <div className='h-24 rounded-lg border border-gray-100 bg-white animate-pulse' />
@@ -280,6 +281,7 @@ export function FactoryOrdersPage() {
         subtitle='Factory / คำสั่งซื้อ'
         icon={ClipboardList}
         count={`${rows.length} รายการ`}
+        variant='minimal'
       />
 
       {isError ? (
@@ -330,7 +332,7 @@ export function FactoryOrdersPage() {
             variant='unstyled'
             type='button'
             onClick={() => setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
-            className='inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-[var(--brand-page)]'
+            className='inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-normal text-slate-700 transition-colors hover:bg-[var(--brand-page)]'
             title={sortDir === 'desc' ? 'ใหม่สุด → เก่าสุด' : 'เก่าสุด → ใหม่สุด'}
           >
             <ArrowUpDown className='h-4 w-4' />
@@ -341,7 +343,7 @@ export function FactoryOrdersPage() {
         {filteredRows.length === 0 ? (
           <div className='mt-3 space-y-2 py-12 text-center'>
             <PackageX size={38} className='mx-auto text-slate-400' />
-            <p className='text-sm font-bold text-slate-700'>ไม่พบคำสั่งซื้อที่ตรงกับเงื่อนไข</p>
+            <p className='text-sm font-normal text-slate-700'>ไม่พบคำสั่งซื้อที่ตรงกับเงื่อนไข</p>
             <p className='text-xs text-slate-400'>ลองเปลี่ยนแท็บหรือค้นหาใหม่</p>
           </div>
         ) : (
@@ -505,7 +507,7 @@ export function FactoryOrdersPage() {
               variant='unstyled'
               type='button'
               disabled={updateModal.busy || !updateModal.notes.trim()}
-              className='w-full py-2.5 rounded-lg text-white font-semibold disabled:opacity-50'
+              className='w-full py-2.5 rounded-lg text-white font-normal disabled:opacity-50'
               style={{
                 background: 'var(--brand-purple)',
               }}
@@ -572,7 +574,7 @@ export function FactoryOrdersPage() {
               variant='unstyled'
               type='button'
               disabled={shipModal.busy || !shipModal.tracking.trim()}
-              className='w-full py-2.5 rounded-lg text-white font-semibold disabled:opacity-50'
+              className='w-full py-2.5 rounded-lg text-white font-normal disabled:opacity-50'
               style={{
                 background: 'var(--brand-purple)',
               }}

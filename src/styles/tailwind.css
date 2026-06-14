@@ -3,6 +3,15 @@
 
 @import 'tw-animate-css';
 
+@theme {
+  --font-sans: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --color-gray-900: #333234;
+  --color-neutral-900: #333234;
+  --color-slate-900: #333234;
+  --color-slate-950: #333234;
+  --color-zinc-900: #333234;
+}
+
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -13,12 +22,16 @@
   }
 }
 
-
 @layer base {
   html,
   body,
   #root {
     height: 100%;
     background: #e8e6f0;
+  }
+
+  button,
+  [role='button'] {
+    font-weight: 400 !important;
   }
 }

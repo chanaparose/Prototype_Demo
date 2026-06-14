@@ -198,7 +198,7 @@ export function FactoryShowcaseNewPage() {
     <div className='pb-28'>
       {/* Full-width sticky header — escapes FactoryPortalLayout padding */}
       <header className='sticky top-0 z-[99999] -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 2xl:-mx-10 -mt-4 sm:-mt-5 lg:-mt-6 flex w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] 2xl:w-[calc(100%+5rem)] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'>
-        <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 2xl:px-10'>
+        <div className='flex h-16 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 2xl:px-10'>
           <Button
             variant='unstyled'
             type='button'
@@ -208,14 +208,14 @@ export function FactoryShowcaseNewPage() {
             <ChevronLeft size={18} />
             กลับ
           </Button>
- 
+
           <div className='flex items-center gap-2'>
             <Button
               variant='unstyled'
               type='button'
               onClick={() => void onSubmit('DR')}
               disabled={saving}
-              className='rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50 disabled:opacity-50'
+              className='rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-normal text-gray-800 transition-colors hover:bg-gray-50 disabled:opacity-50'
             >
               {saving ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
             </Button>
@@ -224,10 +224,9 @@ export function FactoryShowcaseNewPage() {
               type='button'
               onClick={() => void onSubmit('AC')}
               disabled={saving || !canPublish}
-              className='rounded-lg px-3 py-1.5 text-sm font-semibold text-white transition-all disabled:opacity-50'
+              className='rounded-lg px-3 py-1.5 text-sm font-normal text-white transition-all disabled:opacity-50'
               style={{
-                background:
-                  'var(--brand-purple)',
+                background: 'var(--brand-purple)',
               }}
             >
               {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
@@ -272,13 +271,7 @@ export function FactoryShowcaseNewPage() {
           }`}
         >
           {/* Col: Image manager (PD/MT, ซ้าย) or RelatedShowcasePicker (ID, ขวา) */}
-          <div
-            className={
-              contentType === 'ID'
-                ? 'lg:order-2 lg:col-span-1 lg:h-full'
-                : ''
-            }
-          >
+          <div className={contentType === 'ID' ? 'lg:order-2 lg:col-span-1 lg:h-full' : ''}>
             {contentType === 'ID' && myFactoryId != null ? (
               <section className='h-full rounded-lg bg-white border border-gray-100 p-5 space-y-3'>
                 <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
@@ -364,7 +357,6 @@ export function FactoryShowcaseNewPage() {
                 <p className='text-sm font-bold text-gray-800'>ราคา & การผลิต</p>
               </div>
               <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4'>
-                 
                 <Label className='block'>
                   <span className='text-xs text-gray-500'>ราคาเริ่มต้น (฿)</span>
                   <Input
@@ -392,7 +384,9 @@ export function FactoryShowcaseNewPage() {
                     <UnitPicker
                       units={units}
                       value={form.unit_id ? Number(form.unit_id) : undefined}
-                      onChange={(unitId) => setField('unit_id', unitId != null ? String(unitId) : '')}
+                      onChange={(unitId) =>
+                        setField('unit_id', unitId != null ? String(unitId) : '')
+                      }
                     />
                   </div>
                 </Label>
@@ -411,7 +405,9 @@ export function FactoryShowcaseNewPage() {
               {contentType === 'PM' ? (
                 <div className='grid grid-cols-1 gap-3 pt-3 border-t border-dashed border-purple-100 sm:grid-cols-2 xl:grid-cols-3'>
                   <Label className='block'>
-                    <span className='text-xs font-medium text-brand-purple'>ราคาโปรโมชัน (฿) *</span>
+                    <span className='text-xs font-medium text-brand-purple'>
+                      ราคาโปรโมชัน (฿) *
+                    </span>
                     <Input
                       type='number'
                       step='0.01'
@@ -431,7 +427,9 @@ export function FactoryShowcaseNewPage() {
                     />
                   </Label>
                   <Label className='block'>
-                    <span className='text-xs font-medium text-brand-purple'>วันที่สิ้นสุดโปร *</span>
+                    <span className='text-xs font-medium text-brand-purple'>
+                      วันที่สิ้นสุดโปร *
+                    </span>
                     <Input
                       type='date'
                       className='mt-1 w-full rounded-lg border border-brand-purple/20 px-3 py-2 text-sm focus:ring-1 focus:ring-brand-purple/25 focus:outline-none'
@@ -455,7 +453,6 @@ export function FactoryShowcaseNewPage() {
           </section>
         </div>
       </div>
-
     </div>
   );
 }

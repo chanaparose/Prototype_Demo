@@ -15,9 +15,20 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Bold, Italic, Code, Heading, Quote, Minus,
-  List, ListOrdered, Link, Table as TableIcon,
-  Check, Lock, Pencil, X,
+  Bold,
+  Italic,
+  Code,
+  Heading,
+  Quote,
+  Minus,
+  List,
+  ListOrdered,
+  Link,
+  Table as TableIcon,
+  Check,
+  Lock,
+  Pencil,
+  X,
 } from 'lucide-react';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { Button } from '@/components/ui/button';
@@ -33,7 +44,10 @@ export interface FactoryNoteFieldProps {
 }
 
 function normalizeMarkdown(raw: string): string {
-  return raw.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').trim();
+  return raw
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .trim();
 }
 
 export function FactoryNoteField({
@@ -125,7 +139,9 @@ export function FactoryNoteField({
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className={`rounded-lg border border-brand-purple/20 bg-brand-lavender/50 overflow-hidden ${className}`}>
+    <div
+      className={`rounded-lg border border-brand-purple/20 bg-brand-lavender/50 overflow-hidden ${className}`}
+    >
       {/* Header */}
       <div className='flex items-center gap-2 px-4 py-2.5 border-b border-brand-purple/15'>
         <span className='flex flex-1 items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-brand-purple'>
@@ -137,7 +153,10 @@ export function FactoryNoteField({
           !disabled ? (
             <button
               type='button'
-              onClick={() => { setTab('write'); setEditing(true); }}
+              onClick={() => {
+                setTab('write');
+                setEditing(true);
+              }}
               className='inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium text-brand-purple hover:bg-brand-violet-soft transition-colors'
             >
               <Pencil size={11} /> แก้ไข
@@ -145,12 +164,11 @@ export function FactoryNoteField({
           ) : null
         ) : (
           <div className='flex gap-1'>
-            
             <button
               type='button'
               onClick={handleCancel}
               disabled={saving}
-              className='inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium text-slate-500 hover:bg-brand-violet-soft disabled:opacity-60 transition-colors'
+              className='inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-normal text-slate-500 hover:bg-brand-violet-soft disabled:opacity-60 transition-colors'
             >
               <X size={11} /> ยกเลิก
             </button>
@@ -158,7 +176,7 @@ export function FactoryNoteField({
               type='button'
               onClick={() => void handleConfirm()}
               disabled={saving}
-              className='inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-white bg-brand-purple hover:bg-brand-purple disabled:opacity-60 transition-colors'
+              className='inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-normal text-white bg-brand-purple hover:bg-brand-purple disabled:opacity-60 transition-colors'
             >
               <Check size={11} />
               {isAsync ? (saving ? 'กำลังบันทึก…' : 'บันทึก') : 'ตกลง'}
@@ -211,7 +229,9 @@ export function FactoryNoteField({
             >
               Preview
             </Button>
-            <span className='ml-auto text-[10px] text-slate-400'>Ctrl+Enter {isAsync ? 'บันทึก' : 'ยืนยัน'}</span>
+            <span className='ml-auto text-[10px] text-slate-400'>
+              Ctrl+Enter {isAsync ? 'บันทึก' : 'ยืนยัน'}
+            </span>
           </div>
 
           {tab === 'write' ? (
@@ -219,22 +239,47 @@ export function FactoryNoteField({
               {/* Toolbar */}
               <div className='px-2 py-1.5 border-b border-gray-100 flex items-center flex-wrap gap-1.5 bg-white'>
                 <div className='flex items-center gap-0.5 pr-2 border-r border-gray-200'>
-                  <ToolBtn title='ตัวหนา' onClick={() => applyInsert('**', '**')}><Bold size={14} /></ToolBtn>
-                  <ToolBtn title='ตัวเอียง' onClick={() => applyInsert('_', '_')}><Italic size={14} /></ToolBtn>
-                  <ToolBtn title='Inline Code' onClick={() => applyInsert('`', '`')}><Code size={14} /></ToolBtn>
+                  <ToolBtn title='ตัวหนา' onClick={() => applyInsert('**', '**')}>
+                    <Bold size={14} />
+                  </ToolBtn>
+                  <ToolBtn title='ตัวเอียง' onClick={() => applyInsert('_', '_')}>
+                    <Italic size={14} />
+                  </ToolBtn>
+                  <ToolBtn title='Inline Code' onClick={() => applyInsert('`', '`')}>
+                    <Code size={14} />
+                  </ToolBtn>
                 </div>
                 <div className='flex items-center gap-0.5 pr-2 border-r border-gray-200'>
-                  <ToolBtn title='หัวข้อ' onClick={() => insertBlock('\n### ')}><Heading size={14} /></ToolBtn>
-                  <ToolBtn title='Blockquote' onClick={() => insertBlock('\n> ')}><Quote size={14} /></ToolBtn>
-                  <ToolBtn title='เส้นคั่น' onClick={() => insertBlock('\n\n---\n\n')}><Minus size={14} /></ToolBtn>
+                  <ToolBtn title='หัวข้อ' onClick={() => insertBlock('\n### ')}>
+                    <Heading size={14} />
+                  </ToolBtn>
+                  <ToolBtn title='Blockquote' onClick={() => insertBlock('\n> ')}>
+                    <Quote size={14} />
+                  </ToolBtn>
+                  <ToolBtn title='เส้นคั่น' onClick={() => insertBlock('\n\n---\n\n')}>
+                    <Minus size={14} />
+                  </ToolBtn>
                 </div>
                 <div className='flex items-center gap-0.5 pr-2 border-r border-gray-200'>
-                  <ToolBtn title='Bullet List' onClick={() => insertBlock('\n- ')}><List size={14} /></ToolBtn>
-                  <ToolBtn title='Numbered List' onClick={() => insertBlock('\n1. ')}><ListOrdered size={14} /></ToolBtn>
+                  <ToolBtn title='Bullet List' onClick={() => insertBlock('\n- ')}>
+                    <List size={14} />
+                  </ToolBtn>
+                  <ToolBtn title='Numbered List' onClick={() => insertBlock('\n1. ')}>
+                    <ListOrdered size={14} />
+                  </ToolBtn>
                 </div>
                 <div className='flex items-center gap-0.5'>
-                  <ToolBtn title='ลิงก์' onClick={() => applyInsert('[', '](url)')}><Link size={14} /></ToolBtn>
-                  <ToolBtn title='ตาราง' onClick={() => insertBlock('\n| หัวข้อ 1 | หัวข้อ 2 |\n| --- | --- |\n| ค่า A | ค่า B |\n')}><TableIcon size={14} /></ToolBtn>
+                  <ToolBtn title='ลิงก์' onClick={() => applyInsert('[', '](url)')}>
+                    <Link size={14} />
+                  </ToolBtn>
+                  <ToolBtn
+                    title='ตาราง'
+                    onClick={() =>
+                      insertBlock('\n| หัวข้อ 1 | หัวข้อ 2 |\n| --- | --- |\n| ค่า A | ค่า B |\n')
+                    }
+                  >
+                    <TableIcon size={14} />
+                  </ToolBtn>
                 </div>
               </div>
 
@@ -262,9 +307,7 @@ export function FactoryNoteField({
             </div>
           )}
 
-          {error ? (
-            <p className='px-4 pb-2 text-xs text-red-600'>{error}</p>
-          ) : null}
+          {error ? <p className='px-4 pb-2 text-xs text-red-600'>{error}</p> : null}
         </div>
       )}
     </div>

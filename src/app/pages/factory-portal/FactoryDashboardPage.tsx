@@ -363,6 +363,7 @@ export function FactoryDashboardPage() {
           title='แดชบอร์ดวิเคราะห์ธุรกิจ'
           subtitle='Factory / Dashboard'
           icon={TrendingUp}
+          variant='minimal'
         />
         <div className='grid grid-cols-2 md:grid-cols-5 gap-3 mb-5'>
           {Array.from({ length: 5 }).map((_, i) => (
@@ -389,6 +390,7 @@ export function FactoryDashboardPage() {
         title='แดชบอร์ดวิเคราะห์ธุรกิจ'
         subtitle={`Factory / Dashboard · ${factoryName}`}
         icon={TrendingUp}
+        variant='minimal'
       />
 
       {verifySt !== 'AP' && <VerificationStepper verifySt={verifySt} verifyReason={verifyReason} />}

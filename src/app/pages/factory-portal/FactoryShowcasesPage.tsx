@@ -189,6 +189,7 @@ export function FactoryShowcasesPage() {
         icon={Sparkles}
         count={`${rows.length} รายการ`}
         action={{ label: btnLabel, to: `/factory/showcases/new?type=${activeType}` }}
+        variant='minimal'
       />
 
       <div className={factoryCardClass({ variant: 'shell' })}>
@@ -266,7 +267,11 @@ export function FactoryShowcasesPage() {
               variant='unstyled'
               type='button'
               onClick={() => setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
-              className={factoryButtonClass({ variant: 'toolbar', size: 'md' })}
+              className={factoryButtonClass({
+                variant: 'toolbar',
+                size: 'md',
+                className: 'text-xs',
+              })}
               title={sortDir === 'desc' ? 'ใหม่สุด → เก่าสุด' : 'เก่าสุด → ใหม่สุด'}
             >
               <ArrowUpDown className='h-4 w-4' />
@@ -297,8 +302,8 @@ export function FactoryShowcasesPage() {
             </div>
           ) : displayRows.length === 0 ? (
             <div className={factoryCardClass({ variant: 'empty', className: 'space-y-4 py-14' })}>
-              <ShowcaseTypeIcon type={activeType} size={42} className='mx-auto text-brand-purple' />
-              <p className='text-base font-bold text-slate-900'>{empty}</p>
+              <ShowcaseTypeIcon type={activeType} size={42} className='mx-auto text-slate-300' />
+              <p className='text-base font-normal text-slate-900'>{empty}</p>
               <p className='text-sm text-gray-400'>กดปุ่มด้านล่างเพื่อเริ่มต้น</p>
               <Button
                 variant='unstyled'

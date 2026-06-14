@@ -444,7 +444,7 @@ export function FactoryRfqDetailPage() {
   return (
     <div className='min-h-screen pb-24'>
       <header className='sticky top-0 z-40 -mx-3 -mt-4 border-b border-slate-200 bg-white sm:-mx-4 sm:-mt-5 md:-mx-6 lg:-mx-8 lg:-mt-6 2xl:-mx-10'>
-        <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 2xl:px-10'>
+        <div className='flex h-16 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 2xl:px-10'>
           <Button
             variant='unstyled'
             type='button'
