@@ -201,7 +201,7 @@ export function FactoryIdeasCategoryDropdown({
         variant='unstyled'
         type='button'
         onClick={() => setCategoryMenuOpen((o) => !o)}
-        className='flex items-center gap-2 max-w-[min(100vw-8rem,22rem)] px-4 py-2.5 rounded-xl border text-[13px] transition-all'
+        className='flex h-9 w-44 shrink-0 items-center justify-between gap-1.5 rounded-lg border px-3 text-xs transition-all'
         style={{
           borderColor:
             effectiveCategoryId !== 'all' || selectedSubCategoryId

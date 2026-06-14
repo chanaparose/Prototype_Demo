@@ -15,6 +15,8 @@ type FactoryIdeasSearchBarProps = {
   moqFilter: FactoryIdeasMoqFilterValue;
   onMoqFilterChange: (value: FactoryIdeasMoqFilterValue) => void;
   className?: string;
+  fieldClassName?: string;
+  filterClassName?: string;
   searchPlaceholder?: string;
 };
 
@@ -24,6 +26,8 @@ export function FactoryIdeasSearchBar({
   moqFilter,
   onMoqFilterChange,
   className,
+  fieldClassName,
+  filterClassName,
   searchPlaceholder = 'ค้นหาไอเดีย สินค้า หรือชื่อโรงงาน…',
 }: FactoryIdeasSearchBarProps) {
   const [moqSheetOpen, setMoqSheetOpen] = useState(false);
@@ -40,7 +44,10 @@ export function FactoryIdeasSearchBar({
     <>
       <div className={cn('flex items-center gap-1.5', className)}>
         <MobileSearchField
-          className='min-h-8 min-w-0 flex-1 gap-1.5 px-2.5 py-1 focus-within:ring-1'
+          className={cn(
+            'min-h-8 min-w-0 flex-1 gap-1.5 px-2.5 py-1 focus-within:ring-1',
+            fieldClassName,
+          )}
           value={searchText}
           onChange={onSearchTextChange}
           placeholder={searchPlaceholder}
@@ -52,7 +59,8 @@ export function FactoryIdeasSearchBar({
           title={moqLabel}
           onClick={() => setMoqSheetOpen(true)}
           className={cn(
-            'relative h-8 w-8 shrink-0 rounded-lg border shadow-sm transition-colors',
+            'relative h-9 w-9 shrink-0 rounded-lg border shadow-sm transition-colors',
+            filterClassName,
             moqActive
               ? 'border-brand-purple/35 bg-[var(--brand-page)] text-brand-purple ring-1 ring-brand-purple/15'
               : 'border-gray-200 text-gray-500 hover:border-gray-300',
