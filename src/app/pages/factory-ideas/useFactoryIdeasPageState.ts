@@ -18,6 +18,11 @@ import {
   getFactoryIdeaDetailPath,
   type FactoryIdeasContentType,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
+import {
+  matchesMaxMoq,
+  parseMoqFilterValue,
+  type FactoryIdeasMoqFilterValue,
+} from '@/components/features/factory-ideas/factoryIdeasMoqFilter';
 
 const PAGE_LIMIT = 80;
 
@@ -38,6 +43,7 @@ function useDebounce<T>(value: T, delay: number): T {
 export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdeasPageStateOptions) {
   const [searchParams] = useSearchParams();
   const [searchText, setSearchText] = useState('');
+  const [moqFilter, setMoqFilter] = useState<FactoryIdeasMoqFilterValue>('all');
 
   const [selectedType, setSelectedType] = useState<FactoryIdeasContentType>(initialType ?? 'all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -51,6 +57,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   const [page, setPage] = useState(1);
 
   const debouncedSearchText = useDebounce(searchText, 400);
+  const maxMoqFilter = parseMoqFilterValue(moqFilter);
 
   const typeFromUrl = searchParams.get('type');
   useEffect(() => {
@@ -147,7 +154,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   // Reset page to 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [selectedType, effectiveCategoryId, selectedSubCategoryId, debouncedSearchText]);
+  }, [selectedType, effectiveCategoryId, selectedSubCategoryId, debouncedSearchText, moqFilter]);
 
 
   const categoryFilters = useMemo(() => {
@@ -240,12 +247,19 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
       });
     }
 
+    if (maxMoqFilter != null) {
+      items = items.filter(
+        (s) => s.contentType === 'idea' || matchesMaxMoq(s.minOrder, maxMoqFilter),
+      );
+    }
+
     return items.filter((s) => s.contentType !== 'promotion');
   }, [
     pageShowcases,
     effectiveCategoryId,
     selectedSubCategoryId,
     debouncedSearchText,
+    maxMoqFilter,
     apiCategoriesAll,
     data.categories,
   ]);
@@ -294,11 +308,12 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
         .join(' ')
         .toLowerCase();
       if (q && !haystack.includes(q)) return false;
+      if (maxMoqFilter != null && !matchesMaxMoq(f.minOrder, maxMoqFilter)) return false;
       if (selectedCategoryName && !haystack.includes(selectedCategoryName)) return false;
       if (selectedSubCategoryName && !haystack.includes(selectedSubCategoryName)) return false;
       return true;
     });
-  }, [searchText, selectedType, factoryList, effectiveCategoryId, selectedSubCategoryId, apiCategoriesAll]);
+  }, [searchText, selectedType, factoryList, effectiveCategoryId, selectedSubCategoryId, apiCategoriesAll, maxMoqFilter]);
 
   const totalCount = isFactoryTab
     ? visibleFactories.length
@@ -310,6 +325,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
 
   const isListFiltered = Boolean(
     debouncedSearchText.trim() ||
+      maxMoqFilter != null ||
       (effectiveCategoryId && effectiveCategoryId !== 'all') ||
       selectedSubCategoryId ||
       (isFactoryTab && factoryScope !== 'all'),
@@ -340,6 +356,8 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     ...favorites,
     searchText,
     setSearchText,
+    moqFilter,
+    setMoqFilter,
     selectedType,
     setSelectedType,
     viewMode,

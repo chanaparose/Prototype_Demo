@@ -23,7 +23,7 @@ import {
 import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
-import { MobileSearchField } from '@/components/shared/MobileSearchField';
+import { FactoryIdeasSearchBar } from '@/components/features/factory-ideas/FactoryIdeasSearchBar';
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
 
 export function FactoryIdeasDesktop() {
@@ -34,6 +34,8 @@ export function FactoryIdeasDesktop() {
     toggleFavorite,
     searchText,
     setSearchText,
+    moqFilter,
+    setMoqFilter,
     selectedType,
     setSelectedType,
     viewMode,
@@ -62,6 +64,7 @@ export function FactoryIdeasDesktop() {
     visibleMaterialItems,
     visibleFactories,
     totalCount,
+    isListFiltered,
     categoryMenuTriggerLabel,
     closeCategoryMenu,
     pickSubCategory,
@@ -143,11 +146,12 @@ export function FactoryIdeasDesktop() {
               </>
             )}
 
-            <MobileSearchField
-              className='w-64 shrink-0'
-              value={searchText}
-              onChange={setSearchText}
-              placeholder='ค้นหาไอเดีย สินค้า หรือชื่อโรงงาน…'
+            <FactoryIdeasSearchBar
+              className='w-[18rem] shrink-0'
+              searchText={searchText}
+              onSearchTextChange={setSearchText}
+              moqFilter={moqFilter}
+              onMoqFilterChange={setMoqFilter}
             />
 
             <div className='flex-1' />
@@ -189,13 +193,13 @@ export function FactoryIdeasDesktop() {
             <Loader2 className='h-8 w-8 animate-spin text-[var(--brand-mauve)]' />
             <p className='text-sm text-gray-500'>กำลังโหลดจากเซิร์ฟเวอร์…</p>
           </div>
-        ) : totalCount === 0 && (searchText.trim() || (selectedType !== 'all' && effectiveCategoryId !== 'all')) ? (
+        ) : totalCount === 0 && isListFiltered ? (
           <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm'>
             <SearchX size={36} className='mb-3 text-gray-400' />
             <p className='text-[14px] font-medium text-[var(--brand-navy)]'>
               ไม่พบรายการที่ตรงกับเงื่อนไข
             </p>
-            <p className='text-[12px] text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
+            <p className='text-[12px] text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ด ขั้นต่ำการผลิต หรือหมวดหมู่</p>
           </div>
         ) : totalCount === 0 ? (
           <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm'>

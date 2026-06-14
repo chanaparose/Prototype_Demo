@@ -27,7 +27,7 @@ import {
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
-import { MobileSearchField } from '@/components/shared/MobileSearchField';
+import { FactoryIdeasSearchBar } from '@/components/features/factory-ideas/FactoryIdeasSearchBar';
 import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 import {
   factoryIdeasTabOrder,
@@ -51,6 +51,8 @@ export function FactoryIdeasMobile() {
     toggleFavorite,
     searchText,
     setSearchText,
+    moqFilter,
+    setMoqFilter,
     selectedType,
     setSelectedType,
     viewMode,
@@ -83,6 +85,7 @@ export function FactoryIdeasMobile() {
     visibleMaterialItems,
     visibleFactories,
     totalCount,
+    isListFiltered,
     categoryMenuTriggerLabel,
     closeCategoryMenu,
     pickSubCategory,
@@ -119,10 +122,11 @@ export function FactoryIdeasMobile() {
           </div>
         </div>
 
-        <MobileSearchField
-          value={searchText}
-          onChange={setSearchText}
-          placeholder='ค้นหาไอเดีย สินค้า หรือชื่อโรงงาน…'
+        <FactoryIdeasSearchBar
+          searchText={searchText}
+          onSearchTextChange={setSearchText}
+          moqFilter={moqFilter}
+          onMoqFilterChange={setMoqFilter}
         />
       </div>
 
@@ -309,13 +313,13 @@ export function FactoryIdeasMobile() {
               {[...Array(6)].map((_, i) => <ShowcaseGridCardSkeleton key={i} />)}
             </div>
           )
-        ) : totalCount === 0 && (searchText.trim() || (selectedType !== 'all' && effectiveCategoryId !== 'all')) ? (
+        ) : totalCount === 0 && isListFiltered ? (
           <div className='bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm'>
             <SearchX size={30} className='mx-auto mb-2 text-gray-400' />
             <p className='text-sm font-medium text-[var(--brand-navy)]'>
               ไม่พบรายการที่ตรงกับเงื่อนไข
             </p>
-            <p className='text-xs text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
+            <p className='text-xs text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ด ขั้นต่ำการผลิต หรือหมวดหมู่</p>
           </div>
         ) : totalCount === 0 ? (
           <div className='bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm'>
