@@ -2,7 +2,6 @@ import type { LucideIcon } from 'lucide-react';
 import {
   MessageCircle,
   LayoutDashboard,
-
   Images,
   ClipboardList,
   Package,
@@ -46,7 +45,7 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
     label: 'Showcases',
     icon: Images,
     href: '/factory/showcases?type=PD',
-    activeMatch: 'pathname',
+    activeMatch: 'prefix',
     activePath: '/factory/showcases',
     requiresApproval: true,
   },
@@ -88,16 +87,27 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
   },
 ];
 
+function normalizePath(path: string): string {
+  if (path === '/') return path;
+  return path.replace(/\/+$/, '');
+}
+
 export function isFactorySidebarNavActive(pathname: string, item: FactorySidebarNavItem): boolean {
+  const currentPath = normalizePath(pathname);
+  const activePath = normalizePath(item.activePath);
+
   if (Array.isArray(item.extraActivePaths)) {
-    const hit = item.extraActivePaths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+    const hit = item.extraActivePaths.some((p) => {
+      const extraPath = normalizePath(p);
+      return currentPath === extraPath || currentPath.startsWith(`${extraPath}/`);
+    });
     if (hit) return true;
   }
   if (item.activeMatch === 'exact') {
-    return pathname === item.activePath;
+    return currentPath === activePath;
   }
   if (item.activeMatch === 'pathname') {
-    return pathname === item.activePath;
+    return currentPath === activePath;
   }
-  return pathname === item.activePath || pathname.startsWith(`${item.activePath}/`);
+  return currentPath === activePath || currentPath.startsWith(`${activePath}/`);
 }

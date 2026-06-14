@@ -83,13 +83,12 @@ function Field({
   value?: React.ReactNode;
   className?: string;
 }) {
-  const displayValue = value && String(value).trim() ? value : <span className='text-gray-300 font-normal'>—</span>;
+  const displayValue =
+    value && String(value).trim() ? value : <span className='text-gray-300 font-normal'>—</span>;
   return (
     <div className={`min-w-0 ${className}`}>
       <p className='text-[11px] font-medium text-gray-400 mb-0.5'>{label}</p>
-      <p className='text-sm font-semibold text-gray-800 break-words leading-snug'>
-        {displayValue}
-      </p>
+      <p className='text-sm font-semibold text-gray-800 break-words leading-snug'>{displayValue}</p>
     </div>
   );
 }
@@ -358,6 +357,7 @@ export function FactoryInfoPage() {
   // PD categories ที่ยังไม่ได้เลือก sub — ใช้ block save
   const pdSubErrorsRef = useRef<Set<number>>(new Set());
   const openCertAddRef = useRef<(() => void) | null>(null);
+  const openBankAddRef = useRef<(() => void) | null>(null);
 
   const isDirty = form.formState.isDirty;
   useBeforeUnload(isDirty);
@@ -741,8 +741,29 @@ export function FactoryInfoPage() {
       </InfoCard>
 
       {/* ── 5. บัญชีธนาคาร — full CRUD ──────────────────────────────────────── */}
-      <InfoCard>
-        <FactoryBankSettingsPage />
+      <InfoCard
+        title='บัญชีธนาคาร'
+        action={
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => openBankAddRef.current?.()}
+            className={factoryButtonClass({
+              variant: 'primary',
+              size: 'md',
+              className: 'min-w-[126px]',
+            })}
+          >
+            <Plus size={13} /> เพิ่มบัญชี
+          </Button>
+        }
+      >
+        <FactoryBankSettingsPage
+          embedded
+          onRegisterAdd={(h) => {
+            openBankAddRef.current = h;
+          }}
+        />
       </InfoCard>
     </div>
   );

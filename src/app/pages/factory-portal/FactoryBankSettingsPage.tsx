@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Building2, Plus, Pencil, Trash2, Star, Loader2, X, Copy, Check } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Building2, Plus, Pencil, Trash2, Star, Loader2, Copy, Check } from 'lucide-react';
 import { bankAccountApi } from '@/services/api/factoryApi';
 import type { IBankAccountResponse } from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import {
   factoryButtonClass,
   factoryCardClass,
 } from '@/pages/factory-portal/factoryUi';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 
 const THAI_BANKS = [
   'กสิกรไทย',
@@ -33,7 +34,15 @@ const THAI_BANKS = [
   'อื่นๆ',
 ];
 
-export function FactoryBankSettingsPage() {
+type FactoryBankSettingsPageProps = {
+  embedded?: boolean;
+  onRegisterAdd?: (handler: () => void) => void;
+};
+
+export function FactoryBankSettingsPage({
+  embedded = false,
+  onRegisterAdd,
+}: FactoryBankSettingsPageProps = {}) {
   const [accounts, setAccounts] = useState<IBankAccountResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -64,14 +73,23 @@ export function FactoryBankSettingsPage() {
     void loadAccounts();
   }, []);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setBankName('');
     setAccountNumber('');
     setAccountName('');
     setIsDefault(true);
     setEditingId(null);
     setShowForm(false);
-  };
+  }, []);
+
+  const openAdd = useCallback(() => {
+    resetForm();
+    setShowForm(true);
+  }, [resetForm]);
+
+  useEffect(() => {
+    onRegisterAdd?.(openAdd);
+  }, [onRegisterAdd, openAdd]);
 
   const openEdit = (acc: IBankAccountResponse) => {
     setBankName(acc.bank_name);
@@ -132,33 +150,33 @@ export function FactoryBankSettingsPage() {
   };
 
   return (
-    <div className='space-y-6'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <h2 className='text-lg font-bold text-slate-900'>บัญชีธนาคาร</h2>
-          <p className='text-xs text-slate-500 mt-0.5'>
-            บัญชีหลักจะแสดงให้ลูกค้าเมื่อสั่งซื้อสินค้า
-          </p>
-        </div>
-        {!showForm && (
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => {
-              resetForm();
-              setShowForm(true);
-            }}
-            className={factoryButtonClass({
-              variant: 'primary',
-              size: 'md',
-              className: 'min-w-[126px]',
-            })}
-          >
-            <Plus size={14} />
-            เพิ่มบัญชี
-          </Button>
-        )}
-      </div>
+    <div className={embedded ? 'space-y-4' : 'space-y-6'}>
+      {embedded ? (
+        <p className='text-xs text-gray-400'>บัญชีหลักจะแสดงให้ลูกค้าเมื่อสั่งซื้อสินค้า</p>
+      ) : (
+        <FactoryPageHeader
+          title='บัญชีธนาคาร'
+          subtitle='Factory / Bank settings · บัญชีหลักจะแสดงให้ลูกค้าเมื่อสั่งซื้อสินค้า'
+          icon={Building2}
+          actionNode={
+            !showForm ? (
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={openAdd}
+                className={factoryButtonClass({
+                  variant: 'primary',
+                  size: 'md',
+                  className: 'min-w-[126px]',
+                })}
+              >
+                <Plus size={14} />
+                เพิ่มบัญชี
+              </Button>
+            ) : null
+          }
+        />
+      )}
 
       {error && (
         <div className='rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700'>
@@ -218,9 +236,12 @@ export function FactoryBankSettingsPage() {
                 id='is_default'
                 checked={isDefault}
                 onChange={(e) => setIsDefault(e.target.checked)}
-                className='rounded border-slate-300 accent-brand-purple focus:ring-2 focus:ring-brand-purple/25'
+                className='cursor-pointer rounded border-slate-300 accent-brand-purple focus:ring-2 focus:ring-brand-purple/25'
               />
-              <label htmlFor='is_default' className='text-xs font-normal text-slate-700'>
+              <label
+                htmlFor='is_default'
+                className='cursor-pointer text-xs font-normal text-slate-700'
+              >
                 ตั้งเป็นบัญชีหลัก
               </label>
             </div>
@@ -246,7 +267,6 @@ export function FactoryBankSettingsPage() {
                 className: 'px-4',
               })}
             >
-              <X size={13} className='inline mr-1' />
               ยกเลิก
             </Button>
           </div>

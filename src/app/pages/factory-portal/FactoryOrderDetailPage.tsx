@@ -16,6 +16,7 @@ import {
   Printer,
   ExternalLink,
   Truck,
+  X,
 } from 'lucide-react';
 import { openShippingLabel } from '@/utils/printShippingLabel';
 import { useQueryClient } from '@tanstack/react-query';
@@ -45,7 +46,12 @@ import { Button } from '@/components/ui/button';
 import { FactoryNoteInline } from '@/components/factory/FactoryNoteInline';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { FactoryStatusBadge } from '@/pages/factory-portal/components/FactoryStatusBadge';
-import { factoryButtonClass, factoryBadgeClass } from '@/pages/factory-portal/factoryUi';
+import {
+  factoryBoxClass,
+  factoryButtonClass,
+  factoryBadgeClass,
+  factoryInputClass,
+} from '@/pages/factory-portal/factoryUi';
 
 function DetailField({
   label,
@@ -183,7 +189,11 @@ function StartWorkButton({ onStart }: { onStart: () => Promise<void> }) {
       disabled={busy}
       onClick={async () => {
         setBusy(true);
-        try { await onStart(); } finally { setBusy(false); }
+        try {
+          await onStart();
+        } finally {
+          setBusy(false);
+        }
       }}
       className={factoryButtonClass({ variant: 'primary', size: 'md', className: 'w-full' })}
     >
@@ -376,8 +386,9 @@ export function FactoryOrderDetailPage() {
       '',
   ).trim();
   const courierFromDesc = step4?.update.description
-    ? (step4.update.description.match(/(?:courier|ขนส่ง|บริษัทขนส่ง)[:\s]*([^\n,]+)/i)?.[1]?.trim() ??
-      '')
+    ? (step4.update.description
+        .match(/(?:courier|ขนส่ง|บริษัทขนส่ง)[:\s]*([^\n,]+)/i)?.[1]
+        ?.trim() ?? '')
     : '';
   const shippedTrackingNo = trackingFromOrder || trackingNumber || '';
   const shippedCourier = courierFromOrder || courierFromDesc || '';
@@ -396,12 +407,15 @@ export function FactoryOrderDetailPage() {
   );
   const requestKindRaw = String(
     order.request_kind ??
-    (order.rfq as Record<string, unknown> | null)?.request_kind ??
-    (order.quotation as Record<string, unknown> | null)?.request_kind ??
-    '',
+      (order.rfq as Record<string, unknown> | null)?.request_kind ??
+      (order.quotation as Record<string, unknown> | null)?.request_kind ??
+      '',
   ).toUpperCase();
   const requestKindLabel: Record<string, string> = {
-    PR: 'ผลิต OEM', MR: 'วัตถุดิบ', PS: 'ตัวอย่างสินค้า', MS: 'ตัวอย่างวัตถุดิบ',
+    PR: 'ผลิต OEM',
+    MR: 'วัตถุดิบ',
+    PS: 'ตัวอย่างสินค้า',
+    MS: 'ตัวอย่างวัตถุดิบ',
   };
   const shippingMethodName = String(
     (order.shipping_method as Record<string, unknown>)?.method_name ??
@@ -541,7 +555,11 @@ export function FactoryOrderDetailPage() {
                         variant='unstyled'
                         type='button'
                         onClick={handleOpenLabel}
-                        className={factoryButtonClass({ variant: 'primary', size: 'md', className: 'w-full justify-center gap-2' })}
+                        className={factoryButtonClass({
+                          variant: 'primary',
+                          size: 'md',
+                          className: 'w-full justify-center gap-2',
+                        })}
                       >
                         <Printer size={15} />
                         ทำใบปะหน้าพัสดุ
@@ -584,253 +602,371 @@ export function FactoryOrderDetailPage() {
               </div>
             )}
             <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_550px] 2xl:grid-cols-[minmax(0,1fr)_600px] gap-4 lg:gap-5 items-start'>
-            <div className='space-y-4 min-w-0'>
-              <div className='rounded-md border border-slate-200 bg-white p-5'>
-                <div className='flex items-start justify-between gap-2 mb-3'>
-                  <div className='min-w-0'>
-                    <h2 className='text-base font-bold text-slate-900 truncate'>{title}</h2>
-                    <p className='text-xs text-slate-400 mt-0.5'>#{orderCode}</p>
-                  </div>
-                  <StatusBadge variant={badgeVariant} size='md' className='shrink-0'>
-                    {statusLabel(status)}
-                  </StatusBadge>
-                </div>
-
-                {totalSteps > 0 ? (
-                  <div className='mb-4'>
-                    <div className='flex items-center justify-between text-xs text-slate-500 mb-1.5'>
-                      <span>ความคืบหน้า</span>
-                      <span className='font-semibold text-brand-purple'>
-                        {progressPct}% ({completedCount}/{totalSteps} ขั้นตอน)
-                      </span>
+              <div className='space-y-4 min-w-0'>
+                <div className='rounded-md border border-slate-200 bg-white p-5'>
+                  <div className='flex items-start justify-between gap-2 mb-3'>
+                    <div className='min-w-0'>
+                      <h2 className='text-base font-bold text-slate-900 truncate'>{title}</h2>
+                      <p className='text-xs text-slate-400 mt-0.5'>#{orderCode}</p>
                     </div>
-                    <div className='h-2 rounded-full bg-slate-100 overflow-hidden'>
-                      <progress
-                        className='block h-full w-full appearance-none rounded-full overflow-hidden [&::-webkit-progress-bar]:bg-slate-100 [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-brand-purple [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-brand-purple'
-                        value={progressPct}
-                        max={100}
-                        aria-label='ความคืบหน้าการผลิต'
-                      />
-                    </div>
+                    <StatusBadge variant={badgeVariant} size='md' className='shrink-0'>
+                      {statusLabel(status)}
+                    </StatusBadge>
                   </div>
-                ) : null}
 
-                <div className='grid grid-cols-3 gap-3'>
-                  <div className='rounded-md bg-[var(--brand-page)] px-3 py-2.5'>
-                    <p className='text-[10px] text-slate-500 uppercase tracking-wide'>มูลค่ารวม</p>
-                    <p className='font-bold text-slate-900 text-sm mt-0.5'>
-                      {formatCurrency(Number(order.total_amount ?? 0))}
-                    </p>
-                  </div>
-                  <div className='rounded-md bg-[var(--brand-page)] px-3 py-2.5'>
-                    <p className='text-[10px] text-slate-500 uppercase tracking-wide'>ชำระแล้ว</p>
-                    <p className='font-bold text-emerald-700 text-sm mt-0.5'>
-                      {formatCurrency(Number(order.total_amount ?? order.deposit_amount ?? 0))}
-                    </p>
-                  </div>
-                  <div className='rounded-md bg-[var(--brand-page)] px-3 py-2.5'>
-                    <p className='text-[10px] text-slate-500 uppercase tracking-wide'>กำหนดส่ง</p>
-                    <p className='font-bold text-slate-900 text-sm mt-0.5'>
-                      {formatDate(order.estimated_delivery as string | Date | null | undefined)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Tabbed detail card ── */}
-              <div className='rounded-md border border-slate-200 bg-white overflow-hidden'>
-                {/* Tab row */}
-                <div
-                  className='flex overflow-x-auto [&::-webkit-scrollbar]:hidden border-b border-slate-100 bg-[var(--brand-page)]/50'
-                  style={{ scrollbarWidth: 'none' }}
-                  role='tablist'
-                >
-                  {(
-                    [
-                      { id: 'order', label: 'ข้อมูล RFQ & คำสั่งซื้อ' },
-                      { id: 'customer', label: 'ลูกค้า & จัดส่ง' },
-                    ] as const
-                  ).map((t) => {
-                    const on = detailTab === t.id;
-                    return (
-                      <button
-                        key={t.id}
-                        type='button'
-                        role='tab'
-                        aria-selected={on}
-                        onClick={() => setDetailTab(t.id)}
-                        className='flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-3 text-[13px] -mb-px transition-colors focus:outline-none'
-                        style={{
-                          borderBottomColor: on ? 'var(--brand-purple)' : 'transparent',
-                          color: on ? 'var(--brand-purple)' : '#64748b',
-                          fontWeight: on ? 600 : 400,
-                        }}
-                      >
-                        {t.label}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Tab: ข้อมูล RFQ & คำสั่งซื้อ */}
-                {detailTab === 'order' ? (
-                  <div className='divide-y divide-slate-100'>
-                    {/* Formal info table */}
-                    <table className='w-full text-sm'>
-                      <tbody className='divide-y divide-slate-100'>
-                        {[
-                          { label: 'Order No.', value: <span className='font-mono font-semibold text-brand-purple'>#{orderCode}</span> },
-                          { label: 'สถานะ', value: <StatusBadge variant={badgeVariant} size='sm'>{statusLabel(status)}</StatusBadge> },
-                          { label: 'วันที่สั่งซื้อ', value: formatDateTime(order.created_at as string | Date | null | undefined) },
-                          { label: 'กำหนดส่งสินค้า', value: formatDateTime(order.estimated_delivery as string | Date | null | undefined) },
-                          { label: 'มูลค่ารวม', value: <span className='font-semibold tabular-nums'>{formatCurrency(Number(order.total_amount ?? 0))}</span> },
-                          { label: 'มัดจำ (Deposit)', value: <span className='font-semibold tabular-nums text-emerald-700'>{formatCurrency(Number(order.deposit_amount ?? 0))}</span> },
-                          { label: 'วิธีจัดส่ง', value: shippingMethodName },
-                          ...(requestKindRaw && requestKindLabel[requestKindRaw] ? [{ label: 'ประเภทออเดอร์', value: <FactoryStatusBadge tone='brand'>{requestKindLabel[requestKindRaw]}</FactoryStatusBadge> }] : []),
-                          ...(trackingNumber ? [{ label: 'Tracking No.', value: <span className={factoryBadgeClass({ variant: 'meta' })} style={{ fontFamily: 'monospace' }}>{trackingNumber}</span> }] : []),
-                        ].map(({ label, value }, i) => (
-                          <tr key={label} className={i % 2 === 0 ? 'bg-white' : 'bg-[var(--brand-page)]/40'}>
-                            <td className='px-4 py-2.5 text-[12px] font-medium text-slate-500 w-[40%] align-middle'>
-                              {label}
-                            </td>
-                            <td className='px-4 py-2.5 text-[13px] text-slate-800 align-middle'>
-                              {value}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-
-                    {/* RFQ reference — inline inside tab */}
-                    {rfq ? (
-                      <div className='px-4 py-3 bg-[var(--brand-page)]/35'>
-                        <RfqReferenceCard rfq={rfq} variant='accordion' collapsible={false} />
+                  {totalSteps > 0 ? (
+                    <div className='mb-4'>
+                      <div className='flex items-center justify-between text-xs text-slate-500 mb-1.5'>
+                        <span>ความคืบหน้า</span>
+                        <span className='font-semibold text-brand-purple'>
+                          {progressPct}% ({completedCount}/{totalSteps} ขั้นตอน)
+                        </span>
                       </div>
-                    ) : null}
-                  </div>
-                ) : null}
+                      <div className='h-2 rounded-full bg-slate-100 overflow-hidden'>
+                        <progress
+                          className='block h-full w-full appearance-none rounded-full overflow-hidden [&::-webkit-progress-bar]:bg-slate-100 [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-brand-purple [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-brand-purple'
+                          value={progressPct}
+                          max={100}
+                          aria-label='ความคืบหน้าการผลิต'
+                        />
+                      </div>
+                    </div>
+                  ) : null}
 
-                {/* Tab: ลูกค้า & จัดส่ง */}
-                {detailTab === 'customer' ? (
-                  <div className='divide-y divide-slate-100'>
-                    <table className='w-full text-sm'>
-                      <tbody className='divide-y divide-slate-100'>
-                        {[
-                          { label: 'ชื่อลูกค้า', value: customerName || '-' },
-                          { label: 'เบอร์โทร', value: customerPhone || '-' },
-                          { label: 'วิธีจัดส่ง', value: shippingMethodName },
-                        ].map(({ label, value }, i) => (
-                          <tr key={label} className={i % 2 === 0 ? 'bg-white' : 'bg-[var(--brand-page)]/40'}>
-                            <td className='px-4 py-2.5 text-[12px] font-medium text-slate-500 w-[40%] align-middle'>
-                              {label}
-                            </td>
-                            <td className='px-4 py-2.5 text-[13px] text-slate-800 align-middle'>
-                              {value}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {/* ที่อยู่จัดส่ง */}
-                    <div className='px-4 py-3 bg-[var(--brand-page)]/35'>
-                      <p className='text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5'>
-                        <MapPin size={11} className='text-brand-purple' /> ที่อยู่จัดส่ง
+                  <div className='grid grid-cols-3 gap-3'>
+                    <div className='rounded-md bg-[var(--brand-page)] px-3 py-2.5'>
+                      <p className='text-[10px] text-slate-500 uppercase tracking-wide'>
+                        มูลค่ารวม
                       </p>
-                      {fullShippingAddress ? (
-                        <div className='space-y-1'>
-                          {customerShipping.recipientName ? (
-                            <div className='flex items-center gap-2'>
-                              <User size={13} className='text-slate-400 shrink-0' />
-                              <span className='text-sm font-semibold text-slate-800'>{customerShipping.recipientName}</span>
-                            </div>
-                          ) : null}
-                          {customerShipping.phone ? (
-                            <div className='flex items-center gap-2'>
-                              <Phone size={13} className='text-slate-400 shrink-0' />
-                              <span className='text-sm text-slate-700'>{customerShipping.phone}</span>
-                            </div>
-                          ) : null}
-                          <div className='flex items-start gap-2 mt-1'>
-                            <MapPin size={13} className='text-slate-400 shrink-0 mt-0.5' />
-                            <span className='text-sm text-slate-700 leading-relaxed'>{fullShippingAddress}</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className='text-sm text-slate-400'>ยังไม่มีข้อมูลที่อยู่จัดส่ง</p>
-                      )}
+                      <p className='font-bold text-slate-900 text-sm mt-0.5'>
+                        {formatCurrency(Number(order.total_amount ?? 0))}
+                      </p>
                     </div>
-
-                    {/* ── สลีปการโอนเงิน ── */}
-                    <div className='px-4 py-4'>
-                      <SlipVerificationCard orderId={String(order.order_id ?? id)} orderStatus={status} onStatusChange={() => { setError(''); loadOrder(); }} />
+                    <div className='rounded-md bg-[var(--brand-page)] px-3 py-2.5'>
+                      <p className='text-[10px] text-slate-500 uppercase tracking-wide'>ชำระแล้ว</p>
+                      <p className='font-bold text-emerald-700 text-sm mt-0.5'>
+                        {formatCurrency(Number(order.total_amount ?? order.deposit_amount ?? 0))}
+                      </p>
                     </div>
-
-                    {/* ── ประวัติการชำระเงิน ── */}
-                    <div className='px-4 py-4'>
-                      <PaymentTransactionsTable orderId={String(order.order_id ?? id)} />
+                    <div className='rounded-md bg-[var(--brand-page)] px-3 py-2.5'>
+                      <p className='text-[10px] text-slate-500 uppercase tracking-wide'>กำหนดส่ง</p>
+                      <p className='font-bold text-slate-900 text-sm mt-0.5'>
+                        {formatDate(order.estimated_delivery as string | Date | null | undefined)}
+                      </p>
                     </div>
                   </div>
+                </div>
+
+                {/* ── Tabbed detail card ── */}
+                <div className='rounded-md border border-slate-200 bg-white overflow-hidden'>
+                  {/* Tab row */}
+                  <div
+                    className='flex overflow-x-auto [&::-webkit-scrollbar]:hidden border-b border-slate-100 bg-[var(--brand-page)]/50'
+                    style={{ scrollbarWidth: 'none' }}
+                    role='tablist'
+                  >
+                    {(
+                      [
+                        { id: 'order', label: 'ข้อมูล RFQ & คำสั่งซื้อ' },
+                        { id: 'customer', label: 'ลูกค้า & จัดส่ง' },
+                      ] as const
+                    ).map((t) => {
+                      const on = detailTab === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          type='button'
+                          role='tab'
+                          aria-selected={on}
+                          onClick={() => setDetailTab(t.id)}
+                          className='flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-3 text-[13px] -mb-px transition-colors focus:outline-none'
+                          style={{
+                            borderBottomColor: on ? 'var(--brand-purple)' : 'transparent',
+                            color: on ? 'var(--brand-purple)' : '#64748b',
+                            fontWeight: on ? 600 : 400,
+                          }}
+                        >
+                          {t.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Tab: ข้อมูล RFQ & คำสั่งซื้อ */}
+                  {detailTab === 'order' ? (
+                    <div className='divide-y divide-slate-100'>
+                      {/* Formal info table */}
+                      <table className='w-full text-sm'>
+                        <tbody className='divide-y divide-slate-100'>
+                          {[
+                            {
+                              label: 'Order No.',
+                              value: (
+                                <span className='font-mono font-semibold text-brand-purple'>
+                                  #{orderCode}
+                                </span>
+                              ),
+                            },
+                            {
+                              label: 'สถานะ',
+                              value: (
+                                <StatusBadge variant={badgeVariant} size='sm'>
+                                  {statusLabel(status)}
+                                </StatusBadge>
+                              ),
+                            },
+                            {
+                              label: 'วันที่สั่งซื้อ',
+                              value: formatDateTime(
+                                order.created_at as string | Date | null | undefined,
+                              ),
+                            },
+                            {
+                              label: 'กำหนดส่งสินค้า',
+                              value: formatDateTime(
+                                order.estimated_delivery as string | Date | null | undefined,
+                              ),
+                            },
+                            {
+                              label: 'มูลค่ารวม',
+                              value: (
+                                <span className='font-semibold tabular-nums'>
+                                  {formatCurrency(Number(order.total_amount ?? 0))}
+                                </span>
+                              ),
+                            },
+                            {
+                              label: 'มัดจำ (Deposit)',
+                              value: (
+                                <span className='font-semibold tabular-nums text-emerald-700'>
+                                  {formatCurrency(Number(order.deposit_amount ?? 0))}
+                                </span>
+                              ),
+                            },
+                            { label: 'วิธีจัดส่ง', value: shippingMethodName },
+                            ...(requestKindRaw && requestKindLabel[requestKindRaw]
+                              ? [
+                                  {
+                                    label: 'ประเภทออเดอร์',
+                                    value: (
+                                      <FactoryStatusBadge tone='brand'>
+                                        {requestKindLabel[requestKindRaw]}
+                                      </FactoryStatusBadge>
+                                    ),
+                                  },
+                                ]
+                              : []),
+                            ...(trackingNumber
+                              ? [
+                                  {
+                                    label: 'Tracking No.',
+                                    value: (
+                                      <span
+                                        className={factoryBadgeClass({ variant: 'meta' })}
+                                        style={{ fontFamily: 'monospace' }}
+                                      >
+                                        {trackingNumber}
+                                      </span>
+                                    ),
+                                  },
+                                ]
+                              : []),
+                          ].map(({ label, value }, i) => (
+                            <tr
+                              key={label}
+                              className={i % 2 === 0 ? 'bg-white' : 'bg-[var(--brand-page)]/40'}
+                            >
+                              <td className='px-4 py-2.5 text-[12px] font-medium text-slate-500 w-[40%] align-middle'>
+                                {label}
+                              </td>
+                              <td className='px-4 py-2.5 text-[13px] text-slate-800 align-middle'>
+                                {value}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      {/* RFQ reference — inline inside tab */}
+                      {rfq ? (
+                        <div className='px-4 py-3 bg-[var(--brand-page)]/35'>
+                          <RfqReferenceCard rfq={rfq} variant='accordion' collapsible={false} />
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+
+                  {/* Tab: ลูกค้า & จัดส่ง */}
+                  {detailTab === 'customer' ? (
+                    <div className='divide-y divide-slate-100'>
+                      <table className='w-full text-sm'>
+                        <tbody className='divide-y divide-slate-100'>
+                          {[
+                            { label: 'ชื่อลูกค้า', value: customerName || '-' },
+                            { label: 'เบอร์โทร', value: customerPhone || '-' },
+                            { label: 'วิธีจัดส่ง', value: shippingMethodName },
+                          ].map(({ label, value }, i) => (
+                            <tr
+                              key={label}
+                              className={i % 2 === 0 ? 'bg-white' : 'bg-[var(--brand-page)]/40'}
+                            >
+                              <td className='px-4 py-2.5 text-[12px] font-medium text-slate-500 w-[40%] align-middle'>
+                                {label}
+                              </td>
+                              <td className='px-4 py-2.5 text-[13px] text-slate-800 align-middle'>
+                                {value}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {/* ที่อยู่จัดส่ง */}
+                      <div className='px-4 py-3 bg-[var(--brand-page)]/35'>
+                        <p className='text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5'>
+                          <MapPin size={11} className='text-brand-purple' /> ที่อยู่จัดส่ง
+                        </p>
+                        {fullShippingAddress ? (
+                          <div className='space-y-1'>
+                            {customerShipping.recipientName ? (
+                              <div className='flex items-center gap-2'>
+                                <User size={13} className='text-slate-400 shrink-0' />
+                                <span className='text-sm font-semibold text-slate-800'>
+                                  {customerShipping.recipientName}
+                                </span>
+                              </div>
+                            ) : null}
+                            {customerShipping.phone ? (
+                              <div className='flex items-center gap-2'>
+                                <Phone size={13} className='text-slate-400 shrink-0' />
+                                <span className='text-sm text-slate-700'>
+                                  {customerShipping.phone}
+                                </span>
+                              </div>
+                            ) : null}
+                            <div className='flex items-start gap-2 mt-1'>
+                              <MapPin size={13} className='text-slate-400 shrink-0 mt-0.5' />
+                              <span className='text-sm text-slate-700 leading-relaxed'>
+                                {fullShippingAddress}
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className='text-sm text-slate-400'>ยังไม่มีข้อมูลที่อยู่จัดส่ง</p>
+                        )}
+                      </div>
+
+                      {/* ── สลีปการโอนเงิน ── */}
+                      <div className='px-4 py-4'>
+                        <SlipVerificationCard
+                          orderId={String(order.order_id ?? id)}
+                          orderStatus={status}
+                          onStatusChange={() => {
+                            setError('');
+                            loadOrder();
+                          }}
+                        />
+                      </div>
+
+                      {/* ── ประวัติการชำระเงิน ── */}
+                      <div className='px-4 py-4'>
+                        <PaymentTransactionsTable orderId={String(order.order_id ?? id)} />
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* ── Factory Note — always editable ── */}
+                {quotation?.quote_id ? (
+                  <FactoryNoteInline
+                    quotationId={quotation.quote_id}
+                    initialNote={quotation.factory_note}
+                    onSaved={loadOrder}
+                  />
                 ) : null}
               </div>
 
-              {/* ── Factory Note — always editable ── */}
-              {quotation?.quote_id ? (
-                <FactoryNoteInline
-                  quotationId={quotation.quote_id}
-                  initialNote={quotation.factory_note}
-                  onSaved={loadOrder}
-                />
-              ) : null}
-            </div>
-
-            <aside className='space-y-4 xl:sticky xl:top-20'>
-
-              <section className='rounded-md bg-white border border-slate-200 p-4 space-y-3'>
-                <div className='flex items-center gap-2'>
-                  <Flag size={14} className='text-brand-purple' />
-                  <h2 className='text-sm font-bold text-slate-900'>ความคืบหน้าการผลิต</h2>
-                </div>
-
-                {updQ.isLoading ? (
-                  <div className='flex items-center gap-2 py-6 justify-center text-gray-500 text-sm'>
-                    <div className='w-5 h-5 border-2 border-brand-purple border-t-transparent rounded-full animate-spin' />
-                    กำลังโหลด…
+              <aside className='space-y-4 xl:sticky xl:top-20'>
+                <section className='rounded-md bg-white border border-slate-200 p-4 space-y-3'>
+                  <div className='flex items-center gap-2'>
+                    <Flag size={14} className='text-brand-purple' />
+                    <h2 className='text-sm font-bold text-slate-900'>ความคืบหน้าการผลิต</h2>
                   </div>
-                ) : merged.length === 0 ? (
-                  <p className='text-sm text-gray-400 px-1'>ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>
-                ) : (
-                  <>
-                    {/* step_id=0: แสดง info card แทน StepRow */}
-                    {!step0Accepted && status === 'PD' && (
-                      <StartWorkButton onStart={() => handleStepSubmit({ step_id: 0, status: 'CD', image_urls: [] })} />
-                    )}
-                    {step0Accepted ? (
-                      <div className='rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2.5 flex items-center justify-between gap-2'>
-                        <div className='flex items-center gap-2 min-w-0'>
-                          <Handshake size={16} className='shrink-0 text-emerald-600' />
-                          <div className='min-w-0'>
-                            <p className='text-[11px] font-bold text-emerald-800'>รับงานแล้ว</p>
-                            {step0StartDate ? (
-                              <p className='text-[11px] text-emerald-700 mt-0.5'>
-                                เริ่ม {formatDate(step0StartDate)}
-                              </p>
-                            ) : null}
-                          </div>
-                        </div>
-                        {order.estimated_delivery ? (
-                          <div className='text-right shrink-0'>
-                            <div className='flex items-center gap-1 justify-end'>
-                              <CalendarClock size={11} className='text-slate-500' />
-                              <p className='text-[10px] text-slate-500'>กำหนดส่ง</p>
+
+                  {updQ.isLoading ? (
+                    <div className='flex items-center gap-2 py-6 justify-center text-gray-500 text-sm'>
+                      <div className='w-5 h-5 border-2 border-brand-purple border-t-transparent rounded-full animate-spin' />
+                      กำลังโหลด…
+                    </div>
+                  ) : merged.length === 0 ? (
+                    <p className='text-sm text-gray-400 px-1'>ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>
+                  ) : (
+                    <>
+                      {/* step_id=0: แสดง info card แทน StepRow */}
+                      {!step0Accepted && status === 'PD' && (
+                        <StartWorkButton
+                          onStart={() =>
+                            handleStepSubmit({ step_id: 0, status: 'CD', image_urls: [] })
+                          }
+                        />
+                      )}
+                      {step0Accepted ? (
+                        <div className='rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2.5 flex items-center justify-between gap-2'>
+                          <div className='flex items-center gap-2 min-w-0'>
+                            <Handshake size={16} className='shrink-0 text-emerald-600' />
+                            <div className='min-w-0'>
+                              <p className='text-[11px] font-bold text-emerald-800'>รับงานแล้ว</p>
+                              {step0StartDate ? (
+                                <p className='text-[11px] text-emerald-700 mt-0.5'>
+                                  เริ่ม {formatDate(step0StartDate)}
+                                </p>
+                              ) : null}
                             </div>
+                          </div>
+                          {order.estimated_delivery ? (
+                            <div className='text-right shrink-0'>
+                              <div className='flex items-center gap-1 justify-end'>
+                                <CalendarClock size={11} className='text-slate-500' />
+                                <p className='text-[10px] text-slate-500'>กำหนดส่ง</p>
+                              </div>
+                              <p className='text-xs font-bold text-slate-800'>
+                                {formatDate(order.estimated_delivery as string)}
+                              </p>
+                              {deliveryDays !== null ? (
+                                <p
+                                  className={`text-[10px] font-bold ${
+                                    deliveryDays > 7
+                                      ? 'text-emerald-700'
+                                      : deliveryDays >= 0
+                                        ? 'text-amber-600'
+                                        : 'text-red-600'
+                                  }`}
+                                >
+                                  {deliveryDays > 0
+                                    ? `เหลืออีก ${deliveryDays} วัน`
+                                    : deliveryDays === 0
+                                      ? 'วันนี้!'
+                                      : `เกินกำหนด ${Math.abs(deliveryDays)} วัน`}
+                                </p>
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : !step0Accepted && order.estimated_delivery ? (
+                        /* ยังไม่รับงาน: แสดง estimated_delivery อย่างเดียว */
+                        <div className='rounded-md border border-slate-200 bg-[var(--brand-page)] px-3 py-2 flex items-center justify-between gap-2'>
+                          <div className='flex items-center gap-1.5'>
+                            <CalendarClock size={14} className='text-slate-500' />
+                            <p className='text-xs text-slate-600'>กำหนดส่ง</p>
+                          </div>
+                          <div className='text-right'>
                             <p className='text-xs font-bold text-slate-800'>
                               {formatDate(order.estimated_delivery as string)}
                             </p>
                             {deliveryDays !== null ? (
                               <p
-                                className={`text-[10px] font-bold ${
+                                className={`text-[10px] font-semibold ${
                                   deliveryDays > 7
-                                    ? 'text-emerald-700'
+                                    ? 'text-slate-500'
                                     : deliveryDays >= 0
                                       ? 'text-amber-600'
                                       : 'text-red-600'
@@ -844,65 +980,34 @@ export function FactoryOrderDetailPage() {
                               </p>
                             ) : null}
                           </div>
-                        ) : null}
-                      </div>
-                    ) : !step0Accepted && order.estimated_delivery ? (
-                      /* ยังไม่รับงาน: แสดง estimated_delivery อย่างเดียว */
-                      <div className='rounded-md border border-slate-200 bg-[var(--brand-page)] px-3 py-2 flex items-center justify-between gap-2'>
-                        <div className='flex items-center gap-1.5'>
-                          <CalendarClock size={14} className='text-slate-500' />
-                          <p className='text-xs text-slate-600'>กำหนดส่ง</p>
                         </div>
-                        <div className='text-right'>
-                          <p className='text-xs font-bold text-slate-800'>
-                            {formatDate(order.estimated_delivery as string)}
-                          </p>
-                          {deliveryDays !== null ? (
-                            <p
-                              className={`text-[10px] font-semibold ${
-                                deliveryDays > 7
-                                  ? 'text-slate-500'
-                                  : deliveryDays >= 0
-                                    ? 'text-amber-600'
-                                    : 'text-red-600'
-                              }`}
-                            >
-                              {deliveryDays > 0
-                                ? `เหลืออีก ${deliveryDays} วัน`
-                                : deliveryDays === 0
-                                  ? 'วันนี้!'
-                                  : `เกินกำหนด ${Math.abs(deliveryDays)} วัน`}
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-                    ) : null}
+                      ) : null}
 
-                    {timelineMerged.length === 0 ? (
-                      <p className='text-sm text-gray-400 px-1'>
-                        รอยืนยันรับงานเพื่อเริ่มขั้นตอนการผลิต
-                      </p>
-                    ) : (
-                      <>
-                        <ProductionHeader merged={timelineMerged} orderStatus={orderStatus} />
-                        <ProductionTimeline
-                          merged={timelineMerged}
-                          orderStatus={orderStatus}
-                          isFactory={!isCompleted}
-                          isCustomer={false}
-                          onOpenDrawer={(m) => {
-                            if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
-                          }}
-                          onOpenReject={() => undefined}
-                          onPhotoClick={() => undefined}
-                        />
-                      </>
-                    )}
-                  </>
-                )}
-              </section>
-            </aside>
-          </div>
+                      {timelineMerged.length === 0 ? (
+                        <p className='text-sm text-gray-400 px-1'>
+                          รอยืนยันรับงานเพื่อเริ่มขั้นตอนการผลิต
+                        </p>
+                      ) : (
+                        <>
+                          <ProductionHeader merged={timelineMerged} orderStatus={orderStatus} />
+                          <ProductionTimeline
+                            merged={timelineMerged}
+                            orderStatus={orderStatus}
+                            isFactory={!isCompleted}
+                            isCustomer={false}
+                            onOpenDrawer={(m) => {
+                              if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
+                            }}
+                            onOpenReject={() => undefined}
+                            onPhotoClick={() => undefined}
+                          />
+                        </>
+                      )}
+                    </>
+                  )}
+                </section>
+              </aside>
+            </div>
           </>
         )}
       </div>
@@ -923,10 +1028,37 @@ export function FactoryOrderDetailPage() {
 
 function slipStatusConfig(s: string) {
   const code = s.toUpperCase();
-  if (code === 'AP') return { label: 'ยืนยันแล้ว', tone: 'success' as const, icon: 'text-emerald-600', title: 'text-emerald-800' };
-  if (code === 'RJ') return { label: 'ปฏิเสธแล้ว', tone: 'danger' as const, icon: 'text-red-600', title: 'text-red-800' };
-  if (code === 'PE') return { label: 'รอลูกค้าแนบสลีป', tone: 'neutral' as const, icon: 'text-slate-400', title: 'text-slate-600' };
-  return { label: 'รอตรวจสอบ', tone: 'warning' as const, icon: 'text-amber-600', title: 'text-amber-800' };
+  if (code === 'AP')
+    return {
+      label: 'ยืนยันแล้ว',
+      tone: 'success' as const,
+      box: 'emerald' as const,
+      icon: 'text-emerald-600',
+      title: 'text-emerald-800',
+    };
+  if (code === 'RJ')
+    return {
+      label: 'ปฏิเสธแล้ว',
+      tone: 'danger' as const,
+      box: 'neutral' as const,
+      icon: 'text-red-600',
+      title: 'text-red-700',
+    };
+  if (code === 'PE')
+    return {
+      label: 'รอลูกค้าแนบสลีป',
+      tone: 'neutral' as const,
+      box: 'neutral' as const,
+      icon: 'text-slate-400',
+      title: 'text-slate-600',
+    };
+  return {
+    label: 'รอตรวจสอบ',
+    tone: 'warning' as const,
+    box: 'amber' as const,
+    icon: 'text-amber-600',
+    title: 'text-amber-800',
+  };
 }
 
 function SlipVerificationCard({
@@ -961,7 +1093,9 @@ function SlipVerificationCard({
     void fetchSlip();
   }, [fetchSlip]);
 
-  const slipStatus = String(slipData?.slip_status ?? '').trim().toUpperCase();
+  const slipStatus = String(slipData?.slip_status ?? '')
+    .trim()
+    .toUpperCase();
 
   // ไม่แสดงอะไรเลยถ้ายังโหลดอยู่ หรือไม่มี slip data หรือสถานะว่าง
   if (loading || !slipData || !slipStatus) return null;
@@ -1007,7 +1141,7 @@ function SlipVerificationCard({
   };
 
   return (
-    <div className={`rounded-md border ${cfg.border} ${cfg.bg} p-4 space-y-3`}>
+    <div className={factoryBoxClass({ variant: cfg.box, className: 'space-y-3 p-4' })}>
       {/* Header */}
       <div className='flex items-center justify-between gap-2'>
         <div className='flex items-center gap-2'>
@@ -1024,24 +1158,27 @@ function SlipVerificationCard({
 
       {/* Slip image */}
       {slipData.slip_url ? (
-        <button type='button' onClick={() => setPreviewUrl(String(slipData.slip_url))}>
+        <button
+          type='button'
+          onClick={() => setPreviewUrl(String(slipData.slip_url))}
+          className='block overflow-hidden rounded-lg border border-slate-200 bg-white shadow-none transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple'
+        >
           <img
             src={String(slipData.slip_url)}
             alt='สลีปการโอนเงิน'
-            className={`rounded-md border max-h-52 object-contain cursor-pointer hover:opacity-80 transition-opacity ${
-              isApproved ? 'border-emerald-200' : isRejected ? 'border-red-200' : 'border-amber-200'
-            }`}
+            className='max-h-52 object-contain'
           />
         </button>
       ) : null}
 
       {/* Slip note */}
       {slipData.slip_note ? (
-        <p className={`text-xs rounded-md px-3 py-1.5 ${
-          isApproved ? 'text-emerald-700 bg-emerald-100'
-          : isRejected ? 'text-red-700 bg-red-100'
-          : 'text-amber-700 bg-amber-100'
-        }`}>
+        <p
+          className={factoryBadgeClass({
+            variant: isRejected ? 'danger' : isApproved ? 'verified' : 'warning',
+            className: 'w-fit max-w-full rounded-lg px-3 py-1.5 text-left font-medium',
+          })}
+        >
           หมายเหตุจากลูกค้า: {String(slipData.slip_note)}
         </p>
       ) : null}
@@ -1069,7 +1206,11 @@ function SlipVerificationCard({
               type='button'
               disabled={acting}
               onClick={handleApprove}
-              className={factoryButtonClass({ variant: 'success', size: 'md', className: 'flex-1' })}
+              className={factoryButtonClass({
+                variant: 'success',
+                size: 'md',
+                className: 'flex-1',
+              })}
             >
               {acting ? 'กำลังดำเนินการ…' : 'ยืนยันรับเงิน'}
             </Button>
@@ -1089,7 +1230,10 @@ function SlipVerificationCard({
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder='ระบุเหตุผลในการปฏิเสธ (อย่างน้อย 5 ตัวอักษร)'
-              className='w-full rounded-lg border border-red-200 px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none'
+              className={factoryInputClass({
+                className:
+                  'min-h-[76px] resize-none border-red-200 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-200',
+              })}
               rows={2}
             />
             <div className='flex items-center gap-2'>
@@ -1098,14 +1242,21 @@ function SlipVerificationCard({
                 type='button'
                 disabled={acting || rejectReason.trim().length < 5}
                 onClick={handleReject}
-                className={factoryButtonClass({ variant: 'danger', size: 'md', className: 'flex-1' })}
+                className={factoryButtonClass({
+                  variant: 'danger',
+                  size: 'md',
+                  className: 'flex-1',
+                })}
               >
                 {acting ? 'กำลังดำเนินการ…' : 'ยืนยันปฏิเสธสลีป'}
               </Button>
               <Button
                 variant='unstyled'
                 type='button'
-                onClick={() => { setShowRejectInput(false); setRejectReason(''); }}
+                onClick={() => {
+                  setShowRejectInput(false);
+                  setRejectReason('');
+                }}
                 className={factoryButtonClass({ variant: 'toolbar', size: 'md' })}
               >
                 ยกเลิก
@@ -1117,16 +1268,25 @@ function SlipVerificationCard({
 
       {/* Fullscreen preview modal */}
       {previewUrl ? (
-        <div className='fixed inset-0 z-[99999] bg-black/70 flex items-center justify-center p-4' onClick={() => setPreviewUrl(null)}>
-          <div className='relative max-w-5xl max-h-[90vh]' onClick={(e) => e.stopPropagation()}>
-            <button
+        <div
+          className='fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 p-4'
+          onClick={() => setPreviewUrl(null)}
+        >
+          <div className='relative max-h-[90vh] max-w-5xl' onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant='unstyled'
               type='button'
               onClick={() => setPreviewUrl(null)}
-              className='absolute -top-3 -right-3 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 z-10'
+              className='absolute -right-3 -top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/15 text-white shadow-none hover:bg-white/25'
+              aria-label='ปิดตัวอย่างสลีป'
             >
-              ✕
-            </button>
-            <img src={previewUrl} alt='สลีปเต็ม' className='max-w-full max-h-[85vh] object-contain rounded-md shadow-sm' />
+              <X size={20} />
+            </Button>
+            <img
+              src={previewUrl}
+              alt='สลีปเต็ม'
+              className='max-h-[85vh] max-w-full rounded-lg object-contain'
+            />
           </div>
         </div>
       ) : null}
@@ -1173,7 +1333,9 @@ function PaymentTransactionsTable({ orderId }: { orderId: string | number }) {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [orderId]);
 
   if (loading) {
@@ -1181,7 +1343,9 @@ function PaymentTransactionsTable({ orderId }: { orderId: string | number }) {
       <div className='rounded-md border border-slate-200 bg-white p-4'>
         <div className='h-5 w-40 bg-slate-100 rounded animate-pulse mb-3' />
         <div className='space-y-2'>
-          {[1, 2].map((i) => <div key={i} className='h-10 bg-[var(--brand-page)] rounded animate-pulse' />)}
+          {[1, 2].map((i) => (
+            <div key={i} className='h-10 bg-[var(--brand-page)] rounded animate-pulse' />
+          ))}
         </div>
       </div>
     );

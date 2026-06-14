@@ -10,12 +10,14 @@ export function FactoryPageHeader({
   icon: Icon,
   count,
   action,
+  actionNode,
 }: {
   title: string;
   subtitle?: string;
   icon?: LucideIcon;
   count?: string;
   action?: { label: string; to: string };
+  actionNode?: React.ReactNode;
 }) {
   return (
     <div className='rounded-md border border-slate-200 bg-white px-4 py-4 sm:px-5 sm:py-5'>
@@ -49,6 +51,7 @@ export function FactoryPageHeader({
               <ChevronRight size={14} />
             </Link>
           ) : null}
+          {actionNode}
         </div>
       </div>
     </div>

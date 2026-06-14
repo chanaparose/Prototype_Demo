@@ -37,7 +37,12 @@ import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
 import { UnitPicker, type UnitOption } from '@/pages/rfq/steps/UnitPicker';
 import { masterApi } from '@/services/api/masterApi';
-import { factoryInputClass, factoryBoxClass, factoryButtonClass, factoryCardClass } from '@/pages/factory-portal/factoryUi';
+import {
+  factoryBoxClass,
+  factoryButtonClass,
+  factoryCardClass,
+  factoryInputClass,
+} from '@/pages/factory-portal/factoryUi';
 
 const LOCKED_PAYMENT_TERMS = 'lc_at_sight';
 
@@ -357,15 +362,19 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           e.preventDefault();
           void submit();
         }}
-        className={factoryCardClass({ variant: 'section', className: 'space-y-4' })}
+        className={
+          showHeading
+            ? factoryCardClass({ variant: 'section', className: 'space-y-4' })
+            : 'space-y-4'
+        }
       >
         {showHeading ? <h3 className='text-sm font-bold text-gray-900'>ยื่นใบเสนอราคา</h3> : null}
 
-        <div className={factoryCardClass({ variant: 'section', className: 'space-y-3 p-3' })}>
+        <div className={factoryBoxClass({ variant: 'neutral', className: 'space-y-3 px-3 py-3' })}>
           <p className='text-xs font-semibold text-gray-800'>ราคาและจำนวนที่เสนอ</p>
 
           {rfqQuantity != null && (
-            <p className='text-[11px] text-gray-500'>
+            <p className='text-xs text-gray-500'>
               ลูกค้าขอ:{' '}
               <strong className='text-gray-700'>
                 {formatCompactNumber(rfqQuantity)} {rfqUnitLabel}
@@ -380,7 +389,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           )}
 
           <div>
-            <p className='text-[11px] font-medium text-gray-600 mb-1.5'>
+            <p className='mb-1.5 text-xs font-medium text-gray-600'>
               จำนวนที่โรงงานเสนอ
               <span className='ml-1 font-normal text-gray-400'>(ไม่กรอก = รับตามจำนวน RFQ)</span>
             </p>
@@ -397,8 +406,8 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               <UnitPicker units={units} value={factoryUnitId} onChange={setFactoryUnitId} />
             </div>
             {hasQtyOverride ? (
-              <p className='text-[11px] text-amber-700 mt-1.5'>
-                ⚠️ จำนวนต่างจาก RFQ — ลูกค้าจะเห็น badge &ldquo;โรงงานเสนอ{' '}
+              <p className='mt-1.5 text-xs text-amber-700'>
+                จำนวนต่างจาก RFQ ลูกค้าจะเห็น badge &ldquo;โรงงานเสนอ{' '}
                 {formatCompactNumber(factoryQty!)} {factoryUnitLabel}&rdquo;
               </p>
             ) : null}
@@ -425,12 +434,12 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             if (!Number.isFinite(p) || p <= 0 || effectiveQty <= 0) return null;
             const total = p * effectiveQty;
             return (
-              <div className={factoryBoxClass({ variant: 'violet', className: 'px-3 py-2' })}>
+              <div className={factoryBoxClass({ variant: 'neutral', className: 'px-3 py-2' })}>
                 <p className='text-xs font-semibold text-gray-800'>
                   สรุปข้อเสนอ: {formatCompactNumber(effectiveQty)} {factoryUnitLabel} ×{' '}
-                  {formatCurrency(p)} = <span className='text-violet-700'>{fmt(total)} บาท</span>
+                  {formatCurrency(p)} = <span className='text-brand-purple'>{fmt(total)} บาท</span>
                 </p>
-                <p className='text-[10px] text-gray-500 mt-0.5'>
+                <p className='mt-0.5 text-xs text-gray-500'>
                   {hasQtyOverride
                     ? 'คำนวณจากจำนวนที่โรงงานเสนอ (ไม่ใช่จำนวน RFQ)'
                     : 'คำนวณจากจำนวนที่ลูกค้าขอ'}
@@ -441,9 +450,9 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         </div>
 
         <div>
-          <p className='text-xs font-semibold text-gray-600 mb-2'>ค่าใช้จ่ายเพิ่มเติม</p>
-          <div className='grid grid-cols-3 gap-2'>
-            <FormField label='ค่าขนส่ง' labelClassName='text-[11px]'>
+          <p className='mb-2 text-xs font-semibold text-gray-600'>ค่าใช้จ่ายเพิ่มเติม</p>
+          <div className='grid grid-cols-1 gap-2 sm:grid-cols-3'>
+            <FormField label='ค่าขนส่ง' labelClassName='text-xs'>
               <Input
                 type='number'
                 step='0.01'
@@ -454,7 +463,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 {...form.register('shipping_cost')}
               />
             </FormField>
-            <FormField label='ค่าบรรจุภัณฑ์' labelClassName='text-[11px]'>
+            <FormField label='ค่าบรรจุภัณฑ์' labelClassName='text-xs'>
               <Input
                 type='number'
                 step='0.01'
@@ -465,7 +474,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 {...form.register('packaging_cost')}
               />
             </FormField>
-            <FormField label='ค่าแม่พิมพ์' labelClassName='text-[11px]'>
+            <FormField label='ค่าแม่พิมพ์' labelClassName='text-xs'>
               <Input
                 type='number'
                 step='0.01'
@@ -479,7 +488,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </div>
         </div>
 
-        <div className='grid grid-cols-2 gap-2'>
+        <div className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
           <FormField
             label='Lead time (วัน)'
             required
@@ -518,7 +527,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             <Lock size={14} className='text-gray-400 shrink-0' aria-hidden />
           </div>
           <p className='text-sm font-semibold text-gray-800'>ชำระเต็ม 100% ก่อนเริ่มผลิต</p>
-          <p className='text-[11px] text-gray-500 mt-1'>
+          <p className='mt-1 text-xs text-gray-500'>
             นโยบายแพลตฟอร์ม — ลูกค้าชำระครบก่อนโรงงานรับงาน
           </p>
         </div>
@@ -552,18 +561,18 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 {imageUrls.map((url) => (
                   <div
                     key={url}
-                    className='relative aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center'
+                    className='relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100'
                   >
                     <Image src={url} alt='' className='w-full h-full object-cover' />
                     <Button
                       variant='unstyled'
                       type='button'
                       onClick={() => removeImage(url)}
-                      className='absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center'
+                      className='absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-md bg-black/55 text-white shadow-none hover:bg-black/70'
                       aria-label='ลบรูปภาพ'
                       title='ลบรูปภาพ'
                     >
-                      <XIcon size={10} className='text-white' />
+                      <XIcon size={12} />
                     </Button>
                   </div>
                 ))}
@@ -583,7 +592,11 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               type='button'
               disabled={uploadingImage}
               onClick={() => imageInputRef.current?.click()}
-              className={factoryButtonClass({ variant: 'upload', size: 'sm', className: 'gap-1.5' })}
+              className={factoryButtonClass({
+                variant: 'upload',
+                size: 'sm',
+                className: 'gap-1.5',
+              })}
             >
               {uploadingImage ? (
                 <>
@@ -605,7 +618,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               {imageUrls.map((url) => (
                 <div
                   key={url}
-                  className='aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center'
+                  className='flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100'
                 >
                   <Image src={url} alt='' className='w-full h-full object-cover' />
                 </div>
@@ -615,13 +628,13 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         ) : null}
 
         {(preview || previewLoading) && effectiveQty > 0 ? (
-          <div className={factoryBoxClass({ variant: 'violet', className: 'p-3 space-y-1.5' })}>
+          <div className={factoryBoxClass({ variant: 'neutral', className: 'space-y-1.5 p-3' })}>
             <div className='flex items-center justify-between mb-1'>
-              <p className='text-[11px] font-bold text-violet-700 uppercase tracking-wide'>
+              <p className='text-xs font-semibold uppercase tracking-wide text-slate-700'>
                 สรุปค่าใช้จ่าย (ประมาณ)
               </p>
               {previewLoading ? (
-                <Loader2 size={13} className='animate-spin text-violet-400' />
+                <Loader2 size={13} className='animate-spin text-brand-purple' />
               ) : null}
             </div>
             {preview ? (
@@ -640,28 +653,33 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                   label={`VAT ${preview.vat_rate.toFixed(0)}%`}
                   value={`${fmt(preview.vat_amount)}`}
                 />
-                <div className='border-t border-violet-200 pt-1.5 mt-1.5 space-y-1'>
+                <div className='mt-1.5 space-y-1 border-t border-slate-200 pt-1.5'>
                   <Row label='รวมทั้งหมด' value={`${fmt(preview.grand_total)}`} bold />
                   <Row
                     label='โรงงานได้รับ (หลังหักค่าบริการ)'
                     value={`${fmt(preview.factory_net_receivable)}`}
                     highlight
                   />
-                  <p className='text-[10px] text-violet-500 text-right'>
+                  <p className='text-right text-xs text-slate-500'>
                     ค่าบริการแพลตฟอร์ม {preview.platform_commission_rate.toFixed(1)}%
                   </p>
                 </div>
               </>
             ) : (
               <div className='h-16 flex items-center justify-center'>
-                <Loader2 size={18} className='animate-spin text-violet-300' />
+                <Loader2 size={18} className='animate-spin text-brand-purple' />
               </div>
             )}
           </div>
         ) : null}
 
         {formWarnings.length > 0 ? (
-          <ul className='text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 space-y-1'>
+          <ul
+            className={factoryBoxClass({
+              variant: 'amber',
+              className: 'space-y-1 px-3 py-2 text-xs text-amber-800',
+            })}
+          >
             {formWarnings.map((w) => (
               <li key={w} className='flex items-start gap-1.5'>
                 <AlertTriangle size={13} className='mt-0.5 shrink-0' />
@@ -685,7 +703,11 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                   (factoryNote ?? '') === (initialFactoryNote ?? '')) ||
                 Boolean(highlightError)
               }
-              className={factoryButtonClass({ variant: 'submit', size: 'md', className: 'w-full justify-center gap-2' })}
+              className={factoryButtonClass({
+                variant: 'submit',
+                size: 'md',
+                className: 'w-full justify-center gap-2',
+              })}
             >
               {saving ? (
                 <>
@@ -722,12 +744,24 @@ function Row({
   return (
     <div className='flex items-center justify-between gap-2'>
       <span
-        className={`text-[11px] ${highlight ? 'text-violet-800 font-bold' : bold ? 'text-gray-700 font-semibold' : 'text-gray-500'}`}
+        className={`text-xs ${
+          highlight
+            ? 'font-bold text-brand-purple'
+            : bold
+              ? 'font-semibold text-gray-700'
+              : 'text-gray-500'
+        }`}
       >
         {label}
       </span>
       <span
-        className={`text-[12px] tabular-nums ${highlight ? 'text-violet-900 font-bold' : bold ? 'text-gray-800 font-semibold' : 'text-gray-700'}`}
+        className={`text-xs tabular-nums ${
+          highlight
+            ? 'font-bold text-brand-purple'
+            : bold
+              ? 'font-semibold text-gray-800'
+              : 'text-gray-700'
+        }`}
       >
         {value}
       </span>

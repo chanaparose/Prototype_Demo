@@ -77,6 +77,7 @@ export function CertUploadModal({
   const fieldError = errors.cert_id?.message || errors.expire_date?.message || errors.file?.message;
 
   const selectedFile = form.watch('file');
+  const expireDate = form.watch('expire_date');
   let fileHelperText: string | undefined;
   if (selectedFile) {
     fileHelperText = selectedFile.name;
@@ -170,7 +171,7 @@ export function CertUploadModal({
     >
       {rootError || fieldError ? <ErrorAlert>{rootError ?? fieldError}</ErrorAlert> : null}
 
-      <FormField label='ประเภทใบรับรอง *' error={errors.cert_id?.message}>
+      <FormField label='ประเภทใบรับรอง' required error={errors.cert_id?.message}>
         <Controller
           control={control}
           name='cert_id'
@@ -192,14 +193,17 @@ export function CertUploadModal({
       </FormField>
 
       <FormField label='เลขที่เอกสาร (ถ้ามี)' error={errors.cert_number?.message}>
-        <Input
-          {...register('cert_number')}
-        />
+        <Input {...register('cert_number')} />
       </FormField>
 
-      <FormField label='วันหมดอายุ *' error={errors.expire_date?.message}>
+      <FormField label='วันหมดอายุ' required error={errors.expire_date?.message}>
         <Input
           type='date'
+          className={
+            expireDate
+              ? 'cursor-pointer text-sm text-gray-900 [&::-webkit-calendar-picker-indicator]:cursor-pointer'
+              : 'cursor-pointer text-xs text-slate-400 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60'
+          }
           {...register('expire_date')}
         />
       </FormField>
@@ -213,7 +217,9 @@ export function CertUploadModal({
         <Input
           type='file'
           accept='image/*,.pdf'
-          className='text-xs file:text-xs'
+          className={`text-xs file:text-xs ${
+            selectedFile ? 'text-gray-700' : 'text-slate-400'
+          } cursor-pointer file:cursor-pointer file:text-brand-purple`}
           onChange={(e) => {
             const f = e.target.files?.[0] ?? null;
             setValue('file', f, { shouldValidate: true });
