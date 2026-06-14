@@ -216,7 +216,7 @@ function MobileRoleSwitcher() {
       variant='unstyled'
       disabled={switching}
       onClick={() => void handleSwitch()}
-      className='w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 text-brand-indigo font-semibold transition-all hover:bg-indigo-50 active:scale-[0.98] border border-gray-100 disabled:opacity-60'
+      className='flex w-full items-center justify-center gap-2 rounded-xl border border-gray-100 bg-white py-3 text-sm font-semibold text-brand-indigo transition-all hover:bg-indigo-50 active:scale-[0.98] disabled:opacity-60'
     >
       {switching ? <Loader2 size={18} className='animate-spin' /> : <ArrowLeftRight size={18} />}
       สลับเป็นบัญชี{targetLabel}
@@ -341,29 +341,40 @@ export function ProfileMobile() {
 
   if (!currentUser) {
     return (
-      <div className='min-h-screen flex items-center justify-center'>
-        <p className='text-gray-400 text-sm'>กำลังโหลด...</p>
+      <div className='flex min-h-[60vh] items-center justify-center bg-[var(--brand-page)]'>
+        <p className='text-sm text-gray-400'>กำลังโหลด...</p>
       </div>
     );
   }
 
   return (
-    <div className='pb-6'>
-      <header className='sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md'>
-        <div className='mx-auto max-w-6xl px-4 py-4 lg:px-8'>
-          <p className='text-xs font-semibold uppercase tracking-wider text-gray-400'>
+    <div className='min-h-[100dvh] bg-[var(--brand-page)] pb-20 lg:min-h-0 lg:pb-8'>
+      {/* Mobile title */}
+      <div className='border-b border-gray-100 bg-white lg:hidden'>
+        <div className='px-4 pt-3 pb-2'>
+          <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
             บัญชี
           </p>
-          <h1 className='text-2xl font-bold text-gray-900 mt-1'>
-            โปรไฟล์
-          </h1>
+          <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>โปรไฟล์</h1>
+        </div>
+      </div>
+
+      {/* Desktop title */}
+      <header className='sticky top-0 z-20 hidden border-b border-gray-100 bg-white lg:block'>
+        <div className='mx-auto flex max-w-6xl items-center justify-between gap-3 px-8 py-4 2xl:px-10'>
+          <div className='min-w-0'>
+            <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
+              บัญชี
+            </p>
+            <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>โปรไฟล์</h1>
+          </div>
         </div>
       </header>
 
-      <div className='mx-auto w-full max-w-6xl space-y-5 px-4 pt-6 lg:px-8'>
-        <div className='w-full rounded-2xl border border-purple-500/30 bg-gradient-to-br from-brand-royal to-purple-600 p-5 shadow-sm'>
-          <div className='flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-4'>
-            <div className='relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border-2 border-white/40 bg-white/10 sm:h-[4.5rem] sm:w-[4.5rem]'>
+      <div className='mx-auto w-full max-w-6xl space-y-3 px-4 pt-3 lg:space-y-4 lg:px-8 lg:pt-6 2xl:px-10'>
+        <div className='rounded-xl border border-gray-100 bg-white px-4 py-3'>
+          <div className='flex items-center gap-3'>
+            <div className='relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-gray-100 bg-[var(--brand-lavender)]'>
               <Image
                 src={profileAvatarSrc}
                 alt='avatar'
@@ -371,86 +382,87 @@ export function ProfileMobile() {
               />
             </div>
             <div className='min-w-0 flex-1'>
-              <p className='text-lg font-bold text-white break-words'>{currentUser.name}</p>
-              <p className='mt-0.5 text-sm text-white/70 break-words'>{currentUser.company}</p>
-              <div className='mt-2 flex w-fit items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1'>
-                <CheckCircle2 size={16} className='shrink-0 text-yellow-200' />
-                <span className='text-xs font-medium text-white/90'>Verified Member</span>
+              <div className='flex items-center gap-1.5'>
+                <p className='truncate text-sm font-bold text-[var(--brand-navy)]'>
+                  {currentUser.name}
+                </p>
+                <CheckCircle2 size={14} className='shrink-0 text-brand-orange' />
               </div>
+              <p className='truncate text-xs text-gray-500'>{currentUser.company}</p>
             </div>
           </div>
 
-          <div className='mt-5 grid grid-cols-3 divide-x divide-white/20 rounded-xl border border-white/15 bg-white/10'>
-            <div className='min-w-0 px-2 py-3 text-center sm:px-3'>
-              <p className='text-lg font-bold text-white tabular-nums'>{completedOrders}</p>
-              <p className='mt-0.5 text-xs text-white/70'>คำสั่งซื้อ</p>
+          <div className='mt-3 grid grid-cols-3 divide-x divide-gray-100 border-t border-gray-100 pt-3'>
+            <div className='min-w-0 px-1 text-center'>
+              <p className='text-sm font-bold tabular-nums text-[var(--brand-navy)]'>
+                {completedOrders}
+              </p>
+              <p className='mt-0.5 text-[10px] text-gray-400'>คำสั่งซื้อ</p>
             </div>
-            <div className='min-w-0 px-2 py-3 text-center sm:px-3'>
-              <p className='text-lg font-bold text-white tabular-nums'>4.8</p>
-              <p className='mt-0.5 text-xs text-white/70'>คะแนน</p>
+            <div className='min-w-0 px-1 text-center'>
+              <p className='text-sm font-bold tabular-nums text-[var(--brand-navy)]'>4.8</p>
+              <p className='mt-0.5 text-[10px] text-gray-400'>คะแนน</p>
             </div>
-            <div className='min-w-0 px-2 py-3 text-center sm:px-3'>
-              <p className='text-lg font-bold text-white tabular-nums'>
+            <div className='min-w-0 px-1 text-center'>
+              <p className='text-sm font-bold tabular-nums text-[var(--brand-navy)]'>
                 ฿{(totalSpent / 1000).toFixed(0)}K
               </p>
-              <p className='mt-0.5 text-xs text-white/70'>ใช้จ่ายรวม</p>
+              <p className='mt-0.5 text-[10px] text-gray-400'>ใช้จ่ายรวม</p>
             </div>
           </div>
         </div>
-        {/* Transaction Section */}
-        <div className='bg-white rounded-2xl border border-gray-200 overflow-hidden'>
-          <div className='flex items-center justify-between px-5 pt-5 pb-4'>
-            <div className='flex items-center gap-3'>
-              <div className='w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center'>
-                <ReceiptText size={18} className='text-brand-royal' />
-              </div>
-              <p className='text-base font-bold text-gray-900'>ประวัติธุรกรรม</p>
+
+        <div className='overflow-hidden rounded-xl border border-gray-100 bg-white'>
+          <div className='flex items-center justify-between border-b border-gray-100 px-4 py-3'>
+            <div className='flex items-center gap-2'>
+              <ReceiptText size={16} className='shrink-0 text-brand-violet-deep' />
+              <p className='text-sm font-bold text-[var(--brand-navy)]'>ประวัติธุรกรรม</p>
             </div>
             <Button
               variant='unstyled'
               type='button'
-              className='inline-flex items-center gap-0.5 text-xs font-semibold text-brand-royal hover:text-brand-royal/80 transition-colors'
+              className='inline-flex items-center gap-0.5 text-xs font-semibold text-brand-violet-deep transition-colors hover:text-brand-violet-deep/80'
               onClick={() => navigate('/profile/transactions')}
             >
-              ดูทั้งหมด <ChevronRight size={16} strokeWidth={2.5} />
+              ดูทั้งหมด <ChevronRight size={14} strokeWidth={2.5} />
             </Button>
           </div>
 
-          <div className='px-5 pb-5 space-y-1'>
+          <div className='px-4 pb-3'>
             {txLoading ? (
-              <p className='text-xs text-gray-400 text-center py-6'>กำลังโหลด...</p>
+              <p className='py-5 text-center text-xs text-gray-400'>กำลังโหลด...</p>
             ) : walletTransactions.length === 0 ? (
-              <div className='flex flex-col items-center gap-2 py-8'>
-                <ReceiptText size={32} className='text-gray-200' />
+              <div className='flex flex-col items-center gap-2 py-6'>
+                <ReceiptText size={28} className='text-gray-200' />
                 <p className='text-xs text-gray-400'>ยังไม่มีรายการธุรกรรม</p>
               </div>
             ) : (
               walletTransactions.map((tx, idx) => (
                 <div
                   key={tx.id}
-                  className={`flex items-center justify-between py-3 ${idx < walletTransactions.length - 1 ? 'border-b border-gray-100' : ''}`}
+                  className={`flex items-center justify-between py-2.5 ${idx < walletTransactions.length - 1 ? 'border-b border-gray-100' : ''}`}
                 >
-                  <div className='flex items-center gap-3'>
+                  <div className='flex min-w-0 items-center gap-2.5'>
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
                         tx.type === 'credit' ? 'bg-green-50' : 'bg-red-50'
                       }`}
                     >
                       {tx.type === 'credit' ? (
-                        <ArrowDownLeft size={15} className='text-green-600' />
+                        <ArrowDownLeft size={13} className='text-green-600' />
                       ) : (
-                        <ArrowUpRight size={15} className='text-red-500' />
+                        <ArrowUpRight size={13} className='text-red-500' />
                       )}
                     </div>
-                    <div>
-                      <p className='text-sm font-medium text-gray-800 truncate max-w-[180px]'>
+                    <div className='min-w-0'>
+                      <p className='max-w-[180px] truncate text-sm font-medium text-gray-800'>
                         {tx.label}
                       </p>
-                      <p className='text-[11px] text-gray-400 mt-0.5'>{tx.date}</p>
+                      <p className='mt-0.5 text-[10px] text-gray-400'>{tx.date}</p>
                     </div>
                   </div>
                   <p
-                    className={`text-sm font-bold shrink-0 ${
+                    className={`shrink-0 text-sm font-bold tabular-nums ${
                       tx.type === 'credit' ? 'text-green-600' : 'text-red-500'
                     }`}
                   >
@@ -466,10 +478,10 @@ export function ProfileMobile() {
         {menuSections.map((section, sectionIndex) => (
           <div
             key={section.title ?? `section-${sectionIndex}`}
-            className='bg-white rounded-2xl overflow-hidden border border-gray-200'
+            className='overflow-hidden rounded-xl border border-gray-100 bg-white'
           >
             {section.title ? (
-              <p className='text-xs text-gray-500 uppercase tracking-widest font-semibold px-5 pt-4 pb-3'>
+              <p className='px-4 pb-2 pt-3 text-[10px] font-semibold uppercase tracking-wider text-gray-400'>
                 {section.title}
               </p>
             ) : null}
@@ -478,76 +490,76 @@ export function ProfileMobile() {
                 variant='unstyled'
                 key={item.label}
                 type='button'
-                className={`w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors ${idx > 0 ? 'border-t border-gray-200' : ''}`}
+                className={`flex w-full items-center justify-between px-4 py-3 transition-colors hover:bg-gray-50 ${idx > 0 ? 'border-t border-gray-100' : ''}`}
                 onClick={() => {
                   if (item.to) navigate(item.to);
                 }}
               >
-                <div className='flex items-center gap-3'>
-                  <item.icon size={20} style={{ color: item.color }} className='shrink-0' />
-                  <div className='text-left min-w-0 flex-1'>
-                    <p className='text-sm text-gray-900 font-medium'>
-                      {item.label}
-                    </p>
-                    <p className='text-xs text-gray-500 mt-0.5'>{item.sub}</p>
+                <div className='flex min-w-0 flex-1 items-center gap-2.5'>
+                  <item.icon size={18} style={{ color: item.color }} className='shrink-0' />
+                  <div className='min-w-0 flex-1 text-left'>
+                    <p className='text-sm font-medium text-gray-900'>{item.label}</p>
+                    <p className='mt-0.5 text-[11px] text-gray-400'>{item.sub}</p>
                   </div>
                 </div>
-                <ChevronRight size={18} className='text-gray-300 shrink-0 ml-2' />
+                <ChevronRight size={16} className='ml-2 shrink-0 text-gray-300' />
               </Button>
             ))}
           </div>
         ))}
 
-        <div className='bg-white rounded-2xl overflow-hidden border border-gray-200'>
-          <div className='flex items-center justify-between px-5 pt-4 pb-3'>
-            <div className='flex items-center gap-2.5'>
-              <Home size={20} className='text-brand-royal' />
-              <p className='text-xs text-gray-500 uppercase tracking-widest font-semibold'>ที่อยู่จัดส่ง</p>
+        <div className='overflow-hidden rounded-xl border border-gray-100 bg-white'>
+          <div className='flex items-center justify-between px-4 py-3'>
+            <div className='flex items-center gap-2'>
+              <Home size={16} className='text-brand-violet-deep' />
+              <p className='text-[10px] font-semibold uppercase tracking-wider text-gray-400'>
+                ที่อยู่จัดส่ง
+              </p>
             </div>
             <Button
               variant='unstyled'
               type='button'
               onClick={() => setShowAddressForm((v) => !v)}
-              className='flex items-center gap-1 text-xs font-semibold text-brand-royal hover:text-brand-royal/80 transition-colors'
+              className='flex items-center gap-1 text-xs font-semibold text-brand-violet-deep transition-colors hover:text-brand-violet-deep/80'
             >
-              <Plus size={16} /> เพิ่ม
+              <Plus size={14} /> เพิ่ม
             </Button>
           </div>
           {showAddressForm && (
-            <div className='px-5 py-4 flex gap-2 border-t border-gray-200'>
+            <div className='flex gap-2 border-t border-gray-100 px-4 py-3'>
               <Input
                 type='text'
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
                 placeholder='กรอกที่อยู่จัดส่ง...'
-                className='flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2.5 shadow-none focus:outline-none focus:ring-2 focus:ring-brand-royal/30 focus:border-transparent'
+                className='flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-violet-deep/30'
               />
               <Button
                 variant='unstyled'
                 type='button'
                 onClick={addAddress}
                 disabled={addingAddress || !newAddress.trim()}
-                className='px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-brand-royal hover:bg-brand-royal/90 disabled:opacity-50 transition-colors'
+                className='rounded-lg bg-brand-violet-deep px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-violet-deep/90 disabled:opacity-50'
               >
                 {addingAddress ? '...' : 'บันทึก'}
               </Button>
             </div>
           )}
           {addressesLoading ? (
-            <p className='text-xs text-gray-400 text-center py-4'>กำลังโหลด...</p>
+            <p className='py-4 text-center text-xs text-gray-400'>กำลังโหลด...</p>
           ) : addresses.length === 0 ? (
-            <p className='text-xs text-gray-400 text-center py-4'>ยังไม่มีที่อยู่</p>
+            <p className='py-4 text-center text-xs text-gray-400'>ยังไม่มีที่อยู่</p>
           ) : (
-            <div className='divide-y divide-gray-200'>
+            <div className='divide-y divide-gray-100'>
               {addresses.map((addr) => (
-                <div key={addr.id} className='flex items-start gap-3 px-5 py-4'>
-                  <MapPin size={16} className='text-brand-royal mt-0.5 shrink-0' />
-                  <div className='flex-1 min-w-0'>
-                    <p className='text-sm font-semibold text-gray-800 capitalize'>{addr.label}</p>
-                    <p className='text-xs text-gray-500 mt-0.5 line-clamp-2'>{addr.detail}</p>
+                <div key={addr.id} className='flex items-start gap-2.5 px-4 py-3'>
+                  <MapPin size={14} className='mt-0.5 shrink-0 text-brand-violet-deep' />
+                  <div className='min-w-0 flex-1'>
+                    <p className='text-sm font-medium capitalize text-gray-800'>{addr.label}</p>
+                    <p className='mt-0.5 line-clamp-2 text-[11px] text-gray-400'>{addr.detail}</p>
                   </div>
                   {addr.isDefault && (
-                    <span className='text-xs font-semibold text-brand-royal bg-purple-50 px-2 py-1 rounded-full shrink-0'>
+                    <span className='shrink-0 rounded-md border border-gray-200 px-1.5 py-0.5 text-[10px] font-semibold text-brand-violet-deep'>
                       หลัก
                     </span>
                   )}
@@ -565,13 +577,13 @@ export function ProfileMobile() {
             logout();
             navigate('/', { replace: true });
           }}
-          className='w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 text-red-600 font-semibold transition-all hover:bg-red-50 active:scale-[0.98] border border-gray-200'
+          className='flex w-full items-center justify-center gap-2 rounded-xl border border-gray-100 bg-white py-3 text-sm font-semibold text-red-600 transition-all hover:bg-red-50 active:scale-[0.98]'
         >
-          <LogOut size={18} />
+          <LogOut size={16} />
           ออกจากระบบ
         </Button>
 
-        <p className='pb-4 text-center text-xs text-gray-400'>
+        <p className='pb-2 text-center text-[10px] text-gray-400'>
           ManuConnect v1.0.0 · สมาชิกตั้งแต่ {currentUser.memberSince}
         </p>
       </div>
