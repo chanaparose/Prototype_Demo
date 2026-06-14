@@ -14,7 +14,6 @@ import {
 } from '@/domain/profile/schemas/profileEditForm.schema';
 import { getErrorMessage } from '@/lib/apiError';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
 import {
@@ -29,13 +28,8 @@ import {
 const emptyValues: ProfileEditFormValues = {
   first_name: '',
   last_name: '',
+  email: '',
   phone: '',
-  bio: '',
-  address_line1: '',
-  sub_district: '',
-  district: '',
-  province: '',
-  postal_code: '',
   description: '',
   specialization: '',
   lead_time_desc: '',
@@ -56,7 +50,6 @@ export function EditProfilePage() {
     mode: 'onSubmit',
   });
 
-  const bioLength = form.watch('bio').length;
   const isFactory = String(role || user?.role || '').toUpperCase() === 'FT';
 
   useEffect(() => {
@@ -65,18 +58,12 @@ export function EditProfilePage() {
       .get()
       .then((p) => {
         if (!mounted) return;
-        const addr = (p.address ?? {}) as Record<string, unknown>;
         setRole(String(p.role ?? user?.role ?? ''));
         form.reset({
           first_name: String(p.first_name ?? ''),
           last_name: String(p.last_name ?? ''),
+          email: String(p.email ?? user?.email ?? ''),
           phone: String(p.phone ?? ''),
-          bio: String(p.bio ?? ''),
-          address_line1: String(p.address_line1 ?? addr.address_line1 ?? ''),
-          sub_district: String(p.sub_district ?? addr.sub_district ?? ''),
-          district: String(p.district ?? addr.district ?? ''),
-          province: String(p.province ?? addr.province ?? ''),
-          postal_code: String(p.postal_code ?? addr.postal_code ?? ''),
           description: String(p.description ?? ''),
           specialization: String(p.specialization ?? ''),
           lead_time_desc: String(p.lead_time_desc ?? ''),
@@ -88,7 +75,7 @@ export function EditProfilePage() {
     return () => {
       mounted = false;
     };
-  }, [form, user?.role]);
+  }, [form, user?.email, user?.role]);
 
   const onSubmit = async (values: ProfileEditFormValues) => {
     const currentRole = String(role || user?.role || '');
@@ -99,7 +86,22 @@ export function EditProfilePage() {
     }
     setRootError('');
     try {
-      await profileApi.update({ ...values, bio: values.bio.slice(0, 300) });
+      const payload = isFactory
+        ? {
+            phone: values.phone,
+            email: values.email,
+            description: values.description,
+            specialization: values.specialization,
+            lead_time_desc: values.lead_time_desc,
+            price_range: values.price_range,
+          }
+        : {
+            first_name: values.first_name,
+            last_name: values.last_name,
+            phone: values.phone,
+            email: values.email,
+          };
+      await profileApi.update(payload);
       navigate('/profile');
     } catch (e) {
       setRootError(getErrorMessage(e, 'บันทึกไม่สำเร็จ'));
@@ -116,11 +118,6 @@ export function EditProfilePage() {
     : [
         { label: 'ชื่อ', name: 'first_name' },
         { label: 'นามสกุล', name: 'last_name' },
-        { label: 'บ้านเลขที่/ถนน', name: 'address_line1' },
-        { label: 'ตำบล/แขวง', name: 'sub_district' },
-        { label: 'อำเภอ/เขต', name: 'district' },
-        { label: 'จังหวัด', name: 'province' },
-        { label: 'รหัสไปรษณีย์', name: 'postal_code' },
       ];
 
   if (loading) return <div className='p-4 text-sm text-gray-500'>กำลังโหลด...</div>;
@@ -168,6 +165,25 @@ export function EditProfilePage() {
 
           <FormField
             control={form.control}
+            name='email'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='text-xs text-slate-500'>อีเมล</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type='email'
+                    autoComplete='email'
+                    className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple'
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name='phone'
             render={({ field }) => (
               <FormItem>
@@ -202,26 +218,6 @@ export function EditProfilePage() {
               )}
             />
           ))}
-
-          <FormField
-            control={form.control}
-            name='bio'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='text-xs text-slate-500'>บันทึกย่อ</FormLabel>
-                <FormControl>
-                  <Textarea
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value.slice(0, 300))}
-                    rows={3}
-                    className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple'
-                  />
-                </FormControl>
-                <p className='text-[11px] text-slate-400 text-right'>{bioLength}/300</p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </form>
       </Form>
     </div>
