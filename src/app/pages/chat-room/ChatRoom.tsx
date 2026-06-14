@@ -527,7 +527,7 @@ function ChatRoomBody({
       className={cn(
         'flex min-h-0 flex-col bg-white',
         isFullMobile
-          ? 'h-[calc(100dvh-4rem-4rem-env(safe-area-inset-bottom,0px))] max-lg:max-h-[calc(100dvh-4rem-4rem-env(safe-area-inset-bottom,0px))] lg:h-screen'
+          ? 'h-[calc(100dvh-4rem-env(safe-area-inset-bottom,0px))] max-lg:max-h-[calc(100dvh-4rem-env(safe-area-inset-bottom,0px))] lg:h-screen'
           : 'h-full overflow-hidden rounded-3xl shadow-sm',
       )}
     >

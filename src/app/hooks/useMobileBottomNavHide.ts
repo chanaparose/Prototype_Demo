@@ -12,11 +12,20 @@ export const MOBILE_BOTTOM_NAV_COMPACT_CLEARANCE = '4rem';
 /** Bar height (h-14) + gap above safe area (0.5rem) */
 export const MOBILE_SHOWCASE_ACTION_BAR_CLEARANCE = 'calc(3.5rem + 0.5rem)';
 
+export function isMobileFullScreenChatRoute(pathname: string): boolean {
+  return (
+    pathname === '/chat-room' ||
+    pathname.startsWith('/chat-room/') ||
+    /^\/messages\/[^/]+$/.test(pathname)
+  );
+}
+
 export function isMobileCustomBottomBarRoute(pathname: string): boolean {
   return (
     pathname === '/product-detail' ||
     pathname === '/idea-detail' ||
-    pathname === '/create-rfq'
+    pathname === '/create-rfq' ||
+    isMobileFullScreenChatRoute(pathname)
   );
 }
 
