@@ -25,8 +25,9 @@ import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImag
 import { openImageLightbox } from '@/stores/useLightboxStore';
 import { ProductDetailSkeleton } from '@/components/skeletons/PageSkeletons';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
-import { mobileShowcaseDetailPaddingBottom } from '@/hooks/useMobileBottomNavHide';
+import { mobileShowcaseDetailPaddingBottom, useScrollPast } from '@/hooks/useMobileBottomNavHide';
 import { ShowcaseDetailMobileActionBar } from '@/components/features/showcase-detail/ShowcaseDetailMobileActionBar';
+import { ShowcaseDetailMobileScrollHeader } from '@/components/features/showcase-detail/ShowcaseDetailMobileScrollHeader';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
@@ -84,6 +85,8 @@ export function ProductDetailMobile() {
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
+
+  const scrollNavVisible = useScrollPast(160);
 
   useEffect(() => {
     history.scrollRestoration = 'manual';
@@ -160,6 +163,20 @@ export function ProductDetailMobile() {
       className='min-h-screen bg-brand-panel animate-[fadeIn_0.2s_ease-in]'
       style={{ paddingBottom: mobileShowcaseDetailPaddingBottom() }}
     >
+      <ShowcaseDetailMobileScrollHeader
+        title={item.title}
+        onBack={handleBack}
+        revealAt={160}
+        liked={liked}
+        likeCount={likeCount}
+        onToggleFavorite={() => void toggleFavorite(item.id)}
+        factoryId={item.factoryId}
+        canChat={canChat}
+        onChat={handleStartChat}
+        chatStarting={starting}
+        searchType={isMaterial ? 'material' : 'product'}
+      />
+
       <div className='relative w-full aspect-[4/3] bg-white overflow-hidden'>
         <div className='absolute inset-0 overflow-hidden' ref={emblaRef}>
           <div className='flex h-full'>
@@ -181,7 +198,10 @@ export function ProductDetailMobile() {
           variant='unstyled'
           type='button'
           onClick={handleBack}
-          className='absolute top-3 left-3 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center'
+          className={cn(
+            'absolute top-3 left-3 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center transition-opacity duration-200',
+            scrollNavVisible && 'pointer-events-none opacity-0',
+          )}
           aria-label='กลับ'
         >
           <ArrowLeft className='w-5 h-5 text-white' />
@@ -189,7 +209,10 @@ export function ProductDetailMobile() {
         <Button
           variant='unstyled'
           type='button'
-          className='absolute top-3 right-3 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center'
+          className={cn(
+            'absolute top-3 right-3 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center transition-opacity duration-200',
+            scrollNavVisible && 'pointer-events-none opacity-0',
+          )}
           aria-label='แชร์'
             onClick={() => {
             if (typeof navigator !== 'undefined' && navigator.share) {

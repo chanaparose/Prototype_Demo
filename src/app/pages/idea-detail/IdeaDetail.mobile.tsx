@@ -10,7 +10,6 @@ import {
   CalendarDays,
   ChevronRight,
   Heart,
-  Share2,
   MapPin,
 } from 'lucide-react';
 import { openImageLightbox } from '@/stores/useLightboxStore';
@@ -25,8 +24,9 @@ import { RelatedShowcasesSection } from '@/components/features/idea-detail/Relat
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { ProductDetailSkeleton } from '@/components/skeletons/PageSkeletons';
-import { mobileShowcaseDetailPaddingBottom } from '@/hooks/useMobileBottomNavHide';
+import { mobileShowcaseDetailPaddingBottom, useScrollPast } from '@/hooks/useMobileBottomNavHide';
 import { ShowcaseDetailMobileActionBar } from '@/components/features/showcase-detail/ShowcaseDetailMobileActionBar';
+import { ShowcaseDetailMobileScrollHeader } from '@/components/features/showcase-detail/ShowcaseDetailMobileScrollHeader';
 const CARD = {
   purple: 'var(--brand-mauve)',
   blue: 'var(--brand-navy)',
@@ -43,6 +43,8 @@ export function IdeaDetailMobile() {
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
+
+  const scrollNavVisible = useScrollPast(56);
 
   if (loading) {
     return <ProductDetailSkeleton />;
@@ -90,40 +92,32 @@ export function IdeaDetailMobile() {
       className='min-h-screen bg-[var(--brand-page)]'
       style={{ paddingBottom: mobileShowcaseDetailPaddingBottom() }}
     >
-      <header
-        className='sticky top-0 z-30 flex items-center gap-2 border-b border-gray-100 bg-white/95 px-3 py-2.5 backdrop-blur-md'
-      >
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={handleBack}
-          className='inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white'
-          aria-label='กลับ'
-        >
-          <ArrowLeft className='h-4 w-4 text-gray-700' />
-        </Button>
-        <span className='min-w-0 flex-1 truncate text-[13px] font-semibold text-gray-800'>
-          บทความไอเดีย
-        </span>
-        <Button
-          variant='unstyled'
-          type='button'
-          className='inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white'
-          aria-label='แชร์'
-          onClick={() => {
-            if (typeof navigator !== 'undefined' && navigator.share) {
-              void navigator.share({ title: item.title, url: window.location.href });
-            } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
-              void navigator.clipboard.writeText(window.location.href);
-            }
-          }}
-        >
-          <Share2 className='h-4 w-4 text-gray-700' />
-        </Button>
-      </header>
- 
+      <ShowcaseDetailMobileScrollHeader
+        title={item.title}
+        onBack={handleBack}
+        revealAt={56}
+        liked={liked}
+        likeCount={likeCount}
+        onToggleFavorite={() => void toggleFavorite(item.id)}
+        factoryId={item.factoryId}
+        canChat={canChat}
+        onChat={handleStartChat}
+        chatStarting={starting}
+        searchType='idea'
+      />
 
       <main className='mx-auto max-w-lg px-4 pt-4'>
+        {!scrollNavVisible ? (
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={handleBack}
+            className='mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white active:bg-gray-50'
+            aria-label='กลับ'
+          >
+            <ArrowLeft className='h-4 w-4 text-gray-700' />
+          </Button>
+        ) : null}
         <div className='mb-3 flex flex-wrap items-center gap-1.5'>
           <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-semibold text-brand-magenta'>
             ไอเดีย

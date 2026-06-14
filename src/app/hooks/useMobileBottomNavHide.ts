@@ -79,6 +79,43 @@ export function useScrollHeaderCollapse(start = 16, end = 96) {
   return progress;
 }
 
+/** True once scroll position passes `threshold` (px). */
+export function useScrollPast(threshold: number) {
+  const [past, setPast] = useState(false);
+  const rafId = useRef(0);
+
+  useEffect(() => {
+    const readY = () =>
+      document.scrollingElement?.scrollTop ??
+      window.scrollY ??
+      document.documentElement.scrollTop ??
+      0;
+
+    const update = () => {
+      setPast(readY() > threshold);
+    };
+
+    const onScroll = () => {
+      if (rafId.current) return;
+      rafId.current = requestAnimationFrame(() => {
+        rafId.current = 0;
+        update();
+      });
+    };
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('scroll', onScroll, { passive: true, capture: true });
+    return () => {
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('scroll', onScroll, { capture: true });
+    };
+  }, [threshold]);
+
+  return past;
+}
+
 /**
  * True when user scrolls down past threshold; false when scrolling up.
  * Shared by mobile bottom nav compact mode and collapsible page headers.

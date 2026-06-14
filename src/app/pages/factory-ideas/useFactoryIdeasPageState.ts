@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 
 import { useData } from '@/stores/useDataStore';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -42,6 +42,7 @@ function useDebounce<T>(value: T, delay: number): T {
 
 export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdeasPageStateOptions) {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const [searchText, setSearchText] = useState('');
   const [moqFilter, setMoqFilter] = useState<FactoryIdeasMoqFilterValue>('all');
 
@@ -72,6 +73,12 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
       setSelectedType(typeFromUrl as FactoryIdeasContentType);
     }
   }, [typeFromUrl]);
+
+  useEffect(() => {
+    const fromState = (location.state as { searchText?: string } | null)?.searchText?.trim();
+    if (!fromState) return;
+    setSearchText(fromState);
+  }, [location.key, location.state]);
 
   const data = useData();
   const favorites = useFavorites();
