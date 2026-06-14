@@ -32,6 +32,7 @@ import { Button } from '@/components/ui/button';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 
 type ProfileMenuItem = {
   icon: typeof User;
@@ -235,6 +236,7 @@ export function ProfileMobile() {
       (currentUser as { user_type?: unknown } | null)?.user_type ??
       '',
   ).toUpperCase();
+  const isFactory = role === 'FT' || role === 'FACTORY';
   const isCustomer = role === 'CT' || role === 'CUSTOMER';
   const completedOrders = data.orders.filter((o) => o.status === 'completed').length;
   const totalSpent = data.orders.reduce((s, o) => s + o.depositPaid, 0);
@@ -348,19 +350,30 @@ export function ProfileMobile() {
   }
 
   return (
-    <div className='pb-6'>
-      <header className='sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md'>
-        <div className='mx-auto max-w-6xl px-4 py-4 lg:px-8'>
-          <p className='text-xs font-semibold uppercase tracking-wider text-gray-400'>
-            บัญชี
-          </p>
-          <h1 className='text-2xl font-bold text-gray-900 mt-1'>
-            โปรไฟล์
-          </h1>
-        </div>
-      </header>
+    <div className={isFactory ? 'w-full min-w-0 space-y-4 pb-8' : 'pb-6'}>
+      {isFactory ? (
+        <FactoryPageHeader
+          title='โปรไฟล์'
+          subtitle='Factory / โปรไฟล์'
+          icon={User}
+          variant='minimal'
+        />
+      ) : (
+        <header className='sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md'>
+          <div className='mx-auto max-w-6xl px-4 py-4 lg:px-8'>
+            <p className='text-xs font-semibold uppercase tracking-wider text-gray-400'>บัญชี</p>
+            <h1 className='text-2xl font-bold text-gray-900 mt-1'>โปรไฟล์</h1>
+          </div>
+        </header>
+      )}
 
-      <div className='mx-auto w-full max-w-6xl space-y-5 px-4 pt-6 lg:px-8'>
+      <div
+        className={
+          isFactory
+            ? 'grid w-full min-w-0 gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] xl:items-start'
+            : 'mx-auto w-full max-w-6xl space-y-5 px-4 pt-6 lg:px-8'
+        }
+      >
         <div className='w-full rounded-2xl border border-purple-500/30 bg-gradient-to-br from-brand-royal to-purple-600 p-5 shadow-sm'>
           <div className='flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-4'>
             <div className='relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border-2 border-white/40 bg-white/10 sm:h-[4.5rem] sm:w-[4.5rem]'>

@@ -157,7 +157,7 @@ export function Layout() {
   const favoritesHref = isAuthenticated ? '/profile/favorites' : '#';
   const onFavoritesPage = location.pathname === '/profile/favorites';
   const onNotificationsPage = location.pathname === '/notifications';
-  const headerIconTone: HeaderIconTone = isFactory ? 'indigo' : 'purple';
+  const headerIconTone: HeaderIconTone = 'purple';
   const hideMobileTopHeader =
     /^\/orders\/[^/]+$/.test(location.pathname) || location.pathname === '/create-rfq';
   const wideContentPaths = [
@@ -220,8 +220,18 @@ export function Layout() {
       <div className='flex-1 flex flex-col lg:pl-64 min-w-0'>
         {/* ── Top header (mobile + iPad) ─────────────────────────────────── */}
         {!hideMobileTopHeader ? (
-          <header className='lg:hidden sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm'>
-            <div className='max-w-7xl mx-auto px-4 sm:px-6'>
+          <header
+            className={`lg:hidden sticky top-0 z-50 border-b backdrop-blur-md ${
+              isWideFactoryPortal
+                ? 'border-slate-200/70 bg-[var(--brand-page)]/95 shadow-none'
+                : 'border-gray-200 bg-white shadow-sm'
+            }`}
+          >
+            <div
+              className={`mx-auto ${
+                isWideFactoryPortal ? 'max-w-[1600px] px-5 sm:px-5' : 'max-w-7xl px-4 sm:px-6'
+              }`}
+            >
               <div className='flex items-center justify-between h-14'>
                 {/* Logo */}
                 <Link to='/' className='flex items-center gap-2 shrink-0 py-1'>
@@ -237,10 +247,10 @@ export function Layout() {
                   {isFactory ? (
                     <Link
                       to='/factory/wallet'
-                      className='flex max-w-[8.5rem] items-center gap-1.5 rounded-full border border-indigo-100/90 bg-gradient-to-b from-indigo-50/90 to-white py-1 pl-1 pr-2.5 shadow-[0_1px_4px_rgba(15,23,42,0.06)] transition-all hover:border-indigo-200 active:scale-[0.98]'
+                      className='flex max-w-[8.5rem] items-center gap-0.5 rounded-full border border-violet-100/90 bg-gradient-to-b from-violet-50/90 to-white py-1 pl-1.5 pr-2.5 shadow-[0_1px_4px_rgba(15,23,42,0.06)] transition-all hover:border-violet-200 active:scale-[0.98]'
                       title='กระเป๋าเงิน'
                     >
-                      <span className='flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-indigo-100/80 bg-white text-brand-indigo'>
+                      <span className='flex h-8 w-5 shrink-0 items-center justify-center text-brand-violet-deep'>
                         <Wallet size={16} strokeWidth={2.2} />
                       </span>
                       <span className='truncate text-xs font-bold tabular-nums text-slate-900'>

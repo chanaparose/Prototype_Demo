@@ -3,7 +3,7 @@ import { ProfileMobile } from '@/pages/profile/Profile.mobile';
 
 export function ProfileDesktop() {
   return (
-    <div className='hidden lg:flex flex-col min-h-[calc(100vh-4rem)] bg-white'>
+    <div className='hidden lg:flex flex-col min-h-[calc(100vh-4rem)] bg-transparent'>
       <ProfileMobile />
     </div>
   );

@@ -451,7 +451,7 @@ export function FactoryDashboardPage() {
       </section>
 
       <div className='flex items-center justify-between gap-4 flex-wrap'>
-        <div>
+        <div className='pl-2 sm:pl-3'>
           <p className='text-xs font-semibold text-gray-400 uppercase tracking-wide'>
             ช่วงเวลาที่แสดง
           </p>

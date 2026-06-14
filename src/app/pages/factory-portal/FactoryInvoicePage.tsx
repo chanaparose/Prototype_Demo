@@ -118,6 +118,7 @@ export function FactoryInvoicePage() {
         title='Invoice ค่า Commission'
         subtitle='Factory / Invoices · สรุปค่า commission รายเดือน'
         icon={FileText}
+        variant='minimal'
       />
 
       {error && (

@@ -158,6 +158,7 @@ export function FactoryBankSettingsPage({
           title='บัญชีธนาคาร'
           subtitle='Factory / Bank settings · บัญชีหลักจะแสดงให้ลูกค้าเมื่อสั่งซื้อสินค้า'
           icon={Building2}
+          variant='minimal'
           actionNode={
             !showForm ? (
               <Button

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
 import {
   Home,
   ClipboardList,
@@ -17,7 +18,9 @@ import {
 import { useData } from '@/stores/useDataStore';
 import { useAuth, useAuthStore } from '@/stores/useAuthStore';
 import { getAvailableRoles } from '@/services/api/authApi';
+import { httpClient } from '@/services/api/httpClient';
 import { isFactoryRole } from '@/utils/factoryUser';
+import { profileInitKey } from '@/hooks/factory/useProfileInit';
 import {
   FACTORY_SIDEBAR_NAV,
   isFactorySidebarNavActive,
@@ -44,6 +47,14 @@ const DEFAULT_USER_AVATAR_SRC =
       <ellipse cx="32" cy="48" rx="18" ry="14" fill="var(--brand-purple)" opacity="0.25"/>
     </svg>`,
   );
+
+function pickString(...values: unknown[]): string {
+  for (const value of values) {
+    const text = value != null ? String(value).trim() : '';
+    if (text) return text;
+  }
+  return '';
+}
 
 const customerNavLinks = [
   { path: '/', icon: Home, label: 'หน้าแรก' },
@@ -141,6 +152,16 @@ export function DesktopSidebar() {
   const unreadMessages = useConversationUnreadCount();
   const unreadNotifications = useNotificationUnreadCount(isAuthenticated);
   const { data: rfqListResult } = useRfqListQuery();
+  const factoryProfileQ = useQuery({
+    queryKey: profileInitKey,
+    enabled: isAuthenticated && isFactory,
+    queryFn: () =>
+      httpClient.get<{
+        factory?: Record<string, unknown> | null;
+      }>('/factories/me/profile-init'),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
   const rfqList = rfqListResult?.rfqs ?? [];
   const activeRfqCount = rfqList.filter(
     (r) =>
@@ -153,8 +174,14 @@ export function DesktopSidebar() {
   const avatarFromApi = [currentUser?.avatar, authUser?.avatar]
     .map((v) => (v != null ? String(v).trim() : ''))
     .find(Boolean);
+  const factoryRow = factoryProfileQ.data?.factory;
+  const factoryAvatarFromProfile = pickString(
+    factoryRow?.image_url,
+    factoryRow?.image,
+    factoryRow?.logo_url,
+  );
   const avatarSrc = isFactory
-    ? avatarFromApi || DEFAULT_USER_AVATAR_SRC
+    ? factoryAvatarFromProfile || avatarFromApi || DEFAULT_USER_AVATAR_SRC
     : resolveCustomerAvatarSrc(currentUser?.id ?? authUser?.id, 96);
 
   return (
