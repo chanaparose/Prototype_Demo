@@ -125,7 +125,7 @@ export function AppDialog({
             className={cn(
               'shrink-0 border-t border-gray-100 bg-white px-4 pt-3 sm:justify-stretch',
               isSheet
-                ? 'max-sm:pb-[calc(4rem+env(safe-area-inset-bottom,0px))] sm:pb-3'
+                ? 'pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]'
                 : 'pb-3',
               footerClassName,
             )}
