@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { BadgeCheck, MessageCircle, RefreshCw, Search } from 'lucide-react';
+import { BadgeCheck, MessageCircle, RefreshCw } from 'lucide-react';
 import { cn } from '@lib/utils';
 import type { UiConversation } from '@/pages/messages/types';
 import { formatConversationListTime } from '@/pages/messages/types';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Avatar } from '@/components/ui/avatar';
 import { FACTORY_FALLBACK_AVATAR } from '@/utils/counterparty';
+import { MobileSearchField } from '@/components/shared/MobileSearchField';
 import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 
 const MESSAGE_TAB_ORDER = ['all', 'unread'] as const;
@@ -30,14 +31,11 @@ type MessagesMobileProps = {
 
 function ListSkeleton() {
   return (
-    <div className='bg-white'>
+    <div className='space-y-2'>
       {[0, 1, 2, 3, 4, 5, 6].map((i) => (
         <div
           key={i}
-          className={cn(
-            'flex animate-pulse items-center gap-3.5 px-4 py-3.5',
-            i < 6 && 'border-b border-gray-100',
-          )}
+          className='flex animate-pulse items-center gap-3.5 rounded-xl border border-gray-200 bg-white px-4 py-3.5'
         >
           <div className='h-12 w-12 shrink-0 rounded-full bg-[var(--brand-lavender)]' />
           <div className='flex-1 space-y-1.5'>
@@ -71,43 +69,26 @@ export function MessagesMobile({
   }, [filtered, tab]);
 
   return (
-    <div
-      className={cn(
-        'md:hidden flex min-h-0 flex-1 flex-col pb-20',
-        'min-h-[calc(100dvh-3.5rem-4rem-env(safe-area-inset-bottom,0px))]',
-        'bg-[linear-gradient(180deg,var(--brand-lavender)_0%,var(--brand-page)_42%,var(--neutral-white)_100%)]',
-      )}
-    >
-      {/* ── Header ── */}
-      <div className='px-4 pt-5 pb-2 flex items-center justify-between'>
-        {/* Left: placeholder (avatar / back button) */}
-        <div className='w-9' />
-
-        {/* Center: title */}
-        <h1 className='text-[17px] font-bold text-[var(--brand-navy-deep)]'>ข้อความ</h1>
-
-        {/* Right: unread badge pill */}
-        <div className='w-9 flex justify-end'>
-            
+    <div className='md:hidden flex min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-20'>
+      <div className='border-b border-gray-100 bg-white'>
+        <div className='px-4 pt-3 pb-2'>
+          <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
+            การสนทนา
+          </p>
+          <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>ข้อความ</h1>
+        </div>
+        <div className='px-4 pb-3'>
+          <MobileSearchField
+            className='min-h-9 py-1.5'
+            value={searchText}
+            onChange={setSearchText}
+            placeholder='ค้นหาการสนทนา…'
+          />
         </div>
       </div>
 
-      {/* ── Search bar ── */}
-      <div className='px-4 pb-3'>
-        <label className='flex items-center gap-2 rounded-full border border-[var(--brand-lavender-muted)] bg-white/80 px-4 py-2.5'>
-          <Search size={15} className='shrink-0 text-[var(--neutral-placeholder)]' />
-          <input
-            type='search'
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder='ค้นหา'
-            className='flex-1 bg-transparent text-sm font-normal text-[var(--brand-navy)] placeholder:text-xs placeholder:font-normal placeholder:text-[var(--neutral-placeholder)] outline-none'
-          />
-        </label>
-      </div>
-
-      {/* ── Tabs (แบบ factory-ideas) ── */}
-      <div className='sticky top-14 z-20 border-b border-gray-200 bg-white'>
+      {/* ── Tabs ── */}
+      <div className='sticky top-14 z-20 border-b border-gray-100 bg-white'>
         <div className='flex'>
           {MESSAGE_TABS.map((t) => {
             const active = tab === t.id;
@@ -116,11 +97,11 @@ export function MessagesMobile({
                 key={t.id}
                 type='button'
                 onClick={() => setTab(t.id)}
-                className='relative min-w-0 flex-1 px-2 py-3 text-center'
+                className='relative min-w-0 flex-1 px-2 py-2.5 text-center'
               >
                 <span
                   className={cn(
-                    'inline-flex items-center justify-center gap-1.5 whitespace-nowrap text-[14px] leading-none',
+                    'inline-flex items-center justify-center gap-1.5 whitespace-nowrap text-[13px] leading-none',
                     active ? 'font-bold text-[var(--brand-navy)]' : 'font-medium text-gray-400',
                   )}
                 >
@@ -150,19 +131,14 @@ export function MessagesMobile({
         </div>
       </div>
 
-      {/* ── List (พื้นขาวเต็มพื้นที่ที่เหลือ) ── */}
-      <div
-        className={cn(
-          'flex min-h-0 flex-1 flex-col bg-white',
-          'min-h-[calc(100dvh-3.5rem-4rem-10.5rem-env(safe-area-inset-bottom,0px))]',
-        )}
-      >
+      {/* ── List ── */}
+      <div className='flex min-h-0 flex-1 flex-col bg-[var(--brand-page)] px-4 pt-3'>
         <TabSwipeContent
           activeKey={tab}
           tabOrder={MESSAGE_TAB_ORDER}
           className='flex min-h-0 flex-1 flex-col'
         >
-          <div className='flex min-h-0 flex-1 flex-col bg-white'>
+          <div className='flex min-h-0 flex-1 flex-col bg-[var(--brand-page)]'>
             {loading ? (
               <ListSkeleton />
             ) : error ? (
@@ -181,16 +157,15 @@ export function MessagesMobile({
             ) : tabFiltered.length === 0 ? (
               <MobileEmptyState tab={tab} />
             ) : (
-              <>
-                {tabFiltered.map((conv, index) => (
+              <div className='space-y-2'>
+                {tabFiltered.map((conv) => (
                   <ConversationRow
                     key={conv.id}
                     conv={conv}
-                    isLast={index === tabFiltered.length - 1}
                     onClick={() => navigate(`/chat-room/${conv.id}`)}
                   />
                 ))}
-              </>
+              </div>
             )}
           </div>
         </TabSwipeContent>
@@ -201,11 +176,9 @@ export function MessagesMobile({
 
 function ConversationRow({
   conv,
-  isLast,
   onClick,
 }: {
   conv: UiConversation;
-  isLast?: boolean;
   onClick: () => void;
 }) {
   const time = formatConversationListTime(conv.lastMessageAt || conv.updatedAt);
@@ -220,10 +193,7 @@ function ConversationRow({
       variant='unstyled'
       type='button'
       onClick={onClick}
-      className={cn(
-        'flex w-full items-center gap-3.5 border-gray-100 px-4 py-3.5 text-left transition-opacity active:bg-gray-50/80',
-        !isLast && 'border-b',
-      )}
+      className='flex w-full items-center gap-3.5 rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-left transition-all active:scale-[0.99] active:bg-gray-50/80'
     >
       {/* Avatar */}
       <div className='relative shrink-0'>
@@ -301,7 +271,7 @@ function ConversationRow({
 function MobileEmptyState({ tab }: { tab: MessageTab }) {
   const isUnreadTab = tab === 'unread';
   return (
-    <div className='flex min-h-0 flex-1 flex-col items-center justify-center bg-white px-4'>
+    <div className='flex min-h-0 flex-1 flex-col items-center justify-center px-4'>
       <EmptyState
         title={isUnreadTab ? 'ไม่มีข้อความที่ยังไม่อ่าน' : 'ยังไม่มีข้อความ'}
         description={
