@@ -43,18 +43,18 @@ function CategoryCircleItem({
   const palette = PASTEL_PALETTE[index % PASTEL_PALETTE.length];
 
   return (
-    <li className={`${ITEM_WIDTH} shrink-0 snap-start list-none`}>
+    <li className={`${ITEM_WIDTH} shrink-0 snap-start list-none md:w-full md:max-w-none`}>
       <Link
         to={`/factory-ideas?category_id=${encodeURIComponent(tile.categoryId)}`}
         className='group flex w-full flex-col items-center gap-2 transition-transform active:scale-95'
       >
         <span
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full shadow-sm ring-1 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md md:h-12 md:w-12 ${palette}`}
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full shadow-sm ring-1 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md md:h-12 md:w-12 xl:h-14 xl:w-14 ${palette}`}
           aria-hidden
         >
           <LayoutGrid size={18} strokeWidth={1.5} className='md:h-5 md:w-5' />
         </span>
-        <span className='flex min-h-[2.5rem] w-full items-start justify-center text-center text-[11px] font-medium leading-snug text-slate-500 transition-colors group-hover:text-slate-800 md:min-h-[2.75rem] md:text-xs'>
+        <span className='flex min-h-[2.5rem] w-full items-start justify-center text-center text-[11px] font-medium leading-snug text-slate-500 transition-colors group-hover:text-slate-800 md:min-h-0 md:text-xs xl:text-[13px]'>
           <span className='line-clamp-2 w-full break-words px-0.5'>{tile.displayName}</span>
         </span>
       </Link>
@@ -73,7 +73,7 @@ export function CategoryMarqueeStrip({ tiles, className }: CategoryMarqueeStripP
       />
 
       <div className='overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth scroll-pl-4 scroll-pr-2 md:overflow-visible md:scroll-pl-0 md:scroll-pr-0'>
-        <ul className='m-0 flex w-max list-none flex-row flex-nowrap items-start gap-3 px-4 pb-1 md:mx-auto md:w-full md:max-w-none md:justify-center md:gap-4 md:px-0'>
+        <ul className='m-0 flex w-max list-none flex-row flex-nowrap items-start gap-3 px-4 pb-1 md:grid md:w-full md:grid-cols-6 md:gap-3 md:px-0 md:pb-0'>
           {sortedTiles.map((tile, index) => (
             <CategoryCircleItem key={tile.categoryId} tile={tile} index={index} />
           ))}
