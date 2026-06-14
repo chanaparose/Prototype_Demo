@@ -340,6 +340,7 @@ export function ExploreMobile({
       <div className='mt-[20px]'>
         <ExploreIdeaArticles
           articles={(ideaArticles ?? []).slice(0, 3)}
+          factories={factories}
           isLiked={isLiked}
           onToggleFavorite={toggleFavorite}
           onSeeAll={() => navigate('/factory-ideas?type=idea')}

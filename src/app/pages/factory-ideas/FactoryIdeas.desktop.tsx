@@ -12,6 +12,7 @@ import {
   Star,
 } from 'lucide-react';
 import { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
+import { IdeaArticleCard } from '@/components/features/factory-ideas/IdeaArticleCard';
 import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasPageState';
 import {
   factoryIdeasContentTypeBadge as contentTypeBadge,
@@ -315,35 +316,21 @@ export function FactoryIdeasDesktop() {
           </div>
           )
         ) : selectedType === 'idea' ? (
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid grid-cols-1 gap-2 2xl:grid-cols-2'>
             {visibleIdeaItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
               return (
-                <article
+                <IdeaArticleCard
                   key={item.id}
+                  id={item.id}
+                  title={item.title}
+                  excerpt={item.excerpt}
+                  factoryName={item.factoryName}
+                  factoryVerified={factory?.verified}
+                  isLiked={isLiked(item.id)}
+                  onToggleFavorite={toggleFavorite}
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
-                  className='relative bg-white rounded-xl border border-gray-100 p-3 pr-10 hover:shadow-md transition-shadow cursor-pointer group min-h-[100px]'
-                >
-                  <ShowcaseHeartButton
-                    showcaseId={item.id}
-                    isLiked={isLiked(item.id)}
-                    onToggle={toggleFavorite}
-                    className='absolute top-2 right-2 z-[1]'
-                  />
-                  <div className='flex items-center gap-2 mb-1.5'>
-                    <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta uppercase tracking-wide'>
-                      ไอเดีย
-                    </span>
-                    <span className='text-[10px] text-gray-400 truncate'>{item.factoryName}</span>
-                  </div>
-                  <h3 className='font-bold text-[13px] text-brand-navy-ink mb-1 line-clamp-2 leading-snug group-hover:text-brand-magenta transition-colors'>
-                    {item.title}
-                  </h3>
-                  <p className='text-[12px] text-gray-500 line-clamp-2'>{item.excerpt || ' '}</p>
-                  <div className='mt-2 pt-1.5 border-t border-gray-100'>
-                    <span className='text-[10px] text-gray-400'>แตะเพื่ออ่านต่อ</span>
-                  </div>
-                </article>
+                />
               );
             })}
           </div>
@@ -659,35 +646,21 @@ export function FactoryIdeasDesktop() {
                 ดูทั้งหมด ({visibleIdeaItems.length})
               </Button>
             </div>
-            <div className='grid grid-cols-2 gap-4'>
+            <div className='grid grid-cols-1 gap-2 2xl:grid-cols-2'>
               {visibleIdeaItems.slice(0, 6).map((item) => {
                 const factory = data.factories.find((f) => f.id === item.factoryId);
                 return (
-                  <article
+                  <IdeaArticleCard
                     key={`idea-${item.id}`}
+                    id={item.id}
+                    title={item.title}
+                    excerpt={item.excerpt}
+                    factoryName={item.factoryName}
+                    factoryVerified={factory?.verified}
+                    isLiked={isLiked(item.id)}
+                    onToggleFavorite={toggleFavorite}
                     onClick={() => navigate(getDetailPath(item.contentType, item.id))}
-                    className='relative bg-white rounded-xl border border-gray-100 p-3 pr-10 hover:shadow-md transition-shadow cursor-pointer group min-h-[100px]'
-                  >
-                    <ShowcaseHeartButton
-                      showcaseId={item.id}
-                      isLiked={isLiked(item.id)}
-                      onToggle={toggleFavorite}
-                      className='absolute top-2 right-2 z-[1]'
-                    />
-                    <div className='flex items-center gap-2 mb-1.5'>
-                      <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta uppercase tracking-wide'>
-                        ไอเดีย
-                      </span>
-                      <span className='text-[10px] text-gray-400 truncate'>{item.factoryName}</span>
-                    </div>
-                    <h3 className='font-bold text-[13px] text-brand-navy-ink mb-1 line-clamp-2 leading-snug group-hover:text-brand-magenta transition-colors'>
-                      {item.title}
-                    </h3>
-                    <p className='text-[12px] text-gray-500 line-clamp-2'>{item.excerpt || ' '}</p>
-                    <div className='mt-2 pt-1.5 border-t border-gray-100'>
-                      <span className='text-[10px] text-gray-400'>แตะเพื่ออ่านต่อ</span>
-                    </div>
-                  </article>
+                  />
                 );
               })}
             </div>

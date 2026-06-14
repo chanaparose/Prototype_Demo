@@ -17,7 +17,7 @@ import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFac
 import { ExploreDesktopCategories } from '@/components/features/explore/ExploreDesktopCategories';
 import { ExploreProductCarouselSection } from '@/components/features/explore/ExploreProductCarouselSection';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
+import { IdeaArticleCard } from '@/components/features/factory-ideas/IdeaArticleCard';
 import type { CategoryItem } from '@/components/features/explore/ExploreCategories';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
@@ -384,35 +384,22 @@ export function ExploreDesktop({
               </div>
             ) : (
               <div className='grid grid-cols-2 gap-4'>
-                {ideaArticlesList.slice(0, 4).map((article) => (
-                  <article
-                    key={article.id}
-                    onClick={() => navigate(`/idea-detail?showcase_id=${article.id}`)}
-                    className='relative min-h-[100px] cursor-pointer rounded-xl border border-gray-100 bg-white p-3 pr-10 transition-shadow hover:shadow-md group'
-                  >
-                    <ShowcaseHeartButton
-                      showcaseId={article.id}
+                {ideaArticlesList.slice(0, 4).map((article) => {
+                  const factory = (factories ?? []).find((f) => f.id === article.factoryId);
+                  return (
+                    <IdeaArticleCard
+                      key={article.id}
+                      id={article.id}
+                      title={article.title}
+                      excerpt={article.excerpt}
+                      factoryName={article.factoryName}
+                      factoryVerified={factory?.verified}
                       isLiked={isLiked(article.id)}
-                      onToggle={toggleFavorite}
-                      className='absolute top-2 right-2 z-[1]'
+                      onToggleFavorite={toggleFavorite}
+                      onClick={() => navigate(`/idea-detail?showcase_id=${article.id}`)}
                     />
-                    <div className='mb-1.5 flex items-center gap-2'>
-                      <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-magenta'>
-                        ไอเดีย
-                      </span>
-                      <span className='truncate text-[10px] text-gray-400'>
-                        {article.factoryName}
-                      </span>
-                    </div>
-                    <h3 className='mb-1 line-clamp-2 text-[13px] font-bold leading-snug text-brand-navy-ink transition-colors group-hover:text-brand-magenta'>
-                      {article.title}
-                    </h3>
-                    <p className='text-[12px] text-gray-500 line-clamp-2'>{article.excerpt}</p>
-                    <div className='mt-2 border-t border-gray-100 pt-1.5'>
-                      <span className='text-[10px] text-gray-400'>แตะเพื่ออ่านต่อ</span>
-                    </div>
-                  </article>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

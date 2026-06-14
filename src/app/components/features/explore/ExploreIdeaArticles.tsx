@@ -1,8 +1,8 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
-import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { Button } from '@/components/ui/button';
-import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
+import { IdeaArticleCard } from '@/components/features/factory-ideas/IdeaArticleCard';
+import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 
 import type { IExploreArticle } from '@/domain/explore/types/explore.model';
 
@@ -10,6 +10,7 @@ export type IdeaArticleItem = IExploreArticle;
 
 type ExploreIdeaArticlesProps = {
   articles: IdeaArticleItem[];
+  factories?: FactoryItem[];
   isLiked?: (id: string | number) => boolean;
   onToggleFavorite?: (id: string | number) => void;
   onSeeAll?: () => void;
@@ -18,6 +19,7 @@ type ExploreIdeaArticlesProps = {
 
 export function ExploreIdeaArticles({
   articles,
+  factories,
   isLiked,
   onToggleFavorite,
   onSeeAll,
@@ -41,38 +43,22 @@ export function ExploreIdeaArticles({
         </Button>
       </div>
       <div className='px-3 grid grid-cols-1 gap-2'>
-        {articles.map((article) => (
-          <article
-            key={article.id}
-            onClick={() => onArticleClick?.(article.id)}
-            className='bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3'
-          >
-            <div className='flex items-center gap-2 mb-1.5'>
-              <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta uppercase tracking-wide'>
-                ไอเดีย
-              </span>
-              <span className='text-[10px] text-gray-400 truncate'>{article.factoryName}</span>
-            </div>
-            <h3 className='font-bold text-[13px] text-brand-navy-ink mb-1 line-clamp-2 leading-snug'>
-              {article.title}
-            </h3>
-            <p className='text-[12px] text-gray-500 line-clamp-2'>{article.excerpt || ' '}</p>
-            <div className='mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between'>
-              <span className='text-[10px] text-gray-400'>แตะเพื่ออ่านต่อ</span>
-              {isLiked && onToggleFavorite ? (
-                <ShowcaseHeartButton
-                  showcaseId={article.id}
-                  isLiked={isLiked(article.id)}
-                  onToggle={onToggleFavorite}
-                />
-              ) : (
-                <span className='text-[10px] text-gray-400 tabular-nums'>
-                  {Number(article.likes ?? 0)} likes
-                </span>
-              )}
-            </div>
-          </article>
-        ))}
+        {articles.map((article) => {
+          const factory = factories?.find((f) => f.id === article.factoryId);
+          return (
+            <IdeaArticleCard
+              key={article.id}
+              id={article.id}
+              title={article.title}
+              excerpt={article.excerpt}
+              factoryName={article.factoryName}
+              factoryVerified={factory?.verified}
+              isLiked={isLiked?.(article.id) ?? false}
+              onToggleFavorite={onToggleFavorite ?? (() => {})}
+              onClick={() => onArticleClick?.(article.id)}
+            />
+          );
+        })}
       </div>
     </div>
   );

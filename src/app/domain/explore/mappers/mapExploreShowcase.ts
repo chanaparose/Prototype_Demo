@@ -114,6 +114,7 @@ export async function fetchExplorePageData(): Promise<IExplorePageData> {
 export function exploreShowcaseToArticle(s: IExploreShowcase): IExploreArticle {
   return {
     id: s.id,
+    factoryId: s.factoryId,
     title: s.title,
     excerpt: s.excerpt,
     image: s.image,

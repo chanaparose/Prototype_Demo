@@ -45,6 +45,7 @@ export type IExploreFactory = {
 
 export type IExploreArticle = {
   id: string;
+  factoryId: string;
   title: string;
   excerpt: string;
   image: string;
