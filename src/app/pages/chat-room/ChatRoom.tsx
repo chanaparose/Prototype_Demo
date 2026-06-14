@@ -133,6 +133,7 @@ type ChatRoomBodyProps = {
   setMessages: React.Dispatch<React.SetStateAction<RoomMessage[]>>;
   onBack?: () => void;
   variant: 'full' | 'embedded';
+  embeddedShell?: 'card' | 'panel';
   msgLoading?: boolean;
   refetchConversations?: () => Promise<void>;
   seedReference?: ChatReference | null;
@@ -142,9 +143,11 @@ type ChatRoomBodyProps = {
 export function ChatRoomEmbedded({
   conversationId,
   preview,
+  embeddedShell = 'card',
 }: Readonly<{
   conversationId: string;
   preview?: ChatRoomPreview;
+  embeddedShell?: 'card' | 'panel';
 }>) {
   const { conv, apiConv, messages, setMessages, msgLoading, refetchConversations } =
     useChatRoomSession(conversationId, preview);
@@ -155,6 +158,7 @@ export function ChatRoomEmbedded({
       messages={messages}
       setMessages={setMessages}
       variant='embedded'
+      embeddedShell={embeddedShell}
       msgLoading={msgLoading}
       refetchConversations={refetchConversations}
     />
@@ -168,6 +172,7 @@ function ChatRoomBody({
   setMessages,
   onBack,
   variant,
+  embeddedShell = 'card',
   msgLoading,
   refetchConversations,
   seedReference,
@@ -524,6 +529,7 @@ function ChatRoomBody({
   );
 
   const isFullMobile = variant === 'full';
+  const isEmbeddedPanel = variant === 'embedded' && embeddedShell === 'panel';
 
   return (
     <div
@@ -531,16 +537,27 @@ function ChatRoomBody({
         'flex min-h-0 flex-col bg-white',
         isFullMobile
           ? 'h-[calc(100dvh-4rem-env(safe-area-inset-bottom,0px))] max-lg:max-h-[calc(100dvh-4rem-env(safe-area-inset-bottom,0px))] lg:h-screen'
-          : 'h-full overflow-hidden rounded-3xl shadow-sm',
+          : isEmbeddedPanel
+            ? 'h-full overflow-hidden'
+            : 'h-full overflow-hidden rounded-3xl shadow-sm',
       )}
     >
       <div
         className={cn(
           'shrink-0 border-b border-gray-100 bg-white/95 backdrop-blur-sm',
-          isFullMobile ? 'px-3 pt-2.5 pb-2' : 'px-4 pt-4 pb-3 shadow-sm',
+          isFullMobile
+            ? 'px-3 pt-2.5 pb-2'
+            : isEmbeddedPanel
+              ? 'px-5 py-3'
+              : 'px-4 pt-4 pb-3 shadow-sm',
         )}
       >
-        <div className='mb-2 flex items-center justify-between gap-1.5 lg:mb-3 lg:gap-2'>
+        <div
+          className={cn(
+            'flex items-center justify-between gap-2',
+            showMiniDash && 'mb-2',
+          )}
+        >
           {variant === 'full' ? (
             <Button
               variant='unstyled'
@@ -551,9 +568,9 @@ function ChatRoomBody({
             >
               <ChevronLeft size={20} className='text-gray-700 lg:h-[22px] lg:w-[22px]' />
             </Button>
-          ) : (
+          ) : !isEmbeddedPanel ? (
             <div className='w-9 shrink-0 lg:w-10' />
-          )}
+          ) : null}
           <div className='min-w-0 flex-1'>
             {counterpartyView ? (
               <ChatPartyHeader
@@ -637,7 +654,7 @@ function ChatRoomBody({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className='flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3 relative'
+        className='flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3 relative lg:px-6'
       >
         {!apiConv && (
           <p className='text-center text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2'>
@@ -713,7 +730,7 @@ function ChatRoomBody({
         className={cn(
           'shrink-0 border-t border-[color-mix(in_srgb,var(--brand-purple)_12%,var(--neutral-border))]',
           'bg-white/95 backdrop-blur-md',
-          isFullMobile ? 'px-3 pt-2 pb-2.5 lg:px-4 lg:pb-3' : 'px-4 py-3',
+          isFullMobile ? 'px-3 pt-2 pb-2.5 lg:px-4 lg:pb-3' : isEmbeddedPanel ? 'px-5 py-3' : 'px-4 py-3',
         )}
       >
         {pendingRef ? (

@@ -1,13 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { BadgeCheck, MessageCircle, MessageSquareDot, RefreshCw } from 'lucide-react';
+import { MessageCircle, MessageSquareDot, RefreshCw } from 'lucide-react';
 import { cn } from '@lib/utils';
 import type { UiConversation } from '@/pages/messages/types';
-import { formatConversationListTime } from '@/pages/messages/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Avatar } from '@/components/ui/avatar';
-import { FACTORY_FALLBACK_AVATAR } from '@/utils/counterparty';
+import { ConversationRow } from '@/pages/messages/ConversationRow';
 import { MobileSearchField } from '@/components/shared/MobileSearchField';
 
 type MessagesMobileProps = {
@@ -127,93 +125,6 @@ export function MessagesMobile({
         )}
       </div>
     </div>
-  );
-}
-
-function ConversationRow({
-  conv,
-  onClick,
-}: {
-  conv: UiConversation;
-  onClick: () => void;
-}) {
-  const time = formatConversationListTime(conv.lastMessageAt || conv.updatedAt);
-  const hasUnread = conv.unread > 0;
-
-  const preview = conv.hasQuote
-    ? 'มีใบเสนอราคาใหม่'
-    : conv.lastMessage?.trim() || conv.rfqName || '—';
-
-  return (
-    <Button
-      variant='unstyled'
-      type='button'
-      onClick={onClick}
-      className={cn(
-        'flex w-full min-h-[58px] items-center gap-3 px-3.5 py-2.5 text-left transition-colors active:bg-gray-50/90',
-        hasUnread && 'bg-[var(--brand-page)]/35',
-      )}
-    >
-      <Avatar
-        src={conv.view.avatarUrl}
-        alt={conv.view.title}
-        fallbackSrc={FACTORY_FALLBACK_AVATAR}
-        fallback={conv.view.title.slice(0, 1)}
-        className='h-10 w-10 shrink-0 rounded-full'
-        imageClassName='object-cover'
-      />
-
-      <div className='min-w-0 flex-1'>
-        <div className='flex items-center justify-between gap-2'>
-          <div className='flex min-w-0 items-center gap-1'>
-            <p
-              className={cn(
-                'truncate text-[13px] leading-tight text-[var(--brand-navy)]',
-                hasUnread ? 'font-bold' : 'font-semibold',
-              )}
-            >
-              {conv.view.title}
-            </p>
-            {conv.view.verified ? (
-              <BadgeCheck size={12} className='shrink-0 text-[var(--brand-purple)]' />
-            ) : null}
-          </div>
-          {time ? (
-            <span
-              className={cn(
-                'shrink-0 text-[11px] tabular-nums leading-none',
-                hasUnread ? 'font-semibold text-[var(--brand-purple)]' : 'text-gray-400',
-              )}
-            >
-              {time}
-            </span>
-          ) : null}
-        </div>
-
-        <div className='mt-0.5 flex items-center gap-2'>
-          <p
-            className={cn(
-              'min-w-0 flex-1 truncate text-[12px] leading-tight',
-              conv.hasQuote
-                ? 'font-medium text-[var(--brand-orange-deep)]'
-                : hasUnread
-                  ? 'font-medium text-gray-600'
-                  : 'text-gray-400',
-            )}
-          >
-            {preview}
-          </p>
-          {hasUnread ? (
-            <span
-              className='flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full bg-[var(--brand-purple)] px-1 text-[10px] font-bold leading-none text-white'
-              aria-label={`${conv.unread} ข้อความใหม่`}
-            >
-              {conv.unread > 99 ? '99+' : conv.unread}
-            </span>
-          ) : null}
-        </div>
-      </div>
-    </Button>
   );
 }
 

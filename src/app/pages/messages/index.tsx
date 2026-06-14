@@ -60,12 +60,14 @@ export function Messages() {
 
   if (isDesktop) {
     return (
-      <MessagesDesktop
-        {...commonProps}
-        selectedId={selectedId}
-        setSelectedId={handleSelectId}
-        selectedConversation={selectedConversation}
-      />
+      <div className='min-h-0 flex-1 bg-white'>
+        <MessagesDesktop
+          {...commonProps}
+          selectedId={selectedId}
+          setSelectedId={handleSelectId}
+          selectedConversation={selectedConversation}
+        />
+      </div>
     );
   }
 

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { MessageCircle, MessageSquareDot, RefreshCw } from 'lucide-react';
+import { cn } from '@lib/utils';
 import { ChatRoomEmbedded } from '@/pages/chat-room';
-import { ChatPartyHeader } from '@/components/features/chat/ChatPartyHeader';
+import { ConversationRow } from '@/pages/messages/ConversationRow';
 import type { UiConversation } from '@/pages/messages/types';
-import { formatConversationTime } from '@/pages/messages/types';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { MobileSearchField } from '@/components/shared/MobileSearchField';
 
 type MessagesDesktopProps = {
@@ -22,14 +23,16 @@ type MessagesDesktopProps = {
 
 function ListSkeleton() {
   return (
-    <div className='py-2 space-y-0'>
-      {[0, 1, 2, 3, 4].map((i) => (
-        <div key={i} className='flex items-start gap-3 px-4 py-3.5 animate-pulse'>
-          <div className='w-11 h-11 rounded-xl bg-gray-200 shrink-0' />
-          <div className='flex-1 space-y-2 pt-0.5'>
-            <div className='h-3.5 bg-gray-200 rounded w-3/5' />
-            <div className='h-3 bg-gray-100 rounded w-2/5' />
-            <div className='h-3 bg-gray-100 rounded w-4/5' />
+    <div className='divide-y divide-gray-100'>
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className='flex animate-pulse items-center gap-3 px-4 py-3'>
+          <div className='h-10 w-10 shrink-0 rounded-full bg-[var(--brand-lavender)]' />
+          <div className='min-w-0 flex-1 space-y-1.5'>
+            <div className='flex justify-between gap-2'>
+              <div className='h-3 w-28 rounded-full bg-[var(--brand-lavender-muted)]' />
+              <div className='h-2.5 w-8 rounded-full bg-[var(--brand-lavender)]' />
+            </div>
+            <div className='h-2.5 w-[75%] rounded-full bg-[var(--brand-lavender)]' />
           </div>
         </div>
       ))}
@@ -49,148 +52,163 @@ export function MessagesDesktop({
   setSelectedId,
   selectedConversation,
 }: MessagesDesktopProps) {
+  const [unreadOnly, setUnreadOnly] = useState(false);
+
+  const visibleConversations = useMemo(() => {
+    if (!unreadOnly) return filtered;
+    return filtered.filter((c) => c.unread > 0);
+  }, [filtered, unreadOnly]);
+
   return (
-    <div className='hidden lg:flex' style={{ height: 'calc(100vh - 0px)' }}>
-      <div className='w-80 xl:w-96 2xl:w-[420px] border-r border-gray-200 flex flex-col bg-white shrink-0'>
-        <div className='px-5 pt-6 pb-4 border-b border-gray-100'>
-          <div className='flex items-center gap-2 mb-4'>
-            <h2 className='text-lg font-bold' style={{ color: 'var(--brand-navy)' }}>
-              ข้อความ
-            </h2>
-            {totalUnread > 0 && (
-              <span
-                className='w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] font-bold'
-                style={{ background: 'var(--brand-orange-deep)' }}
-              >
-                {totalUnread}
+    <div className='hidden h-[calc(100dvh)] w-full overflow-hidden bg-white lg:flex'>
+      <aside className='flex w-[min(100%,340px)] min-w-[300px] max-w-[380px] shrink-0 flex-col border-r border-gray-100 bg-[var(--neutral-warm-surface)]/40'>
+        <header className='shrink-0 border-b border-gray-100 bg-white px-4 pb-3 pt-5'>
+          <div className='mb-3 flex items-end justify-between gap-3'>
+            <div className='min-w-0'>
+              <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
+                การสนทนา
+              </p>
+              <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>ข้อความ</h1>
+            </div>
+            {!loading && !error ? (
+              <span className='shrink-0 rounded-md border border-gray-200 bg-[var(--brand-page)] px-2 py-0.5 text-[10px] font-semibold tabular-nums text-gray-500'>
+                {visibleConversations.length} รายการ
               </span>
-            )}
+            ) : null}
           </div>
 
-          <MobileSearchField
-            value={searchText}
-            onChange={setSearchText}
-            placeholder='ค้นหาการสนทนา…'
-          />
-        </div>
+          <div className='flex items-center gap-2'>
+            <MobileSearchField
+              className='min-h-9 min-w-0 flex-1 border-gray-200 bg-[var(--brand-page)] py-1.5 text-xs shadow-none'
+              value={searchText}
+              onChange={setSearchText}
+              placeholder='ค้นหาการสนทนา…'
+            />
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => setUnreadOnly((v) => !v)}
+              aria-label={unreadOnly ? 'แสดงทั้งหมด' : 'กรองเฉพาะยังไม่อ่าน'}
+              aria-pressed={unreadOnly}
+              title={unreadOnly ? 'แสดงทั้งหมด' : 'เฉพาะยังไม่อ่าน'}
+              className={cn(
+                'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors',
+                unreadOnly
+                  ? 'border-brand-purple/35 bg-[var(--brand-page)] text-brand-purple'
+                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-50',
+              )}
+            >
+              <MessageSquareDot size={17} strokeWidth={2.25} />
+              {!unreadOnly && totalUnread > 0 ? (
+                <span className='absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--brand-purple)] px-1 text-[9px] font-bold leading-none text-white'>
+                  {totalUnread > 99 ? '99+' : totalUnread}
+                </span>
+              ) : null}
+            </Button>
+          </div>
+        </header>
 
-        <div className='flex-1 overflow-y-auto'>
+        <div className='min-h-0 flex-1 overflow-y-auto'>
           {loading ? (
             <ListSkeleton />
           ) : error ? (
-            <div className='flex flex-col items-center justify-center py-10 px-5 text-center gap-3'>
-              <p className='text-sm text-gray-600'>{error}</p>
+            <div className='flex flex-col items-center justify-center gap-3 px-4 py-14 text-center'>
+              <p className='text-sm text-[var(--neutral-subtle)]'>{error}</p>
               <Button
                 variant='unstyled'
                 type='button'
                 onClick={() => void onReload()}
-                className='inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white'
-                style={{ background: 'var(--brand-mauve)' }}
+                className='inline-flex items-center gap-2 rounded-xl bg-[var(--brand-mauve)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm'
               >
                 <RefreshCw size={16} />
                 ลองอีกครั้ง
               </Button>
             </div>
-          ) : filtered.length === 0 ? (
-            <div className='flex flex-col items-center justify-center py-12 px-5 text-center'>
-              <div
-                className='w-14 h-14 rounded-2xl flex items-center justify-center mb-3'
-                style={{ background: 'rgba(122,75,148,0.10)' }}
-              >
-                <MessageCircle size={26} style={{ color: 'var(--brand-mauve)' }} />
-              </div>
-              <p className='font-semibold text-sm mb-1' style={{ color: 'var(--brand-navy)' }}>
-                ยังไม่มีข้อความ
-              </p>
-              <p className='text-xs text-gray-400'>ข้อความจะปรากฏหลังจากส่ง RFQ</p>
-            </div>
+          ) : visibleConversations.length === 0 ? (
+            <DesktopEmptyState unreadOnly={unreadOnly} />
           ) : (
-            <div className='py-2'>
-              {filtered.map((conv) => {
-                const isActive = conv.id === selectedId;
-                return (
-                  <Button
-                    variant='unstyled'
-                    key={conv.id}
-                    type='button'
-                    onClick={() => setSelectedId(conv.id)}
-                    className='w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors'
-                    style={{
-                      backgroundColor: isActive ? 'var(--brand-page)' : 'transparent',
-                      borderLeft: isActive
-                        ? '3px solid var(--brand-mauve)'
-                        : '3px solid transparent',
-                    }}
-                  >
-                    <div className='flex-1 min-w-0'>
-                      <ChatPartyHeader
-                        view={conv.view}
-                        density='row'
-                        previewLine={
-                          conv.hasQuote
-                            ? 'มีใบเสนอราคาใหม่'
-                            : conv.lastMessage?.trim() || undefined
-                        }
-                        previewEmphasis={
-                          conv.hasQuote ? 'quote' : conv.unread > 0 ? 'unread' : 'muted'
-                        }
-                        trailing={
-                          <div className='flex flex-col items-end gap-1'>
-                            <span className='text-[10px] text-gray-400 shrink-0 ml-2'>
-                              {formatConversationTime(conv.lastMessageAt || conv.updatedAt)}
-                            </span>
-                            {conv.unread > 0 ? (
-                              <span className='w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] shrink-0 ml-2 font-bold bg-brand-purple'>
-                                {conv.unread}
-                              </span>
-                            ) : null}
-                          </div>
-                        }
-                      />
-                    </div>
-                  </Button>
-                );
-              })}
+            <div className='divide-y divide-gray-100/90'>
+              {visibleConversations.map((conv) => (
+                <ConversationRow
+                  key={conv.id}
+                  conv={conv}
+                  layout='panel'
+                  isActive={conv.id === selectedId}
+                  onClick={() => setSelectedId(conv.id)}
+                />
+              ))}
             </div>
           )}
         </div>
-      </div>
+      </aside>
 
-      <div className='flex-1 flex flex-col bg-gray-50'>
+      <main className='flex min-w-0 flex-1 flex-col bg-white'>
         {selectedId ? (
-          <div className='h-full px-6 2xl:px-8 py-5'>
-            <ChatRoomEmbedded
-              conversationId={selectedId}
-              preview={
-                selectedConversation
-                  ? {
-                      factoryId: String(selectedConversation.conv.factory_id),
-                      factoryName: selectedConversation.view.title,
-                      factoryImage: selectedConversation.view.avatarUrl,
-                      rfqName: selectedConversation.rfqName,
-                      hasQuote: selectedConversation.hasQuote,
-                    }
-                  : undefined
-              }
-            />
-          </div>
+          <ChatRoomEmbedded
+            conversationId={selectedId}
+            embeddedShell='panel'
+            preview={
+              selectedConversation
+                ? {
+                    factoryId: String(selectedConversation.conv.factory_id),
+                    factoryName: selectedConversation.view.title,
+                    factoryImage: selectedConversation.view.avatarUrl,
+                    rfqName: selectedConversation.rfqName,
+                    hasQuote: selectedConversation.hasQuote,
+                  }
+                : undefined
+            }
+          />
         ) : (
-          <div className='flex flex-col items-center justify-center flex-1'>
-            <div
-              className='w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5'
-              style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep), #4A267D)' }}
-            >
-              <MessageSquareDot size={36} style={{ color: '#EBD3FF' }} />
-            </div>
-            <h3 className='font-bold text-lg mb-2' style={{ color: 'var(--brand-navy)' }}>
-              เลือกการสนทนา
-            </h3>
-            <p className='text-gray-500 text-sm leading-relaxed mb-2'>
-              เลือกการสนทนาจากรายการทางซ้ายเพื่อเริ่มแชทกับโรงงาน
-            </p>
-          </div>
+          <ChatPlaceholder />
         )}
-      </div>
+      </main>
+    </div>
+  );
+}
+
+function ChatPlaceholder() {
+  return (
+    <div className='relative flex flex-1 flex-col items-center justify-center overflow-hidden px-8'>
+      <div
+        className='pointer-events-none absolute inset-0 opacity-[0.35]'
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 20% 20%, var(--brand-lavender) 0%, transparent 42%), radial-gradient(circle at 80% 70%, rgba(227,136,68,0.12) 0%, transparent 36%)',
+        }}
+        aria-hidden
+      />
+      <EmptyState
+        title='เลือกการสนทนา'
+        description='เลือกการสนทนาจากรายการทางซ้ายเพื่อเริ่มแชทกับโรงงาน'
+        className='relative z-[1] max-w-sm py-10'
+        icon={
+          <span className='flex h-16 w-16 items-center justify-center rounded-2xl border border-gray-100 bg-white text-[var(--brand-mauve)] shadow-sm'>
+            <MessageSquareDot size={28} />
+          </span>
+        }
+      />
+    </div>
+  );
+}
+
+function DesktopEmptyState({ unreadOnly }: { unreadOnly: boolean }) {
+  return (
+    <div className='flex flex-col items-center justify-center px-4 py-14'>
+      <EmptyState
+        title={unreadOnly ? 'ไม่มีข้อความที่ยังไม่อ่าน' : 'ยังไม่มีข้อความ'}
+        description={
+          unreadOnly
+            ? 'ข้อความใหม่จะแสดงเมื่อมีการตอบกลับจากโรงงาน'
+            : 'ข้อความจากโรงงานจะปรากฏที่นี่หลังจากที่คุณส่ง RFQ'
+        }
+        className='py-4'
+        icon={
+          <span className='flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-lavender)] text-[var(--brand-mauve)]'>
+            <MessageCircle size={26} />
+          </span>
+        }
+      />
     </div>
   );
 }
