@@ -59,14 +59,24 @@ export function ShowcaseHeroGallery({
   return (
     <div className={className}>
       <div
-        className='relative aspect-[4/3] rounded-lg overflow-hidden border'
-        style={{ borderColor, background: 'var(--neutral-warm-surface)' }}
+        className='relative aspect-[4/3] rounded-lg overflow-hidden border bg-white'
+        style={{ borderColor }}
       >
-        <Carousel setApi={setApi} options={{ loop: hasMultipleImages }} className='h-full'>
+        <Carousel
+          setApi={setApi}
+          options={{ loop: hasMultipleImages }}
+          className='h-full [&_[data-slot=carousel-viewport]]:h-full'
+        >
           <CarouselContent className='h-full'>
             {images.map((url, index) => (
               <CarouselItem key={`${url}-${index}`} className='h-full'>
-                <Image src={url} alt={title} className='w-full h-full object-cover' />
+                <div className='relative h-full w-full'>
+                  <Image
+                    src={url}
+                    alt={title}
+                    className='absolute inset-0 h-full w-full object-cover'
+                  />
+                </div>
               </CarouselItem>
             ))}
           </CarouselContent>

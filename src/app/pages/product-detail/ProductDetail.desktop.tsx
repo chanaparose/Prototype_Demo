@@ -374,10 +374,10 @@ export function ProductDetailDesktop() {
 
         <div className='bg-white rounded-lg border border-gray-200 p-5'>
           <div className='flex items-center justify-between gap-4'>
-            <div className='flex min-w-0 items-center gap-4'>
-              <div className='w-fit shrink-0 rounded-lg'>
+            <div className='flex min-w-0 items-start gap-4'>
+              <div className='w-fit shrink-0 self-start rounded-lg'>
                 <div
-                  className={`relative block h-17 w-17 overflow-hidden rounded-lg border ${
+                  className={`relative block size-17 shrink-0 overflow-hidden rounded-lg border aspect-square ${
                     factory?.image ? 'border-white' : 'border-dashed border-indigo-200 bg-violet-50'
                   }`}
                 >
@@ -389,7 +389,7 @@ export function ProductDetailDesktop() {
                     />
                   ) : (
                     <span className='flex h-full w-full flex-col items-center justify-center gap-0.5 p-1 text-center'>
-                      <ImageIcon size={20} className='text-indigo-400' strokeWidth={1.5} />
+                      <ImageIcon size={22} className='text-indigo-400' strokeWidth={1.5} />
                       <span className='text-[9px] font-semibold leading-tight text-indigo-600'>
                         โปรไฟล์
                       </span>
