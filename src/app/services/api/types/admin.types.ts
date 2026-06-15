@@ -304,6 +304,37 @@ export interface ICurrentPeriodSummary {
   orders: ICurrentPeriodOrder[];
 }
 
+// ─── Factory Review ───────────────────────────────────────────────────────────
+
+export interface IFactoryReview {
+  review_id: number;
+  factory_id: number;
+  user_id: number;
+  order_id?: number | null;
+  rating: number;
+  comment: string;
+  image_urls: string[];
+  created_at: string;
+  updated_at?: string | null;
+  factory_reply?: string | null;
+  factory_reply_at?: string | null;
+  factory_reply_by?: number | null;
+  reviewer_name?: string | null;
+}
+
+export interface IFactoryReviewSummary {
+  factory_id: number;
+  average_rating: number;
+  review_count: number;
+  rating_breakdown: Record<string, number>;
+}
+
+export interface IFactoryReviewsResponse {
+  reviews: IFactoryReview[];
+  summary: IFactoryReviewSummary;
+  total: number;
+}
+
 export interface ICommissionSummaryResponse {
   total_invoices: number;
   total_commission: number;

@@ -12,6 +12,8 @@ import type {
   ICommissionInvoiceResponse,
   ICommissionInvoiceItemResponse,
   ICurrentPeriodSummary,
+  IFactoryReviewsResponse,
+  IFactoryReview,
 } from '@/services/api/types/admin.types';
 
 export const factoriesApi = {
@@ -206,6 +208,12 @@ export const factoryInvoiceApi = {
 
   getCurrentPeriod: () =>
     httpClient.get<ICurrentPeriodSummary>('/factories/me/invoices/current-period'),
+};
+
+export const factoryReviewApi = {
+  list: () => httpClient.get<IFactoryReviewsResponse>('/factories/me/reviews'),
+  reply: (reviewId: number, reply: string) =>
+    httpClient.post<IFactoryReview>(`/factories/me/reviews/${reviewId}/reply`, { reply }),
 };
 
 export const mediaApi = {

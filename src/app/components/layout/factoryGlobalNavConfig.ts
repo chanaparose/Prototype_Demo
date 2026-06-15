@@ -7,6 +7,7 @@ import {
   Package,
   Receipt,
   IdCard,
+  Star,
 } from 'lucide-react';
 
 export type FactorySidebarNavItem = {
@@ -75,6 +76,15 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
     href: '/factory/invoices',
     activeMatch: 'prefix',
     activePath: '/factory/invoices',
+    requiresApproval: true,
+  },
+  {
+    key: 'factory-reviews',
+    label: 'รีวิว',
+    icon: Star,
+    href: '/factory/reviews',
+    activeMatch: 'prefix',
+    activePath: '/factory/reviews',
     requiresApproval: true,
   },
   {

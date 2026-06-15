@@ -58,6 +58,7 @@ import { FactoryInvoicePage } from '@/pages/factory-portal/FactoryInvoicePage';
 import { FactoryEditQuotationPage } from '@/pages/factory-portal/FactoryEditQuotationPage';
 import { FactoryQuotationsPage } from '@/pages/factory-portal/FactoryQuotationsPage';
 import { FactoryShowcaseEditPage } from '@/pages/factory-portal/FactoryShowcaseEditPage';
+import { FactoryReviewPage } from '@/pages/factory-portal/FactoryReviewPage';
 
 export const router = createBrowserRouter([
   {
@@ -129,6 +130,7 @@ export const router = createBrowserRouter([
                       { path: 'info', Component: FactoryInfoPage },
                       { path: 'bank-settings', Component: FactoryBankSettingsPage },
                       { path: 'invoices', Component: FactoryInvoicePage },
+                      { path: 'reviews', Component: FactoryReviewPage },
                       { path: 'wallet', Component: FactoryWalletPage },
                       { path: 'profile', Component: Profile },
                       {
