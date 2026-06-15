@@ -305,7 +305,7 @@ export function DesktopSidebar() {
             รอดำเนินการ {formatCurrencyNoDecimals(currentUser?.pendingBalance ?? 0)}
           </p>
         </div>
-      ) : (
+      ) : !isAuthenticated ? (
         <div
           className='mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden'
           style={{ background: 'var(--brand-panel-hover)', borderColor: 'rgba(162,56,255,0.20)' }}
@@ -341,7 +341,7 @@ export function DesktopSidebar() {
             </Button>
           </div>
         </div>
-      )}
+      ) : null}
 
       {!isFactory && (isAuthenticated || tourOn === true) ? (
         <div className='px-3 pb-3'>
