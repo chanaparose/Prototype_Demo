@@ -296,13 +296,7 @@ export function Layout() {
           {/* `relative` gives AnimatePresence a positioned ancestor so the
               exiting element doesn't escape the content column. */}
           <div className={`relative ${mainContentMaxWidth} mx-auto min-h-full`}>
-            <AnimatedOutlet
-              className={
-                isProfileShell
-                  ? 'w-full px-5 sm:px-5 md:px-6 lg:px-8 2xl:px-10 pt-4 sm:pt-5 lg:pt-6 pb-[max(2rem,env(safe-area-inset-bottom,0px))]'
-                  : undefined
-              }
-            />
+            <AnimatedOutlet />
           </div>
         </main>
       </div>

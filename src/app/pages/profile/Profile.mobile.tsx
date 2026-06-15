@@ -235,18 +235,8 @@ export function ProfileMobile() {
   }
 
   return (
-    <div className='min-h-[100dvh] bg-[var(--brand-page)] pb-20 lg:min-h-0 lg:pb-8'>
-      {/* Mobile title */}
-      <div className='border-b border-gray-100 bg-white lg:hidden'>
-        <div className='px-4 pt-3 pb-2'>
-          <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
-            บัญชี
-          </p>
-          <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>โปรไฟล์</h1>
-        </div>
-      </div>
-
-      {/* Desktop title */}
+    <>
+      {/* ── Desktop header (match rfq-and-orders) ── */}
       <header className='sticky top-0 z-20 hidden border-b border-gray-100 bg-white lg:block'>
         <div className='mx-auto flex max-w-6xl items-center justify-between gap-3 px-8 py-4 2xl:px-10'>
           <div className='min-w-0'>
@@ -258,7 +248,19 @@ export function ProfileMobile() {
         </div>
       </header>
 
-      <div className='mx-auto w-full max-w-6xl space-y-3 px-4 pt-3 lg:space-y-4 lg:px-8 lg:pt-6 2xl:px-10'>
+      {/* ── Mobile shell + shared content padding ── */}
+      <div className='flex min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-20 lg:min-h-0 lg:pb-0'>
+        <div className='border-b border-gray-100 bg-white lg:hidden'>
+          <div className='px-4 pt-3 pb-2'>
+            <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
+              บัญชี
+            </p>
+            <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>โปรไฟล์</h1>
+          </div>
+        </div>
+
+        <div className='flex-1 space-y-3 px-4 pt-3 lg:space-y-4 lg:px-8 lg:py-6 2xl:px-10'>
+          <div className='lg:mx-auto lg:w-full lg:max-w-6xl lg:space-y-4'>
         <div className='rounded-xl border border-gray-100 bg-white px-4 py-3'>
           <div className='flex items-center gap-3'>
             <div className='relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-gray-100 bg-[var(--brand-lavender)]'>
@@ -492,16 +494,6 @@ export function ProfileMobile() {
           )}
         </div>
 
-        <AddressFormModal
-          open={addressModalOpen}
-          mode='create'
-          saving={savingAddress}
-          onClose={() => {
-            if (!savingAddress) setAddressModalOpen(false);
-          }}
-          onSubmit={handleAddAddress}
-        />
-
         <MobileRoleSwitcher />
 
         <Button
@@ -519,7 +511,19 @@ export function ProfileMobile() {
         <p className='pb-2 text-center text-[10px] text-gray-400'>
           ManuConnect v1.0.0 · สมาชิกตั้งแต่ {currentUser.memberSince}
         </p>
+          </div>
+        </div>
       </div>
-    </div>
+
+      <AddressFormModal
+        open={addressModalOpen}
+        mode='create'
+        saving={savingAddress}
+        onClose={() => {
+          if (!savingAddress) setAddressModalOpen(false);
+        }}
+        onSubmit={handleAddAddress}
+      />
+    </>
   );
 }
