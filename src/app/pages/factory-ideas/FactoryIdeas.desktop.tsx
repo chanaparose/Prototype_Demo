@@ -23,6 +23,7 @@ import {
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { ShowcaseGridCard } from '@/components/features/factory-ideas/ShowcaseGridCard';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import { FactoryIdeasSearchBar } from '@/components/features/factory-ideas/FactoryIdeasSearchBar';
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
@@ -33,7 +34,6 @@ type FactoryRow = Factory;
 
 function DesktopShowcaseGrid({
   items,
-  dataFactories,
   isLiked,
   toggleFavorite,
   navigate,
@@ -41,7 +41,6 @@ function DesktopShowcaseGrid({
   title,
 }: {
   items: FactoryShowcase[];
-  dataFactories: Factory[];
   isLiked: (id: string | number) => boolean;
   toggleFavorite: (id: string | number) => void;
   navigate: ReturnType<typeof useNavigate>;
@@ -54,63 +53,15 @@ function DesktopShowcaseGrid({
         <h3 className='mb-2.5 text-xs font-medium text-gray-500'>{title}</h3>
       ) : null}
       <div className='grid grid-cols-5 2xl:grid-cols-6 gap-2'>
-      {items.map((item) => {
-        const factory = dataFactories.find((f: Factory) => f.id === item.factoryId);
-        const badgeColor = contentTypeBadge[item.contentType];
-        return (
-          <article
+      {items.map((item) => (
+          <ShowcaseGridCard
             key={item.id}
-            className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col'
+            item={item}
+            isLiked={isLiked(item.id)}
+            onToggleFavorite={toggleFavorite}
             onClick={() => navigate(getDetailPath(item.contentType, item.id))}
-          >
-            <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
-              <ImageWithFallback
-                src={item.image}
-                alt={item.title}
-                className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
-              />
-              <span
-                className='absolute left-1 top-1 z-[1] rounded-full bg-[var(--factory-idea-badge)] px-1.5 py-0.5 text-[8px] font-bold text-white'
-                style={{ '--factory-idea-badge': badgeColor } as React.CSSProperties}
-              >
-                {contentTypeLabel[item.contentType]}
-              </span>
-              <ShowcaseHeartButton
-                showcaseId={item.id}
-                isLiked={isLiked(item.id)}
-                onToggle={toggleFavorite}
-                className='absolute top-1 right-1 z-[1]'
-              />
-            </div>
-            <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-              <div>
-                <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                  {item.title}
-                </p>
-                <div className='flex items-center gap-0.5 mt-0.5'>
-                  <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                  <span className='text-gray-500 text-[10px] truncate'>
-                    {(item.location ?? '').trim() || '—'}
-                  </span>
-                </div>
-              </div>
-              <div className='mt-auto pt-1 border-t border-gray-50'>
-                <div className='flex items-center justify-between min-w-0'>
-                  <div className='flex items-center gap-0.5 min-w-0'>
-                    <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                    <span className='text-gray-700 text-[10px] font-semibold'>
-                      {item.factoryRating ?? 0}
-                    </span>
-                  </div>
-                  <span className='text-gray-400 text-[8px] shrink-0'>
-                    ขั้นต่ำ {item.minOrder} {resolveUnitLabel(item.unitId, item.moqUnit)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </article>
-        );
-      })}
+          />
+        ))}
       </div>
     </section>
   );
@@ -598,7 +549,6 @@ export function FactoryIdeasDesktop() {
                 <DesktopShowcaseGrid
                   title='สินค้าและวัตถุดิบ'
                   items={visibleItems}
-                  dataFactories={data.factories}
                   isLiked={isLiked}
                   toggleFavorite={toggleFavorite}
                   navigate={navigate}
@@ -639,7 +589,6 @@ export function FactoryIdeasDesktop() {
         ) : viewMode === 'grid' ? (
           <DesktopShowcaseGrid
             items={visibleItems}
-            dataFactories={data.factories}
             isLiked={isLiked}
             toggleFavorite={toggleFavorite}
             navigate={navigate}

@@ -3,6 +3,9 @@ import { cn } from '@lib/utils';
 import {
   SHOWCASE_DETAIL_BRAND as BRAND,
   SHOWCASE_DETAIL_DATA_TEXT_CLASS,
+  SHOWCASE_DETAIL_EMPHASIS_CLASS,
+  SHOWCASE_DETAIL_META_TEXT_CLASS,
+  SHOWCASE_DETAIL_TITLE_CLASS,
   SHOWCASE_SECTION_HEADER_CLASS,
   SHOWCASE_SECTION_HEADER_TITLE_CLASS,
   formatShowcaseTHB as formatTHB,
@@ -32,10 +35,10 @@ import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImag
 import { openImageLightbox } from '@/stores/useLightboxStore';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
-import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useFavorites } from '@/hooks/useFavorites';
-import { StrictSpecsBlock } from '@/shared/ui/StrictSpecsBlock/StrictSpecsBlock';
+import { ShowcaseGridCard } from '@/components/features/factory-ideas/ShowcaseGridCard';
+import { getFactoryIdeaDetailPath } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import {
   Table,
   TableBody,
@@ -49,7 +52,6 @@ export function ProductDetailDesktop() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
-  const data = useData();
   const {
     item,
     moqUnit,
@@ -105,7 +107,7 @@ export function ProductDetailDesktop() {
   if (!item || !resolvedId) {
     return (
       <div className='hidden min-h-[calc(100vh-4rem)] bg-[#F5F3FF] px-8 pb-20 pt-8 lg:block'>
-        <div className='mb-5 flex items-center gap-2 text-[14px] text-gray-500'>
+        <div className={cn('mb-5 flex items-center gap-2 text-gray-500', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
           <Button
             variant='unstyled'
             type='button'
@@ -119,7 +121,7 @@ export function ProductDetailDesktop() {
         </div>
         <div className='bg-white rounded-lg border border-gray-200 p-10 text-center'>
           <PackageX size={38} className='mx-auto mb-3 text-gray-400' />
-          <p className='text-[14px] text-gray-500 font-medium'>{error || 'ไม่พบข้อมูลสินค้า'}</p>
+          <p className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'font-medium text-gray-500')}>{error || 'ไม่พบข้อมูลสินค้า'}</p>
         </div>
       </div>
     );
@@ -145,8 +147,6 @@ export function ProductDetailDesktop() {
   const latestReviews = reviews?.items ?? [];
 
   const specRows: { label: string; value: React.ReactNode }[] = [];
-  const leadTimeDays = Number(String(item.leadTime ?? '').replace(/[^\d.]/g, ''));
-  if (factory?.location) specRows.push({ label: 'สถานที่ผลิต', value: factory.location });
   if (Array.isArray(item.specs) && item.specs.length > 0) {
     const sorted = [...item.specs].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
     for (const s of sorted) {
@@ -159,7 +159,7 @@ export function ProductDetailDesktop() {
   return (
     <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-panel)] lg:block animate-[fadeIn_0.2s_ease-in]'>
       <div className='px-8 2xl:px-10 pt-5 pb-3'>
-        <div className='flex items-center gap-2 text-[14px] text-gray-500'>
+        <div className={cn('flex items-center gap-2 text-gray-500', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
           <Button
             variant='unstyled'
             type='button'
@@ -184,7 +184,7 @@ export function ProductDetailDesktop() {
       <div className='px-8 2xl:px-10 pb-10 space-y-4'>
         <div className='bg-white rounded-lg border border-gray-200 p-6'>
           <div className='flex gap-8'>
-            <div className='w-[450px] 2xl:w-[520px] shrink-0'>
+            <div className={cn('w-[450px] shrink-0 2xl:w-[520px]', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
               <ShowcaseHeroGallery
                 gallery={gallery}
                 fallbackImage={item.image}
@@ -196,11 +196,11 @@ export function ProductDetailDesktop() {
                 className=''
               />
 
-              <div className='mt-5 pt-4 border-t border-gray-100 flex items-center justify-between text-[14px] text-gray-500'>
+              <div className='mt-5 flex items-center justify-between border-t border-gray-100 pt-3 text-[14px] text-gray-500'>
                 <Button
                   variant='unstyled'
                   type='button'
-                  className='inline-flex items-center gap-1.5 hover:text-gray-700 transition-colors'
+                  className='inline-flex items-center gap-1.5 text-[14px] font-medium hover:text-gray-700 transition-colors'
                   onClick={() => {
                     if (typeof navigator !== 'undefined' && navigator.share) {
                       void navigator.share({ title: item.title, url: window.location.href });
@@ -215,7 +215,7 @@ export function ProductDetailDesktop() {
                   variant='unstyled'
                   type='button'
                   onClick={() => void toggleFavorite(item.id)}
-                  className='inline-flex items-center gap-1.5 hover:text-gray-700 transition-colors'
+                  className='inline-flex items-center gap-1.5 text-[14px] font-medium hover:text-gray-700 transition-colors'
                 >
                   <Heart
                     className='w-4 h-4'
@@ -230,15 +230,15 @@ export function ProductDetailDesktop() {
               </div>
             </div>
 
-            <div className='flex-1 min-w-0'>
-              <div className='flex flex-wrap items-center gap-2 mb-2'>
+            <div className={cn('flex-1 min-w-0', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
+              <div className='mb-2 flex flex-wrap items-center gap-2'>
                 {factory?.verified ? (
-                  <span className='inline-flex items-center gap-1 rounded-sm bg-[var(--brand-orange)] px-2 py-0.5 text-[14px] font-bold text-white'>
-                    <BadgeCheck className='w-3 h-3' /> Preferred
+                  <span className='inline-flex items-center gap-1 rounded-sm bg-[var(--brand-orange)] px-2 py-0.5 font-bold text-white'>
+                    <BadgeCheck className='h-3 w-3' /> Preferred
                   </span>
                 ) : null}
                 <span
-                  className='inline-flex items-center rounded-sm px-2 py-0.5 text-[14px] font-semibold text-white'
+                  className='inline-flex items-center rounded-sm px-2 py-0.5 font-semibold text-white'
                   style={{
                     background: isIdea
                       ? 'var(--brand-purple)'
@@ -249,18 +249,13 @@ export function ProductDetailDesktop() {
                 >
                   {isIdea ? 'ไอเดีย / บทความ' : isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
                 </span>
-                {item.category ? (
-                  <span className='text-[14px] text-gray-500'>
-                    {item.category}{subName && !isMaterial ? ` > ${subName}` : ''}
-                  </span>
-                ) : null}
               </div>
 
-              <h1 className='text-[20px] font-semibold leading-snug text-[var(--brand-ink)]'>
+              <h1 className={SHOWCASE_DETAIL_TITLE_CLASS}>
                 {item.title}
               </h1>
 
-              <div className='flex items-center gap-4 py-3 mt-1 border-b border-gray-100 text-[14px] text-gray-500'>
+              <div className={cn('mt-1 flex items-center gap-4 border-b border-gray-100 py-3', SHOWCASE_DETAIL_META_TEXT_CLASS)}>
                 <span className='inline-flex items-center gap-1'>
                   <span className='border-b border-[var(--brand-orange)] text-[var(--brand-orange)]'>
                     {avgRating.toFixed(1)}
@@ -284,26 +279,26 @@ export function ProductDetailDesktop() {
               <div className='mt-3 rounded-xl border border-[#F8DEC1] bg-[var(--surface-paper-warm)] px-3 py-2.5'>
                 {priceText ? (
                   <div className='flex items-baseline gap-2'>
-                    <p className='text-[22px] font-bold leading-none text-[var(--brand-violet)]'>
+                    <p className={SHOWCASE_DETAIL_EMPHASIS_CLASS}>
                       {priceText}
                     </p>
                     {item.promoPrice && item.basePrice && item.promoPrice < item.basePrice ? (
-                      <p className='text-[14px] line-through text-gray-400'>
+                      <p className='line-through text-gray-400'>
                         {formatTHB(item.basePrice)}
                       </p>
                     ) : null}
                   </div>
                 ) : (
-                  <p className='text-[14px] font-semibold leading-none text-[var(--brand-violet)]'>
+                  <p className={cn(SHOWCASE_DETAIL_EMPHASIS_CLASS, 'font-semibold')}>
                     สอบถามราคากับโรงงาน
                   </p>
                 )}
-                <p className='text-[14px] text-gray-500 mt-1.5'>
+                <p className={cn('mt-1.5', SHOWCASE_DETAIL_META_TEXT_CLASS)}>
                   ราคาต่อชิ้นอาจแตกต่างตามปริมาณสั่งผลิต กรุณาแชทเพื่อขอใบเสนอราคา
                 </p>
               </div>
 
-              <div className='mt-5 grid grid-cols-[120px_1fr] gap-y-3 gap-x-4 text-[14px]'>
+              <div className='mt-5 grid grid-cols-[120px_1fr] gap-x-4 gap-y-3'>
                 <span className='text-gray-400'>ขั้นต่ำผลิต</span>
                 <span className='text-[var(--brand-ink)]'>
                   <span className='font-semibold'>{item.minOrder}</span>{' '}
@@ -328,13 +323,13 @@ export function ProductDetailDesktop() {
               </div>
 
               {item.tags.length > 0 ? (
-                <div className='mt-5 grid grid-cols-[120px_1fr] gap-x-4 items-start text-[14px]'>
-                  <span className='text-gray-400 pt-1'>แท็ก</span>
+                <div className='mt-5 grid grid-cols-[120px_1fr] items-start gap-x-4'>
+                  <span className='pt-1 text-gray-400'>แท็ก</span>
                   <div className='flex flex-wrap gap-1.5'>
                     {item.tags.map((tag) => (
                       <span
                         key={tag}
-                        className='inline-flex cursor-pointer items-center rounded-sm bg-[#F5F3FF] px-2 py-1 text-[14px] font-medium text-[var(--brand-purple)] transition-colors hover:opacity-80'
+                        className='inline-flex cursor-pointer items-center rounded-sm bg-[#F5F3FF] px-2 py-1 font-medium text-[var(--brand-purple)] transition-colors hover:opacity-80'
                       >
                         {tag}
                       </span>
@@ -343,14 +338,14 @@ export function ProductDetailDesktop() {
                 </div>
               ) : null}
 
-              <div className='mt-6 flex items-center gap-3'>
+              <div className='mt-5 flex items-center gap-2'>
                 {canChat ? (
                   <Button
                     variant='unstyled'
                     type='button'
                     onClick={handleStartChat}
                     disabled={starting}
-                    className='inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-md border border-[var(--brand-orange)] bg-[var(--surface-orange-tint)] px-5 text-[14px] font-semibold text-[var(--brand-orange-vivid)] transition-colors disabled:opacity-70'
+                    className='inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-md border border-[var(--brand-orange)] bg-[var(--surface-orange-tint)] px-4 text-[14px] font-semibold text-[var(--brand-orange-vivid)] transition-colors disabled:opacity-70'
                   >
                     {starting ? (
                       <span
@@ -367,7 +362,7 @@ export function ProductDetailDesktop() {
                   variant='unstyled'
                   type='button'
                   onClick={() => navigate(`/factories/${item.factoryId}`)}
-                  className='inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-md bg-[var(--brand-orange)] px-5 text-[14px] font-bold text-white transition-opacity hover:opacity-90'
+                  className='inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-md bg-[var(--brand-orange)] px-4 text-[14px] font-semibold text-white transition-opacity hover:opacity-90'
                 >
                   <Store className='w-4 h-4' />
                   ดูโปรไฟล์โรงงาน
@@ -378,8 +373,8 @@ export function ProductDetailDesktop() {
         </div>
 
         <div className='bg-white rounded-lg border border-gray-200 p-5'>
-          <div className='flex items-center gap-5'>
-            <div className='flex items-center gap-4 min-w-0'>
+          <div className='flex items-center justify-between gap-4'>
+            <div className='flex min-w-0 items-center gap-4'>
               <div className='w-fit shrink-0 rounded-lg'>
                 <div
                   className={`relative block h-17 w-17 overflow-hidden rounded-lg border ${
@@ -403,107 +398,36 @@ export function ProductDetailDesktop() {
                 </div>
               </div>
               <div className='min-w-0'>
-                <div className='flex items-center gap-1.5'>
-                  <p className='truncate text-[16px] font-semibold text-[var(--brand-ink)]'>
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={() => navigate(`/factories/${item.factoryId}`)}
+                  className='flex max-w-full min-w-0 items-center gap-1.5 text-left transition-opacity hover:opacity-80'
+                >
+                  <p className={cn('truncate', SHOWCASE_DETAIL_TITLE_CLASS)}>
                     {item.factoryName}
                   </p>
                   {factory?.verified ? (
-                    <BadgeCheck className='w-4 h-4 shrink-0 text-[var(--brand-purple)]' />
+                    <BadgeCheck className='h-3.5 w-3.5 shrink-0 text-[var(--brand-purple)]' />
                   ) : null}
-                </div>
-                <div className='flex items-center gap-2 mt-3'>
-                  {canChat ? (
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      onClick={handleStartChat}
-                      disabled={starting}
-                      className='inline-flex h-9 items-center gap-1.5 rounded-sm border border-[var(--brand-orange)] bg-[var(--surface-orange-tint)] px-3.5 text-[14px] font-medium text-[var(--brand-orange-vivid)] transition-colors disabled:opacity-70'
-                    >
-                      <MessageCircle className='w-3.5 h-3.5' /> แชท
-                    </Button>
-                  ) : null}
-                  <Button
-                    variant='unstyled'
-                    type='button'
-                    onClick={() => navigate(`/factories/${item.factoryId}`)}
-                    className='inline-flex h-9 items-center gap-1.5 rounded-sm border border-[#E7E2F0] px-3.5 text-[14px] font-medium text-[var(--neutral-text)] transition-colors hover:opacity-80'
-                  >
-                    <Store className='w-3.5 h-3.5' /> ดูโรงงาน
-                  </Button>
-                </div>
+                </Button>
+                {factory?.specialization ? (
+                  <p className={cn('mt-1 truncate', SHOWCASE_DETAIL_META_TEXT_CLASS)}>
+                    {factory.specialization}
+                  </p>
+                ) : null}
               </div>
             </div>
 
-            <div className='w-px h-24 bg-gray-100 mx-2' />
-
-            <div className='grid grid-cols-3 gap-6 text-[14px] flex-1'>
-              <div>
-                <p className='text-gray-400 mb-1'>เรตติ้งเฉลี่ย</p>
-                <p className='font-semibold text-[var(--brand-orange)]'>
-                  {avgRating.toFixed(1)} <span className='text-[14px] text-gray-400'>/ 5.0</span>
-                </p>
-              </div>
-              <div>
-                <p className='text-gray-400 mb-1'>รีวิวทั้งหมด</p>
-                <p className='font-semibold text-[var(--brand-orange)]'>{reviewCount}</p>
-              </div>
-              <div>
-                <p className='text-gray-400 mb-1'>ออเดอร์ที่เสร็จแล้ว</p>
-                <p className='font-semibold text-[var(--brand-orange)]'>
-                  {factory?.completedOrders ?? 0}
-                </p>
-              </div>
-              <div>
-                <p className='text-gray-400 mb-1'>ที่ตั้ง</p>
-                <p className='font-semibold text-[var(--brand-ink)]'>{factory?.location ?? '-'}</p>
-              </div>
-              <div>
-                <p className='text-gray-400 mb-1'>MOQ เริ่มต้น</p>
-                <p className='font-semibold text-[var(--brand-ink)]'>
-                  {factory?.minOrder ?? item.minOrder}
-                </p>
-              </div>
-              <div>
-                <p className='text-gray-400 mb-1'>Lead time</p>
-                <p className='font-semibold text-[var(--brand-ink)]'>
-                  {factory?.leadTime || item.leadTime || '-'}
-                </p>
-              </div>
+            <div className='shrink-0 rounded-lg border border-gray-100 bg-[var(--brand-page)] px-3 py-2 text-center'>
+              <p className={SHOWCASE_DETAIL_META_TEXT_CLASS}>ออเดอร์สำเร็จ</p>
+              <p className='text-[14px] font-semibold tabular-nums text-[var(--brand-orange)]'>
+                {factory?.completedOrders ?? 0}
+              </p>
             </div>
           </div>
         </div>
-
-        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-          <div className={SHOWCASE_SECTION_HEADER_CLASS}>
-            <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>ข้อมูลจำเพาะของสินค้า</p>
-          </div>
-          <div className='p-6'>
-            <StrictSpecsBlock
-              showcase={{
-                moq: Number.isFinite(Number(item.minOrder)) ? Number(item.minOrder) : null,
-                moq_unit: moqUnit,
-                lead_time_days:
-                  Number.isFinite(leadTimeDays) && leadTimeDays > 0 ? leadTimeDays : null,
-              }}
-            />
-            <Table className={cn('w-full', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
-              <TableBody>
-                {specRows.map((row, idx) => (
-                  <TableRow
-                    key={`${row.label}-${idx}`}
-                    className='border-b border-[#E7E2F0] last:border-0'
-                  >
-                    <TableCell className='py-2.5 pr-6 w-48 text-gray-500 align-top'>
-                      {row.label}
-                    </TableCell>
-                    <TableCell className='py-2.5 text-[var(--brand-ink)]'>{row.value}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
+ 
 
         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <div className={SHOWCASE_SECTION_HEADER_CLASS}>
@@ -527,10 +451,10 @@ export function ProductDetailDesktop() {
           <div className='p-6'>
             <div className='flex items-center gap-8'>
               <div>
-                <p className='text-[34px] font-bold leading-none text-[var(--brand-orange)]'>
+                <p className='text-[22px] font-bold leading-none text-[var(--brand-orange)]'>
                   {avgRating.toFixed(1)}
                 </p>
-                <p className='text-[14px] text-gray-500 mt-1'>จาก {reviewCount} รีวิว</p>
+                <p className={cn('mt-1', SHOWCASE_DETAIL_META_TEXT_CLASS)}>จาก {reviewCount} รีวิว</p>
               </div>
               <div className='flex-1 space-y-2'>
                 {[5, 4, 3, 2, 1].map((star) => {
@@ -539,7 +463,7 @@ export function ProductDetailDesktop() {
                     reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
                   return (
                     <div key={star} className='flex items-center gap-2'>
-                      <span className='w-10 text-[14px] text-gray-500'>{star} ดาว</span>
+                      <span className={cn('w-10', SHOWCASE_DETAIL_META_TEXT_CLASS)}>{star} ดาว</span>
                       <div className='h-2 flex-1 rounded-full bg-gray-100 overflow-hidden'>
                         <div
                           className='h-full rounded-full'
@@ -552,23 +476,23 @@ export function ProductDetailDesktop() {
               </div>
             </div>
             <div className='mt-5 border-t border-gray-100 pt-4 space-y-3'>
-              <p className='text-[16px] font-semibold text-[var(--brand-ink)]'>
+              <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>
                 รีวิวล่าสุดจากลูกค้า
               </p>
               {latestReviews.length === 0 ? (
-                <p className='text-[14px] text-gray-400'>ยังไม่มีรีวิว</p>
+                <p className={cn(SHOWCASE_DETAIL_META_TEXT_CLASS, 'text-gray-400')}>ยังไม่มีรีวิว</p>
               ) : (
                 latestReviews.slice(0, 3).map((r) => (
                   <div key={r.id} className='rounded-lg border border-gray-100 px-3 py-2'>
                     <div className='flex items-center justify-between gap-2'>
-                      <p className='text-[14px] font-semibold text-gray-700 truncate'>
+                      <p className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'font-semibold text-gray-700 truncate')}>
                         {r.reviewer}
                       </p>
-                      <p className='text-[14px] text-amber-600'>
+                      <p className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'text-amber-600')}>
                         ★ {Number(r.rating || 0).toFixed(1)}
                       </p>
                     </div>
-                    <p className='text-[14px] text-gray-600 mt-1 line-clamp-2'>
+                    <p className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'mt-1 line-clamp-2 text-gray-600')}>
                       {r.comment || '-'}
                     </p>
                     {r.imageUrls && r.imageUrls.length > 0 && (
@@ -588,68 +512,19 @@ export function ProductDetailDesktop() {
             <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>สินค้าที่ใกล้เคียง</p>
           </div>
           {relatedProducts.length > 0 ? (
-            <div className='p-6 grid grid-cols-4 2xl:grid-cols-5 gap-3'>
-              {relatedProducts.map((rp) => {
-                const rf = data.factories.find((f) => f.id === rp.factoryId);
-                const rating = Number(rf?.rating ?? rp.factoryRating ?? 0);
-                const reviews = Number(rf?.reviews ?? 0);
-                const province = (rf?.provinceName ?? rf?.location ?? rp.location ?? '').trim();
-                const isPromo = rp.contentType === 'promotion';
-                return (
-                  <Button
-                    variant='unstyled'
-                    key={rp.id}
-                    type='button'
-                    onClick={() =>
-                      navigate(
-                        `/${isPromo ? 'promotion-detail' : 'product-detail'}?showcase_id=${rp.id}`,
-                      )
-                    }
-                    className='bg-white rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:border-gray-300 transition-all group flex flex-col w-full text-left'
-                  >
-                    <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
-                      <ImageWithFallback
-                        src={rp.image}
-                        alt={rp.title}
-                        className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
-                      />
-                      <span className='absolute left-1 top-1 rounded-full bg-[var(--brand-orange)] px-1.5 py-0.5 text-[8px] font-bold text-white'>
-                        {isPromo ? 'โปรโมชัน' : 'สินค้า'}
-                      </span>
-                    </div>
-                    <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                      <div>
-                        <p className='text-[14px] text-gray-700 truncate mb-0.5 font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                          {rp.title}
-                        </p>
-                        <div className='flex items-center gap-0.5 mt-0.5'>
-                          <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                          <span className='text-[14px] text-gray-500 truncate'>
-                            {province || '—'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className='mt-auto pt-1 border-t border-gray-50'>
-                        <div className='flex items-center justify-between min-w-0'>
-                          <div className='flex items-center gap-0.5 min-w-0'>
-                            <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                            <span className='text-[14px] text-gray-700 font-semibold'>
-                              {rating}
-                            </span>
-                            <span className='text-[14px] text-gray-400 truncate'>({reviews})</span>
-                          </div>
-                          <span className='text-[14px] text-gray-400 shrink-0'>
-                            ขั้นต่ำ {rp.minOrder}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </Button>
-                );
-              })}
+            <div className='p-6 grid grid-cols-5 2xl:grid-cols-6 gap-2'>
+              {relatedProducts.map((rp) => (
+                <ShowcaseGridCard
+                  key={rp.id}
+                  item={rp}
+                  isLiked={isLiked(rp.id)}
+                  onToggleFavorite={toggleFavorite}
+                  onClick={() => navigate(getFactoryIdeaDetailPath(rp.contentType, rp.id))}
+                />
+              ))}
             </div>
           ) : (
-            <div className='p-8 text-center text-[14px] text-gray-400'>
+            <div className={cn('p-8 text-center text-gray-400', SHOWCASE_DETAIL_META_TEXT_CLASS)}>
               ยังไม่มีสินค้าที่ใกล้เคียงในหมวดนี้
             </div>
           )}

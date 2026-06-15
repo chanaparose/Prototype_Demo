@@ -3,6 +3,10 @@ import { cn } from '@lib/utils';
 import {
   SHOWCASE_DETAIL_BRAND as BRAND,
   SHOWCASE_DETAIL_DATA_TEXT_CLASS,
+  SHOWCASE_DETAIL_EMPHASIS_CLASS,
+  SHOWCASE_DETAIL_META_TEXT_CLASS,
+  SHOWCASE_DETAIL_TITLE_CLASS,
+  SHOWCASE_SECTION_HEADER_TITLE_CLASS,
   formatShowcaseTHB as formatTHB,
   formatShowcaseThaiDate as formatThaiDate,
   normalizeShowcaseMarkdown as normalizeMarkdownContent,
@@ -210,7 +214,7 @@ export function ProductDetailMobile() {
           variant='unstyled'
           type='button'
           className={cn(
-            'absolute top-3 right-3 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center transition-opacity duration-200',
+            'absolute top-3 right-3 w-8 h-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center transition-opacity duration-200',
             scrollNavVisible && 'pointer-events-none opacity-0',
           )}
           aria-label='แชร์'
@@ -222,7 +226,7 @@ export function ProductDetailMobile() {
             }
           }}
         >
-          <Share2 className='w-5 h-5 text-white' />
+          <Share2 className='w-4 h-4 text-white' />
         </Button>
 
         {gallery.length > 1 ? (
@@ -283,14 +287,14 @@ export function ProductDetailMobile() {
           ) : null}
         </div>
 
-        <h1 className='mt-3 text-[17px] font-semibold leading-snug' style={{ color: BRAND.ink }}>
+        <h1 className={cn('mt-3', SHOWCASE_DETAIL_TITLE_CLASS)} style={{ color: BRAND.ink }}>
           {item.title}
         </h1>
 
         <div className='mt-3 rounded-xl border border-[#F8DEC1] bg-[var(--surface-paper-warm)] px-3 py-2'>
           {priceText ? (
             <div className='flex items-baseline gap-2'>
-              <p className='text-[14px] font-bold leading-none text-[var(--brand-violet)]'>
+              <p className={SHOWCASE_DETAIL_EMPHASIS_CLASS}>
                 {priceText}
               </p>
               {item.promoPrice && item.basePrice && item.promoPrice < item.basePrice ? (
@@ -298,7 +302,7 @@ export function ProductDetailMobile() {
               ) : null}
             </div>
           ) : (
-            <p className='text-[12px] font-semibold leading-none text-[var(--brand-violet)]'>
+            <p className={cn(SHOWCASE_DETAIL_EMPHASIS_CLASS, 'font-semibold')}>
               สอบถามราคากับโรงงาน
             </p>
           )}
@@ -362,11 +366,9 @@ export function ProductDetailMobile() {
       <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
 
       <div className='bg-white px-4 py-3'>
-        <div className='flex items-center justify-between mb-2'>
-          <p className='text-[14px] font-bold' style={{ color: BRAND.ink }}>
-            ข้อมูลจำเพาะของสินค้า
-          </p>
-        </div>
+        <p className={cn('mb-2', SHOWCASE_SECTION_HEADER_TITLE_CLASS)} style={{ color: BRAND.ink }}>
+          ข้อมูลจำเพาะของสินค้า
+        </p>
         <div className='divide-y' style={{ borderColor: BRAND.border }}>
           <StrictSpecsBlock
             showcase={{
@@ -400,7 +402,7 @@ export function ProductDetailMobile() {
       <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
 
       <div className='bg-white px-4 py-3'>
-        <p className='text-[14px] font-bold mb-2' style={{ color: BRAND.ink }}>
+        <p className={cn('mb-2', SHOWCASE_SECTION_HEADER_TITLE_CLASS)} style={{ color: BRAND.ink }}>
           รายละเอียดสินค้า
         </p>
         {markdown ? (
@@ -472,12 +474,12 @@ export function ProductDetailMobile() {
       </Button>
 
       <div className='bg-white px-4 py-3'>
-        <p className='text-[14px] font-bold mb-2' style={{ color: BRAND.ink }}>
+        <p className={cn('mb-2', SHOWCASE_SECTION_HEADER_TITLE_CLASS)} style={{ color: BRAND.ink }}>
           คะแนนรีวิว
         </p>
         <div className='flex items-center gap-4'>
           <div>
-            <p className='text-[28px] leading-none font-bold' style={{ color: BRAND.orange }}>
+            <p className='text-[22px] font-bold leading-none' style={{ color: BRAND.orange }}>
               {avgRating.toFixed(1)}
             </p>
             <p className='text-[12px] text-gray-500 mt-1'>{reviewCount} รีวิว</p>
@@ -531,7 +533,7 @@ export function ProductDetailMobile() {
         <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
         <div className='bg-white px-4 py-3'>
           <div className='flex items-center justify-between mb-2'>
-            <p className='text-[14px] font-bold' style={{ color: BRAND.ink }}>
+            <p className={cn(SHOWCASE_SECTION_HEADER_TITLE_CLASS)} style={{ color: BRAND.ink }}>
               สินค้าที่ใกล้เคียง
             </p>
           </div>
@@ -570,12 +572,12 @@ export function ProductDetailMobile() {
                     </div>
                     <div className='p-2 flex flex-col flex-1 justify-between gap-0.5 min-w-0'>
                       <div>
-                        <h3 className='text-[12px] text-gray-700 truncate mb-0.5 font-medium leading-tight group-hover:text-brand-purple transition-colors'>
+                        <h3 className='mb-0.5 truncate text-xs font-medium leading-tight text-gray-700 transition-colors group-hover:text-brand-purple'>
                           {rp.title}
                         </h3>
-                        <div className='flex items-center gap-0.5 mt-0.5'>
-                          <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                          <span className='text-[12px] text-gray-500 truncate'>
+                        <div className='mt-0.5 flex items-center gap-0.5'>
+                          <MapPin className='h-2.5 w-2.5 shrink-0 text-gray-400' />
+                          <span className='truncate text-[10px] text-gray-500'>
                             {province || '—'}
                           </span>
                         </div>
@@ -584,12 +586,12 @@ export function ProductDetailMobile() {
                         <div className='flex items-center justify-between min-w-0'>
                           <div className='flex items-center gap-0.5 min-w-0'>
                             <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                            <span className='text-[12px] text-gray-700 font-semibold'>
+                            <span className='text-[10px] font-semibold text-gray-700'>
                               {rating}
                             </span>
-                            <span className='text-[12px] text-gray-400 truncate'>({reviews})</span>
+                            <span className='truncate text-[10px] text-gray-400'>({reviews})</span>
                           </div>
-                          <span className='text-[12px] text-gray-400 shrink-0'>
+                          <span className='shrink-0 text-[8px] text-gray-400'>
                             ขั้นต่ำ {rp.minOrder}
                           </span>
                         </div>

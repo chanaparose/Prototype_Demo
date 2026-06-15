@@ -14,13 +14,25 @@ export const SHOWCASE_DETAIL_BRAND = {
 export const SHOWCASE_SECTION_HEADER_CLASS =
   'border-b border-[color-mix(in_srgb,var(--brand-indigo)_18%,var(--neutral-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--brand-lavender-muted)_84%,var(--neutral-white))_0%,color-mix(in_srgb,var(--brand-lavender-muted)_72%,var(--brand-sky)_8%)_100%)] px-6 py-3';
 
+/** Section card title — showcase detail section headings */
 export const SHOWCASE_SECTION_HEADER_TITLE_CLASS =
-  'text-[14px] font-semibold tracking-[0.01em] text-[var(--brand-navy-ink)]';
+  'text-[16px] font-semibold tracking-[0.01em] text-[var(--brand-navy-ink)]';
 
-/** Spec table + product-detail markdown — 14px mobile & desktop */
+/** Page / card title on showcase detail */
+export const SHOWCASE_DETAIL_TITLE_CLASS =
+  'text-[16px] font-bold leading-snug text-[var(--brand-ink)]';
+
+/** Body copy — showcase detail primary content */
 export const SHOWCASE_DETAIL_DATA_TEXT_CLASS = 'text-[14px]';
 
-/** Flat typography for markdown in showcase detail (matches SHOWCASE_DETAIL_DATA_TEXT_CLASS) */
+/** Muted meta line — secondary content on showcase detail */
+export const SHOWCASE_DETAIL_META_TEXT_CLASS = 'text-[14px] text-gray-500';
+
+/** Price / primary emphasis */
+export const SHOWCASE_DETAIL_EMPHASIS_CLASS =
+  'text-[14px] font-bold leading-none text-[var(--brand-violet)]';
+
+/** Flat typography for markdown in showcase detail */
 export const SHOWCASE_DETAIL_MARKDOWN_CLASS = [
   'max-w-none text-gray-700 leading-relaxed',
   SHOWCASE_DETAIL_DATA_TEXT_CLASS,
@@ -38,10 +50,10 @@ export const SHOWCASE_DETAIL_MARKDOWN_CLASS = [
   '[&_em]:text-[14px]',
   '[&_span]:text-[14px]',
   '[&_code]:text-[14px]',
-  '[&_h1]:text-[14px] [&_h1]:font-semibold [&_h1]:mt-4 [&_h1]:mb-2',
-  '[&_h2]:text-[14px] [&_h2]:font-semibold [&_h2]:mt-3 [&_h2]:mb-2',
-  '[&_h3]:text-[14px] [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-2',
-  '[&_h4]:text-[14px] [&_h4]:font-semibold [&_h4]:mt-3 [&_h4]:mb-2',
+  '[&_h1]:text-[16px] [&_h1]:font-semibold [&_h1]:mt-4 [&_h1]:mb-2',
+  '[&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:mt-3 [&_h2]:mb-2',
+  '[&_h3]:text-[16px] [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-2',
+  '[&_h4]:text-[16px] [&_h4]:font-semibold [&_h4]:mt-3 [&_h4]:mb-2',
   '[&_h5]:text-[14px] [&_h5]:font-semibold [&_h5]:mt-2 [&_h5]:mb-1',
   '[&_h6]:text-[14px] [&_h6]:font-semibold [&_h6]:mt-2 [&_h6]:mb-1',
   '[&_strong]:font-semibold',
