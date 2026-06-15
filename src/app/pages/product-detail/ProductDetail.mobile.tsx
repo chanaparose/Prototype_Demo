@@ -40,6 +40,29 @@ import { StrictSpecsBlock } from '@/shared/ui/StrictSpecsBlock/StrictSpecsBlock'
 import { Image } from '@/components/ui/image';
 import useEmblaCarousel from 'embla-carousel-react';
 
+const SECTION_EYEBROW_CLASS =
+  'text-[10px] font-semibold uppercase tracking-wider text-gray-400';
+const SECTION_TITLE_CLASS = 'text-[14px] font-semibold text-[var(--brand-navy-ink)]';
+
+function StarRatingDisplay({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) {
+  const iconClass = size === 'md' ? 'h-3.5 w-3.5' : 'h-3 w-3';
+  return (
+    <div className='flex items-center gap-0.5' aria-hidden>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          className={cn(
+            iconClass,
+            star <= Math.round(rating)
+              ? 'fill-amber-400 text-amber-400'
+              : 'fill-gray-100 text-gray-200',
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function ProductDetailMobile() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -415,116 +438,135 @@ export function ProductDetailMobile() {
       </div>
 
       <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
-      <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
 
-      <Button
-        variant='unstyled'
-        type='button'
-        onClick={() => navigate(`/factories/${item.factoryId}`)}
-        className='block w-full text-left bg-white px-4 py-3 active:opacity-90'
-      >
-        <div className='flex items-center gap-3'>
-          <div className='w-fit shrink-0 rounded-lg'>
-            <div
-              className={`relative block h-17 w-17 overflow-hidden rounded-lg border ${
-                factory?.image ? 'border-white' : 'border-dashed border-indigo-200 bg-violet-50'
-              }`}
-            >
-              {factory?.image ? (
-                <ImageWithFallback
-                  src={factory.image}
-                  alt={item.factoryName}
-                  className='h-full w-full object-cover'
-                />
-              ) : (
-                <span className='flex h-full w-full flex-col items-center justify-center gap-0.5 p-1 text-center'>
-                  <ImageIcon size={22} className='text-indigo-400' strokeWidth={1.5} />
-                  <span className='text-[9px] font-semibold leading-tight text-indigo-600'>
-                    โปรไฟล์
-                  </span>
-                </span>
-              )}
-            </div>
+      <div className='bg-white px-4 py-4'>
+        <p className={SECTION_EYEBROW_CLASS}>โรงงานผู้ผลิต</p>
+        <Button
+          variant='unstyled'
+          type='button'
+          onClick={() => navigate(`/factories/${item.factoryId}`)}
+          className='group -mx-1 mt-2 flex w-full items-center gap-3 rounded-lg px-1 py-1 text-left active:bg-gray-50/80'
+        >
+          <div
+            className={`relative block size-14 shrink-0 overflow-hidden rounded-lg border aspect-square ${
+              factory?.image ? 'border-gray-100' : 'border-dashed border-indigo-200 bg-violet-50'
+            }`}
+          >
+            {factory?.image ? (
+              <ImageWithFallback
+                src={factory.image}
+                alt={item.factoryName}
+                className='h-full w-full object-cover'
+              />
+            ) : (
+              <span className='flex h-full w-full flex-col items-center justify-center gap-0.5 p-1 text-center'>
+                <ImageIcon size={20} className='text-indigo-400' strokeWidth={1.5} />
+                <span className='text-[8px] font-semibold leading-tight text-indigo-600'>โปรไฟล์</span>
+              </span>
+            )}
           </div>
           <div className='min-w-0 flex-1'>
             <div className='flex items-center gap-1'>
-              <p className='text-[14px] font-semibold truncate' style={{ color: BRAND.ink }}>
-                {item.factoryName}
-              </p>
+              <p className={cn('truncate', SECTION_TITLE_CLASS)}>{item.factoryName}</p>
               {factory?.verified ? (
-                <BadgeCheck className='w-3.5 h-3.5 shrink-0' style={{ color: BRAND.purple }} />
+                <BadgeCheck className='h-3.5 w-3.5 shrink-0 text-[var(--brand-purple)]' />
               ) : null}
             </div>
-            <div className='flex items-center gap-3 mt-1 text-[12px] text-gray-500'>
+            <div className='mt-1 flex items-center gap-2 text-[12px] text-gray-500'>
               <span className='inline-flex items-center gap-0.5'>
-                <Star className='w-3 h-3 fill-amber-400' style={{ color: BRAND.orange }} />
-                <span className='font-semibold' style={{ color: BRAND.ink }}>
-                  {avgRating.toFixed(1)}
-                </span>
+                <Star className='h-3 w-3 fill-amber-400 text-amber-400' />
+                <span className='font-semibold text-gray-800'>{avgRating.toFixed(1)}</span>
               </span>
               {factory?.location ? (
-                <span className='inline-flex items-center gap-0.5 truncate'>
-                  <MapPin className='w-3 h-3' /> {factory.location}
-                </span>
+                <>
+                  <span className='text-gray-300'>·</span>
+                  <span className='inline-flex min-w-0 items-center gap-0.5 truncate'>
+                    <MapPin className='h-3 w-3 shrink-0' />
+                    {factory.location}
+                  </span>
+                </>
               ) : null}
             </div>
           </div>
-          <Chevron className='w-4 h-4 text-gray-300 shrink-0' />
-        </div>
-      </Button>
+          <Chevron className='h-4 w-4 shrink-0 text-gray-300 transition-transform group-active:translate-x-0.5' />
+        </Button>
 
-      <div className='bg-white px-4 py-3'>
-        <p className={cn('mb-2', SHOWCASE_SECTION_HEADER_TITLE_CLASS)} style={{ color: BRAND.ink }}>
-          คะแนนรีวิว
-        </p>
-        <div className='flex items-center gap-4'>
-          <div>
-            <p className='text-[22px] font-bold leading-none' style={{ color: BRAND.orange }}>
-              {avgRating.toFixed(1)}
-            </p>
-            <p className='text-[12px] text-gray-500 mt-1'>{reviewCount} รีวิว</p>
-          </div>
-          <div className='flex-1 space-y-1.5'>
-            {[5, 4, 3, 2, 1].map((star) => {
-              const count = Number(breakdown[String(star)] ?? 0);
-              const intensity =
-                reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
-              return (
-                <div key={star} className='flex items-center gap-2'>
-                  <span className='w-8 text-[12px] text-gray-500'>{star}★</span>
-                  <div className='h-1.5 flex-1 rounded-full bg-gray-100 overflow-hidden'>
-                    <div
-                      className='h-full rounded-full'
-                      style={{ width: `${intensity}%`, background: BRAND.orange }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        <div className='mt-4 pt-3 border-t border-gray-100 space-y-2'>
-          <p className='text-[14px] font-semibold' style={{ color: BRAND.ink }}>
-            รีวิวล่าสุดจากลูกค้า
-          </p>
-          {latestReviews.length === 0 ? (
-            <p className='text-[12px] text-gray-400'>ยังไม่มีรีวิว</p>
-          ) : (
-            latestReviews.slice(0, 2).map((r) => (
-              <div key={r.id} className='rounded-lg border border-gray-100 px-2.5 py-2'>
-                <div className='flex items-center justify-between gap-2'>
-                  <p className='text-[12px] font-semibold text-gray-700 truncate'>{r.reviewer}</p>
-                  <p className='text-[12px] text-amber-600'>★ {Number(r.rating || 0).toFixed(1)}</p>
-                </div>
-                <p className='text-[12px] text-gray-600 mt-1 line-clamp-2'>{r.comment || '-'}</p>
-                {r.imageUrls && r.imageUrls.length > 0 && (
-                  <div className='mt-1.5'>
-                    <ReviewImageAttachments urls={r.imageUrls} onPreviewUrl={(u) => openImageLightbox(u)} />
-                  </div>
-                )}
+        <div className='mt-1 border-t border-gray-50 pt-5'>
+          <header className='mb-4'>
+            <p className={SECTION_EYEBROW_CLASS}>ความคิดเห็น</p>
+            <h2 className={cn(SECTION_TITLE_CLASS, 'mt-0.5')}>คะแนนรีวิว</h2>
+          </header>
+
+          <div className='flex items-start gap-3'>
+            <div className='flex shrink-0 flex-col items-center rounded-xl bg-[var(--brand-page)] px-5 py-3.5'>
+              <p className='text-[32px] font-bold leading-none tabular-nums tracking-tight text-[var(--brand-ink)]'>
+                {avgRating.toFixed(1)}
+              </p>
+              <div className='mt-2'>
+                <StarRatingDisplay rating={avgRating} />
               </div>
-            ))
+              <p className='mt-1.5 text-[11px] text-gray-500'>{reviewCount} รีวิว</p>
+            </div>
+
+            <div className='min-w-0 flex-1 space-y-1.5 pt-1'>
+              {[5, 4, 3, 2, 1].map((star) => {
+                const count = Number(breakdown[String(star)] ?? 0);
+                const intensity =
+                  reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
+                return (
+                  <div key={star} className='flex items-center gap-2'>
+                    <span className='w-2.5 shrink-0 text-[11px] tabular-nums text-gray-400'>{star}</span>
+                    <Star className='h-2.5 w-2.5 shrink-0 fill-amber-400 text-amber-400' />
+                    <div className='h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-100'>
+                      <div
+                        className='h-full rounded-full bg-amber-400 transition-all duration-500'
+                        style={{ width: `${intensity}%` }}
+                      />
+                    </div>
+                    <span className='w-4 shrink-0 text-right text-[10px] tabular-nums text-gray-400'>
+                      {count}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className='mt-1 border-t border-gray-50 pt-4'>
+          <p className='mb-3 text-[12px] font-medium text-gray-500'>รีวิวล่าสุด</p>
+          {latestReviews.length === 0 ? (
+            <p className='py-4 text-center text-[12px] text-gray-400'>ยังไม่มีรีวิวจากลูกค้า</p>
+          ) : (
+            <ul className='divide-y divide-gray-50'>
+              {latestReviews.slice(0, 2).map((r) => (
+                <li key={r.id} className='py-3.5 first:pt-0 last:pb-0'>
+                  <div className='flex items-start justify-between gap-3'>
+                    <div className='min-w-0'>
+                      <p className='truncate text-[13px] font-semibold text-gray-800'>{r.reviewer}</p>
+                      <div className='mt-1'>
+                        <StarRatingDisplay rating={Number(r.rating || 0)} />
+                      </div>
+                    </div>
+                    <span className='shrink-0 text-[12px] font-semibold tabular-nums text-amber-600'>
+                      {Number(r.rating || 0).toFixed(1)}
+                    </span>
+                  </div>
+                  <p className='mt-2 text-[13px] leading-relaxed text-gray-600'>
+                    {r.comment || '—'}
+                  </p>
+                  {r.imageUrls && r.imageUrls.length > 0 ? (
+                    <div className='mt-2'>
+                      <ReviewImageAttachments
+                        urls={r.imageUrls}
+                        onPreviewUrl={(u) => openImageLightbox(u)}
+                      />
+                    </div>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
           )}
+          </div>
         </div>
       </div>
 

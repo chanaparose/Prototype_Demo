@@ -6,8 +6,6 @@ import {
   SHOWCASE_DETAIL_EMPHASIS_CLASS,
   SHOWCASE_DETAIL_META_TEXT_CLASS,
   SHOWCASE_DETAIL_TITLE_CLASS,
-  SHOWCASE_SECTION_HEADER_CLASS,
-  SHOWCASE_SECTION_HEADER_TITLE_CLASS,
   formatShowcaseTHB as formatTHB,
   formatShowcaseThaiDate as formatThaiDate,
   normalizeShowcaseMarkdown as normalizeMarkdownContent,
@@ -17,7 +15,6 @@ import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
   ArrowLeft,
-  ArrowUpRight,
   BadgeCheck,
   ChevronRight as Chevron,
   Heart,
@@ -39,14 +36,51 @@ import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useFavorites } from '@/hooks/useFavorites';
 import { ShowcaseGridCard } from '@/components/features/factory-ideas/ShowcaseGridCard';
 import { getFactoryIdeaDetailPath } from '@/components/features/factory-ideas/factoryIdeasTheme';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+
+const SECTION_EYEBROW_CLASS =
+  'text-[10px] font-semibold uppercase tracking-wider text-gray-400';
+const SECTION_TITLE_CLASS = 'text-[14px] font-semibold text-[var(--brand-navy-ink)]';
+
+function StarRatingDisplay({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) {
+  const iconClass = size === 'md' ? 'h-4 w-4' : 'h-3.5 w-3.5';
+  return (
+    <div className='flex items-center gap-0.5' aria-hidden>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          className={cn(
+            iconClass,
+            star <= Math.round(rating)
+              ? 'fill-amber-400 text-amber-400'
+              : 'fill-gray-100 text-gray-200',
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
+function DetailSection({
+  eyebrow,
+  title,
+  children,
+  className,
+}: {
+  eyebrow?: string;
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={cn('rounded-xl border border-gray-100 bg-white', className)}>
+      <header className='border-b border-gray-50 px-6 py-4'>
+        {eyebrow ? <p className={SECTION_EYEBROW_CLASS}>{eyebrow}</p> : null}
+        <h2 className={cn(SECTION_TITLE_CLASS, eyebrow ? 'mt-0.5' : '')}>{title}</h2>
+      </header>
+      <div className='px-6 py-5'>{children}</div>
+    </section>
+  );
+}
 
 export function ProductDetailDesktop() {
   const navigate = useNavigate();
@@ -158,8 +192,8 @@ export function ProductDetailDesktop() {
 
   return (
     <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-panel)] lg:block animate-[fadeIn_0.2s_ease-in]'>
-      <div className='px-8 2xl:px-10 pt-5 pb-3'>
-        <div className={cn('flex items-center gap-2 text-gray-500', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
+      <div className='mx-auto max-w-[1280px] px-8 2xl:px-10 pt-5 pb-3'>
+        <div className={cn('flex items-center gap-2 text-gray-400', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
           <Button
             variant='unstyled'
             type='button'
@@ -181,10 +215,10 @@ export function ProductDetailDesktop() {
         </div>
       </div>
 
-      <div className='px-8 2xl:px-10 pb-10 space-y-4'>
-        <div className='bg-white rounded-lg border border-gray-200 p-6'>
-          <div className='flex gap-8'>
-            <div className={cn('w-[450px] shrink-0 2xl:w-[520px]', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
+      <div className='mx-auto max-w-[1280px] px-8 2xl:px-10 pb-12 space-y-3'>
+        <article className='rounded-xl border border-gray-100 bg-white p-6 shadow-sm'>
+          <div className='flex gap-10'>
+            <div className={cn('w-[420px] shrink-0 2xl:w-[480px]', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
               <ShowcaseHeroGallery
                 gallery={gallery}
                 fallbackImage={item.image}
@@ -196,11 +230,11 @@ export function ProductDetailDesktop() {
                 className=''
               />
 
-              <div className='mt-5 flex items-center justify-between border-t border-gray-100 pt-3 text-[14px] text-gray-500'>
+              <div className='mt-4 flex items-center justify-between border-t border-gray-50 pt-3 text-[13px] text-gray-500'>
                 <Button
                   variant='unstyled'
                   type='button'
-                  className='inline-flex items-center gap-1.5 text-[14px] font-medium hover:text-gray-700 transition-colors'
+                  className='inline-flex items-center gap-1.5 font-medium transition-colors hover:text-gray-800'
                   onClick={() => {
                     if (typeof navigator !== 'undefined' && navigator.share) {
                       void navigator.share({ title: item.title, url: window.location.href });
@@ -209,16 +243,16 @@ export function ProductDetailDesktop() {
                     }
                   }}
                 >
-                  <Share2 className='w-4 h-4' /> แชร์สินค้านี้
+                  <Share2 className='w-3.5 h-3.5' /> แชร์
                 </Button>
                 <Button
                   variant='unstyled'
                   type='button'
                   onClick={() => void toggleFavorite(item.id)}
-                  className='inline-flex items-center gap-1.5 text-[14px] font-medium hover:text-gray-700 transition-colors'
+                  className='inline-flex items-center gap-1.5 font-medium transition-colors hover:text-gray-800'
                 >
                   <Heart
-                    className='w-4 h-4'
+                    className='w-3.5 h-3.5'
                     style={
                       liked
                         ? { color: 'var(--status-danger)', fill: 'var(--status-danger)' }
@@ -230,15 +264,15 @@ export function ProductDetailDesktop() {
               </div>
             </div>
 
-            <div className={cn('flex-1 min-w-0', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
-              <div className='mb-2 flex flex-wrap items-center gap-2'>
+            <div className={cn('flex min-w-0 flex-1 flex-col', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
+              <div className='mb-3 flex flex-wrap items-center gap-1.5'>
                 {factory?.verified ? (
-                  <span className='inline-flex items-center gap-1 rounded-sm bg-[var(--brand-orange)] px-2 py-0.5 font-bold text-white'>
+                  <span className='inline-flex items-center gap-1 rounded-full bg-[var(--brand-orange)]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--brand-orange-vivid)]'>
                     <BadgeCheck className='h-3 w-3' /> Preferred
                   </span>
                 ) : null}
                 <span
-                  className='inline-flex items-center rounded-sm px-2 py-0.5 font-semibold text-white'
+                  className='inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold text-white'
                   style={{
                     background: isIdea
                       ? 'var(--brand-purple)'
@@ -251,39 +285,34 @@ export function ProductDetailDesktop() {
                 </span>
               </div>
 
-              <h1 className={SHOWCASE_DETAIL_TITLE_CLASS}>
-                {item.title}
-              </h1>
+              <h1 className={SHOWCASE_DETAIL_TITLE_CLASS}>{item.title}</h1>
 
-              <div className={cn('mt-1 flex items-center gap-4 border-b border-gray-100 py-3', SHOWCASE_DETAIL_META_TEXT_CLASS)}>
-                <span className='inline-flex items-center gap-1'>
-                  <span className='border-b border-[var(--brand-orange)] text-[var(--brand-orange)]'>
-                    {avgRating.toFixed(1)}
-                  </span>
-                  <Star className='w-3.5 h-3.5 fill-current text-[var(--brand-orange)]' />
+              <div
+                className={cn(
+                  'mt-2 flex flex-wrap items-center gap-x-4 gap-y-1',
+                  SHOWCASE_DETAIL_META_TEXT_CLASS,
+                )}
+              >
+                <span className='inline-flex items-center gap-1.5'>
+                  <Star className='h-3.5 w-3.5 fill-amber-400 text-amber-400' />
+                  <span className='font-semibold text-gray-800'>{avgRating.toFixed(1)}</span>
+                  <span className='text-gray-400'>({reviewCount} รีวิว)</span>
                 </span>
-                <span className='h-3 w-px bg-gray-200' />
+                <span className='text-gray-300'>·</span>
                 <span>
-                  <span className='text-gray-700 border-b border-gray-300'>{reviewCount}</span>
-                  <span className='ml-1'>รีวิว</span>
+                  <span className='font-medium text-gray-700'>{likeCount}</span>{' '}
+                  <span className='text-gray-400'>คนสนใจ</span>
                 </span>
-                <span className='h-3 w-px bg-gray-200' />
-                <span>
-                  <span className='text-gray-700'>{likeCount}</span>
-                  <span className='ml-1'>คนสนใจ</span>
-                </span>
-                <span className='h-3 w-px bg-gray-200' />
-                <span>เผยแพร่ {formatThaiDate(item.postedAt)}</span>
+                <span className='text-gray-300'>·</span>
+                <span className='text-gray-400'>{formatThaiDate(item.postedAt)}</span>
               </div>
 
-              <div className='mt-3 rounded-xl border border-[#F8DEC1] bg-[var(--surface-paper-warm)] px-3 py-2.5'>
+              <div className='mt-4 rounded-lg bg-[var(--brand-page)] px-4 py-3'>
                 {priceText ? (
                   <div className='flex items-baseline gap-2'>
-                    <p className={SHOWCASE_DETAIL_EMPHASIS_CLASS}>
-                      {priceText}
-                    </p>
+                    <p className={SHOWCASE_DETAIL_EMPHASIS_CLASS}>{priceText}</p>
                     {item.promoPrice && item.basePrice && item.promoPrice < item.basePrice ? (
-                      <p className='line-through text-gray-400'>
+                      <p className='text-[13px] line-through text-gray-400'>
                         {formatTHB(item.basePrice)}
                       </p>
                     ) : null}
@@ -293,67 +322,65 @@ export function ProductDetailDesktop() {
                     สอบถามราคากับโรงงาน
                   </p>
                 )}
-                <p className={cn('mt-1.5', SHOWCASE_DETAIL_META_TEXT_CLASS)}>
-                  ราคาต่อชิ้นอาจแตกต่างตามปริมาณสั่งผลิต กรุณาแชทเพื่อขอใบเสนอราคา
+                <p className={cn('mt-1', SHOWCASE_DETAIL_META_TEXT_CLASS)}>
+                  ราคาอาจแตกต่างตามปริมาณสั่งผลิต — แชทเพื่อขอใบเสนอราคา
                 </p>
               </div>
 
-              <div className='mt-5 grid grid-cols-[120px_1fr] gap-x-4 gap-y-3'>
-                <span className='text-gray-400'>ขั้นต่ำผลิต</span>
-                <span className='text-[var(--brand-ink)]'>
-                  <span className='font-semibold'>{item.minOrder}</span>{' '}
-                  <span className='text-gray-500'>{moqUnit} (MOQ)</span>
-                </span>
-
+              <dl className='mt-5 space-y-2.5 border-t border-gray-50 pt-5'>
+                <div className='flex items-baseline justify-between gap-4'>
+                  <dt className='text-gray-400'>ขั้นต่ำผลิต</dt>
+                  <dd className='text-right text-[var(--brand-ink)]'>
+                    <span className='font-semibold'>{item.minOrder}</span>{' '}
+                    <span className='text-gray-500'>{moqUnit}</span>
+                  </dd>
+                </div>
                 {item.leadTime ? (
-                  <>
-                    <span className='text-gray-400'>ระยะเวลาผลิต</span>
-                    <span className='text-[var(--brand-ink)]'>{item.leadTime}</span>
-                  </>
+                  <div className='flex items-baseline justify-between gap-4'>
+                    <dt className='text-gray-400'>ระยะเวลาผลิต</dt>
+                    <dd className='text-right text-[var(--brand-ink)]'>{item.leadTime}</dd>
+                  </div>
                 ) : null}
-
                 {factory?.location ? (
-                  <>
-                    <span className='text-gray-400'>สถานที่ผลิต</span>
-                    <span className='inline-flex items-center gap-1 text-[var(--brand-ink)]'>
-                      <MapPin className='w-3.5 h-3.5 text-gray-400' /> {factory.location}
-                    </span>
-                  </>
+                  <div className='flex items-baseline justify-between gap-4'>
+                    <dt className='text-gray-400'>สถานที่ผลิต</dt>
+                    <dd className='inline-flex items-center justify-end gap-1 text-right text-[var(--brand-ink)]'>
+                      <MapPin className='h-3.5 w-3.5 shrink-0 text-gray-400' />
+                      {factory.location}
+                    </dd>
+                  </div>
                 ) : null}
-              </div>
+              </dl>
 
               {item.tags.length > 0 ? (
-                <div className='mt-5 grid grid-cols-[120px_1fr] items-start gap-x-4'>
-                  <span className='pt-1 text-gray-400'>แท็ก</span>
-                  <div className='flex flex-wrap gap-1.5'>
-                    {item.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className='inline-flex cursor-pointer items-center rounded-sm bg-[#F5F3FF] px-2 py-1 font-medium text-[var(--brand-purple)] transition-colors hover:opacity-80'
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                <div className='mt-4 flex flex-wrap gap-1.5'>
+                  {item.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className='inline-flex items-center rounded-full bg-gray-50 px-2.5 py-0.5 text-[12px] font-medium text-gray-600 ring-1 ring-gray-100'
+                    >
+                      {tag}
+                    </span>
+                  ))}
                 </div>
               ) : null}
 
-              <div className='mt-5 flex items-center gap-2'>
+              <div className='mt-auto flex items-center gap-2 pt-6'>
                 {canChat ? (
                   <Button
                     variant='unstyled'
                     type='button'
                     onClick={handleStartChat}
                     disabled={starting}
-                    className='inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-md border border-[var(--brand-orange)] bg-[var(--surface-orange-tint)] px-4 text-[14px] font-semibold text-[var(--brand-orange-vivid)] transition-colors disabled:opacity-70'
+                    className='inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-semibold text-[var(--brand-ink)] transition-colors hover:border-gray-300 hover:bg-gray-50 disabled:opacity-70'
                   >
                     {starting ? (
                       <span
-                        className='w-4 h-4 border-2 border-t-transparent rounded-full animate-spin'
+                        className='h-4 w-4 animate-spin rounded-full border-2 border-t-transparent'
                         style={{ borderColor: BRAND.orangeDark }}
                       />
                     ) : (
-                      <MessageCircle className='w-4 h-4' />
+                      <MessageCircle className='h-4 w-4' />
                     )}
                     แชทกับโรงงาน
                   </Button>
@@ -362,157 +389,173 @@ export function ProductDetailDesktop() {
                   variant='unstyled'
                   type='button'
                   onClick={() => navigate(`/factories/${item.factoryId}`)}
-                  className='inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-md bg-[var(--brand-orange)] px-4 text-[14px] font-semibold text-white transition-opacity hover:opacity-90'
+                  className='inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--brand-orange)] px-4 text-[13px] font-semibold text-white transition-opacity hover:opacity-90'
                 >
-                  <Store className='w-4 h-4' />
+                  <Store className='h-4 w-4' />
                   ดูโปรไฟล์โรงงาน
                 </Button>
               </div>
             </div>
           </div>
-        </div>
+        </article>
 
-        <div className='bg-white rounded-lg border border-gray-200 p-5'>
-          <div className='flex items-center justify-between gap-4'>
-            <div className='flex min-w-0 items-start gap-4'>
-              <div className='w-fit shrink-0 self-start rounded-lg'>
-                <div
-                  className={`relative block size-17 shrink-0 overflow-hidden rounded-lg border aspect-square ${
-                    factory?.image ? 'border-white' : 'border-dashed border-indigo-200 bg-violet-50'
-                  }`}
-                >
-                  {factory?.image ? (
-                    <ImageWithFallback
-                      src={factory.image}
-                      alt={item.factoryName}
-                      className='h-full w-full object-cover'
-                    />
-                  ) : (
-                    <span className='flex h-full w-full flex-col items-center justify-center gap-0.5 p-1 text-center'>
-                      <ImageIcon size={22} className='text-indigo-400' strokeWidth={1.5} />
-                      <span className='text-[9px] font-semibold leading-tight text-indigo-600'>
-                        โปรไฟล์
-                      </span>
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className='min-w-0'>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  onClick={() => navigate(`/factories/${item.factoryId}`)}
-                  className='flex max-w-full min-w-0 items-center gap-1.5 text-left transition-opacity hover:opacity-80'
-                >
-                  <p className={cn('truncate', SHOWCASE_DETAIL_TITLE_CLASS)}>
-                    {item.factoryName}
-                  </p>
-                  {factory?.verified ? (
-                    <BadgeCheck className='h-3.5 w-3.5 shrink-0 text-[var(--brand-purple)]' />
-                  ) : null}
-                </Button>
-                {factory?.specialization ? (
-                  <p className={cn('mt-1 truncate', SHOWCASE_DETAIL_META_TEXT_CLASS)}>
-                    {factory.specialization}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-
-            <div className='shrink-0 rounded-lg border border-gray-100 bg-[var(--brand-page)] px-3 py-2 text-center'>
-              <p className={SHOWCASE_DETAIL_META_TEXT_CLASS}>ออเดอร์สำเร็จ</p>
-              <p className='text-[14px] font-semibold tabular-nums text-[var(--brand-orange)]'>
-                {factory?.completedOrders ?? 0}
-              </p>
-            </div>
-          </div>
-        </div>
- 
-
-        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-          <div className={SHOWCASE_SECTION_HEADER_CLASS}>
-            <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>รายละเอียดสินค้า</p>
-          </div>
-          <div className='p-6'>
-            {markdown ? (
-              <MarkdownBody source={markdown} typography='showcase-detail' />
+        <Button
+          variant='unstyled'
+          type='button'
+          onClick={() => navigate(`/factories/${item.factoryId}`)}
+          className='group flex w-full items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 text-left shadow-sm transition-colors hover:border-gray-200 hover:bg-gray-50/40'
+        >
+          <div
+            className={`relative block size-14 shrink-0 overflow-hidden rounded-lg border aspect-square ${
+              factory?.image ? 'border-gray-100' : 'border-dashed border-indigo-200 bg-violet-50'
+            }`}
+          >
+            {factory?.image ? (
+              <ImageWithFallback
+                src={factory.image}
+                alt={item.factoryName}
+                className='h-full w-full object-cover'
+              />
             ) : (
-              <p className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'text-gray-400')}>
-                ยังไม่มีรายละเอียดเพิ่มเติม
-              </p>
+              <span className='flex h-full w-full flex-col items-center justify-center gap-0.5 p-1 text-center'>
+                <ImageIcon size={20} className='text-indigo-400' strokeWidth={1.5} />
+                <span className='text-[8px] font-semibold leading-tight text-indigo-600'>โปรไฟล์</span>
+              </span>
             )}
           </div>
-        </div>
-
-        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-          <div className={SHOWCASE_SECTION_HEADER_CLASS}>
-            <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>คะแนนรีวิว</p>
+          <div className='min-w-0 flex-1'>
+            <div className='flex items-center gap-1.5'>
+              <p className={cn('truncate', SECTION_TITLE_CLASS)}>{item.factoryName}</p>
+              {factory?.verified ? (
+                <BadgeCheck className='h-3.5 w-3.5 shrink-0 text-[var(--brand-purple)]' />
+              ) : null}
+            </div>
+            {factory?.specialization ? (
+              <p className={cn('mt-0.5 truncate', SHOWCASE_DETAIL_META_TEXT_CLASS)}>
+                {factory.specialization}
+              </p>
+            ) : null}
           </div>
-          <div className='p-6'>
-            <div className='flex items-center gap-8'>
-              <div>
-                <p className='text-[22px] font-bold leading-none text-[var(--brand-orange)]'>
+          <div className='hidden shrink-0 text-right sm:block'>
+            <p className={SHOWCASE_DETAIL_META_TEXT_CLASS}>ออเดอร์สำเร็จ</p>
+            <p className='text-[14px] font-semibold tabular-nums text-[var(--brand-orange)]'>
+              {factory?.completedOrders ?? 0}
+            </p>
+          </div>
+          <Chevron className='h-4 w-4 shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5' />
+        </Button>
+
+        <DetailSection eyebrow='ข้อมูลสินค้า' title='รายละเอียด'>
+          {markdown ? (
+            <MarkdownBody source={markdown} typography='showcase-detail' />
+          ) : (
+            <p className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'text-gray-400')}>
+              ยังไม่มีรายละเอียดเพิ่มเติม
+            </p>
+          )}
+        </DetailSection>
+
+        <section className='overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm'>
+          <header className='border-b border-gray-50 px-6 py-4'>
+            <p className={SECTION_EYEBROW_CLASS}>ความคิดเห็น</p>
+            <h2 className={cn(SECTION_TITLE_CLASS, 'mt-0.5')}>คะแนนรีวิว</h2>
+          </header>
+
+          <div className='px-6 py-5'>
+            <div className='grid grid-cols-[auto_minmax(0,1fr)] items-start gap-8 lg:gap-12'>
+              <div className='flex flex-col items-center rounded-xl bg-[var(--brand-page)] px-8 py-6'>
+                <p className='text-[40px] font-bold leading-none tabular-nums tracking-tight text-[var(--brand-ink)]'>
                   {avgRating.toFixed(1)}
                 </p>
-                <p className={cn('mt-1', SHOWCASE_DETAIL_META_TEXT_CLASS)}>จาก {reviewCount} รีวิว</p>
+                <div className='mt-2.5'>
+                  <StarRatingDisplay rating={avgRating} size='md' />
+                </div>
+                <p className='mt-2.5 text-[12px] text-gray-500'>
+                  จาก {reviewCount} รีวิว
+                </p>
               </div>
-              <div className='flex-1 space-y-2'>
+
+              <div className='space-y-2 pt-2'>
                 {[5, 4, 3, 2, 1].map((star) => {
                   const count = Number(breakdown[String(star)] ?? 0);
                   const intensity =
                     reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
                   return (
-                    <div key={star} className='flex items-center gap-2'>
-                      <span className={cn('w-10', SHOWCASE_DETAIL_META_TEXT_CLASS)}>{star} ดาว</span>
-                      <div className='h-2 flex-1 rounded-full bg-gray-100 overflow-hidden'>
+                    <div key={star} className='flex items-center gap-2.5'>
+                      <span className='w-3 shrink-0 text-[12px] tabular-nums text-gray-400'>
+                        {star}
+                      </span>
+                      <Star className='h-3 w-3 shrink-0 fill-amber-400 text-amber-400' />
+                      <div className='h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-100'>
                         <div
-                          className='h-full rounded-full'
-                          style={{ width: `${intensity}%`, background: BRAND.orange }}
+                          className='h-full rounded-full bg-amber-400 transition-all duration-500'
+                          style={{ width: `${intensity}%` }}
                         />
                       </div>
+                      <span className='w-5 shrink-0 text-right text-[11px] tabular-nums text-gray-400'>
+                        {count}
+                      </span>
                     </div>
                   );
                 })}
               </div>
             </div>
-            <div className='mt-5 border-t border-gray-100 pt-4 space-y-3'>
-              <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>
-                รีวิวล่าสุดจากลูกค้า
-              </p>
+
+            <div className='mt-6 border-t border-gray-50 pt-5'>
+              <p className='mb-3 text-[12px] font-medium text-gray-500'>รีวิวล่าสุด</p>
               {latestReviews.length === 0 ? (
-                <p className={cn(SHOWCASE_DETAIL_META_TEXT_CLASS, 'text-gray-400')}>ยังไม่มีรีวิว</p>
+                <p className={cn(SHOWCASE_DETAIL_META_TEXT_CLASS, 'py-6 text-center text-gray-400')}>
+                  ยังไม่มีรีวิวจากลูกค้า
+                </p>
               ) : (
-                latestReviews.slice(0, 3).map((r) => (
-                  <div key={r.id} className='rounded-lg border border-gray-100 px-3 py-2'>
-                    <div className='flex items-center justify-between gap-2'>
-                      <p className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'font-semibold text-gray-700 truncate')}>
-                        {r.reviewer}
-                      </p>
-                      <p className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'text-amber-600')}>
-                        ★ {Number(r.rating || 0).toFixed(1)}
-                      </p>
-                    </div>
-                    <p className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'mt-1 line-clamp-2 text-gray-600')}>
-                      {r.comment || '-'}
-                    </p>
-                    {r.imageUrls && r.imageUrls.length > 0 && (
-                      <div className='mt-1.5'>
-                        <ReviewImageAttachments urls={r.imageUrls} onPreviewUrl={(u) => openImageLightbox(u)} />
+                <ul className='divide-y divide-gray-50'>
+                  {latestReviews.slice(0, 3).map((r) => (
+                    <li key={r.id} className='py-4 first:pt-0 last:pb-0'>
+                      <div className='flex items-start justify-between gap-3'>
+                        <div className='min-w-0'>
+                          <p
+                            className={cn(
+                              SHOWCASE_DETAIL_DATA_TEXT_CLASS,
+                              'font-semibold text-gray-800 truncate',
+                            )}
+                          >
+                            {r.reviewer}
+                          </p>
+                          <div className='mt-1'>
+                            <StarRatingDisplay rating={Number(r.rating || 0)} />
+                          </div>
+                        </div>
+                        <span className='shrink-0 text-[13px] font-semibold tabular-nums text-amber-600'>
+                          {Number(r.rating || 0).toFixed(1)}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                ))
+                      <p
+                        className={cn(
+                          SHOWCASE_DETAIL_DATA_TEXT_CLASS,
+                          'mt-2 leading-relaxed text-gray-600',
+                        )}
+                      >
+                        {r.comment || '—'}
+                      </p>
+                      {r.imageUrls && r.imageUrls.length > 0 ? (
+                        <div className='mt-2.5'>
+                          <ReviewImageAttachments
+                            urls={r.imageUrls}
+                            onPreviewUrl={(u) => openImageLightbox(u)}
+                          />
+                        </div>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-          <div className={SHOWCASE_SECTION_HEADER_CLASS}>
-            <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>สินค้าที่ใกล้เคียง</p>
-          </div>
+        <DetailSection eyebrow='แนะนำ' title='สินค้าที่ใกล้เคียง' className='overflow-hidden [&>div:last-child]:pt-4'>
           {relatedProducts.length > 0 ? (
-            <div className='p-6 grid grid-cols-5 2xl:grid-cols-6 gap-2'>
+            <div className='grid grid-cols-5 gap-2 2xl:grid-cols-6'>
               {relatedProducts.map((rp) => (
                 <ShowcaseGridCard
                   key={rp.id}
@@ -524,11 +567,11 @@ export function ProductDetailDesktop() {
               ))}
             </div>
           ) : (
-            <div className={cn('p-8 text-center text-gray-400', SHOWCASE_DETAIL_META_TEXT_CLASS)}>
+            <p className={cn('py-4 text-center text-gray-400', SHOWCASE_DETAIL_META_TEXT_CLASS)}>
               ยังไม่มีสินค้าที่ใกล้เคียงในหมวดนี้
-            </div>
+            </p>
           )}
-        </div>
+        </DetailSection>
       </div>
     </div>
   );
