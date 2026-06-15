@@ -1,20 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Building2,
-  Plus,
-  Pencil,
-  Trash2,
-  Star,
-  Loader2,
-  X,
-  Copy,
-  Check,
-} from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Building2, Plus, Pencil, Trash2, Star, Copy, Check } from 'lucide-react';
 import { bankAccountApi } from '@/services/api/factoryApi';
 import type { IBankAccountResponse } from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AppDialog } from '@/components/ui/app-dialog';
+import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  factoryBadgeClass,
+  factoryButtonClass,
+  factoryCardClass,
+} from '@/pages/factory-portal/factoryUi';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 
 const THAI_BANKS = [
   'กสิกรไทย',
@@ -31,7 +36,15 @@ const THAI_BANKS = [
   'อื่นๆ',
 ];
 
-export function FactoryBankSettingsPage() {
+type FactoryBankSettingsPageProps = {
+  embedded?: boolean;
+  onRegisterAdd?: (handler: () => void) => void;
+};
+
+export function FactoryBankSettingsPage({
+  embedded = false,
+  onRegisterAdd,
+}: FactoryBankSettingsPageProps = {}) {
   const [accounts, setAccounts] = useState<IBankAccountResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -62,16 +75,27 @@ export function FactoryBankSettingsPage() {
     void loadAccounts();
   }, []);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setBankName('');
     setAccountNumber('');
     setAccountName('');
     setIsDefault(true);
     setEditingId(null);
     setShowForm(false);
-  };
+  }, []);
+
+  const openAdd = useCallback(() => {
+    resetForm();
+    setError('');
+    setShowForm(true);
+  }, [resetForm]);
+
+  useEffect(() => {
+    onRegisterAdd?.(openAdd);
+  }, [onRegisterAdd, openAdd]);
 
   const openEdit = (acc: IBankAccountResponse) => {
+    setError('');
     setBankName(acc.bank_name);
     setAccountNumber(acc.account_number);
     setAccountName(acc.account_name);
@@ -130,52 +154,96 @@ export function FactoryBankSettingsPage() {
   };
 
   return (
-    <div className='space-y-6'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <h2 className='text-lg font-bold text-slate-900'>บัญชีธนาคาร</h2>
-          <p className='text-xs text-slate-500 mt-0.5'>
-            บัญชีหลักจะแสดงให้ลูกค้าเมื่อสั่งซื้อสินค้า
-          </p>
-        </div>
-        {!showForm && (
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => { resetForm(); setShowForm(true); }}
-            className='flex items-center gap-1.5 px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors'
-          >
-            <Plus size={14} />
-            เพิ่มบัญชี
-          </Button>
-        )}
-      </div>
+    <div className={embedded ? 'space-y-4' : 'space-y-6'}>
+      {embedded ? (
+        <p className='text-xs text-gray-400'>บัญชีหลักจะแสดงให้ลูกค้าเมื่อสั่งซื้อสินค้า</p>
+      ) : (
+        <FactoryPageHeader
+          title='บัญชีธนาคาร'
+          subtitle='Factory / Bank settings · บัญชีหลักจะแสดงให้ลูกค้าเมื่อสั่งซื้อสินค้า'
+          icon={Building2}
+          variant='minimal'
+          actionNode={
+            !showForm ? (
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={openAdd}
+                className={factoryButtonClass({
+                  variant: 'primary',
+                  size: 'md',
+                  className: 'min-w-[126px] font-normal',
+                })}
+              >
+                <Plus size={14} />
+                เพิ่มบัญชี
+              </Button>
+            ) : null
+          }
+        />
+      )}
 
-      {error && (
+      {error && !showForm && (
         <div className='rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700'>
           {error}
         </div>
       )}
 
-      {/* Add/Edit form */}
-      {showForm && (
-        <div className='bg-white rounded-xl border border-indigo-200 shadow-sm p-5 space-y-4'>
-          <h3 className='text-sm font-bold text-slate-900'>
-            {editingId ? 'แก้ไขบัญชี' : 'เพิ่มบัญชีใหม่'}
-          </h3>
+      <AppDialog
+        open={showForm}
+        onOpenChange={(v) => {
+          if (!v) resetForm();
+        }}
+        title={editingId ? 'แก้ไขบัญชีธนาคาร' : 'เพิ่มบัญชีธนาคาร'}
+        variant='sheet'
+        size='lg'
+        dismissible={!saving}
+        className='max-h-[min(90vh,100dvh)]'
+        bodyClassName='p-4 sm:p-5 pb-6'
+        footerClassName='p-4 sm:p-5 pt-2 flex gap-2'
+        footer={
+          <ModalFooter
+            layout='flex'
+            accent='purple'
+            primary={{
+              label: editingId ? 'บันทึก' : 'เพิ่มบัญชี',
+              loadingLabel: 'กำลังบันทึก...',
+              loading: saving,
+              disabled: saving,
+              onClick: () => void handleSave(),
+              className: 'flex-1 h-11 py-0',
+            }}
+            secondary={{
+              label: 'ยกเลิก',
+              onClick: resetForm,
+              disabled: saving,
+              tone: 'outline',
+              className: 'flex-1 h-11 py-0 shadow-none',
+            }}
+          />
+        }
+      >
+        <div className='space-y-4'>
+          {error ? (
+            <div className='rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700'>
+              {error}
+            </div>
+          ) : null}
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
             <div>
               <Label className='text-xs font-semibold text-slate-700'>ธนาคาร</Label>
-              <select
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                className='mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500'
-              >
-                <option value=''>เลือกธนาคาร</option>
-                {THAI_BANKS.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
+              <Select value={bankName} onValueChange={setBankName}>
+                <SelectTrigger className='mt-1 w-full text-slate-900'>
+                  <SelectValue placeholder='เลือกธนาคาร' />
+                </SelectTrigger>
+                <SelectContent>
+                  {THAI_BANKS.map((b) => (
+                    <SelectItem key={b} value={b}>
+                      {b}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label className='text-xs font-semibold text-slate-700'>เลขบัญชี</Label>
@@ -202,47 +270,31 @@ export function FactoryBankSettingsPage() {
                 id='is_default'
                 checked={isDefault}
                 onChange={(e) => setIsDefault(e.target.checked)}
-                className='rounded border-slate-300'
+                className='cursor-pointer rounded border-slate-300 accent-brand-purple focus:ring-2 focus:ring-brand-purple/25'
               />
-              <label htmlFor='is_default' className='text-sm text-slate-700'>ตั้งเป็นบัญชีหลัก</label>
+              <label
+                htmlFor='is_default'
+                className='cursor-pointer text-xs font-normal text-slate-700'
+              >
+                ตั้งเป็นบัญชีหลัก
+              </label>
             </div>
           </div>
-          <div className='flex items-center gap-2'>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={handleSave}
-              disabled={saving}
-              className='flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60'
-            >
-              {saving ? <Loader2 size={13} className='animate-spin' /> : null}
-              {editingId ? 'บันทึก' : 'เพิ่มบัญชี'}
-            </Button>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={resetForm}
-              className='px-4 py-2 bg-slate-100 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-200 transition-colors'
-            >
-              <X size={13} className='inline mr-1' />
-              ยกเลิก
-            </Button>
-          </div>
         </div>
-      )}
+      </AppDialog>
 
       {/* Account list */}
       {loading ? (
         <div className='space-y-3'>
           {[1, 2].map((i) => (
-            <div key={i} className='bg-white rounded-xl border border-slate-200 p-5'>
+            <div key={i} className={factoryCardClass({ variant: 'section' })}>
               <div className='h-5 w-32 bg-slate-100 rounded animate-pulse mb-2' />
               <div className='h-4 w-48 bg-slate-100 rounded animate-pulse' />
             </div>
           ))}
         </div>
       ) : accounts.length === 0 && !showForm ? (
-        <div className='bg-white rounded-xl border border-slate-200 p-10 text-center'>
+        <div className={factoryCardClass({ variant: 'empty' })}>
           <Building2 size={36} className='mx-auto text-slate-300 mb-3' />
           <p className='text-sm text-slate-500'>ยังไม่มีบัญชีธนาคาร</p>
           <p className='text-xs text-slate-400 mt-1'>เพิ่มบัญชีเพื่อให้ลูกค้าโอนเงินได้</p>
@@ -252,8 +304,10 @@ export function FactoryBankSettingsPage() {
           {accounts.map((acc) => (
             <div
               key={acc.account_id}
-              className={`bg-white rounded-xl border shadow-sm p-5 ${
-                acc.is_default ? 'border-indigo-200 ring-1 ring-indigo-100' : 'border-slate-200'
+              className={`rounded-lg border bg-white p-4 sm:p-5 ${
+                acc.is_default
+                  ? 'border-brand-purple/20 ring-1 ring-brand-purple/15'
+                  : 'border-slate-200'
               }`}
             >
               <div className='flex items-start justify-between'>
@@ -262,7 +316,7 @@ export function FactoryBankSettingsPage() {
                     <Building2 size={14} className='text-slate-400' />
                     <span className='text-sm font-bold text-slate-900'>{acc.bank_name}</span>
                     {acc.is_default && (
-                      <span className='flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-bold'>
+                      <span className={factoryBadgeClass({ variant: 'count', className: 'gap-1' })}>
                         <Star size={9} />
                         หลัก
                       </span>
@@ -273,10 +327,14 @@ export function FactoryBankSettingsPage() {
                     <button
                       type='button'
                       onClick={() => handleCopy(acc.account_number, `num-${acc.account_id}`)}
-                      className='text-slate-400 hover:text-indigo-600 transition-colors'
+                      className='text-slate-400 hover:text-brand-purple transition-colors'
                       title='คัดลอกเลขบัญชี'
                     >
-                      {copiedField === `num-${acc.account_id}` ? <Check size={13} className='text-emerald-500' /> : <Copy size={13} />}
+                      {copiedField === `num-${acc.account_id}` ? (
+                        <Check size={13} className='text-emerald-500' />
+                      ) : (
+                        <Copy size={13} />
+                      )}
                     </button>
                   </div>
                   <div className='flex items-center gap-2'>
@@ -284,10 +342,14 @@ export function FactoryBankSettingsPage() {
                     <button
                       type='button'
                       onClick={() => handleCopy(acc.account_name, `name-${acc.account_id}`)}
-                      className='text-slate-400 hover:text-indigo-600 transition-colors'
+                      className='text-slate-400 hover:text-brand-purple transition-colors'
                       title='คัดลอกชื่อบัญชี'
                     >
-                      {copiedField === `name-${acc.account_id}` ? <Check size={13} className='text-emerald-500' /> : <Copy size={13} />}
+                      {copiedField === `name-${acc.account_id}` ? (
+                        <Check size={13} className='text-emerald-500' />
+                      ) : (
+                        <Copy size={13} />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -295,14 +357,14 @@ export function FactoryBankSettingsPage() {
                   <button
                     type='button'
                     onClick={() => openEdit(acc)}
-                    className='p-1.5 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors'
+                    className={factoryButtonClass({ variant: 'ghostIcon', size: 'icon' })}
                   >
                     <Pencil size={14} />
                   </button>
                   <button
                     type='button'
                     onClick={() => handleDelete(acc)}
-                    className='p-1.5 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors'
+                    className={factoryButtonClass({ variant: 'dangerIcon', size: 'icon' })}
                   >
                     <Trash2 size={14} />
                   </button>

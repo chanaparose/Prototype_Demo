@@ -77,6 +77,7 @@ export function CertUploadModal({
   const fieldError = errors.cert_id?.message || errors.expire_date?.message || errors.file?.message;
 
   const selectedFile = form.watch('file');
+  const expireDate = form.watch('expire_date');
   let fileHelperText: string | undefined;
   if (selectedFile) {
     fileHelperText = selectedFile.name;
@@ -122,33 +123,50 @@ export function CertUploadModal({
       dismissible={!submitting}
       className='max-h-[min(90vh,100dvh)]'
       bodyClassName='p-4 sm:p-5 pb-6 space-y-4'
-      footerClassName='p-4 sm:p-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2'
+      footerClassName='p-4 sm:p-5 pt-2 flex gap-2'
       footer={
-        <ModalFooter
-          layout='grid'
-          accent='success'
-          primary={{
-            label: 'บันทึก',
-            loadingLabel: 'กำลังบันทึก...',
-            loading: submitting,
-            disabled: submitting,
-            onClick: () => void handleSubmit((v) => runSubmit(v, false))(),
-          }}
-          alternatePrimary={
-            mode === 'create'
-              ? {
-                  label: 'บันทึกและเพิ่มใบรับรองถัดไป',
-                  disabled: submitting,
-                  onClick: () => void handleSubmit((v) => runSubmit(v, true))(),
-                }
-              : undefined
-          }
-          secondary={
-            mode === 'edit'
-              ? { label: 'ยกเลิก', onClick: onClose, disabled: submitting }
-              : undefined
-          }
-        />
+        mode === 'create' ? (
+          <ModalFooter
+            layout='flex'
+            accent='purple'
+            primary={{
+              label: 'บันทึก',
+              loadingLabel: 'กำลังบันทึก...',
+              loading: submitting,
+              disabled: submitting,
+              onClick: () => void handleSubmit((v) => runSubmit(v, false))(),
+              fullWidth: true,
+              className: 'flex-1 h-11 py-0',
+            }}
+            alternatePrimary={{
+              label: 'บันทึกและเพิ่มใบรับรองถัดไป',
+              disabled: submitting,
+              onClick: () => void handleSubmit((v) => runSubmit(v, true))(),
+              className: 'flex-1 h-11 py-0 shadow-none',
+            }}
+          />
+        ) : (
+          <ModalFooter
+            layout='flex'
+            accent='purple'
+            primary={{
+              label: 'บันทึก',
+              loadingLabel: 'กำลังบันทึก...',
+              loading: submitting,
+              disabled: submitting,
+              onClick: () => void handleSubmit((v) => runSubmit(v, false))(),
+              fullWidth: true,
+              className: 'flex-1 h-11 py-0',
+            }}
+            secondary={{
+              label: 'ยกเลิก',
+              onClick: onClose,
+              disabled: submitting,
+              tone: 'outline',
+              className: 'flex-1 h-11 py-0 shadow-none',
+            }}
+          />
+        )
       }
     >
       {rootError || fieldError ? <ErrorAlert>{rootError ?? fieldError}</ErrorAlert> : null}
@@ -175,16 +193,17 @@ export function CertUploadModal({
       </FormField>
 
       <FormField label='เลขที่เอกสาร (ถ้ามี)' error={errors.cert_number?.message}>
-        <Input
-          className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-          {...register('cert_number')}
-        />
+        <Input {...register('cert_number')} />
       </FormField>
 
       <FormField label='วันหมดอายุ' required error={errors.expire_date?.message}>
         <Input
           type='date'
-          className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          className={
+            expireDate
+              ? 'cursor-pointer text-sm text-gray-900 [&::-webkit-calendar-picker-indicator]:cursor-pointer'
+              : 'cursor-pointer text-xs text-slate-400 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60'
+          }
           {...register('expire_date')}
         />
       </FormField>
@@ -197,8 +216,10 @@ export function CertUploadModal({
       >
         <Input
           type='file'
-          accept='image/jpeg,.jpg,.jpeg'
-          className='text-sm block w-full'
+          accept='image/*,.pdf'
+          className={`text-xs file:text-xs ${
+            selectedFile ? 'text-gray-700' : 'text-slate-400'
+          } cursor-pointer file:cursor-pointer file:text-brand-purple`}
           onChange={(e) => {
             const f = e.target.files?.[0] ?? null;
             setValue('file', f, { shouldValidate: true });

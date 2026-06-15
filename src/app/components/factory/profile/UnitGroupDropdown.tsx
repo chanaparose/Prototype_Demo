@@ -88,7 +88,7 @@ export function UnitGroupDropdown({
 
   const triggerClass = compact
     ? 'h-7 rounded-lg text-xs px-2 w-28 border border-gray-200 bg-white'
-    : 'h-9 rounded-xl text-[13px] px-3 min-w-[7rem] border border-gray-200 bg-white';
+    : 'h-9 rounded-lg text-[13px] px-3 min-w-[7rem] border border-gray-200 bg-white';
 
   return (
     <div ref={menuRef} className={`relative shrink-0 z-30 ${className}`}>
@@ -110,7 +110,7 @@ export function UnitGroupDropdown({
       </Button>
 
       {open && groups.length > 0 ? (
-        <div className='absolute top-full mt-1 left-0 flex rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden z-40 max-w-[calc(100vw-2rem)]'>
+        <div className='absolute top-full mt-1 left-0 flex rounded-lg border border-gray-200 bg-white shadow-md overflow-hidden z-40 max-w-[calc(100vw-2rem)]'>
           <div className='max-h-[min(75vh,22rem)] overflow-y-auto py-1 shrink-0 border-r border-gray-100 w-36 sm:w-44'>
             <Button
               variant='unstyled'

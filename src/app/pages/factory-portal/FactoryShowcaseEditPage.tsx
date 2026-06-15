@@ -29,6 +29,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { masterApi } from '@/services/api/masterApi';
 import { UnitPicker, type UnitOption } from '@/pages/rfq/steps/UnitPicker';
+import {
+  factoryButtonClass,
+  factoryCardClass,
+  factoryInputClass,
+} from '@/pages/factory-portal/factoryUi';
 
 interface ShowcaseFormValues {
   content_type: ShowcaseType;
@@ -353,19 +358,19 @@ export function FactoryShowcaseEditPage() {
 
   const save = useCallback(
     async (submitStatus: 'DR' | 'AC') => {
-    if (!id) return;
-    const v = form.getValues();
-    if (!v.title.trim()) {
+      if (!id) return;
+      const v = form.getValues();
+      if (!v.title.trim()) {
         setError('กรุณากรอกชื่อรายการ');
         return;
       }
       if (submitStatus === 'AC' && v.content_type !== 'ID') {
         if (imageUrls.length === 0 || !String(imageUrls[0] ?? '').trim()) {
           setError('กรุณาอัปโหลดภาพปกอย่างน้อย 1 รูปก่อนเผยแพร่');
-      return;
+          return;
         }
-    }
-    if (v.content_type === 'PM') {
+      }
+      if (v.content_type === 'PM') {
         if (submitStatus === 'AC') {
           if (v.promo_price == null || Number(v.promo_price) <= 0) {
             setError('กรุณากรอกราคาโปรโมชันให้มากกว่า 0');
@@ -380,28 +385,28 @@ export function FactoryShowcaseEditPage() {
             return;
           }
         }
-      if (!v.start_date || !v.end_date) {
-        setError('โปรโมชันต้องมีวันเริ่มและวันสิ้นสุด');
-        return;
+        if (!v.start_date || !v.end_date) {
+          setError('โปรโมชันต้องมีวันเริ่มและวันสิ้นสุด');
+          return;
+        }
+        if (v.end_date < v.start_date) {
+          setError('วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม');
+          return;
+        }
       }
-      if (v.end_date < v.start_date) {
-        setError('วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม');
-        return;
-      }
-    }
-    setSaving(true);
-    setError('');
+      setSaving(true);
+      setError('');
       setLinkedShowcaseError('');
       const coverUrl = imageUrls[0] ?? '';
       const base = {
         content_type: v.content_type,
         status: submitStatus,
-      title: v.title.trim(),
+        title: v.title.trim(),
         excerpt: v.content_type === 'ID' ? undefined : v.excerpt.trim() || undefined,
         content: v.content.trim() || undefined,
         image_url: coverUrl || undefined,
-      category_id: v.category_id ?? undefined,
-      sub_category_id: v.sub_category_id ?? undefined,
+        category_id: v.category_id ?? undefined,
+        sub_category_id: v.sub_category_id ?? undefined,
         unit_id: v.unit_id ?? undefined,
         lead_time_days: v.lead_time_days ?? undefined,
         linked_showcases: [...imageUrls, ...selectedShowcaseIds],
@@ -425,8 +430,8 @@ export function FactoryShowcaseEditPage() {
                 base_price: v.base_price ?? undefined,
               };
 
-    try {
-      await showcasesApi.update(id, payload);
+      try {
+        await showcasesApi.update(id, payload);
         const existingRaw = await showcasesApi.listImages(id).catch(() => []);
         const existing = (Array.isArray(existingRaw) ? existingRaw : [])
           .map((r) => {
@@ -483,19 +488,19 @@ export function FactoryShowcaseEditPage() {
           }),
         );
 
-      await Promise.all([
-        qc.invalidateQueries({ queryKey: ['showcase', id] }),
-        qc.invalidateQueries({ queryKey: ['showcases'] }),
-      ]);
-        navigate('/factory/showcases', { replace: true });
-    } catch (e) {
+        await Promise.all([
+          qc.invalidateQueries({ queryKey: ['showcase', id] }),
+          qc.invalidateQueries({ queryKey: ['showcases'] }),
+        ]);
+        navigate(backPath, { replace: true });
+      } catch (e) {
         const msg = e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ';
         const linkedMsg = mapLinkedShowcasesErrorToThai(msg);
         if (linkedMsg) setLinkedShowcaseError(linkedMsg);
         setError(msg);
-    } finally {
-      setSaving(false);
-    }
+      } finally {
+        setSaving(false);
+      }
     },
     [id, form, qc, imageUrls, selectedShowcaseIds, navigate, backPath],
   );
@@ -505,8 +510,8 @@ export function FactoryShowcaseEditPage() {
       const ok = window.confirm('มีข้อมูลที่ยังไม่บันทึก ต้องการออกจากหน้านี้หรือไม่?');
       if (!ok) return;
     }
-    navigate('/factory/showcases');
-  }, [form.formState.isDirty, navigate]);
+    navigate(backPath);
+  }, [backPath, form.formState.isDirty, navigate]);
 
   const onPickImage = async (file: File | null) => {
     if (!file || imageUrls.length >= 5) return;
@@ -526,7 +531,7 @@ export function FactoryShowcaseEditPage() {
           variant='unstyled'
           type='button'
           onClick={() => void refetch()}
-          className='px-4 py-2 rounded-xl border text-sm'
+          className={factoryButtonClass({ variant: 'secondary', size: 'md' })}
         >
           ลองใหม่
         </Button>
@@ -536,30 +541,27 @@ export function FactoryShowcaseEditPage() {
   if (isLoading) return <FormSkeleton sections={4} />;
 
   return (
-    <form
-      className='pb-28'
-      style={{ backgroundColor: 'var(--brand-page)' }}
-    >
+    <form className='pb-28'>
       {/* Full-width sticky header — escapes FactoryPortalLayout padding */}
-      <header className='sticky top-0 z-[99999] -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 -mt-4 sm:-mt-5 lg:-mt-6 flex w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'>
-        <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8'>
+      <header className='sticky top-0 z-[99999] -mx-3 -mt-4 flex w-[calc(100%+1.5rem)] border-b border-slate-200 bg-white sm:-mx-4 sm:-mt-5 sm:w-[calc(100%+2rem)] md:-mx-6 md:w-[calc(100%+3rem)] lg:-mx-8 lg:-mt-6 lg:w-[calc(100%+4rem)] 2xl:-mx-10 2xl:w-[calc(100%+5rem)]'>
+        <div className='flex h-16 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 2xl:px-10'>
           <Button
             variant='unstyled'
             type='button'
             onClick={onBack}
-            className='flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
+            className='flex shrink-0 items-center gap-1.5 text-sm text-slate-600 transition-colors hover:text-slate-900'
           >
             <ChevronLeft size={18} />
             กลับ
           </Button>
- 
+
           <div className='flex items-center gap-2'>
             <Button
               variant='unstyled'
               type='button'
               onClick={() => void save('DR')}
               disabled={saving}
-              className='rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50 disabled:opacity-50'
+              className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
             >
               {saving ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
             </Button>
@@ -568,11 +570,7 @@ export function FactoryShowcaseEditPage() {
               type='button'
               onClick={() => void save('AC')}
               disabled={saving || !canPublish}
-              className='rounded-lg px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-all disabled:opacity-50'
-              style={{
-                background:
-                  'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-              }}
+              className={factoryButtonClass({ variant: 'primary', size: 'sm' })}
             >
               {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
             </Button>
@@ -580,7 +578,7 @@ export function FactoryShowcaseEditPage() {
         </div>
       </header>
 
-      <div className='max-w-6xl mx-auto px-0 py-5'>
+      <div className='max-w-[1500px] mx-auto px-0 py-5'>
         <ImageCropModal
           open={cropFile != null}
           file={cropFile}
@@ -609,14 +607,21 @@ export function FactoryShowcaseEditPage() {
 
         <div
           className={`grid auto-rows-min gap-5 ${
-            contentType === 'ID' ? 'lg:grid-cols-3' : 'lg:grid-cols-2'
+            contentType === 'ID'
+              ? 'lg:grid-cols-3 2xl:grid-cols-4'
+              : 'lg:grid-cols-2 2xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)]'
           }`}
         >
           {/* Image — col 1 */}
           {/* Col 1: RelatedShowcasePicker (ID) or ImageManager (others) */}
           {contentType === 'ID' ? (
-            <section className='h-full rounded-2xl border border-gray-100 bg-white p-5 shadow-sm space-y-3 lg:order-2 lg:col-span-1'>
-              <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
+            <section
+              className={factoryCardClass({
+                variant: 'section',
+                className: 'h-full space-y-3 lg:order-2 lg:col-span-1',
+              })}
+            >
+              <div className='flex items-center justify-between gap-3 border-b border-slate-100 pb-3'>
                 <p className='text-sm font-bold text-gray-800'>อ้างอิงสินค้า / โปรโมชัน</p>
               </div>
               <p className='text-xs text-gray-500'>
@@ -644,32 +649,40 @@ export function FactoryShowcaseEditPage() {
 
           {/* Col 2: Form fields */}
           <section
-            className={`rounded-2xl border border-gray-100 bg-white p-5 shadow-sm space-y-5 ${
-              contentType === 'ID' ? 'lg:order-1 lg:col-span-2' : ''
-            }`}
+            className={factoryCardClass({
+              variant: 'section',
+              className: `space-y-5 ${
+                contentType === 'ID' ? 'lg:order-1 lg:col-span-2 2xl:col-span-3' : ''
+              }`,
+            })}
           >
-            <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
+            <div className='flex items-center justify-between gap-3 border-b border-slate-100 pb-3'>
               <p className='text-sm font-bold text-gray-800'>รายละเอียดสินค้า</p>
               <ShowcaseTypeBadge type={contentType} />
             </div>
             <p className='text-xs text-gray-500'>
               สถานะ:{' '}
               <span className='font-semibold text-gray-700'>
-                {(
-                  {
-                    DR: 'ร่าง',
-                    AC: 'Active',
-                    HI: 'Hidden',
-                    AR: 'เก็บเข้าคลัง',
-                  } as const
-                )[form.watch('status') ?? 'DR']}
+                {
+                  (
+                    {
+                      DR: 'ร่าง',
+                      AC: 'Active',
+                      HI: 'Hidden',
+                      AR: 'เก็บเข้าคลัง',
+                    } as const
+                  )[form.watch('status') ?? 'DR']
+                }
               </span>
             </p>
 
             <Label className='block'>
               <span className='text-xs text-gray-500 font-medium'>ชื่อ *</span>
               <Input
-                className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-normal text-gray-900 placeholder:text-xs placeholder:font-normal placeholder:text-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/50'
+                className={factoryInputClass({
+                  className:
+                    'mt-1 font-normal text-gray-900 placeholder:text-xs placeholder:font-normal placeholder:text-gray-400 shadow-none focus:outline-none focus-visible:border-brand-purple/40 focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10',
+                })}
                 placeholder='ชื่อสินค้า / ไอเดีย'
                 {...form.register('title', { required: true })}
               />
@@ -706,29 +719,51 @@ export function FactoryShowcaseEditPage() {
 
           {/* ราคา / MOQ / Lead time — separate card, full width (non-ID only) */}
           {contentType !== 'ID' && (
-            <section className='lg:col-span-2 rounded-2xl bg-white border border-gray-100 shadow-sm p-5 space-y-5'>
-              <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
+            <section
+              className={factoryCardClass({
+                variant: 'section',
+                className: 'space-y-5 lg:col-span-2 2xl:col-span-2',
+              })}
+            >
+              <div className='flex items-center justify-between gap-3 border-b border-slate-100 pb-3'>
                 <p className='text-sm font-bold text-gray-800'>ราคา & การผลิต</p>
               </div>
               <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
-                
                 <Label className='block'>
                   <span className='text-xs text-gray-500'>ราคาเริ่มต้น (฿)</span>
                   <Input
                     type='number'
                     step='0.01'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    className={factoryInputClass({
+                      className:
+                        'mt-1 shadow-none focus-visible:border-brand-purple/40 focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10',
+                    })}
                     value={form.watch('base_price') ?? ''}
-                    onChange={(e) => form.setValue('base_price', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
+                    onChange={(e) =>
+                      form.setValue(
+                        'base_price',
+                        e.target.value === '' ? null : Number(e.target.value),
+                        {
+                          shouldDirty: true,
+                        },
+                      )
+                    }
                   />
                 </Label>
                 <Label className='block'>
                   <span className='text-xs text-gray-500'>MOQ (จำนวนขั้นต่ำ)</span>
                   <Input
                     type='number'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    className={factoryInputClass({
+                      className:
+                        'mt-1 shadow-none focus-visible:border-brand-purple/40 focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10',
+                    })}
                     value={form.watch('moq') ?? ''}
-                    onChange={(e) => form.setValue('moq', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
+                    onChange={(e) =>
+                      form.setValue('moq', e.target.value === '' ? null : Number(e.target.value), {
+                        shouldDirty: true,
+                      })
+                    }
                   />
                 </Label>
                 <Label className='block'>
@@ -747,32 +782,68 @@ export function FactoryShowcaseEditPage() {
                   <span className='text-xs text-gray-500'>Lead time (วัน)</span>
                   <Input
                     type='number'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    className={factoryInputClass({
+                      className:
+                        'mt-1 shadow-none focus-visible:border-brand-purple/40 focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10',
+                    })}
                     value={form.watch('lead_time_days') ?? ''}
-                    onChange={(e) => form.setValue('lead_time_days', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
+                    onChange={(e) =>
+                      form.setValue(
+                        'lead_time_days',
+                        e.target.value === '' ? null : Number(e.target.value),
+                        { shouldDirty: true },
+                      )
+                    }
                   />
                 </Label>
               </div>
 
               {contentType === 'PM' && (
-                <div className='grid gap-3 pt-3 border-t border-dashed border-purple-100 sm:grid-cols-2 xl:grid-cols-3'>
+                <div className='grid gap-3 border-t border-dashed border-brand-purple/20 pt-3 sm:grid-cols-2 xl:grid-cols-3'>
                   <Label className='block'>
-                    <span className='text-xs font-medium text-indigo-600'>ราคาโปรโมชัน (฿) *</span>
+                    <span className='text-xs font-medium text-brand-purple'>
+                      ราคาโปรโมชัน (฿) *
+                    </span>
                     <Input
                       type='number'
                       placeholder='0.00'
-                      className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                      className={factoryInputClass({
+                        className:
+                          'mt-1 border-brand-purple/20 shadow-none focus:outline-none focus:ring-1 focus:ring-brand-purple/10 focus-visible:shadow-none',
+                      })}
                       value={form.watch('promo_price') ?? ''}
-                    onChange={(e) => form.setValue('promo_price', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
+                      onChange={(e) =>
+                        form.setValue(
+                          'promo_price',
+                          e.target.value === '' ? null : Number(e.target.value),
+                          { shouldDirty: true },
+                        )
+                      }
                     />
                   </Label>
                   <Label className='block'>
-                    <span className='text-xs font-medium text-indigo-600'>วันที่เริ่มโปร *</span>
-                    <Input type='date' className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none' {...form.register('start_date')} />
+                    <span className='text-xs font-medium text-brand-purple'>วันที่เริ่มโปร *</span>
+                    <Input
+                      type='date'
+                      className={factoryInputClass({
+                        className:
+                          'mt-1 border-brand-purple/20 shadow-none focus:outline-none focus:ring-1 focus:ring-brand-purple/10 focus-visible:shadow-none',
+                      })}
+                      {...form.register('start_date')}
+                    />
                   </Label>
                   <Label className='block'>
-                    <span className='text-xs font-medium text-indigo-600'>วันที่สิ้นสุดโปร *</span>
-                    <Input type='date' className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none' {...form.register('end_date')} />
+                    <span className='text-xs font-medium text-brand-purple'>
+                      วันที่สิ้นสุดโปร *
+                    </span>
+                    <Input
+                      type='date'
+                      className={factoryInputClass({
+                        className:
+                          'mt-1 border-brand-purple/20 shadow-none focus:outline-none focus:ring-1 focus:ring-brand-purple/10 focus-visible:shadow-none',
+                      })}
+                      {...form.register('end_date')}
+                    />
                   </Label>
                 </div>
               )}
@@ -781,7 +852,11 @@ export function FactoryShowcaseEditPage() {
 
           {/* Markdown — full width */}
           <section
-            className={contentType === 'ID' ? 'lg:order-3 lg:col-span-3' : 'lg:order-3 lg:col-span-2'}
+            className={
+              contentType === 'ID'
+                ? 'lg:order-3 lg:col-span-3 2xl:col-span-4'
+                : 'lg:order-3 lg:col-span-2'
+            }
           >
             <Controller
               control={form.control}
@@ -798,8 +873,7 @@ export function FactoryShowcaseEditPage() {
             />
           </section>
         </div>
-          </div>
- 
+      </div>
     </form>
   );
 }

@@ -7,6 +7,11 @@ import { getFactoryEntityId } from '@/utils/factoryUser';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 import { useShippingMethods } from '@/hooks/master/useShippingMethods';
 import {
+  factoryButtonClass,
+  factoryCardClass,
+  factoryBoxClass,
+} from '@/pages/factory-portal/factoryUi';
+import {
   useQuotationDetailQuery,
   useQuotationHistoryQuery,
 } from '@/domain/factory/queries/useQuotationDetailQuery';
@@ -61,7 +66,7 @@ export function FactoryEditQuotationPage() {
           variant='unstyled'
           type='button'
           onClick={() => void detailQ.refetch()}
-          className='px-4 py-2 rounded-xl border text-sm'
+          className='px-4 py-2 rounded-lg border text-sm'
         >
           ลองใหม่
         </Button>
@@ -79,13 +84,13 @@ export function FactoryEditQuotationPage() {
 
   return (
     <div style={{ backgroundColor: 'var(--brand-page)' }} className='min-h-screen pb-28'>
-      <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3'>
+      <div className='sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-gray-100 bg-white/95 px-4 backdrop-blur'>
         <Button
           variant='unstyled'
           type='button'
           onClick={() => navigate(-1)}
-          className='w-9 h-9 rounded-xl flex items-center justify-center shrink-0'
-          style={{ color: 'var(--brand-indigo)' }}
+          className='w-9 h-9 rounded-lg flex items-center justify-center shrink-0'
+          style={{ color: 'var(--brand-purple)' }}
         >
           <ChevronLeft size={22} />
         </Button>
@@ -101,19 +106,29 @@ export function FactoryEditQuotationPage() {
         )}
       </div>
 
-      <div className='max-w-3xl mx-auto px-4 pt-4 space-y-4 w-full min-w-0'>
+      <div className='max-w-5xl mx-auto px-4 pt-4 space-y-4 w-full min-w-0'>
         {error ? <ErrorAlert>{error}</ErrorAlert> : null}
         {info && (
-          <p className='text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3'>
+          <p className='text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-4 py-3'>
             {info}
           </p>
         )}
 
         <div className='flex items-center gap-2 text-xs text-gray-500'>
-          <span className='bg-white border border-gray-100 rounded-lg px-2.5 py-1 font-medium'>
+          <span
+            className={factoryBoxClass({
+              variant: 'neutral',
+              className: 'px-2.5 py-1 font-medium',
+            })}
+          >
             สถานะ: <strong className='text-gray-900'>{status}</strong>
           </span>
-          <span className='bg-white border border-gray-100 rounded-lg px-2.5 py-1 font-medium'>
+          <span
+            className={factoryBoxClass({
+              variant: 'neutral',
+              className: 'px-2.5 py-1 font-medium',
+            })}
+          >
             เวอร์ชัน: <strong className='text-gray-900'>{version}</strong>
           </span>
         </div>
@@ -136,12 +151,12 @@ export function FactoryEditQuotationPage() {
           onDirtyChange={setIsDirty}
         />
 
-        <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4'>
+        <section className={factoryCardClass({ variant: 'section' })}>
           <h2
             className='font-bold flex items-center gap-2 mb-3 text-sm'
             style={{ color: 'var(--brand-navy)' }}
           >
-            <History size={16} style={{ color: 'var(--brand-indigo)' }} /> ประวัติการแก้ไข
+            <History size={16} style={{ color: 'var(--brand-purple)' }} /> ประวัติการแก้ไข
           </h2>
           {historyQ.isLoading ? (
             <p className='text-sm text-gray-400'>กำลังโหลดประวัติ…</p>
@@ -153,7 +168,7 @@ export function FactoryEditQuotationPage() {
                 <li
                   key={String(h.history_id ?? i)}
                   className='border-l-2 pl-3 py-1'
-                  style={{ borderColor: 'var(--brand-indigo)' }}
+                  style={{ borderColor: 'var(--brand-purple)' }}
                 >
                   <div className='font-medium' style={{ color: 'var(--brand-navy)' }}>
                     v{String(h.version ?? '?')} · {String(h.change_type ?? '')}
@@ -172,14 +187,17 @@ export function FactoryEditQuotationPage() {
       </div>
 
       <div className='fixed bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur border-t border-gray-100 p-4'>
-        <div className='max-w-3xl mx-auto flex gap-3'>
+        <div className='max-w-5xl mx-auto flex gap-3'>
           <Button
             variant='unstyled'
             type='button'
             disabled={isLocked || saving}
             onClick={() => void formRef.current?.submit()}
-            className='flex-1 py-3 rounded-xl font-semibold text-sm border-2 disabled:opacity-50 inline-flex items-center justify-center gap-2'
-            style={{ borderColor: 'var(--brand-indigo)', color: 'var(--brand-indigo)' }}
+            className={factoryButtonClass({
+              variant: 'secondary',
+              size: 'md',
+              className: 'flex-1 justify-center gap-2',
+            })}
           >
             <Save size={14} /> บันทึกร่าง
           </Button>
@@ -188,12 +206,11 @@ export function FactoryEditQuotationPage() {
             type='button'
             disabled={isLocked || saving || !isDirty}
             onClick={() => void formRef.current?.submit()}
-            className='flex-1 py-3 rounded-xl text-white font-semibold text-sm disabled:opacity-50 inline-flex items-center justify-center gap-2'
-            style={{
-              background:
-                'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-              boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
-            }}
+            className={factoryButtonClass({
+              variant: 'submit',
+              size: 'md',
+              className: 'flex-1 justify-center gap-2',
+            })}
           >
             {saving ? 'กำลังบันทึก…' : 'ส่ง'}
           </Button>

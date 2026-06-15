@@ -27,7 +27,7 @@ export function FactoryHighlightField({
         รายละเอียดสินค้าและ BOQ
       </Label>
       <div
-        className={`rounded-xl border ${error ? 'border-red-300' : 'border-gray-200'} p-2.5 bg-white`}
+        className={`rounded-lg border ${error ? 'border-red-300' : 'border-gray-200'} p-2.5 bg-white`}
       >
         <Textarea
           value={value}

@@ -5,6 +5,11 @@ import {
   formatAddressLocation,
   mapAddressFromApi,
 } from '@/domain/shared/mappers/mapAddressFromApi';
+import {
+  factoryBadgeClass,
+  factoryButtonClass,
+  factoryCardClass,
+} from '@/pages/factory-portal/factoryUi';
 
 type Row = Record<string, unknown>;
 
@@ -23,16 +28,16 @@ const TYPE_LABEL: Record<string, string> = {
 
 const TYPE_COLOR: Record<string, { bg: string; text: string; border: string; dot: string }> = {
   B: {
-    bg: 'bg-indigo-50',
-    text: 'text-indigo-700',
-    border: 'border-indigo-200',
-    dot: 'bg-indigo-500',
+    bg: 'bg-brand-lavender',
+    text: 'text-brand-purple',
+    border: 'border-brand-purple/20',
+    dot: 'bg-brand-purple',
   },
   S: {
-    bg: 'bg-violet-50',
-    text: 'text-violet-700',
-    border: 'border-violet-200',
-    dot: 'bg-violet-500',
+    bg: 'bg-brand-lavender',
+    text: 'text-brand-purple',
+    border: 'border-brand-purple/20',
+    dot: 'bg-brand-orange',
   },
 };
 
@@ -61,10 +66,10 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
       {/* Header */}
       <div className='flex items-center justify-between gap-3'>
         <div className='flex items-center gap-2'>
-          <MapPin size={16} className='text-indigo-500 shrink-0' />
+          <MapPin size={16} className='text-brand-purple shrink-0' />
           <h3 className='text-sm font-semibold text-gray-800'>รายการที่อยู่</h3>
           {addresses.length > 0 && (
-            <span className='inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 text-[10px] font-bold'>
+            <span className={factoryBadgeClass({ variant: 'count', className: 'h-5 min-w-5' })}>
               {addresses.length}
             </span>
           )}
@@ -73,10 +78,11 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
           variant='unstyled'
           type='button'
           onClick={onCreate}
-          className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90'
-          style={{
-            background: 'linear-gradient(135deg, #3C50E0 0%, #6366f1 100%)',
-          }}
+          className={factoryButtonClass({
+            variant: 'primary',
+            size: 'md',
+            className: 'min-w-[126px] font-normal',
+          })}
         >
           <Plus size={13} />
           เพิ่มที่อยู่
@@ -85,7 +91,7 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
 
       {/* Empty state */}
       {addresses.length === 0 && (
-        <div className='flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-gray-200 bg-gray-50 text-center'>
+        <div className={factoryCardClass({ variant: 'empty' })}>
           <MapPin size={28} className='text-gray-300 mb-2' />
           <p className='text-sm font-medium text-gray-500'>ยังไม่มีที่อยู่ในระบบ</p>
           <p className='text-xs text-gray-400 mt-1'>กดปุ่ม "เพิ่มที่อยู่" เพื่อเพิ่มที่อยู่ใหม่</p>
@@ -117,8 +123,10 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
                   return (
                     <div
                       key={id}
-                      className={`rounded-xl border bg-white shadow-sm transition-shadow hover:shadow-md ${
-                        isDefault ? `border-l-4 ${color.border} border-l-${type === 'B' ? 'indigo' : 'violet'}-400` : 'border-gray-100'
+                      className={`rounded-lg border bg-white transition-colors hover:border-brand-purple/20 ${
+                        isDefault
+                          ? `${color.border} border-l-4 border-l-brand-purple`
+                          : 'border-gray-100'
                       }`}
                     >
                       <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 px-4 py-3.5'>
@@ -126,7 +134,10 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
                         <div className='min-w-0 flex-1'>
                           <div className='flex flex-wrap items-center gap-2 mb-1'>
                             <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${color.bg} ${color.text} ${color.border} border`}
+                              className={factoryBadgeClass({
+                                variant: 'meta',
+                                className: `${color.bg} ${color.text} ${color.border}`,
+                              })}
                             >
                               {TYPE_LABEL[type]}
                             </span>
@@ -150,7 +161,12 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
                               variant='unstyled'
                               type='button'
                               onClick={() => onSetDefault(row)}
-                              className='px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs font-medium hover:border-amber-300 hover:text-amber-600 hover:bg-amber-50 transition-colors'
+                              className={factoryButtonClass({
+                                variant: 'secondary',
+                                size: 'sm',
+                                className:
+                                  'hover:border-amber-300 hover:bg-amber-50 hover:text-amber-600',
+                              })}
                             >
                               ตั้งค่าเริ่มต้น
                             </Button>
@@ -159,7 +175,7 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
                             variant='unstyled'
                             type='button'
                             onClick={() => onEdit(row)}
-                            className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition-colors'
+                            className={factoryButtonClass({ variant: 'ghostIcon', size: 'icon' })}
                             aria-label='แก้ไขที่อยู่'
                           >
                             <Pencil size={13} />
@@ -168,7 +184,7 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
                             variant='unstyled'
                             type='button'
                             onClick={() => onDelete(row)}
-                            className='p-2 rounded-lg border border-gray-100 text-gray-400 hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition-colors'
+                            className={factoryButtonClass({ variant: 'dangerIcon', size: 'icon' })}
                             aria-label='ลบที่อยู่'
                           >
                             <Trash2 size={13} />

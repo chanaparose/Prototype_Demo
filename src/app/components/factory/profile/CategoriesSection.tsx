@@ -176,18 +176,18 @@ export function CategoriesSection({
   return (
     <div>
       {resolvedCategories.length === 0 ? (
-        <div className='border border-dashed border-gray-300 rounded-2xl p-6 text-center'>
+        <div className='border border-dashed border-gray-300 rounded-lg p-6 text-center'>
           <p className='text-sm text-gray-500'>ยังไม่ได้เลือกหมวดหมู่</p>
           <p className='text-xs text-gray-400 mt-1'>กด [+ เพิ่มหมวดหมู่] เพื่อเริ่มต้น</p>
         </div>
       ) : (
         <div className='space-y-4'>
           <div>
-            <p className='text-xs font-semibold text-indigo-700 mb-2'>หมวดสินค้า (PD)</p>
+            <p className='text-xs font-semibold text-brand-purple mb-2'>หมวดสินค้า (PD)</p>
             {groupedCategories.pd.length > 0 ? (
               renderCategoryGrid(groupedCategories.pd)
             ) : (
-              <div className='rounded-xl border border-dashed border-indigo-200 bg-indigo-50/40 px-3 py-2 text-xs text-indigo-500'>
+              <div className='rounded-lg border border-dashed border-brand-purple/20 bg-brand-lavender/40 px-3 py-2 text-xs text-brand-purple'>
                 ยังไม่ได้เลือกหมวด PD
               </div>
             )}
@@ -198,7 +198,7 @@ export function CategoriesSection({
             {groupedCategories.mt.length > 0 ? (
               renderCategoryGrid(groupedCategories.mt, true)
             ) : (
-              <div className='rounded-xl border border-dashed border-emerald-200 bg-emerald-50/40 px-3 py-2 text-xs text-emerald-600'>
+              <div className='rounded-lg border border-dashed border-emerald-200 bg-emerald-50/40 px-3 py-2 text-xs text-emerald-600'>
                 ยังไม่ได้เลือกหมวด MT
               </div>
             )}

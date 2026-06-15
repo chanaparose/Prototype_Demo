@@ -20,7 +20,7 @@ export function BusinessInfoSection({ form }: Props) {
       <Label className='block sm:col-span-2'>
         <span className='text-xs text-gray-500'>ชื่อโรงงาน *</span>
         <Input
-          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          className='mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10 focus-visible:border-brand-purple/40'
           {...register('factory_name')}
         />
         {errors.factory_name?.message ? (
@@ -31,7 +31,7 @@ export function BusinessInfoSection({ form }: Props) {
       <Label className='block'>
         <span className='text-xs text-gray-500'>เลขประจำตัวผู้เสียภาษี</span>
         <Input
-          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          className='mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10 focus-visible:border-brand-purple/40'
           {...register('tax_id')}
         />
       </Label>
@@ -43,7 +43,7 @@ export function BusinessInfoSection({ form }: Props) {
         </span>
         <Input
           placeholder='15-20 วัน'
-          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          className='mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10 focus-visible:border-brand-purple/40'
           {...register('lead_time_desc')}
         />
       </Label>
@@ -51,7 +51,7 @@ export function BusinessInfoSection({ form }: Props) {
       <Label className='block sm:col-span-2'>
         <span className='text-xs text-gray-500'>รายละเอียด</span>
         <Textarea
-          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[96px]'
+          className='mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm min-h-[96px] shadow-none focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10 focus-visible:border-brand-purple/40'
           {...register('description')}
         />
       </Label>

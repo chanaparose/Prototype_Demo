@@ -25,6 +25,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 
+const FACTORY_PROFILE_FALLBACK_AVATAR_SRC = '/assets/avatars/factory-fallback.svg';
+
 const emptyValues: ProfileEditFormValues = {
   first_name: '',
   last_name: '',
@@ -42,7 +44,6 @@ export function EditProfilePage() {
   const [loading, setLoading] = useState(true);
   const [rootError, setRootError] = useState('');
   const [role, setRole] = useState('');
-  const profileAvatarSrc = resolveCustomerAvatarSrc(user?.id, 112);
 
   const form = useForm<ProfileEditFormValues>({
     resolver: zodResolver(profileEditFormSchema),
@@ -51,6 +52,9 @@ export function EditProfilePage() {
   });
 
   const isFactory = String(role || user?.role || '').toUpperCase() === 'FT';
+  const profileAvatarSrc = isFactory
+    ? FACTORY_PROFILE_FALLBACK_AVATAR_SRC
+    : resolveCustomerAvatarSrc(user?.id, 112);
 
   useEffect(() => {
     let mounted = true;

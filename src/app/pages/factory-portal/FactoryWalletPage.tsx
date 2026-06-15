@@ -14,14 +14,14 @@ import { useModal } from '@/hooks/ui/useModal';
 import { walletApi, transactionsApi } from '@/services/api/userApi';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
-import { appColors } from '@/styles/colors';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
-
-const NAVY = appColors.brand.navy;
-const ORANGE = appColors.brand.indigo;
-const TEAL = appColors.brand.teal;
+import {
+  FactoryStatusBadge,
+  type FactoryStatusTone,
+} from '@/pages/factory-portal/components/FactoryStatusBadge';
+import { factoryButtonClass, factoryCardClass } from '@/pages/factory-portal/factoryUi';
 
 type TxRow = Record<string, unknown>;
 
@@ -61,14 +61,13 @@ function txLabel(type: string): string {
   return 'ธุรกรรม';
 }
 
-function statusBadgeCls(status: string) {
+function statusTone(status: string): FactoryStatusTone {
   const s = String(status ?? '').toUpperCase();
-  if (s === 'ST' || s === 'CM' || s === 'SUCCESS' || s === 'COMPLETED')
-    return 'bg-emerald-100 text-emerald-700';
-  if (s === 'PT' || s === 'PENDING' || s === 'PROCESSING') return 'bg-amber-100 text-amber-700';
+  if (s === 'ST' || s === 'CM' || s === 'SUCCESS' || s === 'COMPLETED') return 'success';
+  if (s === 'PT' || s === 'PENDING' || s === 'PROCESSING') return 'warning';
   if (s === 'RJ' || s === 'FL' || s === 'FAILED' || s === 'CN' || s === 'CANCELLED')
-    return 'bg-red-100 text-red-600';
-  return 'bg-gray-100 text-gray-500';
+    return 'danger';
+  return 'neutral';
 }
 
 function statusLabel(status: string) {
@@ -86,25 +85,18 @@ function StatCard({
   icon: Icon,
   label,
   value,
-  accent,
 }: {
   icon: React.ElementType;
   label: string;
   value: string;
-  accent: string;
 }) {
   return (
-    <div className='rounded-2xl border border-gray-100 bg-white shadow-sm p-4'>
-      <div
-        className='w-9 h-9 rounded-xl flex items-center justify-center mb-3'
-        style={{ backgroundColor: `${accent}1A` }}
-      >
-        <Icon size={17} style={{ color: accent }} />
+    <div className={factoryCardClass({ variant: 'section', className: 'p-4' })}>
+      <div className='mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-brand-lavender text-brand-purple'>
+        <Icon size={22} aria-hidden />
       </div>
-      <p className='text-lg font-bold tabular-nums' style={{ color: NAVY }}>
-        {value}
-      </p>
-      <p className='text-xs text-gray-500 mt-0.5'>{label}</p>
+      <p className='text-lg font-bold tabular-nums text-slate-900'>{value}</p>
+      <p className='mt-0.5 text-xs text-gray-500'>{label}</p>
     </div>
   );
 }
@@ -116,40 +108,29 @@ function TxRow({ t }: { t: NormTx }) {
     ? new Date(t.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })
     : '-';
   const ref = t.reference ? `· ${t.reference}` : '';
-  const sBadgeCls = statusBadgeCls(t.status);
   const sLabel = statusLabel(t.status);
 
   return (
-    <div className='flex items-center gap-3 px-4 py-3 border-t border-gray-50 hover:bg-brand-page transition-colors'>
+    <div className='flex items-center gap-3 border-t border-slate-100 px-4 py-3 transition-colors hover:bg-brand-page'>
       <div
-        className='w-9 h-9 rounded-xl flex items-center justify-center shrink-0'
-        style={{ backgroundColor: credit ? 'rgba(5,150,105,0.1)' : 'rgba(220,38,38,0.1)' }}
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+          credit ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
+        }`}
       >
-        {credit ? (
-          <ArrowDownLeft size={16} style={{ color: 'var(--status-success)' }} />
-        ) : (
-          <ArrowUpRight size={16} style={{ color: 'var(--status-danger-deep)' }} />
-        )}
+        {credit ? <ArrowDownLeft size={16} aria-hidden /> : <ArrowUpRight size={16} aria-hidden />}
       </div>
-      <div className='flex-1 min-w-0'>
-        <p className='text-sm font-medium truncate' style={{ color: NAVY }}>
-          {desc}
-        </p>
+      <div className='min-w-0 flex-1'>
+        <p className='truncate text-sm font-medium text-slate-900'>{desc}</p>
         <p className='text-xs text-gray-400'>
           {dateStr} {ref}
         </p>
       </div>
-      <div className='text-right shrink-0'>
-        <p
-          className='text-sm font-bold'
-          style={{ color: credit ? 'var(--status-success)' : 'var(--status-danger-deep)' }}
-        >
+      <div className='shrink-0 text-right'>
+        <p className={`text-sm font-bold ${credit ? 'text-emerald-700' : 'text-red-600'}`}>
           {credit ? '+' : '-'}
           {formatCurrency(t.amount)}
         </p>
-        <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${sBadgeCls}`}>
-          {sLabel}
-        </span>
+        <FactoryStatusBadge tone={statusTone(t.status)}>{sLabel}</FactoryStatusBadge>
       </div>
     </div>
   );
@@ -177,7 +158,7 @@ export function FactoryWalletPage() {
 
       let raw: unknown;
       try {
-        raw = await walletApi.transactions();
+        raw = await walletApi.getTransactions();
       } catch {
         raw = await transactionsApi.list().catch(() => []);
       }
@@ -233,12 +214,17 @@ export function FactoryWalletPage() {
   if (loading) {
     return (
       <div className='space-y-4'>
-        <FactoryPageHeader title='กระเป๋าเงิน' subtitle='Factory / Wallet' icon={Wallet} />
+        <FactoryPageHeader
+          title='กระเป๋าเงิน'
+          subtitle='Factory / Wallet'
+          icon={Wallet}
+          variant='minimal'
+        />
         <div className='space-y-4'>
-          <div className='h-48 rounded-2xl bg-white animate-pulse' />
+          <div className='h-48 rounded-lg bg-white animate-pulse' />
           <div className='grid grid-cols-3 gap-3'>
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className='h-24 rounded-2xl bg-white animate-pulse' />
+              <div key={i} className='h-24 rounded-lg bg-white animate-pulse' />
             ))}
           </div>
         </div>
@@ -251,7 +237,12 @@ export function FactoryWalletPage() {
 
   return (
     <div className='space-y-4 pb-8'>
-      <FactoryPageHeader title='กระเป๋าเงิน' subtitle='Factory / Wallet' icon={Wallet} />
+      <FactoryPageHeader
+        title='กระเป๋าเงิน'
+        subtitle='Factory / Wallet'
+        icon={Wallet}
+        variant='minimal'
+      />
 
       <div className='space-y-5'>
         <div className='flex items-center justify-between text-xs text-gray-500'>
@@ -260,7 +251,7 @@ export function FactoryWalletPage() {
             variant='unstyled'
             type='button'
             onClick={() => void load()}
-            className='flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 hover:bg-gray-50 transition-colors font-medium'
+            className={factoryButtonClass({ variant: 'toolbar', size: 'sm' })}
           >
             <RefreshCw size={12} />
             รีเฟรช
@@ -268,24 +259,24 @@ export function FactoryWalletPage() {
         </div>
 
         {error ? (
-          <div className='flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3'>
+          <div className='flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-4 py-3'>
             <AlertCircle size={16} className='shrink-0' />
             <span>{error} — แสดงข้อมูลตัวอย่างแทน</span>
           </div>
         ) : null}
 
-        <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
+        <div className={factoryCardClass({ variant: 'section' })}>
           <p className='text-sm text-slate-500 mb-0.5'>ยอดคงเหลือ</p>
           <p className='text-4xl font-bold tabular-nums text-slate-900'>{balanceDisplay}</p>
 
           <div className='mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3'>
-            <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2'>
+            <div className='rounded-lg border border-slate-200 bg-[var(--brand-page)] px-3 py-2'>
               <p className='text-xs text-slate-500'>รอดำเนินการ</p>
               <p className='text-base font-semibold tabular-nums text-slate-800'>
                 {pendingDisplay}
               </p>
             </div>
-            <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2'>
+            <div className='rounded-lg border border-slate-200 bg-[var(--brand-page)] px-3 py-2'>
               <p className='text-xs text-slate-500'>รายได้รวมเดือนนี้</p>
               <p className='text-base font-semibold tabular-nums text-slate-800'>
                 {formatCurrency(thisMonthEarned)}
@@ -293,7 +284,7 @@ export function FactoryWalletPage() {
             </div>
           </div>
 
-          <div className='mt-5 flex gap-3'>
+          <div className='mt-5 flex flex-col gap-3 sm:flex-row'>
             <Button
               variant='unstyled'
               type='button'
@@ -301,7 +292,11 @@ export function FactoryWalletPage() {
                 setWithdrawAmount('');
                 withdraw.openModal();
               }}
-              className='flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors'
+              className={factoryButtonClass({
+                variant: 'primary',
+                size: 'md',
+                className: 'flex-1',
+              })}
             >
               ถอนเงิน
             </Button>
@@ -311,7 +306,11 @@ export function FactoryWalletPage() {
               onClick={() =>
                 document.getElementById('tx-section')?.scrollIntoView({ behavior: 'smooth' })
               }
-              className='flex-1 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors'
+              className={factoryButtonClass({
+                variant: 'secondary',
+                size: 'md',
+                className: 'flex-1',
+              })}
             >
               ประวัติการถอน
             </Button>
@@ -319,38 +318,23 @@ export function FactoryWalletPage() {
         </div>
 
         <div className='grid grid-cols-3 gap-3'>
-          <StatCard
-            icon={TrendingUp}
-            label='รายได้รวม'
-            value={formatCurrency(totalEarned)}
-            accent='var(--status-success)'
-          />
-          <StatCard
-            icon={BarChart3}
-            label='ถอนแล้ว'
-            value={formatCurrency(totalWithdrawn)}
-            accent={ORANGE}
-          />
-          <StatCard icon={Clock} label='รอรับ' value={formatCurrency(pending ?? 0)} accent={TEAL} />
+          <StatCard icon={TrendingUp} label='รายได้รวม' value={formatCurrency(totalEarned)} />
+          <StatCard icon={BarChart3} label='ถอนแล้ว' value={formatCurrency(totalWithdrawn)} />
+          <StatCard icon={Clock} label='รอรับ' value={formatCurrency(pending ?? 0)} />
         </div>
 
-        <div
-          className='rounded-2xl border px-4 py-3 text-sm'
-          style={{ borderColor: '#C4B5D4', backgroundColor: '#F3EEF8', color: '#4A267D' }}
-        >
+        <div className='rounded-lg border border-brand-purple/15 bg-brand-lavender px-4 py-3 text-sm text-brand-purple'>
           <p className='font-semibold mb-0.5'>เติมเงิน / ถอนเงิน (PromptPay)</p>
           <p className='text-xs opacity-80 leading-relaxed'>
-            ฟลว์ PromptPay กำลังพัฒนา — ดูยอดและประวัติธุรกรรมด้านล่างได้จาก API ที่มีอยู่
+            โฟลว์ PromptPay กำลังพัฒนา — ดูยอดและประวัติธุรกรรมด้านล่างได้จาก API ที่มีอยู่
           </p>
         </div>
 
         {pendingWithdrawals.length > 0 && (
-          <section className='rounded-2xl border border-amber-100 bg-amber-50 overflow-hidden'>
+          <section className='overflow-hidden rounded-lg border border-amber-200 bg-amber-50'>
             <div className='px-4 py-3 border-b border-amber-100 flex items-center gap-2'>
-              <Clock size={15} style={{ color: 'var(--status-warning-deep)' }} />
-              <h2 className='text-sm font-bold' style={{ color: '#92400E' }}>
-                รายการถอนเงินรอดำเนินการ
-              </h2>
+              <Clock size={15} className='text-amber-700' />
+              <h2 className='text-sm font-bold text-amber-800'>รายการถอนเงินรอดำเนินการ</h2>
             </div>
             <ul>
               {pendingWithdrawals.map((t) => (
@@ -359,7 +343,7 @@ export function FactoryWalletPage() {
                   className='flex items-center justify-between gap-3 px-4 py-3 border-t border-amber-100 first:border-t-0'
                 >
                   <div>
-                    <p className='text-sm font-medium' style={{ color: NAVY }}>
+                    <p className='text-sm font-medium text-slate-900'>
                       {t.description || 'ถอนเงิน'}
                     </p>
                     <p className='text-xs text-amber-700'>
@@ -373,11 +357,9 @@ export function FactoryWalletPage() {
                       · {t.reference || '-'}
                     </p>
                   </div>
-                  <div className='text-right shrink-0'>
+                  <div className='shrink-0 text-right'>
                     <p className='text-sm font-bold text-amber-700'>-{formatCurrency(t.amount)}</p>
-                    <span className='text-[11px] font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full'>
-                      รอดำเนินการ
-                    </span>
+                    <FactoryStatusBadge tone='warning'>รอดำเนินการ</FactoryStatusBadge>
                   </div>
                 </li>
               ))}
@@ -385,15 +367,10 @@ export function FactoryWalletPage() {
           </section>
         )}
 
-        <section
-          id='tx-section'
-          className='rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden'
-        >
+        <section id='tx-section' className={factoryCardClass({ variant: 'shell' })}>
           <div className='px-4 pt-4 pb-3 border-b border-gray-50'>
             <div className='flex items-center justify-between mb-3'>
-              <h2 className='text-sm font-bold' style={{ color: NAVY }}>
-                ประวัติธุรกรรม
-              </h2>
+              <h2 className='text-sm font-bold text-slate-900'>ประวัติธุรกรรม</h2>
               <span className='text-xs text-gray-400'>{filteredTx.length} รายการ</span>
             </div>
 
@@ -412,16 +389,10 @@ export function FactoryWalletPage() {
                     key={key}
                     type='button'
                     onClick={() => setFilterType(key)}
-                    className='px-3 py-1.5 rounded-xl text-xs font-semibold transition-all'
-                    style={
-                      active
-                        ? {
-                            backgroundColor: ORANGE,
-                            color: 'var(--neutral-white)',
-                            boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
-                          }
-                        : { backgroundColor: 'var(--neutral-muted)', color: '#4B5563' }
-                    }
+                    className={factoryButtonClass({
+                      variant: active ? 'primary' : 'toolbar',
+                      size: 'sm',
+                    })}
                   >
                     {label}
                   </Button>
@@ -451,35 +422,26 @@ export function FactoryWalletPage() {
             className='absolute inset-0 bg-black/50'
             onClick={() => withdraw.closeModal()}
           />
-          <div className='absolute inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[420px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl overflow-hidden'>
-            <div className='flex justify-center pt-3 pb-1'>
+          <div className='absolute inset-x-4 bottom-4 overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-2xl sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:w-[520px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl'>
+            <div className='flex justify-center pt-3 pb-1 sm:hidden'>
               <div className='w-10 h-1 rounded-full bg-gray-200' />
             </div>
             <div className='p-5 space-y-4'>
               <div className='flex items-center justify-between'>
-                <h2 className='text-base font-bold' style={{ color: NAVY }}>
-                  ถอนเงิน
-                </h2>
+                <h2 className='text-base font-bold text-slate-900'>ถอนเงิน</h2>
                 <Button
                   variant='unstyled'
                   type='button'
                   onClick={() => withdraw.closeModal()}
-                  className='p-1.5 rounded-xl hover:bg-gray-100 transition-colors'
+                  className={factoryButtonClass({ variant: 'ghostIcon', size: 'icon' })}
                 >
                   <X size={18} className='text-gray-500' />
                 </Button>
               </div>
 
-              <div
-                className='rounded-xl p-3 flex items-center justify-between'
-                style={{ backgroundColor: `${TEAL}15` }}
-              >
-                <p className='text-sm' style={{ color: TEAL }}>
-                  ยอดคงเหลือที่ถอนได้
-                </p>
-                <p className='font-bold tabular-nums' style={{ color: TEAL }}>
-                  {formatCurrency(good ?? 0)}
-                </p>
+              <div className='flex items-center justify-between rounded-lg border border-teal-100 bg-teal-50 p-3'>
+                <p className='text-sm text-teal-700'>ยอดคงเหลือที่ถอนได้</p>
+                <p className='font-bold tabular-nums text-teal-700'>{formatCurrency(good ?? 0)}</p>
               </div>
 
               <div>
@@ -500,18 +462,15 @@ export function FactoryWalletPage() {
                       withdraw.clearError();
                     }}
                     placeholder='500'
-                    className='w-full pl-7 pr-3 py-3 rounded-xl border border-gray-200 text-sm font-semibold focus:outline-none focus:border-brand-teal'
-                    style={{ color: NAVY }}
+                    className='w-full rounded-lg border border-slate-200 py-3 pl-7 pr-3 text-sm font-semibold text-slate-900 focus:border-brand-purple focus:outline-none focus:ring-2 focus:ring-brand-purple/10'
                   />
                 </div>
                 <p className='text-xs text-gray-400 mt-1'>ขั้นต่ำ ฿500</p>
               </div>
 
-              <div className='rounded-xl border border-gray-100 bg-gray-50 px-3 py-3'>
+              <div className='rounded-lg border border-slate-200 bg-[var(--brand-page)] px-3 py-3'>
                 <p className='text-xs font-semibold text-gray-500 mb-0.5'>บัญชีปลายทาง</p>
-                <p className='text-sm font-medium' style={{ color: NAVY }}>
-                  PromptPay — จากโปรไฟล์
-                </p>
+                <p className='text-sm font-medium text-slate-900'>PromptPay — จากโปรไฟล์</p>
                 <p className='text-xs text-gray-400'>(ข้อมูลบัญชีโหลดจาก profile API อัตโนมัติ)</p>
               </div>
 
@@ -527,7 +486,11 @@ export function FactoryWalletPage() {
                   variant='unstyled'
                   type='button'
                   onClick={() => withdraw.closeModal()}
-                  className='flex-1 py-3 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors'
+                  className={factoryButtonClass({
+                    variant: 'secondary',
+                    size: 'md',
+                    className: 'flex-1',
+                  })}
                 >
                   ยกเลิก
                 </Button>
@@ -552,12 +515,11 @@ export function FactoryWalletPage() {
                     });
                     if (ok !== undefined) withdraw.closeModal();
                   }}
-                  className='flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all hover:opacity-90'
-                  style={{
-                    background:
-                      'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-                    boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
-                  }}
+                  className={factoryButtonClass({
+                    variant: 'primary',
+                    size: 'md',
+                    className: 'flex-1',
+                  })}
                 >
                   {withdraw.isLoading ? 'กำลังดำเนินการ...' : 'ยืนยันถอนเงิน'}
                 </Button>

@@ -19,7 +19,7 @@ const OPTIONS = [
 
 export function ShowcaseTypeSelector({ value, onChange, disabled }: ShowcaseTypeSelectorProps) {
   return (
-    <div className='grid grid-cols-2 sm:grid-cols-4 gap-2 rounded-xl bg-gray-50 p-1 border border-gray-200'>
+    <div className='grid grid-cols-2 sm:grid-cols-4 gap-2 rounded-lg bg-gray-50 p-1 border border-gray-200'>
       {OPTIONS.map((opt) => {
         const active = value === opt.type;
         return (
@@ -29,7 +29,7 @@ export function ShowcaseTypeSelector({ value, onChange, disabled }: ShowcaseType
             type='button'
             onClick={() => onChange(opt.type)}
             disabled={disabled}
-            className={`rounded-xl px-3 py-2 text-left transition-colors border ${
+            className={`rounded-lg px-3 py-2 text-left transition-colors border ${
               active
                 ? 'bg-orange-500 text-white border-orange-500'
                 : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'

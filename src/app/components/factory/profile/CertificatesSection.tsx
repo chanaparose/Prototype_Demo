@@ -8,6 +8,7 @@ import { mediaApi } from '@/services/api/factoryApi';
 import { CertStatusBadge } from '@/components/factory/CertStatusBadge';
 import { CertUploadModal, type CertFormSubmitValue } from '@/components/factory/CertUploadModal';
 import { Button } from '@/components/ui/button';
+import { factoryButtonClass, factoryCardClass } from '@/pages/factory-portal/factoryUi';
 
 type Row = Record<string, unknown>;
 
@@ -122,11 +123,15 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Pr
             return (
               <li
                 key={key}
-                className='text-sm border border-gray-100 rounded-xl px-3 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'
+                className={factoryCardClass({
+                  variant: 'list',
+                  className:
+                    'flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between',
+                })}
               >
                 <div className='min-w-0'>
                   <div className='flex items-center gap-2 flex-wrap'>
-                    <span className='font-semibold text-gray-900'>
+                    <span className='font-medium text-gray-900'>
                       {certTypeDisplay(c, masterCertTypes)}
                     </span>
                     <CertStatusBadge status={String(c.verify_status ?? c.status ?? 'PD')} />
@@ -142,7 +147,7 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Pr
                       href={docUrl}
                       target='_blank'
                       rel='noreferrer'
-                      className='inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50'
+                      className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
                     >
                       <Download size={13} /> ดาวน์โหลด
                     </a>
@@ -153,18 +158,18 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Pr
                       setEditing(c);
                       modal.openModal();
                     }}
-                    variant='outline'
+                    variant='unstyled'
                     size='icon-sm'
-                    className='p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50'
+                    className={factoryButtonClass({ variant: 'ghostIcon', size: 'icon' })}
                     aria-label='แก้ไข'
                   >
                     <Pencil size={14} />
                   </Button>
                   <Button
                     onClick={() => void remove(c)}
-                    variant='outline'
+                    variant='unstyled'
                     size='icon-sm'
-                    className='p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50'
+                    className={factoryButtonClass({ variant: 'dangerIcon', size: 'icon' })}
                     aria-label='ลบ'
                   >
                     <Trash2 size={14} />

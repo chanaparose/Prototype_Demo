@@ -72,11 +72,11 @@ export function ProductionHeader({ merged, orderStatus }: Props) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
   return (
-    <div className='bg-white rounded-2xl border border-gray-100 p-4 shadow-sm space-y-3 lg:p-6 lg:space-y-4'>
+    <div className='bg-white rounded-md border border-slate-200 p-4 space-y-3 lg:p-6 lg:space-y-4'>
       <div className='flex flex-wrap items-center justify-between gap-2 lg:gap-4'>
         <p className='text-sm font-bold text-gray-900'>ความคืบหน้าการผลิต</p>
         <span
-          className={`text-[11px] font-semibold px-2 py-1 rounded-lg ${pillClass}`}
+          className={`text-[11px] font-semibold px-2 py-1 rounded-md ${pillClass}`}
           aria-label={`สถานะคำสั่งซื้อ ${orderStatusLabel(orderStatus)}`}
         >
           {orderStatusLabel(orderStatus)}

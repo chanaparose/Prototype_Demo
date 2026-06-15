@@ -14,38 +14,44 @@ import {
 import { formatDateTh } from '@/components/features/order-detail/utils';
 import { Button } from '@/components/ui/button';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
+import {
+  FactoryStatusBadge,
+  type FactoryStatusTone,
+} from '@/pages/factory-portal/components/FactoryStatusBadge';
+import { factoryButtonClass, factoryCardClass } from '@/pages/factory-portal/factoryUi';
 import type {
   DerivedCardState,
   FactoryOrderRow,
 } from '@/pages/factory-portal/factory-orders/types';
 
-export const REQUEST_KIND_LABEL: Record<string, { label: string; cls: string }> = {
-  PR: { label: 'ผลิต OEM', cls: 'bg-purple-50 text-purple-700' },
-  MR: { label: 'วัตถุดิบ', cls: 'bg-blue-50 text-blue-700' },
-  PS: { label: 'ตัวอย่างสินค้า', cls: 'bg-orange-50 text-orange-700' },
-  MS: { label: 'ตัวอย่างวัตถุดิบ', cls: 'bg-teal-50 text-teal-700' },
+export const REQUEST_KIND_LABEL: Record<string, { label: string; tone: FactoryStatusTone }> = {
+  PR: { label: 'ผลิต OEM', tone: 'brand' },
+  MR: { label: 'วัตถุดิบ', tone: 'info' },
+  PS: { label: 'ตัวอย่างสินค้า', tone: 'warning' },
+  MS: { label: 'ตัวอย่างวัตถุดิบ', tone: 'teal' },
 };
 
 const DEFAULT_STATUS_CONFIG = {
   label: 'ไม่ทราบสถานะ',
-  badgeClass: 'bg-gray-100 text-gray-700',
+  tone: 'neutral',
   icon: Clock3,
 } as const;
 
-const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: LucideIcon }> = {
-  WS: { label: 'รอแนบสลีป', badgeClass: 'bg-amber-100 text-amber-800', icon: Clock3 },
-  WA: { label: 'รอยืนยันสลีป', badgeClass: 'bg-orange-100 text-orange-800', icon: ScanSearch },
-  PP: { label: 'รอชำระมัดจำ', badgeClass: 'bg-amber-100 text-amber-800', icon: Clock3 },
-  PE: { label: 'หมดกำหนดชำระ', badgeClass: 'bg-red-100 text-red-800', icon: Ban },
-  PD: { label: 'ชำระมัดจำแล้ว', badgeClass: 'bg-teal-100 text-teal-800', icon: CircleDollarSign },
-  PR: { label: 'กำลังผลิต', badgeClass: 'bg-violet-100 text-violet-800', icon: Settings },
-  QC: { label: 'ตรวจสอบคุณภาพ', badgeClass: 'bg-indigo-100 text-indigo-800', icon: ScanSearch },
-  SH: { label: 'จัดส่งแล้ว', badgeClass: 'bg-sky-100 text-sky-800', icon: PackageCheck },
-  CP: { label: 'เสร็จสิ้น', badgeClass: 'bg-emerald-100 text-emerald-800', icon: Check },
-  CN: { label: 'ยกเลิก', badgeClass: 'bg-gray-100 text-gray-700', icon: Ban },
-  CC: { label: 'ยกเลิก', badgeClass: 'bg-gray-100 text-gray-700', icon: Ban },
-  CL: { label: 'ยกเลิก', badgeClass: 'bg-gray-100 text-gray-700', icon: Ban },
-};
+const STATUS_CONFIG: Record<string, { label: string; tone: FactoryStatusTone; icon: LucideIcon }> =
+  {
+    WS: { label: 'รอแนบสลีป', tone: 'warning', icon: Clock3 },
+    WA: { label: 'รอยืนยันสลีป', tone: 'warning', icon: ScanSearch },
+    PP: { label: 'รอชำระมัดจำ', tone: 'warning', icon: Clock3 },
+    PE: { label: 'หมดกำหนดชำระ', tone: 'danger', icon: Ban },
+    PD: { label: 'ชำระมัดจำแล้ว', tone: 'teal', icon: CircleDollarSign },
+    PR: { label: 'กำลังผลิต', tone: 'brand', icon: Settings },
+    QC: { label: 'ตรวจสอบคุณภาพ', tone: 'brand', icon: ScanSearch },
+    SH: { label: 'จัดส่งแล้ว', tone: 'info', icon: PackageCheck },
+    CP: { label: 'เสร็จสิ้น', tone: 'success', icon: Check },
+    CN: { label: 'ยกเลิก', tone: 'neutral', icon: Ban },
+    CC: { label: 'ยกเลิก', tone: 'neutral', icon: Ban },
+    CL: { label: 'ยกเลิก', tone: 'neutral', icon: Ban },
+  };
 
 export function FactoryOrderCard({
   row,
@@ -58,8 +64,9 @@ export function FactoryOrderCard({
 }) {
   const statusCfg = STATUS_CONFIG[row.status] ?? DEFAULT_STATUS_CONFIG;
   const StatusIcon = statusCfg.icon;
+  const requestKind = row.request_kind ? REQUEST_KIND_LABEL[row.request_kind] : null;
   return (
-    <article className='bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 hover:shadow-sm min-w-0'>
+    <article className={factoryCardClass({ variant: 'list', className: 'min-w-0 sm:p-4' })}>
       <div className='flex items-start justify-between gap-2'>
         <div className='min-w-0'>
           <p className='font-semibold text-gray-900 text-sm leading-snug truncate'>
@@ -67,39 +74,35 @@ export function FactoryOrderCard({
           </p>
           <div className='flex items-center gap-1.5 mt-0.5'>
             <p className='text-[11px] text-gray-400'>Order #{row.order_id}</p>
-            {row.request_kind && REQUEST_KIND_LABEL[row.request_kind] && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${REQUEST_KIND_LABEL[row.request_kind].cls}`}>
-                {REQUEST_KIND_LABEL[row.request_kind].label}
-              </span>
-            )}
+            {requestKind ? (
+              <FactoryStatusBadge tone={requestKind.tone}>{requestKind.label}</FactoryStatusBadge>
+            ) : null}
           </div>
         </div>
         <div className='flex flex-wrap justify-end gap-1'>
-          <span
-            className={`text-[10px] px-2 py-1 rounded-full font-semibold ${statusCfg.badgeClass}`}
-          >
-            <StatusIcon size={11} className='mr-1 inline-block align-[-2px]' />
+          <FactoryStatusBadge tone={statusCfg.tone} className='gap-1 py-1'>
+            <StatusIcon size={11} aria-hidden />
             {statusCfg.label}
-          </span>
+          </FactoryStatusBadge>
           {derived.flags.isOverdue ? (
-            <span className='text-[10px] px-2 py-1 rounded-full font-semibold bg-red-100 text-red-800'>
+            <FactoryStatusBadge tone='danger' className='py-1'>
               ล่าช้า {derived.flags.daysOverdue} วัน
-            </span>
+            </FactoryStatusBadge>
           ) : null}
           {!derived.flags.isOverdue && derived.flags.isNearDeadline ? (
-            <span className='text-[10px] px-2 py-1 rounded-full font-semibold bg-amber-100 text-amber-800'>
+            <FactoryStatusBadge tone='warning' className='py-1'>
               ใกล้กำหนด
-            </span>
+            </FactoryStatusBadge>
           ) : null}
           {derived.flags.hasRejected ? (
-            <span className='text-[10px] px-2 py-1 rounded-full font-semibold bg-red-100 text-red-800'>
+            <FactoryStatusBadge tone='danger' className='py-1'>
               ขอตรวจสอบใหม่
-            </span>
+            </FactoryStatusBadge>
           ) : null}
           {derived.flags.isStaleUpdate ? (
-            <span className='text-[10px] px-2 py-1 rounded-full font-semibold bg-amber-100 text-amber-800'>
+            <FactoryStatusBadge tone='warning' className='py-1'>
               ยังไม่อัปเดต
-            </span>
+            </FactoryStatusBadge>
           ) : null}
         </div>
       </div>
@@ -131,18 +134,14 @@ export function FactoryOrderCard({
             disabled={derived.primaryCta.kind === 'waiting_customer'}
             onClick={() => onPrimaryCta(row, derived.primaryCta)}
             size='sm'
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${
-              derived.primaryCta.kind === 'waiting_customer'
-                ? 'bg-gray-100 text-gray-500'
-                : derived.primaryCta.kind === 'mark_shipped'
-                  ? 'bg-sky-600 text-white'
-                  : derived.primaryCta.kind === 'start_qc'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-brand-indigo text-white'
-            }`}
+            className={factoryButtonClass({
+              variant: derived.primaryCta.kind === 'waiting_customer' ? 'secondary' : 'primary',
+              size: 'sm',
+              className: 'min-w-[92px]',
+            })}
           >
             {derived.primaryCta.kind === 'update_step'
-              ? `⚡ อัปเดตขั้น ${derived.primaryCta.stepNameTh}`
+              ? `อัปเดตขั้น ${derived.primaryCta.stepNameTh}`
               : derived.primaryCta.kind === 'start_qc'
                 ? 'เริ่ม QC'
                 : derived.primaryCta.kind === 'mark_shipped'

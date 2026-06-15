@@ -229,9 +229,9 @@ export function MarkdownEditor({
               onClick={() => setTab('write')}
               variant='outline'
               size='xs'
-              className={`px-2 py-1 text-xs rounded-md border ${
+              className={`px-2 py-1 text-xs rounded-md border shadow-none ${
                 tab === 'write'
-                  ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                  ? 'bg-brand-lavender border-brand-purple/20 text-brand-purple/80'
                   : 'border-gray-200 text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -241,9 +241,9 @@ export function MarkdownEditor({
               onClick={() => setTab('preview')}
               variant='outline'
               size='xs'
-              className={`px-2 py-1 text-xs rounded-md border ${
+              className={`px-2 py-1 text-xs rounded-md border shadow-none ${
                 tab === 'preview'
-                  ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                  ? 'bg-brand-lavender border-brand-purple/20 text-brand-purple/80'
                   : 'border-gray-200 text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -377,7 +377,7 @@ export function MarkdownEditor({
                 >
                   <ImageIcon size={15} />
                   {uploading && (
-                    <span className='text-xs font-medium text-indigo-600'>กำลังอัปโหลด...</span>
+                    <span className='text-xs font-medium text-brand-purple'>กำลังอัปโหลด...</span>
                   )}
                 </Button>
                 <Label htmlFor='file-input' className='hidden'>
@@ -404,7 +404,7 @@ export function MarkdownEditor({
                   disabled={disabled}
                   variant='outline'
                   size='sm'
-                  className='inline-flex items-center gap-1.5 p-1.5 px-2.5 rounded-md border border-indigo-200 bg-indigo-50 text-[13px] font-medium text-indigo-600 transition-colors hover:bg-indigo-100 disabled:opacity-40'
+                  className='inline-flex items-center gap-1.5 p-1.5 px-2.5 rounded-md border border-brand-purple/20 bg-brand-lavender text-[13px] font-medium text-brand-purple transition-colors hover:bg-brand-lavender/60 disabled:opacity-40 shadow-none'
                 >
                   <LayoutTemplate size={14} />
                   เลือกเทมเพลต...
@@ -426,7 +426,7 @@ export function MarkdownEditor({
                   href='https://www.markdownguide.org/basic-syntax/'
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='inline-flex items-center gap-1 text-indigo-500 hover:text-indigo-600 hover:underline'
+                  className='inline-flex items-center gap-1 text-brand-lavender0 hover:text-brand-purple hover:underline'
                 >
                   ดูไกด์ไลน์ Markdown ทั้งหมด
                 </a>
@@ -483,7 +483,7 @@ export function MarkdownEditor({
             </Button>
             <Button
               onClick={handleSelectTemplate}
-              className='flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700'
+              className='flex items-center gap-2 rounded-lg bg-brand-purple px-6 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-purple/80'
             >
               <CheckCircle2 size={16} />
               นำเทมเพลตนี้ไปใช้
@@ -492,7 +492,7 @@ export function MarkdownEditor({
         }
       >
         <div className='hidden'>
-          <LayoutTemplate size={20} className='text-indigo-500' />
+          <LayoutTemplate size={20} className='text-brand-lavender0' />
         </div>
 
         <>
@@ -507,25 +507,25 @@ export function MarkdownEditor({
                 variant='outline'
                 className={`text-left p-3 rounded-xl border transition-all duration-200 relative overflow-hidden h-auto flex-col items-start ${
                   activeTemplateIndex === idx
-                    ? 'bg-indigo-50 border-indigo-300 ring-1 ring-indigo-300 shadow-sm'
-                    : 'bg-white border-gray-200 hover:border-indigo-200 hover:shadow-sm'
+                    ? 'bg-brand-lavender border-brand-purple/25 ring-1 ring-brand-purple/25 shadow-sm'
+                    : 'bg-white border-gray-200 hover:border-brand-purple/20 hover:shadow-sm'
                 }`}
               >
                 <div className='flex justify-between items-start w-full mb-1'>
                   <h4
                     className={`text-[13px] font-medium ${
-                      activeTemplateIndex === idx ? 'text-indigo-800' : 'text-gray-800'
+                      activeTemplateIndex === idx ? 'text-brand-purple' : 'text-gray-800'
                     }`}
                   >
                     {tpl.title}
                   </h4>
                   {activeTemplateIndex === idx && (
-                    <CheckCircle2 size={16} className='ml-2 shrink-0 text-indigo-500' />
+                    <CheckCircle2 size={16} className='ml-2 shrink-0 text-brand-lavender0' />
                   )}
                 </div>
                 <p
                   className={`text-[11px] font-normal leading-snug whitespace-normal ${
-                    activeTemplateIndex === idx ? 'text-indigo-600/80' : 'text-gray-500'
+                    activeTemplateIndex === idx ? 'text-brand-purple/80' : 'text-gray-500'
                   }`}
                 >
                   {tpl.description}

@@ -1,17 +1,7 @@
 /**
- * Avatar ลูกค้า — สร้างจาก DiceBear (ฟรี, ไม่ต้องอัปโหลดรูป)
- *
- * สไตล์ที่น่ารักกว่า avataaars (เปลี่ยน CUSTOMER_AVATAR_STYLE ได้):
- * - lorelei      — การ์ตูนนุ่มๆ สีพาสเทล (ค่าเริ่มต้น)
- * - fun-emoji    — หน้า emoji น่ารักมาก
- * - big-smile    — ตัวการ์ตูนยิ้มกว้าง
- * - croodles     — เส้นสเก็ตช์มือวาด ขี้เล่น
- * - micah        — มินิมอล น่ารัก
- * - adventurer   — ตัวละครผจญภัย (เหมาะแอปสัตว์เลี้ยง)
- *
- * ทางเลือกนอก DiceBear: Multiavatar — https://api.multiavatar.com/{seed}.png
+ * Avatar fallback — สร้างเป็น SVG ในเครื่องเพื่อไม่พึ่ง cert/service ภายนอก
  */
-export const CUSTOMER_AVATAR_STYLE = 'lorelei' as const;
+export const CUSTOMER_AVATAR_STYLE = 'beam' as const;
 
 /** 10 ชุด seed — แต่ละ user ได้ 1 รูปคงที่จาก hash ของ user id */
 export const CUSTOMER_AVATAR_SEEDS = [
@@ -27,35 +17,7 @@ export const CUSTOMER_AVATAR_SEEDS = [
   'zuzu',
 ] as const;
 
-/** พื้นหลังพาสเทล — ผูกกับ seed ให้แต่ละ avatar มีโทนสีต่างกัน */
-const AVATAR_BACKGROUNDS = [
-  'ffd5dc',
-  'ffdfbf',
-  'fff5ba',
-  'd1f4d1',
-  'c9e7ff',
-  'e8d5ff',
-  'ffe0f0',
-  'd4f5f5',
-  'ffe8cc',
-  'e2e8ff',
-] as const;
-
-export function buildCustomerAvatarUrl(seed: string, size = 128): string {
-  const seedIndex = CUSTOMER_AVATAR_SEEDS.indexOf(seed as (typeof CUSTOMER_AVATAR_SEEDS)[number]);
-  const bg =
-    seedIndex >= 0
-      ? AVATAR_BACKGROUNDS[seedIndex]
-      : AVATAR_BACKGROUNDS[Math.abs(hashSeed(seed)) % AVATAR_BACKGROUNDS.length];
-
-  const params = new URLSearchParams({
-    seed,
-    size: String(size),
-    backgroundColor: bg,
-  });
-
-  return `https://api.dicebear.com/9.x/${CUSTOMER_AVATAR_STYLE}/png?${params.toString()}`;
-}
+const AVATAR_COLORS = ['8B5CF6', 'A855F7', 'C084FC', 'F3E8FF', '6D28D9'] as const;
 
 function hashSeed(seed: string): number {
   let hash = 0;
@@ -63,4 +25,29 @@ function hashSeed(seed: string): number {
     hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
   }
   return hash;
+}
+
+export function buildCustomerAvatarUrl(seed: string, size = 128): string {
+  const hash = hashSeed(seed);
+  const primary = AVATAR_COLORS[hash % AVATAR_COLORS.length];
+  const secondary = AVATAR_COLORS[(hash >> 3) % AVATAR_COLORS.length];
+  const accent = AVATAR_COLORS[(hash >> 6) % AVATAR_COLORS.length];
+  const rotate = hash % 360;
+  const eyeOffset = 10 + (hash % 4);
+  const mouthWidth = 15 + (hash % 7);
+  const cheekY = 38 + (hash % 5);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 96 96" fill="none">
+    <rect width="96" height="96" rx="28" fill="#F3E8FF"/>
+    <g transform="rotate(${rotate} 48 48)" opacity="0.34">
+      <circle cx="18" cy="22" r="18" fill="#${secondary}"/>
+      <circle cx="80" cy="72" r="22" fill="#${accent}"/>
+    </g>
+    <circle cx="48" cy="48" r="30" fill="#${primary}"/>
+    <circle cx="${48 - eyeOffset}" cy="42" r="4" fill="#FFFFFF"/>
+    <circle cx="${48 + eyeOffset}" cy="42" r="4" fill="#FFFFFF"/>
+    <path d="M${48 - mouthWidth / 2} 58c5 6 18 6 ${mouthWidth} 0" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="30" cy="${cheekY}" r="5" fill="#FFFFFF" opacity="0.22"/>
+  </svg>`;
+
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }

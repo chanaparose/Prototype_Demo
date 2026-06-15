@@ -59,7 +59,7 @@ export function CategoryCard({
   };
 
   return (
-    <div className={`border rounded-2xl p-4 bg-white ${hasSubError ? 'border-red-400 ring-1 ring-red-300' : 'border-gray-200'}`}>
+    <div className={`border rounded-lg p-4 bg-white ${hasSubError ? 'border-red-400 ring-1 ring-red-300' : 'border-gray-200'}`}>
       {/* Header row */}
       <div className='flex items-start justify-between gap-3'>
         <div className='min-w-0'>
@@ -110,7 +110,7 @@ export function CategoryCard({
                   key={s.id}
                   className='inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-1'
                 >
-                  ✓ {s.name}
+                  {s.name}
                 </li>
               ))}
             </ul>

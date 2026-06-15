@@ -28,7 +28,7 @@ function FormField({
       {label ? (
         <Label
           data-slot='form-field-label'
-          className={cn('text-[13px] font-semibold', labelClassName)}
+          className={cn('text-[13px] font-normal text-gray-600', labelClassName)}
         >
           {label}
           {required ? <span className='ml-1 text-status-danger'>*</span> : null}

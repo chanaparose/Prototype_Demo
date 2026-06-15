@@ -45,9 +45,10 @@ export function LbiAddressPicker({ value, onChange, onZipCodeAutoFill, disabled 
   }, [selectedSub]);
 
   return (
-    <div className='grid gap-3 sm:grid-cols-3'>
+    <div className='contents'>
       <Cell
-        label='จังหวัด *'
+        label='จังหวัด'
+        required
         value={value.provinceId}
         loading={provincesQ.isLoading}
         disabled={disabled}
@@ -56,7 +57,8 @@ export function LbiAddressPicker({ value, onChange, onZipCodeAutoFill, disabled 
         onChange={(v) => onChange({ provinceId: v, districtId: '', subDistrictId: '' })}
       />
       <Cell
-        label='เขต/อำเภอ *'
+        label='เขต/อำเภอ'
+        required
         value={value.districtId}
         loading={districtsQ.isLoading}
         disabled={disabled || !value.provinceId}
@@ -65,7 +67,8 @@ export function LbiAddressPicker({ value, onChange, onZipCodeAutoFill, disabled 
         onChange={(v) => onChange({ ...value, districtId: v, subDistrictId: '' })}
       />
       <Cell
-        label='แขวง/ตำบล *'
+        label='แขวง/ตำบล'
+        required
         value={value.subDistrictId}
         loading={subDistrictsQ.isLoading}
         disabled={disabled || !value.districtId}
@@ -79,6 +82,7 @@ export function LbiAddressPicker({ value, onChange, onZipCodeAutoFill, disabled 
 
 interface CellProps {
   label: string;
+  required?: boolean;
   value: string;
   loading: boolean;
   disabled: boolean | undefined;
@@ -87,10 +91,22 @@ interface CellProps {
   onChange: (v: string) => void;
 }
 
-function Cell({ label, value, loading, disabled, options, placeholder, onChange }: CellProps) {
+function Cell({
+  label,
+  required,
+  value,
+  loading,
+  disabled,
+  options,
+  placeholder,
+  onChange,
+}: CellProps) {
   return (
     <Label className='block'>
-      <span className='text-xs text-gray-500'>{label}</span>
+      <span className='text-xs text-gray-500'>
+        {label}
+        {required ? <span className='ml-1 text-status-danger'>*</span> : null}
+      </span>
       <div className='mt-1'>
         <SearchableSelect
           value={value}

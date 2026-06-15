@@ -96,12 +96,16 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
       }}
       title={mode === 'create' ? 'เพิ่มที่อยู่' : 'แก้ไขที่อยู่'}
       variant='sheet'
+      size='lg'
+      className='max-h-[min(90vh,100dvh)]'
+      bodyClassName='p-4 sm:p-5 pb-6'
+      footerClassName='p-4 sm:p-5 pt-2 flex gap-2'
       footer={
         <ModalFooter
           layout='flex'
           accent='purple'
           primary={{
-            label: mode === 'create' ? 'เพิ่มที่อยู่' : 'บันทึกการแก้ไข',
+            label: mode === 'create' ? 'เพิ่มที่อยู่' : 'บันทึก',
             loadingLabel: 'กำลังบันทึก...',
             loading: saving,
             disabled: saving,
@@ -113,6 +117,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             onClick: onClose,
             disabled: saving,
             tone: 'muted',
+            className: 'flex-1',
           }}
         />
       }
@@ -121,7 +126,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
         <ErrorAlert className='mb-4'>{rootError ?? fieldError}</ErrorAlert>
       ) : null}
 
-      <FormField label='ประเภทที่อยู่' required className='sm:max-w-sm mb-4'>
+      <FormField label='ประเภทที่อยู่' required className='w-full mb-4'>
         <Controller
           control={control}
           name='address_type'
@@ -139,7 +144,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
         />
       </FormField>
 
-      <div className='mb-4'>
+      <div className='grid gap-3 sm:grid-cols-2 mb-4'>
         <Controller
           control={control}
           name='province_id'
@@ -175,17 +180,9 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             />
           )}
         />
-      </div>
-
-      <div className='grid gap-3 sm:grid-cols-3 mb-4'>
-        <FormField
-          label='รหัสไปรษณีย์'
-          required
-          className='sm:col-span-1'
-          error={errors.zip_code?.message}
-        >
+        <FormField label='รหัสไปรษณีย์' required error={errors.zip_code?.message}>
           <Input
-            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+            className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm'
             inputMode='numeric'
             maxLength={5}
             placeholder='10110'
@@ -196,26 +193,31 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             })}
           />
         </FormField>
-        <FormField
-          label='ที่อยู่'
-          required
-          className='sm:col-span-2'
-          error={errors.address_detail?.message}
-        >
-          <Textarea
-            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]'
-            placeholder='บ้านเลขที่ หมู่ ซอย ถนน'
-            {...register('address_detail')}
-          />
-        </FormField>
       </div>
 
-      <Label className='inline-flex items-center gap-2 text-sm text-gray-700'>
+      <FormField
+        label='ที่อยู่'
+        required
+        className='w-full mb-4'
+        error={errors.address_detail?.message}
+      >
+        <Textarea
+          className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm min-h-[80px]'
+          placeholder='บ้านเลขที่ หมู่ ซอย ถนน'
+          {...register('address_detail')}
+        />
+      </FormField>
+
+      <Label className='inline-flex cursor-pointer items-center gap-2 text-xs font-normal text-gray-700'>
         <Controller
           control={control}
           name='is_default'
           render={({ field }) => (
-            <Checkbox checked={field.value} onCheckedChange={(c) => field.onChange(c === true)} />
+            <Checkbox
+              checked={field.value}
+              onCheckedChange={(c) => field.onChange(c === true)}
+              className='cursor-pointer'
+            />
           )}
         />
         ตั้งเป็นค่าเริ่มต้น

@@ -32,7 +32,7 @@ const SHOWCASE_TYPE_META: Record<
   PM: {
     label: 'โปรโมชัน',
     sub: 'Promotion',
-    cls: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    cls: 'bg-brand-lavender text-brand-purple border-brand-purple/20',
   },
   ID: {
     label: 'ไอเดีย',
@@ -84,7 +84,7 @@ export function ShowcaseImageManager({
   return (
     <section className='w-full'>
       <div
-        className='relative aspect-[4/3] rounded-xl overflow-hidden border'
+        className='relative aspect-[4/3] rounded-lg overflow-hidden border'
         style={{ borderColor: '#E7E2F0', background: 'var(--neutral-warm-surface)' }}
       >
         {imageUrls[0] ? (
@@ -201,11 +201,11 @@ export function ShowcaseCategoryFields({
             key={scope}
             onClick={() => onChange(scope)}
             variant={value === scope ? 'default' : 'secondary'}
-            className='flex-1 py-2 px-3 rounded-xl border text-sm font-semibold transition-all'
+            className='flex-1 py-2 px-3 rounded-lg border text-sm font-semibold transition-all shadow-none focus-visible:shadow-none'
             style={{
-              backgroundColor: value === scope ? 'var(--brand-indigo)' : '#F8FAFC',
+              backgroundColor: value === scope ? 'var(--brand-purple)' : '#F8FAFC',
               color: value === scope ? 'var(--neutral-white)' : '#334155',
-              borderColor: value === scope ? 'var(--brand-indigo)' : 'var(--neutral-slate-border)',
+              borderColor: value === scope ? 'var(--brand-purple)' : 'var(--neutral-slate-border)',
             }}
           >
             <ShowcaseTypeIcon type={scope} size={14} />
@@ -217,7 +217,7 @@ export function ShowcaseCategoryFields({
   );
 
   return (
-    <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
+    <section className='rounded-lg bg-white border border-gray-100 p-4 space-y-4'>
       <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>ข้อมูลหลัก</p>
 
       {contentType === 'ID' ? renderScopePicker('ประเภทเนื้อหา', idScope, onIdScopeChange) : null}
@@ -239,7 +239,7 @@ export function ShowcaseCategoryFields({
           getId={(option) => option.id}
           getLabel={(option) => option.name}
           placeholder='เลือกหมวดหมู่'
-          triggerClassName='text-xs'
+          triggerClassName='text-xs shadow-none focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10 focus-visible:border-brand-purple/40'
           contentClassName='text-xs'
           itemClassName='text-xs'
         />
@@ -255,7 +255,7 @@ export function ShowcaseCategoryFields({
                 onSubCategoryChange(next === '__empty' ? null : Number(next));
               }}
             >
-              <SelectTrigger className='w-full h-10 text-xs disabled:bg-gray-50 disabled:text-gray-400'>
+              <SelectTrigger className='w-full h-10 text-xs shadow-none focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10 focus-visible:border-brand-purple/40 disabled:bg-gray-50 disabled:text-gray-400'>
                 <SelectValue
                   placeholder={
                     categoryValue == null

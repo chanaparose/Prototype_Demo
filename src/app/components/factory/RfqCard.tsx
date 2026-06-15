@@ -137,7 +137,7 @@ function RfqTablePagination({
           type='button'
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
+          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-[var(--brand-page)] disabled:cursor-not-allowed disabled:opacity-40'
           aria-label='หน้าก่อน'
         >
           <ChevronLeft className='h-3.5 w-3.5' />
@@ -150,8 +150,8 @@ function RfqTablePagination({
             onClick={() => onPageChange(p)}
             className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-xs font-semibold transition-colors ${
               p === page
-                ? 'bg-indigo-600 text-white'
-                : 'text-slate-600 hover:bg-slate-50'
+                ? 'bg-brand-purple text-white'
+                : 'text-slate-600 hover:bg-[var(--brand-page)]'
             }`}
             aria-current={p === page ? 'page' : undefined}
           >
@@ -163,7 +163,7 @@ function RfqTablePagination({
           type='button'
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
+          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-[var(--brand-page)] disabled:cursor-not-allowed disabled:opacity-40'
           aria-label='หน้าถัดไป'
         >
           <ChevronRight className='h-3.5 w-3.5' />
@@ -214,7 +214,7 @@ function RfqTableRowLink({
             )}
           </div>
           <div className='min-w-0'>
-            <p className='truncate text-xs font-semibold text-slate-900 group-hover:text-indigo-700'>
+            <p className='truncate text-xs font-semibold text-slate-900 group-hover:text-brand-purple'>
               {row.title}
             </p>
             <div className='mt-0.5 flex flex-wrap items-center gap-1'>
@@ -319,6 +319,6 @@ export function RfqTable({
   }
 
   return (
-    <div className='overflow-hidden rounded-2xl border border-slate-200 bg-white'>{inner}</div>
+    <div className='overflow-hidden rounded-lg border border-slate-200 bg-white'>{inner}</div>
   );
 }
