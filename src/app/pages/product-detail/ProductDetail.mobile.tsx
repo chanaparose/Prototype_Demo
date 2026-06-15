@@ -281,7 +281,7 @@ export function ProductDetailMobile() {
         </div>
       ) : null}
 
-      <div className='bg-white px-4 pt-5 pb-5'>
+      <div className='bg-white px-4 pt-5 pb-1'>
         <div className='flex flex-wrap items-center gap-1.5'>
           {factory?.verified ? (
             <span
@@ -361,37 +361,10 @@ export function ProductDetailMobile() {
             <span className='text-[12px]'>สนใจ</span>
           </Button>
         </div>
-      </div>
-
-      <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
-
-      {item.tags.length > 0 ? (
-        <>
-          <div className='bg-white px-4 py-3'>
-            <p className='text-[14px] font-semibold mb-2' style={{ color: BRAND.ink }}>
-              แท็กสินค้า
-            </p>
-            <div className='flex flex-wrap gap-1.5'>
-              {item.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className='inline-flex items-center px-2 py-1 rounded-sm text-[12px] font-medium'
-                  style={{ background: BRAND.purpleSoft, color: BRAND.purple }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        </>
-      ) : null}
-
-      <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
-
+      </div> 
+ 
       <div className='bg-white px-4 py-3'>
-        <p className={cn('mb-2', SHOWCASE_SECTION_HEADER_TITLE_CLASS)} style={{ color: BRAND.ink }}>
-          ข้อมูลจำเพาะของสินค้า
-        </p>
+         
         <div className='divide-y' style={{ borderColor: BRAND.border }}>
           <StrictSpecsBlock
             showcase={{
