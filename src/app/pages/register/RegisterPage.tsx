@@ -1542,7 +1542,7 @@ function RoleSelectionStep({
         แตะการ์ดเพื่อเลือก — จากนั้นกดถัดไปเพื่อกรอกแบบฟอร์ม
       </p>
 
-      <div className='mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5'>
+      <div className='mt-6 grid grid-cols-2 gap-2.5 sm:mt-8 sm:gap-5'>
         {ROLE_OPTIONS.map((opt) => {
           const active = selected === opt.id;
           const Icon = opt.icon;
@@ -1553,9 +1553,9 @@ function RoleSelectionStep({
               type='button'
               onClick={() => onSelect(opt.id)}
               className={cn(
-                'relative flex flex-col items-center rounded-2xl border-2 px-5 py-8 text-center transition-all duration-200',
+                'relative flex flex-col items-center rounded-xl border-2 px-2.5 py-4 text-center transition-all duration-200 sm:rounded-2xl sm:px-5 sm:py-8',
                 active
-                  ? 'border-[var(--brand-purple)] shadow-[0_14px_36px_rgba(79,70,229,0.16)] ring-4 ring-[color-mix(in_srgb,var(--brand-mauve)_14%,transparent)]'
+                  ? 'border-[var(--brand-purple)] shadow-[0_8px_20px_rgba(79,70,229,0.14)] ring-2 ring-[color-mix(in_srgb,var(--brand-mauve)_14%,transparent)] sm:shadow-[0_14px_36px_rgba(79,70,229,0.16)] sm:ring-4'
                   : 'border-[var(--brand-lavender-muted)] bg-white hover:border-[color-mix(in_srgb,var(--brand-mauve)_45%,var(--brand-lavender-muted))] hover:shadow-[0_8px_24px_rgba(46,34,82,0.08)]',
               )}
               style={
@@ -1569,28 +1569,34 @@ function RoleSelectionStep({
             >
               <span
                 className={cn(
-                  'mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition-colors',
+                  'mb-2 flex h-11 w-11 items-center justify-center rounded-xl transition-colors sm:mb-4 sm:h-16 sm:w-16 sm:rounded-2xl',
                   active
                     ? 'bg-white shadow-[0_4px_14px_rgba(79,70,229,0.12)]'
                     : 'bg-[var(--brand-lavender)]/80',
                 )}
               >
                 <Icon
-                  size={32}
-                  className={active ? 'text-[var(--brand-purple)]' : 'text-[var(--brand-mauve)]'}
+                  className={cn(
+                    'h-6 w-6 sm:h-8 sm:w-8',
+                    active ? 'text-[var(--brand-purple)]' : 'text-[var(--brand-mauve)]',
+                  )}
                 />
               </span>
-              <p className='text-[15px] font-bold text-[var(--brand-navy)]'>{opt.title}</p>
-              <p className='mt-2 text-xs leading-relaxed text-[var(--neutral-subtle)]'>
+              <p className='text-xs font-bold leading-tight text-[var(--brand-navy)] sm:text-[15px]'>
+                {opt.title}
+              </p>
+              <p className='mt-1 hidden text-xs leading-relaxed text-[var(--neutral-subtle)] sm:mt-2 sm:block'>
                 {opt.description}
               </p>
               {active ? (
-                <span className='mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[var(--brand-purple)]'>
+                <span className='mt-2 inline-flex items-center gap-0.5 text-[10px] font-semibold text-[var(--brand-purple)] sm:mt-4 sm:gap-1 sm:text-xs'>
                   เลือกแล้ว
-                  <ArrowRight size={14} strokeWidth={2.5} />
+                  <ArrowRight size={12} strokeWidth={2.5} className='sm:h-3.5 sm:w-3.5' />
                 </span>
               ) : (
-                <span className='mt-4 text-[11px] text-[var(--neutral-placeholder)]'>แตะเพื่อเลือก</span>
+                <span className='mt-2 text-[10px] text-[var(--neutral-placeholder)] sm:mt-4 sm:text-[11px]'>
+                  แตะเพื่อเลือก
+                </span>
               )}
             </Button>
           );

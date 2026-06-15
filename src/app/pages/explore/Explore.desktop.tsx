@@ -404,45 +404,45 @@ export function ExploreDesktop({
             )}
           </div>
         </section>
+
+        <section className='rounded-xl overflow-hidden border border-brand-purple/30 shadow-sm relative py-5 px-4 md:px-8'>
+          <Image
+            src='assets/tryly_banner_v9.png'
+            alt=''
+            className='hidden xl:block absolute inset-0 w-full h-full object-cover pointer-events-none'
+          />
+          <div className='hidden xl:block absolute inset-0 bg-gradient-to-l from-white/55 via-white/10 to-transparent pointer-events-none' />
+
+          <Image
+            src='assets/tryly_tablet_banner.png'
+            alt=''
+            className='xl:hidden relative z-0 w-full h-auto object-contain object-center pointer-events-none select-none'
+          />
+
+          <div className='z-10 flex justify-end items-center w-full xl:relative xl:mt-0 max-xl:absolute max-xl:w-auto max-xl:left-auto max-xl:right-4 max-xl:bottom-4 md:max-xl:right-8 md:max-xl:bottom-5'>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => navigate('/register?tab=ft')}
+              className={REGISTER_BUTTON_CLASS}
+            >
+              <Sparkles
+                size={14}
+                className='text-white/90 group-hover:rotate-12 transition-transform duration-200'
+              />
+              <span>สมัครเลย</span>
+              <ChevronRight
+                size={14}
+                className='text-white/90 group-hover:translate-x-1 transition-transform duration-200'
+              />
+              <span
+                aria-hidden
+                className='pointer-events-none absolute inset-0 rounded-xl bg-white/0 group-hover:bg-white/10 transition-colors'
+              />
+            </Button>
+          </div>
+        </section>
       </div>
-
-      <section className='mt-6 rounded-xl overflow-hidden border border-brand-purple/30 shadow-sm relative py-5 px-4 md:px-8'>
-        <Image
-          src='assets/tryly_banner_v9.png'
-          alt=''
-          className='hidden xl:block absolute inset-0 w-full h-full object-cover pointer-events-none'
-        />
-        <div className='hidden xl:block absolute inset-0 bg-gradient-to-l from-white/55 via-white/10 to-transparent pointer-events-none' />
-
-        <Image
-          src='assets/tryly_tablet_banner.png'
-          alt=''
-          className='xl:hidden relative z-0 w-full h-auto object-contain object-center pointer-events-none select-none'
-        />
-
-        <div className='z-10 flex justify-end items-center w-full xl:relative xl:mt-0 max-xl:absolute max-xl:w-auto max-xl:left-auto max-xl:right-4 max-xl:bottom-4 md:max-xl:right-8 md:max-xl:bottom-5'>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => navigate('/register?tab=ft')}
-            className={REGISTER_BUTTON_CLASS}
-          >
-            <Sparkles
-              size={14}
-              className='text-white/90 group-hover:rotate-12 transition-transform duration-200'
-            />
-            <span>สมัครเลย</span>
-            <ChevronRight
-              size={14}
-              className='text-white/90 group-hover:translate-x-1 transition-transform duration-200'
-            />
-            <span
-              aria-hidden
-              className='pointer-events-none absolute inset-0 rounded-xl bg-white/0 group-hover:bg-white/10 transition-colors'
-            />
-          </Button>
-        </div>
-      </section>
 
       <div className='lg:px-8 2xl:px-10'>
         <ExploreFooter />
