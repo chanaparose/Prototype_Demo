@@ -240,20 +240,7 @@ export function Layout() {
 
                 {/* Right actions */}
                 <div className='flex items-center gap-2'>
-                  {isFactory ? (
-                    <Link
-                      to='/factory/wallet'
-                      className='flex max-w-[8.5rem] items-center gap-0.5 rounded-full border border-violet-100/90 bg-gradient-to-b from-violet-50/90 to-white py-1 pl-1.5 pr-2.5 shadow-[0_1px_4px_rgba(15,23,42,0.06)] transition-all hover:border-violet-200 active:scale-[0.98]'
-                      title='กระเป๋าเงิน'
-                    >
-                      <span className='flex h-8 w-5 shrink-0 items-center justify-center text-brand-violet-deep'>
-                        <Wallet size={16} strokeWidth={2.2} />
-                      </span>
-                      <span className='truncate text-xs font-bold tabular-nums text-slate-900'>
-                        {formatCurrencyNoDecimals(data.currentUser?.walletBalance ?? 0)}
-                      </span>
-                    </Link>
-                  ) : null}
+                  {null /* wallet hidden for factory — direct bank transfer flow */}
 
                   {showCustomerFavorites ? (
                     <HeaderIconLink

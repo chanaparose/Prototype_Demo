@@ -5,7 +5,7 @@ import {
   Images,
   ClipboardList,
   Package,
-  Wallet,
+  Receipt,
   IdCard,
 } from 'lucide-react';
 
@@ -69,12 +69,13 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
     requiresApproval: true,
   },
   {
-    key: 'factory-wallet',
-    label: 'กระเป๋าเงิน',
-    icon: Wallet,
-    href: '/factory/wallet',
+    key: 'factory-invoices',
+    label: 'สรุปค่าบริการ',
+    icon: Receipt,
+    href: '/factory/invoices',
     activeMatch: 'prefix',
-    activePath: '/factory/wallet',
+    activePath: '/factory/invoices',
+    requiresApproval: true,
   },
   {
     key: 'messages',

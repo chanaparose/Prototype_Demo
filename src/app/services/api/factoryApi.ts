@@ -11,6 +11,7 @@ import type {
   IBankAccountResponse,
   ICommissionInvoiceResponse,
   ICommissionInvoiceItemResponse,
+  ICurrentPeriodSummary,
 } from '@/services/api/types/admin.types';
 
 export const factoriesApi = {
@@ -202,6 +203,9 @@ export const factoryInvoiceApi = {
       `/factories/me/invoices/${invoiceId}/slip`,
       formData,
     ),
+
+  getCurrentPeriod: () =>
+    httpClient.get<ICurrentPeriodSummary>('/factories/me/invoices/current-period'),
 };
 
 export const mediaApi = {

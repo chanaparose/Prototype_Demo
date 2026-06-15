@@ -282,6 +282,27 @@ export interface ICommissionInvoiceItemResponse {
   commission_amount: number;
 }
 
+export interface ICurrentPeriodOrder {
+  order_id: number;
+  order_amount: number;
+  commission_rate: number;
+  commission_amount: number;
+  commission_vat: number;
+  line_total: number;
+  approved_at: string;
+}
+
+export interface ICurrentPeriodSummary {
+  month: number;
+  year: number;
+  total_orders: number;
+  total_amount: number;
+  commission_amount: number;
+  vat_amount: number;
+  grand_total: number;
+  orders: ICurrentPeriodOrder[];
+}
+
 export interface ICommissionSummaryResponse {
   total_invoices: number;
   total_commission: number;

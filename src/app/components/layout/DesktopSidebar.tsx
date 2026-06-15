@@ -285,36 +285,7 @@ export function DesktopSidebar() {
             })}
       </nav>
 
-      {isFactory ? (
-        <Link
-          to='/factory/wallet'
-          className='mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden block text-left transition-all hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(46,34,82,0.10)] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple/35 focus-visible:ring-offset-2'
-          style={{ background: 'var(--brand-panel-hover)', borderColor: 'rgba(162,56,255,0.20)' }}
-        >
-          <div
-            className='absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl'
-            style={{ background: 'rgba(162,56,255,0.10)' }}
-          ></div>
-          <div className='flex items-center justify-between gap-2 mb-1.5'>
-            <div className='flex items-center gap-1.5'>
-              <Wallet size={13} style={{ color: 'var(--brand-orange)' }} />
-              <span className='text-[11px] font-medium text-gray-500'>กระเป๋าเงิน</span>
-            </div>
-            <span
-              className='text-[10px] font-semibold shrink-0'
-              style={{ color: 'var(--brand-purple)' }}
-            >
-              ดูรายละเอียด →
-            </span>
-          </div>
-          <p className='text-base font-bold' style={{ color: 'var(--brand-navy-deep)' }}>
-            {formatCurrencyNoDecimals(currentUser?.walletBalance ?? 0)}
-          </p>
-          <p className='text-[10px] mt-0.5 font-medium' style={{ color: 'var(--brand-purple)' }}>
-            รอดำเนินการ {formatCurrencyNoDecimals(currentUser?.pendingBalance ?? 0)}
-          </p>
-        </Link>
-      ) : isAuthenticated ? (
+      {!isFactory && isAuthenticated ? (
         <div
           className='mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden'
           style={{ background: 'var(--brand-panel-hover)', borderColor: 'rgba(162,56,255,0.20)' }}
