@@ -8,11 +8,11 @@ import {
   Lightbulb,
   Plus,
   Bell,
-  Wallet,
   Lock,
   ArrowLeftRight,
   Factory,
   User,
+  UserPlus,
   Loader2,
 } from 'lucide-react';
 import { useData } from '@/stores/useDataStore';
@@ -32,7 +32,6 @@ import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationU
 import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
-import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
@@ -285,60 +284,51 @@ export function DesktopSidebar() {
             })}
       </nav>
 
-      {!isFactory && isAuthenticated ? (
+      {!isFactory && !isAuthenticated ? (
         <div
-          className='mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden'
-          style={{ background: 'var(--brand-panel-hover)', borderColor: 'rgba(162,56,255,0.20)' }}
+          className='relative mx-3 mb-3 overflow-hidden rounded-2xl border p-3.5'
+          style={{
+            background: 'var(--brand-panel-hover)',
+            borderColor: 'rgba(162,56,255,0.20)',
+          }}
         >
           <div
-            className='absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl'
+            className='pointer-events-none absolute -right-4 -top-4 h-16 w-16 rounded-full blur-xl'
             style={{ background: 'rgba(162,56,255,0.10)' }}
-          ></div>
-          <div className='flex items-center gap-1.5 mb-1.5'>
-            <Wallet size={13} style={{ color: 'var(--brand-orange)' }} />
-            <span className='text-[11px] font-medium text-gray-500'>กระเป๋าเงิน</span>
-          </div>
-          <p className='text-base font-bold' style={{ color: 'var(--brand-navy-deep)' }}>
-            {formatCurrencyNoDecimals(currentUser?.walletBalance ?? 0)}
-          </p>
-          <p className='text-[10px] mt-0.5 font-medium' style={{ color: 'var(--brand-purple)' }}>
-            รอดำเนินการ {formatCurrencyNoDecimals(currentUser?.pendingBalance ?? 0)}
-          </p>
-        </div>
-      ) : !isAuthenticated ? (
-        <div
-          className='mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden'
-          style={{ background: 'var(--brand-panel-hover)', borderColor: 'rgba(162,56,255,0.20)' }}
-        >
-          <div
-            className='absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl'
-            style={{ background: 'rgba(162,56,255,0.10)' }}
-          ></div>
-          <div className='flex items-center gap-1.5 mb-2'>
-            <Wallet size={13} style={{ color: 'var(--brand-orange)' }} />
-            <span className='text-[11px] font-medium text-gray-500'>กระเป๋าเงิน</span>
-          </div>
-          <p className='text-xs text-gray-500 mb-2'>
-            Guest View: เข้าสู่ระบบเพื่อใช้งานกระเป๋าเงิน
-          </p>
-          <div className='flex gap-2'>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => openLoginModal()}
-              className='flex-1 rounded-lg bg-white border border-brand-purple/25 px-2 py-1.5 text-[11px] font-semibold'
-              style={{ color: 'var(--brand-purple)' }}
+          />
+          <div className='relative'>
+            <div className='mb-1.5 flex items-center gap-1.5'>
+              <UserPlus size={13} style={{ color: 'var(--brand-orange)' }} />
+              <span className='text-[11px] font-medium text-gray-500'>สมาชิกใหม่</span>
+            </div>
+            <p
+              className='mb-0.5 text-sm font-bold leading-snug'
+              style={{ color: 'var(--brand-navy-deep)' }}
             >
-              Login
-            </Button>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => navigate('/register')}
-              className='flex-1 rounded-lg bg-brand-purple px-2 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-brand-violet-deep'
-            >
-              Register
-            </Button>
+              เริ่มต้นใช้งานฟรี
+            </p>
+            <p className='mb-3 text-[10px] leading-relaxed text-gray-500'>
+              สมัครเพื่อสร้างคำขอราคา ติดตามงาน และแชทกับโรงงาน
+            </p>
+            <div className='flex gap-2'>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => openLoginModal()}
+                className='flex-1 rounded-lg border border-brand-purple/25 bg-white px-2 py-2 text-[11px] font-semibold transition-colors hover:bg-brand-lavender-muted/40'
+                style={{ color: 'var(--brand-purple)' }}
+              >
+                เข้าสู่ระบบ
+              </Button>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => navigate('/register')}
+                className='flex-1 rounded-lg bg-brand-purple px-2 py-2 text-[11px] font-semibold text-white shadow-[0_2px_8px_rgba(162,56,255,0.18)] transition-colors hover:bg-brand-violet-deep'
+              >
+                สมัครสมาชิก
+              </Button>
+            </div>
           </div>
         </div>
       ) : null}
