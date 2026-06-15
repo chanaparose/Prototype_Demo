@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { OrderPanel } from '@/components/features/rfq-and-orders/components/OrderPanel';
 import { RfqPanel } from '@/components/features/rfq-and-orders/components/RfqPanel';
 import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
+import { createRfqCtaHeaderClass } from '@/styles/createRfqCta';
 
 const RFQ_ORDERS_TAB_ORDER = ['rfq', 'orders'] as const;
 
@@ -121,12 +122,16 @@ export function RfqAndOrders() {
               คำขอราคา & คำสั่งซื้อ
             </h1>
           </div>
-          <Link
-            to='/create-rfq'
-            className='flex shrink-0 items-center gap-1.5 rounded-lg bg-brand-purple px-3.5 py-2 text-xs font-semibold text-white transition-all hover:bg-brand-violet-deep active:scale-[0.98]'
-          >
-            <Plus size={14} />
-            สร้างคำขอราคา
+          <Link to='/create-rfq' className={createRfqCtaHeaderClass}>
+            <Plus
+              size={14}
+              className='text-white/90 transition-transform duration-200 group-hover:rotate-90'
+            />
+            <span>สร้างคำขอราคา</span>
+            <span
+              aria-hidden
+              className='pointer-events-none absolute inset-0 rounded-lg bg-white/0 transition-colors group-hover:bg-white/10'
+            />
           </Link>
         </div>
       </header>

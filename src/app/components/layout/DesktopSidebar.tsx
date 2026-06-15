@@ -35,6 +35,7 @@ import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
+import { createRfqCtaSidebarClass } from '@/styles/createRfqCta';
 
 /** รูปโปรไฟล์เริ่มต้นเมื่อไม่มี avatar จาก API */
 const DEFAULT_USER_AVATAR_SRC =
@@ -340,10 +341,17 @@ export function DesktopSidebar() {
             type='button'
             data-tour='create-rfq-cta'
             onClick={() => navigate('/create-rfq')}
-            className='w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-brand-purple text-sm text-white font-semibold shadow-[0_2px_8px_rgba(162,56,255,0.18)] transition-all hover:bg-brand-violet-deep active:scale-[0.98]'
+            className={createRfqCtaSidebarClass}
           >
-            <Plus size={18} />
-            สร้างคำขอราคา
+            <Plus
+              size={18}
+              className='text-white/90 transition-transform duration-200 group-hover:rotate-90'
+            />
+            <span>สร้างคำขอราคา</span>
+            <span
+              aria-hidden
+              className='pointer-events-none absolute inset-0 rounded-xl bg-white/0 transition-colors group-hover:bg-white/10'
+            />
           </Button>
         </div>
       ) : null}
