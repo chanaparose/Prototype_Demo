@@ -300,11 +300,14 @@ function CurrentPeriodSection({ data }: { data: ICurrentPeriodSummary }) {
                     key={o.order_id}
                     className={`grid grid-cols-[minmax(60px,1fr)_80px_110px_48px_100px_110px] items-center px-4 py-3 ${idx < data.orders.length - 1 ? 'border-b border-slate-50' : ''}`}
                   >
-                    <div className='flex items-center gap-1.5'>
-                      <ArrowRight size={11} className='text-slate-300' />
-                      <a href={`/factory/orders/${o.order_id}`} className='font-mono text-xs font-semibold text-brand-purple hover:underline'>
-                        #{o.order_id}
-                      </a>
+                    <div className='flex min-w-0 items-center gap-1.5'>
+                      <ArrowRight size={11} className='shrink-0 text-slate-300' />
+                      <div className='min-w-0'>
+                        <a href={`/factory/orders/${o.order_id}`} className='block truncate text-xs font-semibold text-brand-purple hover:underline'>
+                          {o.rfq_title || `Order #${o.order_id}`}
+                        </a>
+                        <p className='font-mono text-[10px] text-slate-400'>#{o.order_id}</p>
+                      </div>
                     </div>
                     <p className='text-right text-xs text-slate-500'>{dateStr}</p>
                     <p className='text-right tabular-nums text-xs text-slate-700'>{formatCurrency(o.order_amount)}</p>

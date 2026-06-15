@@ -284,6 +284,7 @@ export interface ICommissionInvoiceItemResponse {
 
 export interface ICurrentPeriodOrder {
   order_id: number;
+  rfq_title: string;
   order_amount: number;
   commission_rate: number;
   commission_amount: number;
