@@ -102,6 +102,7 @@ export interface ICategoryWithSubsResponse {
   category_id: number;
   name: string;
   scope?: string;
+  hub_id?: number;
   sub_categories: IExploreSubCategoryResponse[];
 }
 

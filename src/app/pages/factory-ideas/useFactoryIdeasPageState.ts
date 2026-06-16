@@ -87,16 +87,17 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   /** MT categories: แท็บวัตถุดิบ หรือแท็บโรงงาน + pill โรงงานวัตถุดิบ */
   const isMtCategoryScope = isMaterialTab || (isFactoryTab && factoryScope === 'MT');
 
-  // hub_id จากหน้า /factory-ideas-hub — ถ้ามีจะกรอง category dropdown ตาม hub นั้น
+  // hub_id + hub_scope จากหน้า /factory-ideas-hub
   const hubId = Number(searchParams.get('hub_id')) || undefined;
+  // hub_scope ส่งมาจาก FactoryIdeasHubPage ผ่าน URL: ?hub_scope=PD|MT
+  const hubScope = (searchParams.get('hub_scope') as 'PD' | 'MT' | null) ?? undefined;
 
-  const categoriesQ = useFactoryIdeasCategoriesQuery(hubId);
+  const categoriesQ = useFactoryIdeasCategoriesQuery();
   const apiCategoriesRaw = categoriesQ.data ?? [];
   const isProductTab = selectedType === 'product';
-  // เมื่อมี hub_id แสดงเฉพาะ category ของ hub นั้น (กรองจาก BE แล้ว)
-  // เมื่อไม่มี hub_id ให้กรอง client-side ตาม scope เดิม
+  // กรอง categories ตาม hub_id (client-side) เมื่อมาจาก hub page; fallback scope เดิม
   const apiCategoriesAll = useMemo(() => {
-    if (hubId) return apiCategoriesRaw;
+    if (hubId) return apiCategoriesRaw.filter((c) => c.hubId === hubId);
     if (isMaterialTab) return apiCategoriesRaw.filter((c) => c.scope === 'MT');
     if (isProductTab) return apiCategoriesRaw.filter((c) => c.scope === 'PD');
     return apiCategoriesRaw;
@@ -136,12 +137,22 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     return s as ReadonlySet<string>;
   }, [apiCategoriesRaw]);
 
-  // Always fetch all types so switching tabs hits the cache instead of re-fetching
+  // เมื่อมี hubScope ให้ดึงเฉพาะ content_type ที่ตรงกับ scope นั้น
   const showcaseTypes = useMemo((): ('PD' | 'PM' | 'ID' | 'MT')[] => {
     if (isFactoryTab) return [];
-    // PM disabled — do not fetch promotion showcases
+    if (hubScope === 'MT') return ['MT'];
+    if (hubScope === 'PD') return ['PD', 'ID'];
+    // ไม่มี hub scope → ดึงทุก type (PM disabled)
     return ['PD', 'ID', 'MT'];
-  }, [isFactoryTab]);
+  }, [isFactoryTab, hubScope]);
+
+  // Tabs ที่แสดงใน UI — ซ่อน สินค้า เมื่อ hub เป็น MT, ซ่อน วัตถุดิบ เมื่อ hub เป็น PD
+  const visibleTabIds = useMemo((): Set<string> => {
+    const all = new Set(['all', 'product', 'material', 'idea', 'factory']);
+    if (hubScope === 'MT') all.delete('product');
+    if (hubScope === 'PD') all.delete('material');
+    return all;
+  }, [hubScope]);
 
   // filter params (categoryId, subCategoryId, keyword) ถูกกรองฝั่ง client แล้ว
   // ไม่ส่งไป API เพื่อให้ query key คงที่ → React Query cache hit ทุกครั้งที่เปลี่ยน filter
@@ -410,6 +421,9 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     categoryMenuTriggerLabel,
     closeCategoryMenu,
     pickSubCategory,
+    hubId,
+    hubScope,
+    visibleTabIds,
     categoryOptionSelected: factoryIdeasCategoryOptionSelected,
     getDetailPath: getFactoryIdeaDetailPath,
   };

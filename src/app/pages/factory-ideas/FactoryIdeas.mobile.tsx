@@ -91,7 +91,10 @@ export function FactoryIdeasMobile() {
     pickSubCategory,
     categoryOptionSelected,
     getDetailPath,
+    visibleTabIds,
   } = useFactoryIdeasPageState({ layout: 'mobile', initialType: 'all' });
+
+  const visibleTabs = MOBILE_TABS.filter((t) => visibleTabIds.has(t.id));
 
   return (
     <div className='min-h-[100dvh] bg-[var(--brand-page)] pb-24'>
@@ -133,7 +136,7 @@ export function FactoryIdeasMobile() {
       <div className='bg-white sticky top-14 z-20 border-b border-gray-200'>
         {/* ── Lezhin-style tab bar ── */}
         <div className='flex overflow-x-auto scrollbar-hide'>
-          {MOBILE_TABS.map((tab) => {
+          {visibleTabs.map((tab) => {
             const active = selectedType === tab.id;
             return (
               <button

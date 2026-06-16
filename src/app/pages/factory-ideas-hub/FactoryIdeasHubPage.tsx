@@ -121,7 +121,7 @@ function HubSection({
         <Button
           variant='unstyled'
           type='button'
-          onClick={() => navigate(`/factory-ideas?hub_id=${hub.hub_id}`)}
+          onClick={() => navigate(`/factory-ideas?hub_id=${hub.hub_id}&hub_scope=${hub.scope}`)}
           className='flex shrink-0 items-center gap-0.5 rounded-full border border-gray-200 px-2.5 py-1 text-[10px] font-medium text-gray-500 transition-colors hover:border-brand-purple/30 hover:text-brand-purple'
         >
           ดูทั้งหมด
@@ -135,7 +135,7 @@ function HubSection({
             key={cat.category_id}
             cat={cat}
             onClick={() =>
-              navigate(`/factory-ideas?hub_id=${hub.hub_id}&category_id=${cat.category_id}`)
+              navigate(`/factory-ideas?hub_id=${hub.hub_id}&hub_scope=${hub.scope}&category_id=${cat.category_id}`)
             }
           />
         ))}
@@ -143,7 +143,7 @@ function HubSection({
           <SeeAllCard
             count={hiddenCount}
             hiddenNames={hidden.map((c) => c.name)}
-            onClick={() => navigate(`/factory-ideas?hub_id=${hub.hub_id}`)}
+            onClick={() => navigate(`/factory-ideas?hub_id=${hub.hub_id}&hub_scope=${hub.scope}`)}
           />
         ) : null}
       </div>
