@@ -2,12 +2,30 @@ export interface ICategoryResponse {
   id?: number;
   category_id?: number;
   name: string;
+  scope?: string;
+  hub_id?: number;
   category_name?: string;
   image_url?: string;
   image?: string;
   display_order?: number;
   sort_order?: number;
   sub_categories_count?: number;
+}
+
+export interface ICategoryForHubResponse {
+  category_id: number;
+  name: string;
+  factory_count: number;
+  sub_preview: string[];
+  image_url?: string;
+  image?: string;
+}
+
+export interface IHubResponse {
+  hub_id: number;
+  name: string;
+  scope: string;
+  categories: ICategoryForHubResponse[];
 }
 
 export interface ISubCategoryResponse {

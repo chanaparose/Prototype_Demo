@@ -87,17 +87,20 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   /** MT categories: แท็บวัตถุดิบ หรือแท็บโรงงาน + pill โรงงานวัตถุดิบ */
   const isMtCategoryScope = isMaterialTab || (isFactoryTab && factoryScope === 'MT');
 
-  const categoriesQ = useFactoryIdeasCategoriesQuery();
+  // hub_id จากหน้า /factory-ideas-hub — ถ้ามีจะกรอง category dropdown ตาม hub นั้น
+  const hubId = Number(searchParams.get('hub_id')) || undefined;
+
+  const categoriesQ = useFactoryIdeasCategoriesQuery(hubId);
   const apiCategoriesRaw = categoriesQ.data ?? [];
-  // Filter categories by scope client-side
-  // PD = สินค้า, MT = วัตถุดิบ, all/idea = ทั้ง PD+MT, factory = ไม่มี dropdown
   const isProductTab = selectedType === 'product';
+  // เมื่อมี hub_id แสดงเฉพาะ category ของ hub นั้น (กรองจาก BE แล้ว)
+  // เมื่อไม่มี hub_id ให้กรอง client-side ตาม scope เดิม
   const apiCategoriesAll = useMemo(() => {
+    if (hubId) return apiCategoriesRaw;
     if (isMaterialTab) return apiCategoriesRaw.filter((c) => c.scope === 'MT');
     if (isProductTab) return apiCategoriesRaw.filter((c) => c.scope === 'PD');
-    // tab ทั้งหมด / ไอเดีย → แสดงทุก scope (PD + MT)
     return apiCategoriesRaw;
-  }, [apiCategoriesRaw, isMaterialTab, isProductTab]);
+  }, [apiCategoriesRaw, hubId, isMaterialTab, isProductTab]);
 
   const loadFactories = selectedType === 'all' || selectedType === 'factory';
   const apiFactoryScope = factoryScope === 'all' ? undefined : factoryScope;

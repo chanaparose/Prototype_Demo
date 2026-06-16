@@ -83,7 +83,7 @@ function NavItem({
 
 const customerNavLinks = [
   { path: '/', icon: Home, label: 'หน้าแรก' },
-  { path: '/factory-ideas', icon: Lightbulb, label: 'แนะนำ' },
+  { path: '/factory-ideas-hub', icon: Lightbulb, label: 'แนะนำ' },
   { path: '/orders', icon: ClipboardList, label: 'คำสั่งงาน' },
   { path: '/messages', icon: MessageCircle, label: 'ข้อความ' },
   { path: '/profile', icon: User, label: 'โปรไฟล์' },
@@ -102,10 +102,12 @@ export function MobileBottomNav({
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isActive = (path: string) =>
-    path === '/'
-      ? location.pathname === '/'
-      : location.pathname === path || location.pathname.startsWith(`${path}/`);
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    if (path === '/factory-ideas-hub')
+      return location.pathname.startsWith('/factory-ideas-hub') || location.pathname.startsWith('/factory-ideas');
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
 
   const go = (path: string) => void navigate(path);
   const activeBgClass = isFactory ? 'bg-indigo-50/90' : 'bg-violet-50/90';

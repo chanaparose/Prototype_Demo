@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { factoriesApi } from '@/services/api/factoryApi';
-import { categoriesApi } from '@/services/api/masterApi';
+import { categoriesApi, getLbiCategoriesByHub } from '@/services/api/masterApi';
 import { showcasesPaginatedApi } from '@/services/api/exploreApi';
 import { type Factory, type FactoryShowcase } from '@/stores/types';
 import { factoryIdeasKeys } from '@/lib/queryKeys';
@@ -16,18 +16,29 @@ export type FactoryIdeasCategoryRow = {
   subCategories: SubCategoryRow[];
 };
 
-export function useFactoryIdeasCategoriesQuery(_materialTab = false) {
-  // Always fetch ALL categories (no scope filter) in a single request.
-  // MT vs PD filtering is done client-side via the `scope` field on each row.
+export function useFactoryIdeasCategoriesQuery(hubId?: number) {
+  const byHub = hubId != null && hubId > 0;
   return useQuery({
-    queryKey: factoryIdeasKeys.categories('all'),
+    queryKey: byHub ? factoryIdeasKeys.categories(`hub:${hubId}`) : factoryIdeasKeys.categories('all'),
     queryFn: async (): Promise<FactoryIdeasCategoryRow[]> => {
+      if (byHub) {
+        const res = await getLbiCategoriesByHub(hubId!);
+        const cats = (res as unknown as { categories: typeof res extends { categories: infer C } ? C : unknown[] }).categories ?? [];
+        return (cats as Array<{ category_id?: number; name: string; scope?: string; hub_id?: number; sub_categories?: Array<{ sub_category_id?: number; id?: number; name?: string; sort_order?: number }> }>)
+          .map((c) => ({
+            id: String(c.category_id),
+            name: c.name,
+            scope: c.scope ?? '',
+            subCategories: [],
+          }))
+          .filter((r) => r.name);
+      }
       const raw = await categoriesApi.listWithSubs('ALL');
       return raw
         .map((c) => ({
           id: String(c.category_id),
           name: c.name,
-          scope: c.scope ?? '',
+          scope: (c as unknown as { scope?: string }).scope ?? '',
           subCategories: (c.sub_categories ?? [])
             .map((s) => ({
               id: String(s.sub_category_id ?? s.id ?? ''),

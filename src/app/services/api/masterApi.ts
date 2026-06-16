@@ -2,6 +2,7 @@ import { httpClient } from '@/services/api/httpClient';
 import type {
   ICategoryResponse,
   ICertificationResponse,
+  IHubResponse,
   IMaterialResponse,
   IShippingMethodResponse,
   ISubCategoryResponse,
@@ -38,6 +39,15 @@ export function getProductCategories(parentCategoryId?: string | number) {
 
 export function getLbiCategories(scope: 'PD' | 'MT' | 'ALL' = 'PD') {
   return httpClient.get<{ categories: ICategoryResponse[] }>(`/lbi/categories?scope=${scope}`);
+}
+
+export function getLbiCategoriesByHub(hubId: number) {
+  return httpClient.get<{ categories: ICategoryResponse[] }>(`/lbi/categories?hub_id=${hubId}`);
+}
+
+export function getLbiHubs(scope?: 'PD' | 'MT') {
+  const params = scope ? `?scope=${scope}` : '';
+  return httpClient.get<{ hubs: IHubResponse[] }>(`/lbi/hubs${params}`);
 }
 
 export function getLbiSubCategories(scope: 'PD' | 'MT' | 'ALL' = 'ALL') {

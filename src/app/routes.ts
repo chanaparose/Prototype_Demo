@@ -2,6 +2,7 @@ import { createBrowserRouter, redirect } from 'react-router';
 import { Layout } from '@/components/layout/Layout';
 import { Explore } from '@/pages/explore';
 import { FactoryIdeas } from '@/pages/factory-ideas';
+import { FactoryIdeasHubPage } from '@/pages/factory-ideas-hub/FactoryIdeasHubPage';
 import { FactoryDetail } from '@/pages/factories/FactoryDetail';
 import { ProductDetail } from '@/pages/product-detail';
 import { PromotionDetail } from '@/pages/promotion-detail';
@@ -88,6 +89,7 @@ export const router = createBrowserRouter([
           { path: 'product-detail/reviews', Component: ReviewsBrowsePage },
           { path: 'promotion-detail', Component: PromotionDetail },
           { path: 'idea-detail', Component: IdeaDetail },
+          { path: 'factory-ideas-hub', Component: FactoryIdeasHubPage },
           { path: 'factory-ideas', Component: FactoryIdeas },
           { path: 'factories/:id', Component: FactoryDetail },
           { path: 'factories/:id/reviews', Component: ReviewsBrowsePage },
