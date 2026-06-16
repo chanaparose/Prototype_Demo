@@ -3,13 +3,16 @@ import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
   BadgeCheck,
-  Sparkles,
   LayoutGrid,
   List,
   MapPin,
   SearchX,
+  Sparkles,
   Star,
 } from 'lucide-react';
+import { useSearchParams } from 'react-router';
+import { FactoryIdeasHubBackButton } from '@/components/features/factory-ideas/FactoryIdeasHubBackButton';
+import { isFromFactoryIdeasHub } from '@/components/features/factory-ideas/factoryIdeasHubNav';
 import {
   ShowcaseGridCardSkeleton,
   ShowcaseListItemSkeleton,
@@ -45,6 +48,8 @@ const MOBILE_TABS: { id: FactoryIdeasContentType; label: string }[] = [
 
 export function FactoryIdeasMobile() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromHub = isFromFactoryIdeasHub(searchParams);
   const {
     data,
     isLiked,
@@ -92,6 +97,7 @@ export function FactoryIdeasMobile() {
     categoryOptionSelected,
     getDetailPath,
     visibleTabIds,
+    hubScope,
   } = useFactoryIdeasPageState({ layout: 'mobile', initialType: 'all' });
 
   const visibleTabs = MOBILE_TABS.filter((t) => visibleTabIds.has(t.id));
@@ -99,6 +105,7 @@ export function FactoryIdeasMobile() {
   return (
     <div className='min-h-[100dvh] bg-[var(--brand-page)] pb-24'>
       <div className='bg-white px-4 pt-4 pb-3 border-b border-gray-100'>
+        {fromHub ? <FactoryIdeasHubBackButton hubScope={hubScope} label='กลับหมวดหมู่' /> : null}
         <div className='mb-2.5'>
           <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
             Discover

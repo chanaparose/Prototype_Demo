@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
   BadgeCheck,
@@ -13,6 +13,8 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
+import { FactoryIdeasHubBackButton } from '@/components/features/factory-ideas/FactoryIdeasHubBackButton';
+import { isFromFactoryIdeasHub } from '@/components/features/factory-ideas/factoryIdeasHubNav';
 import { IdeaArticleCard } from '@/components/features/factory-ideas/IdeaArticleCard';
 import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasPageState';
 import {
@@ -248,6 +250,8 @@ function DesktopRecommendedFactoriesRow({
 
 export function FactoryIdeasDesktop() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromHub = isFromFactoryIdeasHub(searchParams);
   const {
     data,
     isLiked,
@@ -289,12 +293,16 @@ export function FactoryIdeasDesktop() {
     pickSubCategory,
     categoryOptionSelected,
     getDetailPath,
+    hubScope,
   } = useFactoryIdeasPageState({ layout: 'desktop' });
 
   return (
     <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-page)] lg:block'>
       <div className='bg-white border-b border-gray-100 shadow-sm sticky top-0 z-10'>
         <div className='px-8 2xl:px-10 py-4 space-y-4'>
+          {fromHub ? (
+            <FactoryIdeasHubBackButton hubScope={hubScope} label='กลับหมวดหมู่' className='mb-0' />
+          ) : null}
           <div className='relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,var(--brand-navy-deep)_0%,#4A267D_100%)] p-5 text-white shadow-md'>
             <div className='absolute -right-8 -top-8 h-40 w-40 rounded-full bg-[var(--brand-orange-hot)] opacity-40 blur-2xl mix-blend-screen' />
             <div className='absolute right-0 top-0 h-28 w-28 translate-x-8 skew-x-[-15deg] rounded-full bg-[var(--brand-purple)] opacity-60' />

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
 import { cn } from '@lib/utils';
@@ -36,34 +36,32 @@ function CategoryCard({
   cat: ICategoryForHubResponse;
   onClick: () => void;
 }) {
-  const initial = cat.name.trim().charAt(0) || '?';
   const subText = (cat.sub_preview ?? []).slice(0, 2).join(' · ');
+  const factoryLabel =
+    cat.factory_count > 0 ? `${cat.factory_count} โรงงาน` : 'ดูรายการในหมวดนี้';
 
   return (
     <button
       type='button'
       onClick={onClick}
-      className='group flex w-[100px] shrink-0 flex-col rounded-xl border border-gray-100 bg-white p-2.5 text-left shadow-sm transition-all hover:border-brand-purple/25 hover:shadow-md active:scale-[0.98]'
+      className='group flex w-[108px] shrink-0 flex-col rounded-xl border border-brand-purple/15 bg-gradient-to-br from-[var(--brand-lavender-chip)] via-[var(--brand-panel-soft)] to-white p-3 text-left shadow-[0_2px_8px_rgba(46,34,82,0.07)] transition-all hover:-translate-y-0.5 hover:border-brand-purple/35 hover:shadow-[0_4px_14px_rgba(122,75,148,0.18)] active:scale-[0.98]'
     >
-      <div className='mb-2 flex items-start justify-between gap-1'>
-        <span
-          aria-hidden
-          className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--brand-page)] to-white text-[15px] font-bold text-[var(--brand-mauve)] ring-1 ring-brand-purple/10 transition-all group-hover:ring-brand-purple/30'
-        >
-          {initial}
-        </span>
-        {cat.factory_count > 0 ? (
-          <span className='rounded-full bg-[var(--brand-page)] px-1.5 py-0.5 text-[8px] font-medium leading-none text-gray-500'>
-            {cat.factory_count}
-          </span>
-        ) : null}
-      </div>
-      <span className='line-clamp-2 text-[11px] font-semibold leading-snug text-[var(--brand-navy)]'>
+      <span className='line-clamp-2 text-[11px] font-bold leading-snug text-[var(--brand-navy)] group-hover:text-brand-purple'>
         {cat.name}
       </span>
       {subText ? (
-        <span className='mt-1 line-clamp-2 text-[9px] leading-tight text-gray-400'>{subText}</span>
+        <span className='mt-1 line-clamp-2 text-[9px] leading-tight text-[var(--brand-muted-purple)]'>
+          {subText}
+        </span>
       ) : null}
+      <span
+        className={cn(
+          'mt-2.5 text-[9px] font-semibold leading-none',
+          cat.factory_count > 0 ? 'text-brand-purple' : 'text-gray-400',
+        )}
+      >
+        {factoryLabel}
+      </span>
     </button>
   );
 }
@@ -83,15 +81,17 @@ function SeeAllCard({
     <button
       type='button'
       onClick={onClick}
-      className='flex w-[100px] shrink-0 flex-col rounded-xl border border-dashed border-brand-purple/25 bg-white p-2.5 text-left shadow-sm transition-all hover:border-brand-purple/40 hover:bg-[var(--brand-page)] active:scale-[0.98]'
+      className='flex w-[108px] shrink-0 flex-col rounded-xl border border-dashed border-brand-purple/35 bg-gradient-to-br from-white to-[var(--brand-lavender-chip)] p-3 text-left shadow-[0_2px_8px_rgba(46,34,82,0.06)] transition-all hover:border-brand-purple/50 hover:shadow-[0_4px_14px_rgba(122,75,148,0.14)] active:scale-[0.98]'
     >
-      <div className='mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-purple/10 text-brand-purple'>
-        <ArrowRight size={16} strokeWidth={2.25} />
-      </div>
-      <span className='text-[11px] font-semibold leading-snug text-brand-purple'>+{count} หมวด</span>
-      <span className='mt-0.5 text-[9px] font-medium text-brand-purple/70'>ดูครบ</span>
+      <span className='mb-2 inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand-purple/12 text-brand-purple'>
+        <ArrowRight size={14} strokeWidth={2.5} />
+      </span>
+      <span className='text-[11px] font-bold leading-snug text-brand-purple'>+{count} หมวด</span>
+      <span className='mt-0.5 text-[9px] font-medium text-brand-purple/75'>ดูครบทุกหมวด</span>
       {subText ? (
-        <span className='mt-1 line-clamp-2 text-[9px] leading-tight text-gray-400'>{subText}</span>
+        <span className='mt-2 line-clamp-2 text-[9px] leading-tight text-[var(--brand-muted-purple)]'>
+          {subText}
+        </span>
       ) : null}
     </button>
   );
@@ -129,7 +129,7 @@ function HubSection({
         </Button>
       </div>
 
-      <div className='scrollbar-hide flex gap-2.5 overflow-x-auto px-3.5 pb-3.5'>
+      <div className='scrollbar-hide flex gap-2.5 overflow-x-auto bg-[var(--brand-page)]/50 px-3.5 py-3.5'>
         {visible.map((cat) => (
           <CategoryCard
             key={cat.category_id}
@@ -158,12 +158,15 @@ function HubSectionSkeleton() {
         <Skeleton className='h-4 w-28' />
         <Skeleton className='h-6 w-16 rounded-full' />
       </div>
-      <div className='flex gap-2.5 overflow-hidden'>
+      <div className='flex gap-2.5 overflow-hidden bg-[var(--brand-page)]/50 p-3.5'>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className='w-[100px] shrink-0 space-y-2 rounded-xl border border-gray-100 p-2.5'>
-            <Skeleton className='h-9 w-9 rounded-lg' />
-            <Skeleton className='h-3 w-full' />
-            <Skeleton className='h-2 w-4/5' />
+          <div
+            key={i}
+            className='w-[108px] shrink-0 space-y-2 rounded-xl border border-brand-purple/10 bg-[var(--brand-lavender-chip)] p-3'
+          >
+            <Skeleton className='h-3 w-full bg-brand-purple/10' />
+            <Skeleton className='h-2 w-4/5 bg-brand-purple/10' />
+            <Skeleton className='h-2 w-2/3 bg-brand-purple/10' />
           </div>
         ))}
       </div>
@@ -192,8 +195,18 @@ function ComingSoonStrip() {
 
 export function FactoryIdeasHubPage() {
   const navigate = useNavigate();
-  const [activeScope, setActiveScope] = useState<'PD' | 'MT'>('PD');
+  const [searchParams] = useSearchParams();
+  const scopeFromUrl = searchParams.get('scope');
+  const [activeScope, setActiveScope] = useState<'PD' | 'MT'>(() =>
+    scopeFromUrl === 'MT' ? 'MT' : 'PD',
+  );
   const [searchText, setSearchText] = useState('');
+
+  useEffect(() => {
+    if (scopeFromUrl === 'PD' || scopeFromUrl === 'MT') {
+      setActiveScope(scopeFromUrl);
+    }
+  }, [scopeFromUrl]);
 
   const hubsQ = useHubsQuery();
   const hubs = (hubsQ.data ?? []).filter((h) => h.scope === activeScope);
