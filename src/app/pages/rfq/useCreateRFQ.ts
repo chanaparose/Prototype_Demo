@@ -1,11 +1,13 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { rfqsApi } from '@/services/api/rfqApi';
 import {
   type IRfqCreateRequest,
   type IRfqWizardCreateInput,
 } from '@/services/api/types/rfq.types';
+import { rfqKeys, meKeys, sessionKeys } from '@/lib/queryKeys';
 
 export function useCreateRFQ() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: IRfqWizardCreateInput) => {
       const kind = payload.request_kind ?? 'PR';
@@ -77,6 +79,11 @@ export function useCreateRFQ() {
       }
 
       return rfqsApi.create(body as unknown as IRfqCreateRequest);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: rfqKeys.all });
+      void queryClient.invalidateQueries({ queryKey: meKeys.rfqOrders() });
+      void queryClient.invalidateQueries({ queryKey: sessionKeys.all });
     },
   });
 }
