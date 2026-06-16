@@ -24,6 +24,8 @@ type SubCategory = {
   sortOrder?: number;
 };
 
+type HubOption = { hub_id: number; name: string };
+
 type Props = {
   draft: RFQDraft;
   setDraft: (next: Partial<RFQDraft>) => void;
@@ -31,6 +33,9 @@ type Props = {
   subCategories: SubCategory[];
   subCategoriesLoading?: boolean;
   mode?: 'PR' | 'PS' | 'MS' | 'MR';
+  hubs?: HubOption[];
+  selectedHubId?: number | null;
+  onHubChange?: (hubId: number | null) => void;
 };
 
 export function Step1Basic({
@@ -40,6 +45,9 @@ export function Step1Basic({
   subCategories,
   subCategoriesLoading = false,
   mode = 'PR',
+  hubs = [],
+  selectedHubId = null,
+  onHubChange,
 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [units, setUnits] = useState<UnitOption[]>([]);
@@ -196,6 +204,28 @@ export function Step1Basic({
           </div>
         ) : null}
       </div>
+
+      {hubs.length > 0 ? (
+        <label className='block'>
+          <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>กลุ่มธุรกิจ</span>
+          <Select
+            value={selectedHubId != null ? String(selectedHubId) : '__all'}
+            onValueChange={(v) => onHubChange?.(v === '__all' ? null : Number(v))}
+          >
+            <SelectTrigger className={fieldClass}>
+              <SelectValue placeholder='ทุกกลุ่ม' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='__all'>ทุกกลุ่ม</SelectItem>
+              {hubs.map((h) => (
+                <SelectItem key={h.hub_id} value={String(h.hub_id)}>
+                  {h.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </label>
+      ) : null}
 
       <div className={`grid gap-3 ${showSubCategory ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
         <label className='block min-w-0'>

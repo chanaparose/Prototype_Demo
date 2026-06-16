@@ -6,6 +6,7 @@ export interface CategoryOption {
   id: number;
   name: string;
   scope?: string;
+  hubId?: number;
 }
 
 export function useLbiCategoriesByScope(scope: 'PD' | 'MT' | 'ALL') {
@@ -26,7 +27,8 @@ export function useLbiCategoriesByScope(scope: 'PD' | 'MT' | 'ALL') {
             String(r.scope ?? '')
               .trim()
               .toUpperCase() || undefined;
-          return { id, name, scope: s };
+          const hubId = Number(r.hub_id ?? 0) || undefined;
+          return { id, name, scope: s, hubId };
         })
         .filter((x): x is CategoryOption => x != null)
         .sort((a, b) => a.name.localeCompare(b.name, 'th'));

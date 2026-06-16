@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
-import { categoriesApi } from '@/services/api/masterApi';
+import { categoriesApi, getLbiHubs } from '@/services/api/masterApi';
 import { factoriesApi } from '@/services/api/factoryApi';
 import type { TargetFactory } from '@/pages/rfq/useRFQDraft';
 import type { ISubCategoryResponse } from '@/services/api/types/master.types';
@@ -10,6 +10,8 @@ import { pickScalarString } from '@/utils/pickScalarString';
 import { rfqsApi } from '@/services/api/rfqApi';
 import { useCreateRFQ } from '@/pages/rfq/useCreateRFQ';
 import { useRFQDraft } from '@/pages/rfq/useRFQDraft';
+import { useQuery } from '@tanstack/react-query';
+import type { IHubResponse } from '@/services/api/types/master.types';
 import { Step1Basic } from '@/pages/rfq/steps/Step1Basic';
 import { Step2Specifications } from '@/pages/rfq/steps/Step2Specifications';
 import { Step3Commercial } from '@/pages/rfq/steps/Step3Commercial';
@@ -75,6 +77,17 @@ export function RFQCreateWizard() {
   const [shippingMap, setShippingMap] = React.useState<Record<number, string>>({});
   const [allFactories, setAllFactories] = React.useState<TargetFactory[]>([]);
   const { data: allCategories = [] } = useLbiCategoriesByScope('ALL');
+  const [selectedHubId, setSelectedHubId] = React.useState<number | null>(null);
+  const { data: allHubs = [] } = useQuery({
+    queryKey: ['lbi-hubs', 'all'],
+    queryFn: async () => {
+      const res = await getLbiHubs();
+      const raw = res as unknown as { hubs?: IHubResponse[] };
+      return raw.hubs ?? [];
+    },
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+  });
   const headerCollapse = useScrollHeaderCollapse(16, 96);
   const backRowRef = React.useRef<HTMLDivElement>(null);
   const collapsibleInnerRef = React.useRef<HTMLDivElement>(null);
@@ -169,14 +182,23 @@ export function RFQCreateWizard() {
   }, [draft.category_id]);
 
   const scopeFilter = draft.request_kind === 'MS' || draft.request_kind === 'MR' ? 'MT' : 'PD';
-  const modeCategories = React.useMemo(
-    () => allCategories.filter((c) => !c.scope || c.scope === scopeFilter),
-    [allCategories, scopeFilter],
+  const scopeHubs = React.useMemo(
+    () => allHubs.filter((h) => h.scope === scopeFilter),
+    [allHubs, scopeFilter],
   );
+  const modeCategories = React.useMemo(() => {
+    const byScopeAll = allCategories.filter((c) => !c.scope || c.scope === scopeFilter);
+    if (!selectedHubId) return byScopeAll;
+    return byScopeAll.filter((c) => c.hubId === selectedHubId);
+  }, [allCategories, scopeFilter, selectedHubId]);
   const categoryMap = React.useMemo(
     () => Object.fromEntries(modeCategories.map((c) => [c.id, c.name])),
     [modeCategories],
   );
+
+  React.useEffect(() => {
+    setSelectedHubId(null);
+  }, [scopeFilter]);
 
   React.useEffect(() => {
     const cid = Number(draft.category_id ?? 0);
@@ -472,6 +494,12 @@ export function RFQCreateWizard() {
                 subCategories={subCategories}
                 subCategoriesLoading={subCategoriesLoading}
                 mode={kind}
+                hubs={scopeHubs}
+                selectedHubId={selectedHubId}
+                onHubChange={(hubId) => {
+                  setSelectedHubId(hubId);
+                  setDraft({ category_id: null, sub_category_id: undefined });
+                }}
               />
             </RfqFormSection>
 
