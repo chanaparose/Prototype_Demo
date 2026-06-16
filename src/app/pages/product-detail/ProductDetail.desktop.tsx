@@ -542,6 +542,12 @@ export function ProductDetailDesktop() {
                             />
                           </div>
                         ) : null}
+                        {r.factoryReply ? (
+                          <div className='mt-2 rounded-lg border border-violet-100 bg-violet-50/60 px-3 py-2'>
+                            <p className='mb-0.5 text-[11px] font-semibold text-brand-purple'>การตอบกลับจากโรงงาน</p>
+                            <p className='text-[13px] text-slate-700 leading-relaxed'>{r.factoryReply}</p>
+                          </div>
+                        ) : null}
                       </li>
                     );
                   })}

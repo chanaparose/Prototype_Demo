@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useData } from '@/stores/useDataStore';
 import { type Factory, type FactoryShowcase } from '@/stores/types';
@@ -19,6 +19,8 @@ export type ReviewItem = {
   comment: string;
   createdAt: string;
   imageUrls?: string[];
+  factoryReply?: string;
+  factoryReplyAt?: string;
 };
 
 export type ReviewsData = {
@@ -90,6 +92,8 @@ function mapEmbeddedReviews(rRaw: Record<string, unknown>): ReviewsData {
           comment: String(row.comment ?? ''),
           createdAt: String(row.created_at ?? ''),
           ...(imgUrls.length > 0 ? { imageUrls: imgUrls } : {}),
+          ...(row.factory_reply ? { factoryReply: String(row.factory_reply) } : {}),
+          ...(row.factory_reply_at ? { factoryReplyAt: String(row.factory_reply_at) } : {}),
         };
       })
       .filter((r) => r.id),
@@ -153,7 +157,6 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   const resolvedId = (pathId && pathId.trim() !== '' ? pathId : qId)?.trim() ?? '';
 
   const data = useData();
-  const viewedIdRef = useRef<string>('');
 
   const fromContext = useMemo(() => {
     if (!resolvedId) return null;
@@ -214,9 +217,6 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   const fetchError =
     detailQ.error instanceof Error ? detailQ.error.message : detailQ.error ? 'โหลดไม่สำเร็จ' : null;
 
-  useEffect(() => {
-    viewedIdRef.current = '';
-  }, [resolvedId]);
 
   const item = apiItem ?? fromContext;
   const unitMapQ = useMasterUnitMap();
@@ -289,15 +289,6 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
     return [...uniq.values()].slice(0, 8);
   }, [data.factoryShowcases, item, kind, relatedApiShowcases]);
 
-  // [2] POST /api/v1/showcases/:id/view — fire & forget
-  useEffect(() => {
-    if (!resolvedId || !item) return;
-    const ready = apiItem != null || hasRichSections(fromContext);
-    if (!ready) return;
-    if (viewedIdRef.current === resolvedId) return;
-    viewedIdRef.current = resolvedId;
-    void showcasesApi.incrementView(resolvedId).catch(() => {});
-  }, [resolvedId, item, apiItem, fromContext]);
 
   const loading = Boolean(resolvedId && !item && fetchLoading);
   const error = fetchError || null;

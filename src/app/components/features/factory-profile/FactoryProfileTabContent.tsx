@@ -49,6 +49,8 @@ export type ReviewItem = {
   imageUrls?: string[];
   helpfulCount?: number;
   optionText?: string;
+  factoryReply?: string;
+  factoryReplyAt?: string;
 };
 
 const TABS: { id: TabId; label: string }[] = [
@@ -333,6 +335,12 @@ export function FactoryProfileTabContent({
                           urls={review.imageUrls}
                           onPreviewUrl={(u) => openImageLightbox(u)}
                         />
+                      </div>
+                    ) : null}
+                    {review.factoryReply ? (
+                      <div className='mt-2 rounded-lg border border-violet-100 bg-violet-50/60 px-3 py-2'>
+                        <p className='mb-0.5 text-[10px] font-semibold text-brand-purple'>การตอบกลับจากโรงงาน</p>
+                        <p className='text-[11px] text-slate-700 leading-relaxed'>{review.factoryReply}</p>
                       </div>
                     ) : null}
                   </div>

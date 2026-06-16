@@ -18,6 +18,8 @@ type ReviewItem = {
   created_at: string;
   is_editable?: boolean;
   image_urls: string[];
+  factory_reply?: string;
+  factory_reply_at?: string;
 };
 
 export function MyReviewsPage() {
@@ -52,6 +54,8 @@ export function MyReviewsPage() {
             created_at: String(row.created_at ?? ''),
             is_editable: Boolean(row.is_editable),
             image_urls: normalizeReviewImageUrls(row.image_urls),
+            factory_reply: row.factory_reply ? String(row.factory_reply) : undefined,
+            factory_reply_at: row.factory_reply_at ? String(row.factory_reply_at) : undefined,
           }))
           .filter((r) => Number.isFinite(r.review_id) && r.review_id > 0),
       );
@@ -172,6 +176,17 @@ export function MyReviewsPage() {
                   urls={r.image_urls}
                   onPreviewUrl={(u) => window.open(u, '_blank', 'noopener,noreferrer')}
                 />
+                {r.factory_reply ? (
+                  <div className='mt-2 rounded-lg border border-violet-100 bg-violet-50/60 px-3 py-2'>
+                    <p className='mb-0.5 text-[10px] font-semibold text-brand-purple'>การตอบกลับจากโรงงาน</p>
+                    <p className='text-xs text-slate-700 leading-relaxed'>{r.factory_reply}</p>
+                    {r.factory_reply_at ? (
+                      <p className='mt-0.5 text-[10px] text-slate-400'>
+                        {new Date(r.factory_reply_at).toLocaleDateString('th-TH')}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
                 {r.is_editable ? (
                   <div className='mt-2 flex gap-2'>
                     <Button

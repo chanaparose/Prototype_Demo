@@ -507,6 +507,12 @@ export function PromotionDetailDesktop() {
                     <p className='text-[12px] text-gray-600 mt-1 line-clamp-2'>
                       {r.comment || '-'}
                     </p>
+                    {r.factoryReply ? (
+                      <div className='mt-1.5 rounded-md border border-violet-100 bg-violet-50/60 px-2 py-1.5'>
+                        <p className='text-[10px] font-semibold text-brand-purple mb-0.5'>การตอบกลับจากโรงงาน</p>
+                        <p className='text-[11px] text-slate-700 line-clamp-2'>{r.factoryReply}</p>
+                      </div>
+                    ) : null}
                 </div>
                 ))
               )}

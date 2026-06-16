@@ -7,6 +7,8 @@ export type FactoryReviewItem = {
   rating: number;
   comment: string;
   created_at: string;
+  factoryReply?: string;
+  factoryReplyAt?: string;
 };
 
 function mapReviewRow(raw: Record<string, unknown>): FactoryReviewItem | null {
@@ -25,6 +27,8 @@ function mapReviewRow(raw: Record<string, unknown>): FactoryReviewItem | null {
     rating: Number(raw.rating ?? 0),
     comment: String(raw.comment ?? raw.text ?? '').trim(),
     created_at: String(raw.created_at ?? raw.date ?? ''),
+    ...(raw.factory_reply ? { factoryReply: String(raw.factory_reply) } : {}),
+    ...(raw.factory_reply_at ? { factoryReplyAt: String(raw.factory_reply_at) } : {}),
   };
 }
 

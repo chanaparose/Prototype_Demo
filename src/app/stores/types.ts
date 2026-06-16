@@ -48,6 +48,8 @@ export type BootstrapFactoryReviewModel = {
   helpfulCount?: number;
   optionText?: string;
   imageUrls?: string[];
+  factoryReply?: string;
+  factoryReplyAt?: string;
 };
 
 export type BootstrapIdeaArticleModel = {

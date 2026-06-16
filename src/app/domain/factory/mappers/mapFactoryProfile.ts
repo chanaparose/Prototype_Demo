@@ -137,6 +137,8 @@ function mapReviewFromApi(r: Record<string, unknown>, factoryId: string): Factor
     helpfulCount: pickScalarNumber(r.helpful_count, r.useful_count) ?? 0,
     optionText: pickScalarString(r.option_text, r.variant, r.sku_option) || undefined,
     ...(imageUrls.length > 0 ? { imageUrls } : {}),
+    ...(r.factory_reply ? { factoryReply: String(r.factory_reply) } : {}),
+    ...(r.factory_reply_at ? { factoryReplyAt: String(r.factory_reply_at) } : {}),
   };
 }
 
