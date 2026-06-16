@@ -57,12 +57,17 @@ export function StarRatingFilterSheet({
                 >
                   {active ? <span className='h-1.5 w-1.5 rounded-full bg-white' /> : null}
                 </span>
-                <span className='flex min-w-0 flex-1 items-center gap-0.5'>
-                  {Array.from({ length: star }).map((_, i) => (
-                    <Star key={i} className='h-3.5 w-3.5 fill-amber-400 text-amber-400' />
-                  ))}
+                <span className='flex min-w-0 flex-1 items-center gap-2'>
+                  
+                  <span className='flex items-center gap-0.5'>
+                    {Array.from({ length: star }).map((_, i) => (
+                      <Star key={i} className='h-3.5 w-3.5 fill-amber-400 text-amber-400' />
+                    ))}
+                  </span>
+                  <span className='shrink-0 text-sm font-medium tabular-nums text-gray-600'>
+                    ({count})
+                  </span>
                 </span>
-                <span className='shrink-0 text-sm tabular-nums text-gray-500'>{count}</span>
               </button>
             );
           })}
