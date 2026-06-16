@@ -1,12 +1,10 @@
 import React, { useMemo } from 'react';
-import { openImageLightbox } from '@/stores/useLightboxStore';
-import { ChevronRight, Search, ThumbsUp, MapPin, Star } from 'lucide-react';
+import { MapPin, Star } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
-import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
+import { ReviewPreviewSection } from '@/components/features/reviews/ReviewPreviewSection';
+import { normalizeFactoryReview } from '@/components/features/reviews/reviewBrowseUtils';
 import { formatThaiDate } from '@/components/features/factory-profile/utils';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 export type TabId = 'products' | 'materials' | 'articles' | 'review';
 
@@ -71,6 +69,7 @@ type FactoryProfileTabContentProps = {
   reviews: ReviewItem[];
   onProductClick: (id: string) => void;
   onIdeaClick: (id: string) => void;
+  onViewAllReviews?: () => void;
 };
 
 export function FactoryProfileTabContent({
@@ -84,6 +83,7 @@ export function FactoryProfileTabContent({
   reviews,
   onProductClick,
   onIdeaClick,
+  onViewAllReviews,
 }: FactoryProfileTabContentProps) {
   const tabCounts = useMemo(
     () => ({
@@ -277,87 +277,15 @@ export function FactoryProfileTabContent({
       )}
 
       {activeTab === 'review' && (
-        <div className='space-y-3'>
-          <div className='bg-white rounded-lg p-4 border border-gray-200'>
-            <div className='flex items-center justify-between mb-2.5'>
-              <p
-                className='text-sm text-gray-900 inline-flex items-center gap-1.5'
-                style={{ fontWeight: 700 }}
-              >
-                <Star className='w-4 h-4 text-amber-400 fill-amber-400' />
-                คะแนนสินค้า ({reviews.length})
-              </p>
-              <Button
-                variant='unstyled'
-                type='button'
-                className='text-xs font-medium inline-flex items-center gap-0.5 text-gray-500 hover:text-gray-700'
-              >
-                ดูทั้งหมด <ChevronRight className='w-3 h-3' />
-              </Button>
-            </div>
-
-            <div className='mb-3 relative'>
-              <Search className='w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2' />
-              <Input
-                type='text'
-                disabled
-                placeholder='ค้นหารีวิวจากผู้ซื้อคนอื่น'
-                className='w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-3 py-2 text-xs text-gray-500'
-              />
-            </div>
-
-            <div className='space-y-2.5'>
-              {reviews.length === 0 ? (
-                <p className='text-sm text-gray-500'>ยังไม่มีรีวิว</p>
-              ) : (
-                reviews.slice(0, 4).map((review) => (
-                  <div key={review.id} className='rounded-xl bg-gray-50 p-3'>
-                    <div className='flex items-center justify-between mb-1'>
-                      <p className='text-xs text-gray-700' style={{ fontWeight: 600 }}>
-                        {review.reviewer}
-                      </p>
-                      <p className='text-[11px] text-gray-500 inline-flex items-center gap-1'>
-                        <ThumbsUp className='w-3 h-3' />
-                        มีประโยชน์ ({Number(review.helpfulCount ?? 0)})
-                      </p>
-                    </div>
-                    <p className='text-[11px] text-amber-600 mb-1'>★ {review.rating}</p>
-                    {review.optionText ? (
-                      <p className='text-[11px] text-gray-500 mb-1'>
-                        ตัวเลือกสินค้า: {review.optionText}
-                      </p>
-                    ) : null}
-                    <p className='text-xs text-gray-600'>{review.comment}</p>
-                    <p className='text-[10px] text-gray-400 mt-1'>{formatThaiDate(review.date)}</p>
-                    {review.imageUrls && review.imageUrls.length > 0 ? (
-                      <div className='mt-2'>
-                        <ReviewImageAttachments
-                          urls={review.imageUrls}
-                          onPreviewUrl={(u) => openImageLightbox(u)}
-                        />
-                      </div>
-                    ) : null}
-                    {review.factoryReply ? (
-                      <div className='mt-2 rounded-lg border border-violet-100 bg-violet-50/60 px-3 py-2'>
-                        <p className='mb-0.5 text-[10px] font-semibold text-brand-purple'>การตอบกลับจากโรงงาน</p>
-                        <p className='text-[11px] text-slate-700 leading-relaxed'>{review.factoryReply}</p>
-                      </div>
-                    ) : null}
-                  </div>
-                ))
-              )}
-            </div>
-
-            {factoryId && (
-              <div className='mt-4 pt-4 border-t border-gray-100'>
-                <p className='text-xs text-gray-500'>
-                  การรีวิวทำผ่านหน้าออเดอร์ที่เสร็จสมบูรณ์แล้วเท่านั้น
-                  เพื่อป้องกันรีวิวปลอมและรีวิวซ้ำ
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+        <ReviewPreviewSection
+          reviews={reviews.map(normalizeFactoryReview)}
+          onViewAll={onViewAllReviews}
+          footerNote={
+            factoryId
+              ? 'การรีวิวทำผ่านหน้าออเดอร์ที่เสร็จสมบูรณ์แล้วเท่านั้น เพื่อป้องกันรีวิวปลอมและรีวิวซ้ำ'
+              : undefined
+          }
+        />
       )}
       </div>
     </div>

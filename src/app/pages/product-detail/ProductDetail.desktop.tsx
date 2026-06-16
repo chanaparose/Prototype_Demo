@@ -11,7 +11,7 @@ import {
   normalizeShowcaseMarkdown as normalizeMarkdownContent,
 } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { ShowcaseHeroGallery } from '@/components/features/showcase-detail/ShowcaseHeroGallery';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
   ArrowLeft,
@@ -28,8 +28,11 @@ import {
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
-import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
-import { openImageLightbox } from '@/stores/useLightboxStore';
+import { ReviewPreviewSection } from '@/components/features/reviews/ReviewPreviewSection';
+import {
+  getProductReviewsBrowsePath,
+  normalizeShowcaseReview,
+} from '@/components/features/reviews/reviewBrowseUtils';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
@@ -40,25 +43,6 @@ import { getFactoryIdeaDetailPath } from '@/components/features/factory-ideas/fa
 const SECTION_EYEBROW_CLASS =
   'text-[10px] font-semibold uppercase tracking-wider text-gray-400';
 const SECTION_TITLE_CLASS = 'text-[14px] font-semibold text-[var(--brand-navy-ink)]';
-
-function StarRatingDisplay({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) {
-  const iconClass = size === 'md' ? 'h-4 w-4' : 'h-3.5 w-3.5';
-  return (
-    <div className='flex items-center gap-0.5' aria-hidden>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={cn(
-            iconClass,
-            star <= Math.round(rating)
-              ? 'fill-amber-400 text-amber-400'
-              : 'fill-gray-100 text-gray-200',
-          )}
-        />
-      ))}
-    </div>
-  );
-}
 
 function DetailSection({
   eyebrow,
@@ -84,6 +68,7 @@ function DetailSection({
 
 export function ProductDetailDesktop() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const {
@@ -177,8 +162,7 @@ export function ProductDetailDesktop() {
   const likeCount = item ? item.likes + (liked ? 1 : 0) : 0;
   const avgRating = Number(reviews?.summary.average ?? factory?.rating ?? 0);
   const reviewCount = Number(reviews?.summary.total ?? factory?.reviews ?? 0);
-  const breakdown = reviews?.summary.breakdown ?? { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
-  const latestReviews = reviews?.items ?? [];
+  const browseReviews = (reviews?.items ?? []).map(normalizeShowcaseReview);
 
   const specRows: { label: string; value: React.ReactNode }[] = [];
   if (Array.isArray(item.specs) && item.specs.length > 0) {
@@ -464,96 +448,15 @@ export function ProductDetailDesktop() {
           </div>
 
           <div className='border-t border-gray-50 px-6 py-5'>
-            <header className='mb-5'>
-              <p className={SECTION_EYEBROW_CLASS}>ความคิดเห็น</p>
-              <h2 className={cn(SECTION_TITLE_CLASS, 'mt-0.5')}>คะแนนรีวิว</h2>
-            </header>
-
-            <div className='grid max-w-xl grid-cols-[auto_minmax(0,1fr)] items-start gap-5'>
-              <div className='flex flex-col items-center rounded-lg border border-gray-100 bg-[var(--brand-page)] px-5 py-3.5'>
-                <p className='text-[24px] font-bold leading-none tabular-nums text-[var(--brand-ink)]'>
-                  {avgRating.toFixed(1)}
-                </p>
-                <div className='mt-1.5'>
-                  <StarRatingDisplay rating={avgRating} />
-                </div>
-                <p className='mt-1.5 text-[14px] text-gray-500'>จาก {reviewCount} รีวิว</p>
-              </div>
-
-              <div className='space-y-1.5 pt-0.5'>
-                {[5, 4, 3, 2, 1].map((star) => {
-                  const count = Number(breakdown[String(star)] ?? 0);
-                  const intensity =
-                    reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
-                  return (
-                    <div key={star} className='flex items-center gap-2'>
-                      <span className='w-3 shrink-0 text-[14px] tabular-nums text-gray-500'>{star}</span>
-                      <Star className='h-3 w-3 shrink-0 fill-amber-400 text-amber-400' />
-                      <div className='h-1.5 max-w-[12rem] min-w-0 flex-1 overflow-hidden rounded-full bg-gray-100'>
-                        <div
-                          className='h-full rounded-full bg-amber-400 transition-all duration-500'
-                          style={{ width: `${intensity}%` }}
-                        />
-                      </div>
-                      <span className='w-5 shrink-0 text-right text-[14px] tabular-nums text-gray-400'>
-                        {count}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className='mt-6 border-t border-gray-100 pt-5'>
-              <p className='mb-4 text-[14px] font-medium text-[var(--brand-navy-ink)]'>รีวิวล่าสุด</p>
-              {latestReviews.length === 0 ? (
-                <p className='py-6 text-center text-[14px] text-gray-400'>
-                  ยังไม่มีรีวิวจากลูกค้า
-                </p>
-              ) : (
-                <ul className='space-y-0'>
-                  {latestReviews.slice(0, 3).map((r) => {
-                    const rating = Number(r.rating || 0);
-                    return (
-                      <li
-                        key={r.id}
-                        className='border-b border-gray-50 py-4 first:pt-0 last:border-b-0 last:pb-0'
-                      >
-                        <div className='flex flex-wrap items-center gap-x-2 gap-y-1'>
-                          <p className='truncate text-[14px] font-semibold text-gray-900'>
-                            {r.reviewer}
-                          </p>
-                          <span className='text-[14px] text-gray-300'>·</span>
-                          <div className='inline-flex items-center gap-1.5'>
-                            <StarRatingDisplay rating={rating} />
-                            <span className='text-[14px] font-medium tabular-nums text-gray-600'>
-                              {rating.toFixed(1)}
-                            </span>
-                          </div>
-                        </div>
-                        <p className='mt-2 text-[14px] leading-relaxed text-gray-600'>
-                          {r.comment || '—'}
-                        </p>
-                        {r.imageUrls && r.imageUrls.length > 0 ? (
-                          <div className='mt-3'>
-                            <ReviewImageAttachments
-                              urls={r.imageUrls}
-                              onPreviewUrl={(u) => openImageLightbox(u)}
-                            />
-                          </div>
-                        ) : null}
-                        {r.factoryReply ? (
-                          <div className='mt-2 rounded-lg border border-violet-100 bg-violet-50/60 px-3 py-2'>
-                            <p className='mb-0.5 text-[11px] font-semibold text-brand-purple'>การตอบกลับจากโรงงาน</p>
-                            <p className='text-[13px] text-slate-700 leading-relaxed'>{r.factoryReply}</p>
-                          </div>
-                        ) : null}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
+            <ReviewPreviewSection
+              reviews={browseReviews}
+              onViewAll={
+                resolvedId
+                  ? () => navigate(getProductReviewsBrowsePath(resolvedId, location.pathname))
+                  : undefined
+              }
+              footerNote='การรีวิวทำผ่านหน้าออเดอร์ที่เสร็จสมบูรณ์แล้วเท่านั้น เพื่อป้องกันรีวิวปลอมและรีวิวซ้ำ'
+            />
           </div>
         </section>
 

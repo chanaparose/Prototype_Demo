@@ -16,6 +16,7 @@ import {
   FactoryProfileTabContent,
   type TabId,
 } from '@/components/features/factory-profile/FactoryProfileTabContent';
+import { getFactoryReviewsBrowsePath } from '@/components/features/reviews/reviewBrowseUtils';
 import type { useFactoryProfile } from '@/components/features/factory/hooks/useFactoryProfile';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
@@ -194,6 +195,7 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
             reviews={reviews}
             onProductClick={(itemId) => navigate(`/factory-ideas/products/${itemId}`)}
             onIdeaClick={(itemId) => navigate(`/factory-ideas/ideas/${itemId}`)}
+            onViewAllReviews={() => navigate(getFactoryReviewsBrowsePath(factory.id))}
           />
         </div>
       </div>

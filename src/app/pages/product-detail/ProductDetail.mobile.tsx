@@ -11,7 +11,7 @@ import {
   formatShowcaseThaiDate as formatThaiDate,
   normalizeShowcaseMarkdown as normalizeMarkdownContent,
 } from '@/components/features/showcase-detail/showcaseDetailShared';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
   ArrowLeft,
@@ -25,8 +25,11 @@ import {
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
-import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
-import { openImageLightbox } from '@/stores/useLightboxStore';
+import { ReviewPreviewSection } from '@/components/features/reviews/ReviewPreviewSection';
+import {
+  getProductReviewsBrowsePath,
+  normalizeShowcaseReview,
+} from '@/components/features/reviews/reviewBrowseUtils';
 import { ProductDetailSkeleton } from '@/components/skeletons/PageSkeletons';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { mobileShowcaseDetailPaddingBottom, useScrollPast } from '@/hooks/useMobileBottomNavHide';
@@ -44,27 +47,9 @@ const SECTION_EYEBROW_CLASS =
   'text-[10px] font-semibold uppercase tracking-wider text-gray-400';
 const SECTION_TITLE_CLASS = 'text-[14px] font-semibold text-[var(--brand-navy-ink)]';
 
-function StarRatingDisplay({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) {
-  const iconClass = size === 'md' ? 'h-3.5 w-3.5' : 'h-3 w-3';
-  return (
-    <div className='flex items-center gap-0.5' aria-hidden>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={cn(
-            iconClass,
-            star <= Math.round(rating)
-              ? 'fill-amber-400 text-amber-400'
-              : 'fill-gray-100 text-gray-200',
-          )}
-        />
-      ))}
-    </div>
-  );
-}
-
 export function ProductDetailMobile() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const data = useData();
@@ -166,8 +151,7 @@ export function ProductDetailMobile() {
   const likeCount = item ? item.likes + (liked ? 1 : 0) : 0;
   const avgRating = Number(reviews?.summary.average ?? factory?.rating ?? 0);
   const reviewCount = Number(reviews?.summary.total ?? factory?.reviews ?? 0);
-  const breakdown = reviews?.summary.breakdown ?? { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
-  const latestReviews = reviews?.items ?? [];
+  const browseReviews = (reviews?.items ?? []).map(normalizeShowcaseReview);
 
   const specRows: { label: string; value: string }[] = [];
   const leadTimeDays = Number(String(item.leadTime ?? '').replace(/[^\d.]/g, ''));
@@ -465,87 +449,16 @@ export function ProductDetailMobile() {
         </Button>
 
         <div className='mt-1 border-t border-gray-50 pt-5'>
-          <header className='mb-4'>
-            <p className={SECTION_EYEBROW_CLASS}>ความคิดเห็น</p>
-            <h2 className={cn(SECTION_TITLE_CLASS, 'mt-0.5')}>คะแนนรีวิว</h2>
-          </header>
-
-          <div className='flex items-start gap-3'>
-            <div className='flex shrink-0 flex-col items-center rounded-xl bg-[var(--brand-page)] px-5 py-3.5'>
-              <p className='text-[32px] font-bold leading-none tabular-nums tracking-tight text-[var(--brand-ink)]'>
-                {avgRating.toFixed(1)}
-              </p>
-              <div className='mt-2'>
-                <StarRatingDisplay rating={avgRating} />
-              </div>
-              <p className='mt-1.5 text-[11px] text-gray-500'>{reviewCount} รีวิว</p>
-            </div>
-
-            <div className='min-w-0 flex-1 space-y-1.5 pt-1'>
-              {[5, 4, 3, 2, 1].map((star) => {
-                const count = Number(breakdown[String(star)] ?? 0);
-                const intensity =
-                  reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
-                return (
-                  <div key={star} className='flex items-center gap-2'>
-                    <span className='w-2.5 shrink-0 text-[11px] tabular-nums text-gray-400'>{star}</span>
-                    <Star className='h-2.5 w-2.5 shrink-0 fill-amber-400 text-amber-400' />
-                    <div className='h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-100'>
-                      <div
-                        className='h-full rounded-full bg-amber-400 transition-all duration-500'
-                        style={{ width: `${intensity}%` }}
-                      />
-                    </div>
-                    <span className='w-4 shrink-0 text-right text-[10px] tabular-nums text-gray-400'>
-                      {count}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className='mt-1 border-t border-gray-50 pt-4'>
-          <p className='mb-3 text-[12px] font-medium text-gray-500'>รีวิวล่าสุด</p>
-          {latestReviews.length === 0 ? (
-            <p className='py-4 text-center text-[12px] text-gray-400'>ยังไม่มีรีวิวจากลูกค้า</p>
-          ) : (
-            <ul className='divide-y divide-gray-50'>
-              {latestReviews.slice(0, 2).map((r) => (
-                <li key={r.id} className='py-3.5 first:pt-0 last:pb-0'>
-                  <div className='flex items-start justify-between gap-3'>
-                    <div className='min-w-0'>
-                      <p className='truncate text-[13px] font-semibold text-gray-800'>{r.reviewer}</p>
-                      <div className='mt-1'>
-                        <StarRatingDisplay rating={Number(r.rating || 0)} />
-                      </div>
-                    </div>
-                    <span className='shrink-0 text-[12px] font-semibold tabular-nums text-amber-600'>
-                      {Number(r.rating || 0).toFixed(1)}
-                    </span>
-                  </div>
-                  <p className='mt-2 text-[13px] leading-relaxed text-gray-600'>
-                    {r.comment || '—'}
-                  </p>
-                  {r.imageUrls && r.imageUrls.length > 0 ? (
-                    <div className='mt-2'>
-                      <ReviewImageAttachments
-                        urls={r.imageUrls}
-                        onPreviewUrl={(u) => openImageLightbox(u)}
-                      />
-                    </div>
-                  ) : null}
-                  {r.factoryReply ? (
-                    <div className='mt-2 rounded-lg border border-violet-100 bg-violet-50/60 px-3 py-2'>
-                      <p className='mb-0.5 text-[10px] font-semibold text-brand-purple'>การตอบกลับจากโรงงาน</p>
-                      <p className='text-[12px] text-slate-700 leading-relaxed'>{r.factoryReply}</p>
-                    </div>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-          </div>
+          <ReviewPreviewSection
+            reviews={browseReviews}
+            previewLimit={4}
+            onViewAll={
+              resolvedId
+                ? () => navigate(getProductReviewsBrowsePath(resolvedId, location.pathname))
+                : undefined
+            }
+            footerNote='การรีวิวทำผ่านหน้าออเดอร์ที่เสร็จสมบูรณ์แล้วเท่านั้น เพื่อป้องกันรีวิวปลอมและรีวิวซ้ำ'
+          />
         </div>
       </div>
 

@@ -159,7 +159,11 @@ export function Layout() {
   const onNotificationsPage = location.pathname === '/notifications';
   const headerIconTone: HeaderIconTone = 'purple';
   const hideMobileTopHeader =
-    /^\/orders\/[^/]+$/.test(location.pathname) || location.pathname === '/create-rfq';
+    /^\/orders\/[^/]+$/.test(location.pathname) ||
+    location.pathname === '/create-rfq' ||
+    location.pathname === '/product-detail/reviews' ||
+    /\/factories\/[^/]+\/reviews$/.test(location.pathname) ||
+    /\/factory-ideas\/products\/[^/]+\/reviews$/.test(location.pathname);
   const wideContentPaths = [
     '/',
     '/factory-ideas',
@@ -178,6 +182,7 @@ export function Layout() {
   const isProfileShell = location.pathname === '/profile';
   const isWidePublicDetail =
     location.pathname === '/product-detail' ||
+    location.pathname === '/product-detail/reviews' ||
     location.pathname === '/promotion-detail' ||
     location.pathname === '/idea-detail' ||
     location.pathname.startsWith('/factory-ideas/products/') ||

@@ -16,6 +16,7 @@ import {
 import { FactoryProfileInsights } from '@/components/features/factory-profile/FactoryProfileInsights';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
+import { getFactoryReviewsBrowsePath } from '@/components/features/reviews/reviewBrowseUtils';
 import type { useFactoryProfile } from '@/components/features/factory/hooks/useFactoryProfile';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
@@ -194,6 +195,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
               reviews={reviews}
               onProductClick={(id) => navigate(`/factory-ideas/products/${id}`)}
               onIdeaClick={(id) => navigate(`/factory-ideas/ideas/${id}`)}
+              onViewAllReviews={() => navigate(getFactoryReviewsBrowsePath(factory.id))}
             />
           </div>
         </main>

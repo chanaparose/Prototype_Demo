@@ -59,6 +59,7 @@ import { FactoryEditQuotationPage } from '@/pages/factory-portal/FactoryEditQuot
 import { FactoryQuotationsPage } from '@/pages/factory-portal/FactoryQuotationsPage';
 import { FactoryShowcaseEditPage } from '@/pages/factory-portal/FactoryShowcaseEditPage';
 import { FactoryReviewPage } from '@/pages/factory-portal/FactoryReviewPage';
+import { ReviewsBrowsePage } from '@/pages/reviews-browse/ReviewsBrowsePage';
 
 export const router = createBrowserRouter([
   {
@@ -84,12 +85,15 @@ export const router = createBrowserRouter([
           { index: true, Component: RoleRedirectIndex },
           { path: 'explore', loader: () => redirect('/') },
           { path: 'product-detail', Component: ProductDetail },
+          { path: 'product-detail/reviews', Component: ReviewsBrowsePage },
           { path: 'promotion-detail', Component: PromotionDetail },
           { path: 'idea-detail', Component: IdeaDetail },
           { path: 'factory-ideas', Component: FactoryIdeas },
           { path: 'factories/:id', Component: FactoryDetail },
+          { path: 'factories/:id/reviews', Component: ReviewsBrowsePage },
           { path: 'factories', Component: FactoriesList },
           { path: 'factory-ideas/products/:id', Component: ProductDetail },
+          { path: 'factory-ideas/products/:id/reviews', Component: ReviewsBrowsePage },
           { path: 'factory-ideas/promotions/:id', Component: PromotionDetail },
           { path: 'factory-ideas/ideas/:id', Component: IdeaDetail },
           { path: 'orders', Component: RfqAndOrders },
