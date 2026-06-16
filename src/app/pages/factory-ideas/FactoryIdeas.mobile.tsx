@@ -98,6 +98,7 @@ export function FactoryIdeasMobile() {
     getDetailPath,
     visibleTabIds,
     hubScope,
+    hubName,
   } = useFactoryIdeasPageState({ layout: 'mobile', initialType: 'all' });
 
   const visibleTabs = MOBILE_TABS.filter((t) => visibleTabIds.has(t.id));
@@ -110,7 +111,9 @@ export function FactoryIdeasMobile() {
           <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
             Discover
           </p>
-          <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>แนะนำโรงงาน</h1>
+          <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>
+            {hubName ? `แนะนำโรงงาน จากหมวด ${hubName}` : 'แนะนำโรงงาน'}
+          </h1>
         </div>
 
         <div className='relative mb-2.5 overflow-hidden rounded-xl bg-[linear-gradient(135deg,var(--brand-navy-deep)_0%,#4A267D_100%)] px-3 py-2.5 text-white shadow-md'>

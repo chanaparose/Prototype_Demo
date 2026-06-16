@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import { getLbiHubs } from '@/services/api/masterApi';
+import type { IHubResponse } from '@/services/api/types/master.types';
 
 import { useData } from '@/stores/useDataStore';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -91,6 +94,19 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   const hubId = Number(searchParams.get('hub_id')) || undefined;
   // hub_scope ส่งมาจาก FactoryIdeasHubPage ผ่าน URL: ?hub_scope=PD|MT
   const hubScope = (searchParams.get('hub_scope') as 'PD' | 'MT' | null) ?? undefined;
+
+  const { data: allHubs = [] } = useQuery({
+    queryKey: ['lbi-hubs', 'all'],
+    queryFn: async () => {
+      const res = await getLbiHubs();
+      const raw = res as unknown as { hubs?: IHubResponse[] };
+      return raw.hubs ?? [];
+    },
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+    enabled: !!hubId,
+  });
+  const hubName = hubId ? (allHubs.find((h) => h.hub_id === hubId)?.name ?? '') : '';
 
   const categoriesQ = useFactoryIdeasCategoriesQuery();
   const apiCategoriesRaw = categoriesQ.data ?? [];
@@ -423,6 +439,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     pickSubCategory,
     hubId,
     hubScope,
+    hubName,
     visibleTabIds,
     categoryOptionSelected: factoryIdeasCategoryOptionSelected,
     getDetailPath: getFactoryIdeaDetailPath,
