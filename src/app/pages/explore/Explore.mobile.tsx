@@ -52,6 +52,8 @@ export function ExploreMobile({
     showcases: scopedShowcases,
     factories: scopedFactories,
     isHubScoped,
+    hasHubFactories,
+    factoriesLoading,
     showcaseTitle,
     factoryTitle,
     factorySubtitle,
@@ -336,7 +338,7 @@ export function ExploreMobile({
       <HowToOrderSection className='mx-4 mt-5' variant='mobile' />
 
       <div className='mt-[20px]'>
-        {isLoading ? (
+        {isLoading || factoriesLoading ? (
           <section className='mx-4 mb-3 mt-3'>
             <div className='flex items-end justify-between mb-3 px-1'>
               <div>
@@ -348,7 +350,7 @@ export function ExploreMobile({
               {[...Array(2)].map((_, i) => <FactoryCarouselCardSkeleton key={i} variant='mobile' />)}
             </div>
           </section>
-        ) : (
+        ) : hasHubFactories ? (
           <ExploreFactoryShowcase
             factories={scopedFactories}
             title={factoryTitle}
@@ -357,7 +359,28 @@ export function ExploreMobile({
             onSeeAll={() => navigate(seeMoreFactoryHref)}
             variant='mobile'
           />
-        )}
+        ) : isHubScoped ? (
+          <section className='mx-4 mb-3 mt-3'>
+            <div className='mb-2 px-1'>
+              <h3 className='text-[14px] font-bold text-brand-navy-ink'>{factoryTitle}</h3>
+              <p className='mt-0.5 text-[11px] text-gray-500'>{factorySubtitle}</p>
+            </div>
+            <div className='rounded-xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-5 text-center'>
+              <p className='text-sm font-medium text-gray-600'>
+                ยังไม่มีโรงงานแนะนำในหมวด {selectedHub?.name ?? ''}
+              </p>
+              <p className='mt-1 text-xs text-gray-400'>ลองดูโรงงานทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง</p>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => navigate(seeMoreFactoryHref)}
+                className='mt-3 w-full rounded-full border border-brand-purple/30 bg-white py-2 text-sm font-medium text-brand-purple hover:bg-brand-panel-hover transition-colors'
+              >
+                ดูโรงงานใน {selectedHub?.name ?? 'หมวดนี้'}
+              </Button>
+            </div>
+          </section>
+        ) : null}
       </div>
 
       <div className='px-4 mt-5'><div className='relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm border border-brand-purple/30'>

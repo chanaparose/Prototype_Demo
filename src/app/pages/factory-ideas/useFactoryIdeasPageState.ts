@@ -121,7 +121,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
 
   const loadFactories = selectedType === 'all' || selectedType === 'factory';
   const apiFactoryScope = factoryScope === 'all' ? undefined : factoryScope;
-  const factoriesQ = useFactoryIdeasFactoryListQuery(loadFactories, apiFactoryScope);
+  const factoriesQ = useFactoryIdeasFactoryListQuery(loadFactories, hubId ? undefined : apiFactoryScope, hubId);
   const factoryList = factoriesQ.data ?? [];
   const factoriesLoading = factoriesQ.isLoading;
 
@@ -176,6 +176,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     types: showcaseTypes,
     page,
     limit: PAGE_LIMIT,
+    hubId,
   };
 
   const showcasesQ = useFactoryIdeasShowcasesPaginatedQuery(showcaseParams, !isFactoryTab);
@@ -200,13 +201,19 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
   }, [apiCategoriesAll]);
 
-  // Reset category filter when switching tabs (category list changes per tab scope)
+  // Keep the category filter when switching tabs — only clear it if the selected
+  // category isn't valid in the new tab (e.g. non-hub mode where PD/MT scopes differ).
   const prevSelectedTypeRef = useRef(selectedType);
   useEffect(() => {
     if (prevSelectedTypeRef.current === selectedType) return;
     prevSelectedTypeRef.current = selectedType;
-    applyCategory('all');
-    setSelectedSubCategoryId(null);
+    if (effectiveCategoryId && effectiveCategoryId !== 'all') {
+      const stillValid = apiCategoriesAll.some((c) => c.id === effectiveCategoryId);
+      if (!stillValid) {
+        applyCategory('all');
+        setSelectedSubCategoryId(null);
+      }
+    }
   }, [selectedType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -328,29 +335,23 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   const visibleFactories = useMemo(() => {
     if (selectedType !== 'all' && selectedType !== 'factory') return [];
     const q = searchText.trim().toLowerCase();
-    const selectedCategoryName =
-      effectiveCategoryId && effectiveCategoryId !== 'all'
-        ? apiCategoriesAll.find((c) => c.id === effectiveCategoryId)?.name.toLowerCase() ?? ''
-        : '';
-    const selectedSubCategoryName =
-      selectedSubCategoryId && effectiveCategoryId && effectiveCategoryId !== 'all'
-        ? (apiCategoriesAll
-            .find((c) => c.id === effectiveCategoryId)
-            ?.subCategories.find((s) => s.id === selectedSubCategoryId)
-            ?.name.toLowerCase() ?? '')
-        : '';
+    const selectedCategoryId =
+      effectiveCategoryId && effectiveCategoryId !== 'all' ? Number(effectiveCategoryId) : null;
 
     return factoryList.filter((f) => {
+      // กรองตาม category ที่เลือกจาก dropdown — ใช้ category_ids ที่ BE ส่งมา (แม่นยำกว่าชื่อ)
+      if (selectedCategoryId != null && Number.isFinite(selectedCategoryId)) {
+        const fCatIds = f.categoryIds ?? [];
+        if (!fCatIds.includes(selectedCategoryId)) return false;
+      }
       const haystack = [f.name, f.location, f.specialization, ...(f.tags ?? [])]
         .join(' ')
         .toLowerCase();
       if (q && !haystack.includes(q)) return false;
       if (maxMoqFilter != null && !matchesMaxMoq(f.minOrder, maxMoqFilter)) return false;
-      if (selectedCategoryName && !haystack.includes(selectedCategoryName)) return false;
-      if (selectedSubCategoryName && !haystack.includes(selectedSubCategoryName)) return false;
       return true;
     });
-  }, [searchText, selectedType, factoryList, effectiveCategoryId, selectedSubCategoryId, apiCategoriesAll, maxMoqFilter]);
+  }, [searchText, selectedType, factoryList, effectiveCategoryId, maxMoqFilter]);
 
   const totalCount = isFactoryTab
     ? visibleFactories.length

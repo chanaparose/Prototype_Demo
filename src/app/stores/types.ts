@@ -28,6 +28,8 @@ export type BootstrapFactoryModel = {
   priceRange: string;
   /** Distinct lbi_categories.scope values: "PD", "MT", or both */
   categoryScopes?: string[];
+  /** lbi_categories.category_id values from map_factory_categories — used for hub filtering */
+  categoryIds?: number[];
 };
 
 export type BootstrapFactoryProfileModel = {

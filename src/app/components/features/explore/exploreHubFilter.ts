@@ -1,11 +1,33 @@
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
+import { normalizeFactoryIdeaFactory } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { IExploreShowcase } from '@/domain/explore/types/explore.model';
 import type { IHubResponse } from '@/services/api/types/master.types';
 
+export type ExploreFactoryWithCategories = FactoryItem & {
+  categoryIds: number[];
+};
+
 export function getHubCategoryIds(hub: IHubResponse | null): Set<number> {
   if (!hub) return new Set();
   return new Set(hub.categories.map((cat) => cat.category_id));
+}
+
+export function mapFactoryApiRowToExploreFactory(
+  row: Record<string, unknown>,
+): ExploreFactoryWithCategories {
+  const factory = normalizeFactoryIdeaFactory(row);
+  return {
+    id: factory.id,
+    name: factory.name,
+    image: factory.image,
+    location: factory.location,
+    rating: factory.rating,
+    reviews: factory.reviews,
+    minOrder: factory.minOrder,
+    verified: factory.verified,
+    categoryIds: factory.categoryIds ?? [],
+  };
 }
 
 export function filterShowcasesByHub(
@@ -19,18 +41,28 @@ export function filterShowcasesByHub(
   });
 }
 
-export function filterFactoriesByHubShowcases(
-  factories: FactoryItem[],
-  hubShowcases: IExploreShowcase[],
+export function filterFactoriesByHubCategoryIds(
+  factories: ExploreFactoryWithCategories[],
   categoryIds: Set<number>,
 ): FactoryItem[] {
   if (categoryIds.size === 0) return factories;
-  const factoryIds = new Set(
-    hubShowcases.map((item) => item.factoryId).filter((id) => id !== ''),
+  return factories.filter((factory) =>
+    factory.categoryIds.some((categoryId) => categoryIds.has(categoryId)),
   );
-  if (factoryIds.size === 0) return factories;
-  const filtered = factories.filter((factory) => factoryIds.has(factory.id));
-  return filtered.length > 0 ? filtered : factories;
+}
+
+export function sortHubFactoriesByExploreOrder(
+  factories: FactoryItem[],
+  exploreOrder: FactoryItem[],
+): FactoryItem[] {
+  const order = new Map(exploreOrder.map((factory, index) => [factory.id, index]));
+  return [...factories].sort((a, b) => {
+    const aRank = order.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+    const bRank = order.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+    if (aRank !== bRank) return aRank - bRank;
+    if (b.rating !== a.rating) return b.rating - a.rating;
+    return b.reviews - a.reviews;
+  });
 }
 
 export function buildFactoryIdeasHubUrl(

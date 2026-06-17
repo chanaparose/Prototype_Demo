@@ -45,11 +45,11 @@ export function useFactoryIdeasCategoriesQuery() {
   });
 }
 
-export function useFactoryIdeasFactoryListQuery(enabled: boolean, scope?: 'PD' | 'MT') {
+export function useFactoryIdeasFactoryListQuery(enabled: boolean, scope?: 'PD' | 'MT', hubId?: number) {
   return useQuery({
-    queryKey: factoryIdeasKeys.factoryList(scope),
+    queryKey: hubId ? [...factoryIdeasKeys.factoryList(scope), 'hub', hubId] : factoryIdeasKeys.factoryList(scope),
     queryFn: async () => {
-      const raw = await factoriesApi.list(scope);
+      const raw = await factoriesApi.list(scope, hubId);
       const r = raw as unknown;
       const arr = (
         Array.isArray(r)
@@ -77,6 +77,7 @@ export type ShowcasePaginatedParams = {
   limit: number;
   categoryId?: string;
   subCategoryId?: string;
+  hubId?: number;
   keyword?: string;
 };
 
@@ -100,6 +101,7 @@ export function useFactoryIdeasShowcasesPaginatedQuery(
         limit: params.limit,
         categoryId: params.categoryId || undefined,
         subCategoryId: params.subCategoryId || undefined,
+        hubId: params.hubId || undefined,
         keyword: params.keyword || undefined,
       });
       return {

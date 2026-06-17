@@ -89,6 +89,7 @@ export const showcasesPaginatedApi = {
     page?: number;
     categoryId?: string | number;
     subCategoryId?: string | number;
+    hubId?: number;
     keyword?: string;
     sort?: string;
   }) => {
@@ -98,6 +99,7 @@ export const showcasesPaginatedApi = {
     if (params.page) p.set('page', String(params.page));
     if (params.categoryId) p.set('category_id', String(params.categoryId));
     if (params.subCategoryId) p.set('sub_category_id', String(params.subCategoryId));
+    if (params.hubId) p.set('hub_id', String(params.hubId));
     if (params.keyword) p.set('keyword', params.keyword);
     if (params.sort) p.set('sort', params.sort);
     return httpClient.get<IShowcasePaginatedResponse>(`/showcases?${p}`);

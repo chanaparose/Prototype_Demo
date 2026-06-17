@@ -62,6 +62,9 @@ export function ExploreDesktop({
     showcaseTitle,
     factoryTitle,
     factorySubtitle,
+    isHubScoped,
+    hasHubFactories,
+    factoriesLoading,
     seeMoreShowcaseHref,
     seeMoreFactoryHref,
   } = useExploreHubFilteredContent({
@@ -216,7 +219,7 @@ export function ExploreDesktop({
         <HowToOrderSection className='mx-0' variant='desktop' />
 
         <div>
-          {isLoading ? (
+          {isLoading || factoriesLoading ? (
             <section>
               <div className='flex items-end justify-between mb-3 px-1'>
                 <div>
@@ -230,7 +233,7 @@ export function ExploreDesktop({
                 ))}
               </div>
             </section>
-          ) : (
+          ) : hasHubFactories ? (
             <ExploreFactoryShowcase
               factories={scopedFactories}
               title={factoryTitle}
@@ -239,7 +242,29 @@ export function ExploreDesktop({
               onSeeAll={() => navigate(seeMoreFactoryHref)}
               variant='desktop'
             />
-          )}
+          ) : isHubScoped ? (
+            <section>
+              <div className='mb-3 px-1'>
+                <h3 className='text-[15px] font-bold text-brand-navy-ink'>{factoryTitle}</h3>
+                <p className='mt-0.5 text-xs text-gray-500'>{factorySubtitle}</p>
+              </div>
+              <div className='rounded-xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-6 py-8 text-center'>
+                <p className='text-sm font-medium text-gray-600'>
+                  ยังไม่มีโรงงานแนะนำในหมวด {selectedHub?.name ?? ''}
+                </p>
+                <p className='mt-1 text-xs text-gray-400'>ลองดูโรงงานทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง</p>
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={() => navigate(seeMoreFactoryHref)}
+                  className='mt-4 inline-flex items-center gap-1 rounded-full border border-brand-purple/30 bg-white px-5 py-2 text-sm font-medium text-brand-purple hover:bg-brand-panel-hover transition-colors'
+                >
+                  ดูโรงงานใน {selectedHub?.name ?? 'หมวดนี้'}
+                  <ChevronRight size={14} />
+                </Button>
+              </div>
+            </section>
+          ) : null}
         </div>
 
         <section className='rounded-xl overflow-hidden border border-brand-purple/30 shadow-sm relative py-5 px-4 md:px-8'>

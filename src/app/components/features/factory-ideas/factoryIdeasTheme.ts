@@ -77,6 +77,9 @@ export function normalizeFactoryIdeaFactory(r: Record<string, unknown>): Factory
     completedOrders: Number(r.completed_orders ?? r.completedOrders ?? 0),
     priceRange: String(r.price_range ?? r.priceRange ?? ''),
     categoryScopes: Array.isArray(r.category_scopes) ? r.category_scopes.map(String) : [],
+    categoryIds: Array.isArray(r.category_ids)
+      ? (r.category_ids as unknown[]).map(Number).filter((n) => Number.isFinite(n) && n > 0)
+      : [],
   };
 }
 

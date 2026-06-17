@@ -17,9 +17,12 @@ import type {
 } from '@/services/api/types/admin.types';
 
 export const factoriesApi = {
-  list: (scope?: 'PD' | 'MT') => {
-    const url = scope ? `/factories?scope=${scope}` : '/factories';
-    return httpClient.get<IFactoryBaseResponse[]>(url);
+  list: (scope?: 'PD' | 'MT', hubId?: number) => {
+    const params = new URLSearchParams();
+    if (hubId) params.set('hub_id', String(hubId));
+    else if (scope) params.set('scope', scope);
+    const qs = params.toString();
+    return httpClient.get<IFactoryBaseResponse[]>(qs ? `/factories?${qs}` : '/factories');
   },
 
   /** ค้นหาโรงงานตามชื่อ — ใช้ใน RFQ targeting autocomplete */
