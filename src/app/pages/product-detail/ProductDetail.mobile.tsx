@@ -6,7 +6,6 @@ import {
   SHOWCASE_DETAIL_EMPHASIS_CLASS,
   SHOWCASE_DETAIL_META_TEXT_CLASS,
   SHOWCASE_DETAIL_TITLE_CLASS,
-  SHOWCASE_SECTION_HEADER_TITLE_CLASS,
   formatShowcaseTHB as formatTHB,
   formatShowcaseThaiDate as formatThaiDate,
   normalizeShowcaseMarkdown as normalizeMarkdownContent,
@@ -382,9 +381,7 @@ export function ProductDetailMobile() {
       <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
 
       <div className='bg-white px-4 py-3'>
-        <p className={cn('mb-2', SHOWCASE_SECTION_HEADER_TITLE_CLASS)} style={{ color: BRAND.ink }}>
-          รายละเอียดสินค้า
-        </p>
+        <p className={cn('mb-2 font-normal', SHOWCASE_DETAIL_META_TEXT_CLASS)}>รายละเอียดสินค้า</p>
         {markdown ? (
           <MarkdownBody source={markdown} typography='showcase-detail' />
         ) : (
@@ -467,9 +464,7 @@ export function ProductDetailMobile() {
         <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
         <div className='bg-white px-4 py-3'>
           <div className='flex items-center justify-between mb-2'>
-            <p className={cn(SHOWCASE_SECTION_HEADER_TITLE_CLASS)} style={{ color: BRAND.ink }}>
-              สินค้าที่ใกล้เคียง
-            </p>
+            <p className={cn('font-normal', SHOWCASE_DETAIL_META_TEXT_CLASS)}>สินค้าที่ใกล้เคียง</p>
           </div>
           {relatedProducts.length > 0 ? (
             <div className='grid grid-cols-2 md:grid-cols-3 gap-2'>
