@@ -8,7 +8,6 @@ import { HowToOrderSection } from '@/components/features/explore/HowToOrderSecti
 import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFactoryShowcase';
 import { ExploreHubPreview } from '@/components/features/explore/ExploreHubPreview';
 import { ExploreProductCarouselSection } from '@/components/features/explore/ExploreProductCarouselSection';
-import { ExploreMediaSection } from '@/components/features/explore/ExploreMediaSection';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
@@ -177,35 +176,31 @@ export function ExploreDesktop({
           )
         ) : null}
 
-        <HowToOrderSection className='mx-0' />
+        <HowToOrderSection className='mx-0' variant='desktop' />
 
-        <div className='grid grid-cols-1 xl:grid-cols-2 gap-6 items-start'>
-          <ExploreMediaSection variant='desktop' />
-
-          <div>
-            {isLoading ? (
-              <section>
-                <div className='flex items-end justify-between mb-3 px-1'>
-                  <div>
-                    <div className='h-5 w-28 bg-gray-200 rounded animate-pulse mb-1' />
-                    <div className='h-3 w-52 bg-gray-100 rounded animate-pulse' />
-                  </div>
+        <div>
+          {isLoading ? (
+            <section>
+              <div className='flex items-end justify-between mb-3 px-1'>
+                <div>
+                  <div className='h-5 w-28 bg-gray-200 rounded animate-pulse mb-1' />
+                  <div className='h-3 w-52 bg-gray-100 rounded animate-pulse' />
                 </div>
-                <div className='flex gap-3 overflow-x-hidden pb-2'>
-                  {[...Array(3)].map((_, i) => (
-                    <FactoryCarouselCardSkeleton key={i} variant='desktop' />
-                  ))}
-                </div>
-              </section>
-            ) : (
-              <ExploreFactoryShowcase
-                factories={recommendedFactories}
-                onFactoryClick={(id) => navigate(`/factories/${id}`)}
-                onSeeAll={() => navigate('/factory-ideas?type=factory')}
-                variant='desktop'
-              />
-            )}
-          </div>
+              </div>
+              <div className='flex gap-3 overflow-x-hidden pb-2'>
+                {[...Array(3)].map((_, i) => (
+                  <FactoryCarouselCardSkeleton key={i} variant='desktop' />
+                ))}
+              </div>
+            </section>
+          ) : (
+            <ExploreFactoryShowcase
+              factories={recommendedFactories}
+              onFactoryClick={(id) => navigate(`/factories/${id}`)}
+              onSeeAll={() => navigate('/factory-ideas?type=factory')}
+              variant='desktop'
+            />
+          )}
         </div>
 
         <section className='rounded-xl overflow-hidden border border-brand-purple/30 shadow-sm relative py-5 px-4 md:px-8'>

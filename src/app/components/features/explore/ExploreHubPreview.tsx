@@ -6,7 +6,7 @@ import { HubScopeTabs } from '@/components/features/hub/HubScopeTabs';
 import { HubSection } from '@/components/features/hub/HubSection';
 import { HubSectionSkeleton } from '@/components/features/hub/HubSectionSkeleton';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
-import { ExploreViewAllHubsButton } from '@/components/features/explore/ExploreMediaSection';
+import { ExploreViewAllHubsButton } from '@/components/features/explore/ExploreViewAllHubsButton';
 
 const MAX_HUB_PREVIEW = 2;
 

@@ -7,7 +7,6 @@ import { ExploreHubPreview } from '@/components/features/explore/ExploreHubPrevi
 import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFactoryShowcase';
 import { ExploreFooter } from '@/components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '@/components/features/explore/HowToOrderSection';
-import { ExploreMediaSection } from '@/components/features/explore/ExploreMediaSection';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
@@ -281,9 +280,7 @@ export function ExploreMobile({
       </div>
       ) : null}
 
-      <HowToOrderSection className='mx-4 mt-5' />
-
-      <ExploreMediaSection className='mx-4 mt-5' variant='mobile' />
+      <HowToOrderSection className='mx-4 mt-5' variant='mobile' />
 
       <div className='mt-[20px]'>
         {isLoading ? (
