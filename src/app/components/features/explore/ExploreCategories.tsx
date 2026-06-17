@@ -44,7 +44,7 @@ export function ExploreCategories({
   return (
     <div className='mb-3'>
       <div className='flex items-center justify-between px-4 mb-2'>
-        <h3 className='text-gray-800 font-bold'>หมวดหมู่</h3>
+        <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>หมวดหมู่</h3>
         <Link
           to='/factory-ideas'
           className='text-brand-purple text-[13px] flex items-center gap-0.5 hover:underline'

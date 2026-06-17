@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { MessageCircle, MessageSquareDot, RefreshCw } from 'lucide-react';
 import { cn } from '@lib/utils';
+import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 import { ChatRoomEmbedded } from '@/pages/chat-room';
 import { ConversationRow } from '@/pages/messages/ConversationRow';
 import type { UiConversation } from '@/pages/messages/types';
@@ -68,7 +69,7 @@ export function MessagesDesktop({
               <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
                 การสนทนา
               </p>
-              <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>ข้อความ</h1>
+              <h1 className={APP_PAGE_TITLE_CLASS}>ข้อความ</h1>
             </div>
             {!loading && !error ? (
               <span className='shrink-0 rounded-md border border-gray-200 bg-[var(--brand-page)] px-2 py-0.5 text-[10px] font-semibold tabular-nums text-gray-500'>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
@@ -111,7 +112,7 @@ export function FactoryIdeasMobile() {
           <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
             Discover
           </p>
-          <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>
+          <h1 className={APP_PAGE_TITLE_CLASS}>
             {hubName ? `แนะนำโรงงาน จากหมวด ${hubName}` : 'แนะนำโรงงาน'}
           </h1>
         </div>

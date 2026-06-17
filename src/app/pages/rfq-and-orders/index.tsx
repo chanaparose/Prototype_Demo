@@ -7,6 +7,7 @@ import { OrderPanel } from '@/components/features/rfq-and-orders/components/Orde
 import { RfqPanel } from '@/components/features/rfq-and-orders/components/RfqPanel';
 import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 import { createRfqCtaHeaderClass } from '@/styles/createRfqCta';
+import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 
 const RFQ_ORDERS_TAB_ORDER = ['rfq', 'orders'] as const;
 
@@ -118,7 +119,7 @@ export function RfqAndOrders() {
             <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
               คำขอและคำสั่งซื้อ
             </p>
-            <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>
+            <h1 className={APP_PAGE_TITLE_CLASS}>
               คำขอราคา & คำสั่งซื้อ
             </h1>
           </div>
@@ -143,7 +144,7 @@ export function RfqAndOrders() {
             <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
               คำขอและคำสั่งซื้อ
             </p>
-            <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>
+            <h1 className={APP_PAGE_TITLE_CLASS}>
               คำขอราคา & คำสั่งซื้อ
             </h1>
           </div>

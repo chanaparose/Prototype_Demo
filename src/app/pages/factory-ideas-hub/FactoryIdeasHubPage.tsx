@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
 import { cn } from '@lib/utils';
+import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 import { getLbiHubs } from '@/services/api/masterApi';
 import type { ICategoryForHubResponse, IHubResponse } from '@/services/api/types/master.types';
 import { MobileSearchField } from '@/components/shared/MobileSearchField';
@@ -263,7 +264,7 @@ export function FactoryIdeasHubPage() {
           <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
             Discover
           </p>
-          <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>หมวดหมู่โรงงาน</h1>
+          <h1 className={APP_PAGE_TITLE_CLASS}>หมวดหมู่โรงงาน</h1>
         </div>
 
         <div className='relative mb-3 overflow-hidden rounded-xl bg-[linear-gradient(135deg,var(--brand-navy-deep)_0%,#4A267D_100%)] px-3 py-2.5 text-white shadow-md'>

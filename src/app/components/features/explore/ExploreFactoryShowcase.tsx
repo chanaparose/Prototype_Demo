@@ -99,7 +99,7 @@ export function ExploreFactoryShowcase({
     >
       <div className='flex items-end justify-between mb-3 px-1'>
         <div>
-          <h2 className='text-base lg:text-xl font-bold text-brand-ink'>โรงงานแนะนำ</h2>
+          <h2 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>โรงงานแนะนำ</h2>
           <p className='text-[11px] lg:text-xs text-gray-500 mt-0.5'>
             โรงงานที่ผ่านการยืนยัน พร้อมรับผลิตสินค้าคุณภาพสูง
           </p>

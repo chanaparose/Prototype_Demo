@@ -9,6 +9,7 @@ import {
   Star,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { FactoryProfileInsights } from '@/components/features/factory-profile/FactoryProfileInsights';
@@ -136,7 +137,7 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
             </div>
 
             {/* Name + rating */}
-            <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>{factory.name}</h1>
+            <h1 className={APP_PAGE_TITLE_CLASS}>{factory.name}</h1>
             <div className='mt-1 flex flex-wrap items-center gap-2'>
               <span className='inline-flex items-center gap-1 text-[12px] text-gray-500'>
                 <Star className='h-3 w-3 fill-amber-400 text-amber-400' />

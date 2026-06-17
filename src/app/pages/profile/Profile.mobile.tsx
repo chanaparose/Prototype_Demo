@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 import { useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -243,7 +244,7 @@ export function ProfileMobile() {
             <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
               บัญชี
             </p>
-            <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>โปรไฟล์</h1>
+            <h1 className={APP_PAGE_TITLE_CLASS}>โปรไฟล์</h1>
           </div>
         </div>
       </header>
@@ -255,7 +256,7 @@ export function ProfileMobile() {
             <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
               บัญชี
             </p>
-            <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>โปรไฟล์</h1>
+            <h1 className={APP_PAGE_TITLE_CLASS}>โปรไฟล์</h1>
           </div>
         </div>
 

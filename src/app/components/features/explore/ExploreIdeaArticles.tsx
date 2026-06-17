@@ -28,7 +28,7 @@ export function ExploreIdeaArticles({
   return (
     <div className='mb-3'>
       <div className='flex items-center justify-between px-4 mb-2'>
-        <h3 className='text-brand-navy-ink' style={{ fontWeight: 700 }}>
+        <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5' style={{ fontWeight: 700 }}>
           บทความ Idea
         </h3>
         <Button
