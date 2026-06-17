@@ -12,22 +12,10 @@ export function Explore() {
   const { showGate, pageApisReady, setPageApisReady } = useManualApiPageGate();
   const { isAuthenticated } = useAuth();
   const {
-    searchText,
-    setSearchText,
-    copiedId,
-    setCopiedId,
-    exploreBootstrapCategories,
     exploreFactories,
-    ideaArticles,
-    showcases,
     productShowcases,
-    promotionShowcases,
     materialShowcases,
     promoSlides,
-    exploreCategoriesMerged,
-    exploreCategoriesLoading,
-    exploreCategoriesError,
-    reloadExploreCategories,
     isLoading,
   } = useExploreData({ enablePageApis: pageApisReady });
 
@@ -40,48 +28,22 @@ export function Explore() {
   if (isDesktop) {
     return (
       <ExploreDesktop
-          searchText={searchText}
-          setSearchText={setSearchText}
-          copiedId={copiedId}
-          setCopiedId={setCopiedId}
-          categories={exploreBootstrapCategories}
-          exploreCategoriesMerged={exploreCategoriesMerged}
-          exploreCategoriesLoading={exploreCategoriesLoading}
-          exploreCategoriesError={exploreCategoriesError}
-          reloadExploreCategories={reloadExploreCategories}
-          factories={exploreFactories}
-          ideaArticles={ideaArticles}
-          factoryShowcases={showcases}
-          exploreProducts={productShowcases}
-          explorePromotions={promotionShowcases}
-          exploreMatrials={materialShowcases}
-          explorePromoCodes={[]}
-          promoSlides={promoSlides}
-          isLoading={isLoading}
-          guestConnecting={guestConnecting}
-        />
+        factories={exploreFactories}
+        exploreProducts={productShowcases}
+        exploreMatrials={materialShowcases}
+        isLoading={isLoading}
+      />
     );
   }
 
   return (
     <ExploreMobile
-        searchText={searchText}
-        setSearchText={setSearchText}
-        categories={exploreBootstrapCategories}
-        exploreCategoriesMerged={exploreCategoriesMerged}
-        exploreCategoriesLoading={exploreCategoriesLoading}
-        exploreCategoriesError={exploreCategoriesError}
-        reloadExploreCategories={reloadExploreCategories}
-        factories={exploreFactories}
-        ideaArticles={ideaArticles}
-        factoryShowcases={showcases}
-        exploreProducts={productShowcases}
-        explorePromotions={promotionShowcases}
-        exploreMatrials={materialShowcases}
-        explorePromoCodes={[]}
-        promoSlides={promoSlides}
-        isLoading={isLoading}
-        guestConnecting={guestConnecting}
-      />
+      factories={exploreFactories}
+      exploreProducts={productShowcases}
+      exploreMatrials={materialShowcases}
+      explorePromoCodes={[]}
+      promoSlides={promoSlides}
+      isLoading={isLoading || guestConnecting}
+    />
   );
 }

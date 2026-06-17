@@ -1,86 +1,28 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import {
-  Search,
-  SlidersHorizontal,
-  Copy,
-  Gift,
-  ChevronRight,
-  Plus,
-  Sparkles,
-} from 'lucide-react';
+import { ChevronRight, Sparkles } from 'lucide-react';
 import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
 import { ExploreFooter } from '@/components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '@/components/features/explore/HowToOrderSection';
 import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFactoryShowcase';
-import { ExploreDesktopCategories } from '@/components/features/explore/ExploreDesktopCategories';
+import { ExploreHubPreview } from '@/components/features/explore/ExploreHubPreview';
 import { ExploreProductCarouselSection } from '@/components/features/explore/ExploreProductCarouselSection';
+import { ExploreMediaSection } from '@/components/features/explore/ExploreMediaSection';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import { IdeaArticleCard } from '@/components/features/factory-ideas/IdeaArticleCard';
-import type { CategoryItem } from '@/components/features/explore/ExploreCategories';
+import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
-import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
-import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
-import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
+import type { IExploreShowcase } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
 import { ProductCardSkeleton, FactoryCarouselCardSkeleton } from '@/components/skeletons/PageSkeletons';
 
 type ExploreDesktopProps = {
-  searchText: string;
-  setSearchText: (v: string) => void;
-  copiedId: string | null;
-  setCopiedId: (v: string | null) => void;
-  categories: CategoryItem[];
-  exploreCategoriesMerged: CategoryItem[];
-  exploreCategoriesLoading: boolean;
-  exploreCategoriesError: string | null;
-  reloadExploreCategories: () => void;
   factories: FactoryItem[];
-  ideaArticles: IdeaArticleItem[];
-  factoryShowcases: IExploreShowcase[];
   exploreProducts: IExploreShowcase[];
-  explorePromotions: IExploreShowcase[];
   exploreMatrials?: IExploreShowcase[];
-  explorePromoCodes: IExploreSlide[];
-  promoSlides: IExploreSlide[];
   isLoading?: boolean;
-  guestConnecting?: boolean;
-};
-
-/* ═══ Style Constants ═══ */
-const FILTER_BUTTON_CLASS = cn(
-  'px-4 py-2.5 bg-white rounded-xl shadow-sm border border-gray-100',
-  'flex items-center gap-1.5 text-xs font-medium shrink-0',
-  'text-brand-magenta hover:border-brand-magenta/30 transition-colors',
-);
-
-const PROMO_GRADIENT = {
-  background: 'linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-orange-vivid) 100%)',
-};
-
-const PROMO_PURPLE_BG = { background: 'var(--brand-purple)' };
-const PROMO_LIGHT_BG = { background: '#FAEBD7' };
-
-const PROMO_BADGE_STYLE = { background: 'var(--brand-purple)' };
-const PROMO_CODE_WRAPPER = {
-  background: 'rgba(255,255,255,0.25)',
-  borderColor: 'rgba(255,255,255,0.40)',
-};
-
-const PROMO_COPY_BTN = { background: 'var(--brand-navy-deep)' };
-
-const SHIMMER_GRADIENT = {
-  background:
-    'linear-gradient(90deg, var(--brand-violet) 0%, #A855F7 35%, #EA6C00 65%, #16A34A 100%)',
-  animation: 'hiw-shimmer-bar 4s ease-in-out infinite',
-};
-
-const FAB_BUTTON_STYLE = {
-  background: 'var(--brand-purple)',
-  boxShadow: '0 6px 20px rgba(162,56,255,0.40)',
 };
 
 const REGISTER_BUTTON_CLASS = cn(
@@ -96,32 +38,19 @@ const REGISTER_BUTTON_CLASS = cn(
 );
 
 export function ExploreDesktop({
-  searchText,
-  setSearchText,
-  copiedId,
-  setCopiedId,
-  categories,
-  exploreCategoriesMerged,
-  exploreCategoriesLoading,
-  exploreCategoriesError,
-  reloadExploreCategories,
   factories,
-  ideaArticles,
   exploreProducts,
-  explorePromotions: _explorePromotions,
   exploreMatrials,
-  promoSlides,
   isLoading = false,
-  guestConnecting = false,
-}: Readonly<Omit<ExploreDesktopProps, 'activeRFQs' | 'recentOrders'>>) {
+}: Readonly<ExploreDesktopProps>) {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
-  const ideaArticlesList = ideaArticles ?? [];
-  const recommendedFactories = useMemo(() => (factories ?? []).slice(0, 10), [factories]);
+  const [activeScope, setActiveScope] = useState<HubScope>('PD');
+  const recommendedFactories = useMemo(() => (factories ?? []).slice(0, 6), [factories]);
 
   const productShowcases = useMemo(
     () =>
-      (exploreProducts ?? []).slice(0, 8).map((s) => ({
+      (exploreProducts ?? []).slice(0, 6).map((s) => ({
         id: s.id,
         title: s.title,
         price: `MOQ ${s.minOrder}`,
@@ -138,11 +67,9 @@ export function ExploreDesktop({
     [exploreProducts],
   );
 
-  // const promoShowcases = useMemo(() => (explorePromotions ?? []).slice(0, 4), [explorePromotions]);
-
   const materialShowcases = useMemo(
     () =>
-      (exploreMatrials ?? []).slice(0, 8).map((s) => ({
+      (exploreMatrials ?? []).slice(0, 6).map((s) => ({
         id: s.id,
         title: s.title,
         price: `MOQ ${s.minOrder}`,
@@ -158,25 +85,6 @@ export function ExploreDesktop({
       })),
     [exploreMatrials],
   );
-
-  // Promo slides จาก API เท่านั้น — ไม่มี fallback
-  const desktopPromoSlides = useMemo(() => {
-    const slides = Array.isArray(promoSlides) ? promoSlides : [];
-    return slides
-      .map((r) => ({
-        id: r.id,
-        title: r.title,
-        subtitle: r.subtitle,
-        code: r.code,
-      }))
-      .filter((s) => s.id && s.title);
-  }, [promoSlides]);
-
-  const handleCopy = (code: string, id: string) => {
-    navigator.clipboard?.writeText(code);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
 
   return (
     <div className='hidden md:block min-h-screen'>
@@ -194,216 +102,111 @@ export function ExploreDesktop({
           />
         </section>
 
-         
-
-        {/* ═══ 3. โค้ดส่วนลดพิเศษ (Promo Codes) — แสดงเฉพาะเมื่อมีจาก API ═══ */}
-        {/*
-          Disabled promo-code cards. Keep this block commented out; commented code is not rendered or used.
-          {desktopPromoSlides.length > 0 && (
-          <section>
-            <div className='flex items-center justify-between mb-3'>
-              <h2 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
-                <Sparkles className='text-brand-orange' size={16} />
-                โค้ดส่วนลดพิเศษ
-              </h2>
-            </div>
-
-            <div className='grid grid-cols-3 gap-3'>
-              {desktopPromoSlides.map((promo) => (
-                <div
-                  key={promo.id}
-                  className='h-full rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all flex flex-col'
-                >
-                  <div
-                    className='relative overflow-hidden p-3.5 text-white h-full flex-1 flex flex-col'
-                    style={PROMO_GRADIENT}
-                  >
-                    <div
-                      className='absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-30'
-                      style={PROMO_PURPLE_BG}
-                    />
-                    <div
-                      className='absolute top-0 right-0 w-14 h-14 rounded-full opacity-20 blur-xl'
-                      style={PROMO_PURPLE_BG}
-                    />
-
-                    <div
-                      className='absolute -bottom-3 -left-3 w-12 h-12 rounded-full opacity-20'
-                      style={PROMO_LIGHT_BG}
-                    />
-                    <div className='relative z-10'>
-                      <div
-                        className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full mb-1.5'
-                        style={PROMO_BADGE_STYLE}
-                      >
-                        <Gift className='w-3 h-3 text-white' />
-                        <span className='text-[10px] text-white font-semibold tracking-wide'>
-                          โปรโมชั่นพิเศษ
-                        </span>
-                      </div>
-                      <p className='text-sm font-bold mb-1 leading-tight text-white drop-shadow-sm'>
-                        {promo.title}
-                      </p>
-                      <p
-                        className='text-[10px] mb-2 leading-snug'
-                        style={{ color: 'rgba(255,255,255,0.85)' }}
-                      >
-                        {promo.subtitle}
-                      </p>
-                      <div className='flex items-center gap-2'>
-                        <div
-                          className='flex items-center rounded-lg px-2.5 py-1 border'
-                          style={PROMO_CODE_WRAPPER}
-                        >
-                          <span className='text-sm font-mono tracking-widest font-bold text-white'>
-                            {promo.code}
-                          </span>
-                        </div>
-                        <Button
-                          variant='unstyled'
-                          type='button'
-                          onClick={() => handleCopy(promo.code, promo.id)}
-                          className='flex items-center gap-1 rounded-lg px-2.5 py-1 transition-colors text-[12px] font-semibold text-white'
-                          style={PROMO_COPY_BTN}
-                        >
-                          <Copy className='w-3 h-3' />
-                          {copiedId === promo.id ? 'คัดลอกแล้ว!' : 'คัดลอก'}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-          )}
-        */}
-
-        <div data-tour='categories'>
-          <ExploreDesktopCategories
-            categories={categories}
-            mergedFromApi={exploreCategoriesMerged}
-            apiLoading={exploreCategoriesLoading}
-            apiError={exploreCategoriesError}
-            onRetryCategoriesApi={reloadExploreCategories}
-            guestConnecting={guestConnecting}
-          />
+        <div className='flex flex-wrap items-center justify-end gap-2'>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => navigate('/create-rfq')}
+            className='rounded-xl border border-brand-orange/30 bg-white px-4 py-2 text-xs font-semibold text-brand-orange shadow-sm hover:bg-orange-50 transition-colors'
+          >
+            สร้าง RFQ
+          </Button>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => navigate(`/factory-ideas-hub?scope=${activeScope}`)}
+            className='rounded-xl border border-brand-purple/25 bg-white px-4 py-2 text-xs font-semibold text-brand-purple shadow-sm hover:bg-[var(--brand-lavender-chip)] transition-colors'
+          >
+            ดูหมวดทั้งหมด
+          </Button>
         </div>
 
-        <div data-tour='products'>
-          {isLoading ? (
-            <div className='mt-[30px]'>
+        <ExploreHubPreview activeScope={activeScope} onScopeChange={setActiveScope} />
+
+        {activeScope === 'PD' ? (
+          <div data-tour='products'>
+            {isLoading ? (
+              <div className='mt-[30px]'>
+                <div className='h-5 w-32 bg-gray-200 rounded animate-pulse mb-3' />
+                <div className='flex gap-3 overflow-x-hidden'>
+                  {[...Array(5)].map((_, i) => (
+                    <ProductCardSkeleton key={i} />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <ExploreProductCarouselSection
+                title='สินค้าแนะนำ'
+                items={productShowcases}
+                bannerImg='assets/tryly_vertical_banner_v5_oval_final.png'
+                bannerText='คุ้มค่า ถูกใจสัตว์เลี้ยง'
+                onItemClick={(id) =>
+                  navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
+                }
+                isLiked={isLiked}
+                onToggleFavorite={toggleFavorite}
+              />
+            )}
+          </div>
+        ) : null}
+
+        {activeScope === 'MT' ? (
+          isLoading ? (
+            <div>
               <div className='h-5 w-32 bg-gray-200 rounded animate-pulse mb-3' />
               <div className='flex gap-3 overflow-x-hidden'>
-                {[...Array(5)].map((_, i) => <ProductCardSkeleton key={i} />)}
+                {[...Array(5)].map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))}
               </div>
             </div>
           ) : (
             <ExploreProductCarouselSection
-              title='สินค้าแนะนำ'
-              items={productShowcases}
-              bannerImg={'assets/tryly_vertical_banner_v5_oval_final.png'}
-              bannerText='คุ้มค่า ถูกใจสัตว์เลี้ยง'
-              onItemClick={(id) => navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)}
+              title='วัตถุดิบแนะนำ'
+              theme='material'
+              seeMoreHref='/factory-ideas?type=material'
+              items={materialShowcases}
+              bannerImg='assets/tryly_vertical_banner_raw_material_v5_oval_final.png'
+              bannerText='วัตถุดิบคุณภาพสูง'
+              onItemClick={(id) =>
+                navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
+              }
               isLiked={isLiked}
               onToggleFavorite={toggleFavorite}
             />
-          )}
-        </div>
-
-        {isLoading ? (
-          <div>
-            <div className='h-5 w-32 bg-gray-200 rounded animate-pulse mb-3' />
-            <div className='flex gap-3 overflow-x-hidden'>
-              {[...Array(5)].map((_, i) => <ProductCardSkeleton key={i} />)}
-            </div>
-          </div>
-        ) : (
-          <ExploreProductCarouselSection
-            title='วัตถุดิบแนะนำ'
-            theme='material'
-            seeMoreHref='/factory-ideas?type=material'
-            items={materialShowcases}
-            bannerImg={'assets/tryly_vertical_banner_raw_material_v5_oval_final.png'}
-            bannerText='วัตถุดิบคุณภาพสูง'
-            onItemClick={(id) => navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)}
-            isLiked={isLiked}
-            onToggleFavorite={toggleFavorite}
-          />
-        )}
+          )
+        ) : null}
 
         <HowToOrderSection className='mx-0' />
 
-        <div className='mt-[40px]'>
-          {isLoading ? (
-            <section className='mx-4 mb-3 mt-3'>
-              <div className='flex items-end justify-between mb-3 px-1'>
-                <div>
-                  <div className='h-5 w-28 bg-gray-200 rounded animate-pulse mb-1' />
-                  <div className='h-3 w-52 bg-gray-100 rounded animate-pulse' />
-                </div>
-              </div>
-              <div className='flex gap-3 overflow-x-hidden pb-2'>
-                {[...Array(3)].map((_, i) => <FactoryCarouselCardSkeleton key={i} variant='desktop' />)}
-              </div>
-            </section>
-          ) : (
-            <ExploreFactoryShowcase
-              factories={recommendedFactories}
-              onFactoryClick={(id) => navigate(`/factories/${id}`)}
-              onSeeAll={() => navigate('/factory-ideas?type=factory')}
-              variant='desktop'
-            />
-          )}
-        </div>
-
-        {/* โปรโมชันแนะนำ (PM) — disabled
-        <section>...</section>
-        */}
-
-        <section>
-          <div className='mb-4 flex items-center justify-between'>
-            <h2 className='flex items-center gap-2 text-base font-bold text-[var(--brand-navy)]'>
-              <Sparkles className='h-5 w-5 text-[var(--brand-mauve)]' />
-              บทความ Idea
-            </h2>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => navigate('/factory-ideas?type=idea')}
-              className='text-[13px] font-medium text-[var(--brand-mauve)] transition-opacity hover:opacity-80'
-            >
-              ดูทั้งหมด ({ideaArticlesList.length})
-            </Button>
-          </div>
+        <div className='grid grid-cols-1 xl:grid-cols-2 gap-6 items-start'>
+          <ExploreMediaSection variant='desktop' />
 
           <div>
-            {ideaArticlesList.length === 0 ? (
-              <div className='rounded-xl border border-dashed border-gray-200 bg-white px-6 py-6 text-center text-xs text-gray-500'>
-                ยังไม่มีบทความในขณะนี้
-              </div>
+            {isLoading ? (
+              <section>
+                <div className='flex items-end justify-between mb-3 px-1'>
+                  <div>
+                    <div className='h-5 w-28 bg-gray-200 rounded animate-pulse mb-1' />
+                    <div className='h-3 w-52 bg-gray-100 rounded animate-pulse' />
+                  </div>
+                </div>
+                <div className='flex gap-3 overflow-x-hidden pb-2'>
+                  {[...Array(3)].map((_, i) => (
+                    <FactoryCarouselCardSkeleton key={i} variant='desktop' />
+                  ))}
+                </div>
+              </section>
             ) : (
-              <div className='grid grid-cols-2 gap-4'>
-                {ideaArticlesList.slice(0, 4).map((article) => {
-                  const factory = (factories ?? []).find((f) => f.id === article.factoryId);
-                  return (
-                    <IdeaArticleCard
-                      key={article.id}
-                      id={article.id}
-                      title={article.title}
-                      excerpt={article.excerpt}
-                      factoryName={article.factoryName}
-                      factoryVerified={factory?.verified}
-                      isLiked={isLiked(article.id)}
-                      onToggleFavorite={toggleFavorite}
-                      onClick={() => navigate(`/idea-detail?showcase_id=${article.id}`)}
-                    />
-                  );
-                })}
-              </div>
+              <ExploreFactoryShowcase
+                factories={recommendedFactories}
+                onFactoryClick={(id) => navigate(`/factories/${id}`)}
+                onSeeAll={() => navigate('/factory-ideas?type=factory')}
+                variant='desktop'
+              />
             )}
           </div>
-        </section>
+        </div>
 
         <section className='rounded-xl overflow-hidden border border-brand-purple/30 shadow-sm relative py-5 px-4 md:px-8'>
           <Image
@@ -447,8 +250,6 @@ export function ExploreDesktop({
       <div className='lg:px-8 2xl:px-10'>
         <ExploreFooter />
       </div>
-
-      
     </div>
   );
 }

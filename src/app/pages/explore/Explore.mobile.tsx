@@ -1,27 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import {
-  SlidersHorizontal,
-  ShoppingBag,
-  ChevronRight,
-  Leaf,
-  MapPin,
-  Star,
-  Sparkles,
-} from 'lucide-react';
+import { ShoppingBag, ChevronRight, Leaf, MapPin, Star, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExplorePromoCarousel } from '@/components/features/explore/ExplorePromoCarousel';
-import { ExploreCategories } from '@/components/features/explore/ExploreCategories';
+import { ExploreHubPreview } from '@/components/features/explore/ExploreHubPreview';
 import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFactoryShowcase';
-import { ExploreIdeaArticles } from '@/components/features/explore/ExploreIdeaArticles';
 import { ExploreFooter } from '@/components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '@/components/features/explore/HowToOrderSection';
+import { ExploreMediaSection } from '@/components/features/explore/ExploreMediaSection';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
-import type { CategoryItem } from '@/components/features/explore/ExploreCategories';
+import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
-import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
-import { MobileSearchField } from '@/components/shared/MobileSearchField';
 import { Image } from '@/components/ui/image';
 import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -29,45 +19,25 @@ import { ProductCardSkeleton, FactoryCarouselCardSkeleton } from '@/components/s
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
 
 type ExploreMobileProps = {
-  searchText: string;
-  setSearchText: (v: string) => void;
-  categories: CategoryItem[];
-  exploreCategoriesMerged: CategoryItem[];
-  exploreCategoriesLoading: boolean;
-  exploreCategoriesError: string | null;
-  reloadExploreCategories: () => void;
   factories: FactoryItem[];
-  ideaArticles: IdeaArticleItem[];
-  factoryShowcases: IExploreShowcase[];
   exploreProducts: IExploreShowcase[];
-  explorePromotions: IExploreShowcase[];
   exploreMatrials?: IExploreShowcase[];
   explorePromoCodes: IExploreSlide[];
   promoSlides: IExploreSlide[];
   isLoading?: boolean;
-  guestConnecting?: boolean;
 };
 
 export function ExploreMobile({
-  searchText,
-  setSearchText,
-  categories,
-  exploreCategoriesMerged,
-  exploreCategoriesLoading,
-  exploreCategoriesError,
-  reloadExploreCategories,
   factories,
-  ideaArticles,
   exploreProducts,
-  explorePromotions: _explorePromotions,
   exploreMatrials,
   explorePromoCodes,
   promoSlides,
   isLoading = false,
-  guestConnecting = false,
 }: ExploreMobileProps) {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
+  const [activeScope, setActiveScope] = useState<HubScope>('PD');
 
   const productShowcases = (exploreProducts ?? []).slice(0, 8);
   // const promoShowcases = (explorePromotions ?? []).slice(0, 4);
@@ -91,17 +61,13 @@ export function ExploreMobile({
 
       <ExplorePromoCarousel promoSlides={promoSlides} promoCodes={explorePromoCodes} />
 
-      <div data-tour='categories' className='mt-[20px]'>
-        <ExploreCategories
-          categories={categories}
-          mergedFromApi={exploreCategoriesMerged}
-          apiLoading={exploreCategoriesLoading}
-          apiError={exploreCategoriesError}
-          onRetryCategoriesApi={reloadExploreCategories}
-          guestConnecting={guestConnecting}
-        />
-      </div>
+      <ExploreHubPreview
+        className='mt-[20px]'
+        activeScope={activeScope}
+        onScopeChange={setActiveScope}
+      />
 
+      {activeScope === 'PD' ? (
       <div data-tour='products' className='mb-3'>
         <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
           <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
@@ -211,7 +177,9 @@ export function ExploreMobile({
           </div>
         )}
       </div>
+      ) : null}
 
+      {activeScope === 'MT' ? (
       <div className='mb-3'>
         <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
           <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
@@ -311,8 +279,11 @@ export function ExploreMobile({
           </div>
         )}
       </div>
+      ) : null}
 
       <HowToOrderSection className='mx-4 mt-5' />
+
+      <ExploreMediaSection className='mx-4 mt-5' variant='mobile' />
 
       <div className='mt-[20px]'>
         {isLoading ? (
@@ -336,19 +307,6 @@ export function ExploreMobile({
           />
         )}
       </div>
-
-      <div className='mt-[20px]'>
-        <ExploreIdeaArticles
-          articles={(ideaArticles ?? []).slice(0, 3)}
-          factories={factories}
-          isLiked={isLiked}
-          onToggleFavorite={toggleFavorite}
-          onSeeAll={() => navigate('/factory-ideas?type=idea')}
-          onArticleClick={(id) => navigate(`/idea-detail?showcase_id=${id}`)}
-        />
-      </div>
-
-      {/* โปรโมชันแนะนำ (PM) — disabled */}
 
       <div className='px-4 mt-5'><div className='relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm border border-brand-purple/30'>
         <Image
