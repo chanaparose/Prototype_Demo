@@ -294,7 +294,7 @@ export function FactoryIdeasHubPage() {
       </header>
 
       <div className='sticky top-0 z-20 border-b border-gray-200 bg-white'>
-        <div className='flex'>
+        <div className='flex overflow-x-auto scrollbar-hide'>
           {(['PD', 'MT'] as const).map((scope) => {
             const label = SCOPE_LABELS[scope] ?? scope;
             const isActive = activeScope === scope;
@@ -303,18 +303,21 @@ export function FactoryIdeasHubPage() {
                 key={scope}
                 type='button'
                 onClick={() => setActiveScope(scope)}
-                className='relative flex-1 px-2 py-3 text-center'
+                className='relative min-w-0 flex-1 shrink-0 px-2 py-3 text-center'
               >
                 <span
                   className={cn(
-                    'text-[13px] leading-none whitespace-nowrap',
+                    'text-[14px] leading-none whitespace-nowrap',
                     isActive ? 'font-bold text-[var(--brand-navy)]' : 'font-medium text-gray-400',
                   )}
                 >
                   {label}
                 </span>
                 {isActive ? (
-                  <span className='absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[var(--brand-navy)]' />
+                  <span
+                    className='absolute bottom-0 left-1/2 h-[3px] w-8 -translate-x-1/2 rounded-full'
+                    style={{ background: 'var(--brand-purple)' }}
+                  />
                 ) : null}
               </button>
             );
