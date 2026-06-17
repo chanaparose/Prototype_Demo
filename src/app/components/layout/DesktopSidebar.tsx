@@ -36,6 +36,7 @@ import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
 import { createRfqCtaSidebarClass } from '@/styles/createRfqCta';
+import { isCustomerNavLinkActive } from '@/components/features/factory-ideas/factoryIdeasHubNav';
 
 /** รูปโปรไฟล์เริ่มต้นเมื่อไม่มี avatar จาก API */
 const DEFAULT_USER_AVATAR_SRC =
@@ -58,7 +59,7 @@ function pickString(...values: unknown[]): string {
 
 const customerNavLinks = [
   { path: '/', icon: Home, label: 'หน้าแรก' },
-  { path: '/factory-ideas', icon: Lightbulb, label: 'แนะนำโรงงาน' },
+  { path: '/factory-ideas-hub', icon: Lightbulb, label: 'แนะนำโรงงาน' },
   { path: '/orders', icon: ClipboardList, label: 'คำขอราคา & คำสั่งงาน' },
   { path: '/messages', icon: MessageCircle, label: 'ข้อความ' },
 ];
@@ -144,10 +145,7 @@ export function DesktopSidebar() {
   const { open: openLoginModal } = useAuthModalStore();
   React.useEffect(() => subscribeTourActive((active) => setTourOn(active)), [setTourOn]);
 
-  const isActivePath = (path: string) =>
-    path === '/'
-      ? location.pathname === '/'
-      : location.pathname === path || location.pathname.startsWith(`${path}/`);
+  const isActivePath = (path: string) => isCustomerNavLinkActive(location.pathname, path);
 
   const unreadMessages = useConversationUnreadCount();
   const unreadNotifications = useNotificationUnreadCount(isAuthenticated);

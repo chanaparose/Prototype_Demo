@@ -294,6 +294,7 @@ export function FactoryIdeasDesktop() {
     categoryOptionSelected,
     getDetailPath,
     hubScope,
+    hubName,
   } = useFactoryIdeasPageState({ layout: 'desktop' });
 
   return (
@@ -303,23 +304,25 @@ export function FactoryIdeasDesktop() {
           {fromHub ? (
             <FactoryIdeasHubBackButton hubScope={hubScope} label='กลับหมวดหมู่' className='mb-0' />
           ) : null}
-          <div className='relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,var(--brand-navy-deep)_0%,#4A267D_100%)] p-5 text-white shadow-md'>
-            <div className='absolute -right-8 -top-8 h-40 w-40 rounded-full bg-[var(--brand-orange-hot)] opacity-40 blur-2xl mix-blend-screen' />
-            <div className='absolute right-0 top-0 h-28 w-28 translate-x-8 skew-x-[-15deg] rounded-full bg-[var(--brand-purple)] opacity-60' />
-            <div className='absolute -bottom-4 -left-4 h-24 w-24 rounded-full bg-[var(--brand-purple)] opacity-30 blur-xl mix-blend-screen' />
-            <div className='relative z-10 flex items-center gap-4'>
-              <div className='shrink-0 rounded-full border border-[rgba(162,56,255,0.50)] bg-[rgba(162,56,255,0.30)] p-2.5'>
-                <Sparkles size={20} className='text-white' />
+          <div className='mb-1'>
+            <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
+              Discover
+            </p>
+            <h1 className='text-lg font-bold leading-tight text-[var(--brand-navy)]'>
+              {hubName ? `แนะนำโรงงาน · ${hubName}` : 'แนะนำโรงงาน'}
+            </h1>
+          </div>
+          <div className='relative overflow-hidden rounded-xl bg-[linear-gradient(135deg,var(--brand-navy-deep)_0%,#4A267D_100%)] px-4 py-3 text-white shadow-md'>
+            <div className='pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-[var(--brand-orange-hot)] opacity-35 blur-xl mix-blend-screen' />
+            <div className='pointer-events-none absolute right-0 top-0 h-20 w-20 translate-x-6 skew-x-[-15deg] rounded-full bg-[var(--brand-purple)] opacity-50' />
+            <div className='relative z-10 flex items-center gap-3'>
+              <div className='shrink-0 rounded-full border border-[rgba(162,56,255,0.50)] bg-[rgba(162,56,255,0.30)] p-2'>
+                <Sparkles size={18} className='text-white' />
               </div>
-              <div className='flex-1 min-w-0'>
-                <p className='mb-0.5 text-sm font-medium text-[#EBD3FF]'>
-                  พื้นที่โปรโมตจากโรงงานพาร์ทเนอร์
-                </p>
-                <h2 className='text-base font-bold leading-tight'>
-                  ค้นหาไอเดียสินค้าใหม่ พร้อมโรงงานที่ทำได้จริงในที่เดียว
-                </h2>
-              </div>
-              <span className='shrink-0 text-sm font-semibold text-[#EBD3FF]'>
+              <p className='flex-1 min-w-0 text-xs font-medium leading-snug text-[#EBD3FF]'>
+                พื้นที่โปรโมตจากโรงงานพาร์ทเนอร์
+              </p>
+              <span className='shrink-0 rounded-md bg-white/10 px-2 py-1 text-xs font-semibold tabular-nums text-[#EBD3FF]'>
                 {totalCount} รายการ
               </span>
             </div>

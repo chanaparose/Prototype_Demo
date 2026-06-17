@@ -14,7 +14,35 @@ const SCOPE_LABELS: Record<string, string> = {
   MT: 'วัตถุดิบ',
 };
 
-const VISIBLE_CARDS = 4;
+const VISIBLE_CARDS_MOBILE = 4;
+const VISIBLE_CARDS_DESKTOP = 5;
+/** แถว desktop ออกแบบรองรับสูงสุด 5 หมวด + การ์ดดูครบ = 6 ช่องความกว้างเท่ากันทุก section */
+const DESKTOP_ROW_SLOTS = 6;
+
+const hubRowCardClass =
+  'flex h-[104px] w-[108px] shrink-0 flex-col overflow-hidden rounded-xl p-3 text-left lg:h-[118px] lg:w-[calc((100%-3.75rem)/6)] lg:flex-none';
+
+function useIsLgUp() {
+  const [isLgUp, setIsLgUp] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const update = () => setIsLgUp(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  return isLgUp;
+}
+
+function getHubRowVisibleCount(categoryCount: number, isLgUp: boolean) {
+  const maxCategories = isLgUp ? VISIBLE_CARDS_DESKTOP : VISIBLE_CARDS_MOBILE;
+  if (categoryCount <= maxCategories) return categoryCount;
+  return maxCategories;
+}
 
 function useHubsQuery() {
   return useQuery({
@@ -44,7 +72,10 @@ function CategoryCard({
     <button
       type='button'
       onClick={onClick}
-      className='group flex w-[108px] shrink-0 flex-col rounded-xl border border-brand-purple/15 bg-gradient-to-br from-[var(--brand-lavender-chip)] via-[var(--brand-panel-soft)] to-white p-3 text-left shadow-[0_2px_8px_rgba(46,34,82,0.07)] transition-all hover:-translate-y-0.5 hover:border-brand-purple/35 hover:shadow-[0_4px_14px_rgba(122,75,148,0.18)] active:scale-[0.98]'
+      className={cn(
+        hubRowCardClass,
+        'group border border-brand-purple/15 bg-gradient-to-br from-[var(--brand-lavender-chip)] via-[var(--brand-panel-soft)] to-white shadow-[0_2px_8px_rgba(46,34,82,0.07)] transition-all hover:-translate-y-0.5 hover:border-brand-purple/35 hover:shadow-[0_4px_14px_rgba(122,75,148,0.18)] active:scale-[0.98]',
+      )}
     >
       <span className='line-clamp-2 text-[11px] font-bold leading-snug text-[var(--brand-navy)] group-hover:text-brand-purple'>
         {cat.name}
@@ -56,7 +87,7 @@ function CategoryCard({
       ) : null}
       <span
         className={cn(
-          'mt-2.5 text-[9px] font-semibold leading-none',
+          'mt-auto pt-2.5 text-[9px] font-semibold leading-none',
           cat.factory_count > 0 ? 'text-brand-purple' : 'text-gray-400',
         )}
       >
@@ -81,15 +112,18 @@ function SeeAllCard({
     <button
       type='button'
       onClick={onClick}
-      className='flex w-[108px] shrink-0 flex-col rounded-xl border border-dashed border-brand-purple/35 bg-gradient-to-br from-white to-[var(--brand-lavender-chip)] p-3 text-left shadow-[0_2px_8px_rgba(46,34,82,0.06)] transition-all hover:border-brand-purple/50 hover:shadow-[0_4px_14px_rgba(122,75,148,0.14)] active:scale-[0.98]'
+      className={cn(
+        hubRowCardClass,
+        'border border-dashed border-brand-purple/35 bg-gradient-to-br from-white to-[var(--brand-lavender-chip)] shadow-[0_2px_8px_rgba(46,34,82,0.06)] transition-all hover:border-brand-purple/50 hover:shadow-[0_4px_14px_rgba(122,75,148,0.14)] active:scale-[0.98]',
+      )}
     >
-      <span className='mb-2 inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand-purple/12 text-brand-purple'>
+      <span className='mb-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-purple/12 text-brand-purple'>
         <ArrowRight size={14} strokeWidth={2.5} />
       </span>
       <span className='text-[11px] font-bold leading-snug text-brand-purple'>+{count} หมวด</span>
       <span className='mt-0.5 text-[9px] font-medium text-brand-purple/75'>ดูครบทุกหมวด</span>
       {subText ? (
-        <span className='mt-2 line-clamp-2 text-[9px] leading-tight text-[var(--brand-muted-purple)]'>
+        <span className='mt-auto line-clamp-2 pt-1.5 text-[9px] leading-tight text-[var(--brand-muted-purple)]'>
           {subText}
         </span>
       ) : null}
@@ -105,12 +139,14 @@ function HubSection({
   navigate: (path: string) => void;
 }) {
   const totalFactories = hub.categories.reduce((s, c) => s + (c.factory_count ?? 0), 0);
-  const visible = hub.categories.slice(0, VISIBLE_CARDS);
-  const hidden = hub.categories.slice(VISIBLE_CARDS);
+  const isLgUp = useIsLgUp();
+  const visibleCount = getHubRowVisibleCount(hub.categories.length, isLgUp);
+  const visible = hub.categories.slice(0, visibleCount);
+  const hidden = hub.categories.slice(visibleCount);
   const hiddenCount = hidden.length;
 
   return (
-    <section className='mx-3 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm'>
+    <section className='mx-3 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm lg:mx-0'>
       <div className='flex items-center justify-between gap-3 px-3.5 pb-2.5 pt-3.5'>
         <div className='min-w-0'>
           <h2 className='truncate text-[13px] font-bold text-[var(--brand-navy)]'>{hub.name}</h2>
@@ -129,7 +165,7 @@ function HubSection({
         </Button>
       </div>
 
-      <div className='scrollbar-hide flex gap-2.5 overflow-x-auto bg-[var(--brand-page)]/50 px-3.5 py-3.5'>
+      <div className='flex flex-nowrap items-stretch gap-2.5 overflow-x-auto bg-[var(--brand-page)]/50 px-3.5 py-3.5 scrollbar-hide lg:gap-3 lg:overflow-hidden'>
         {visible.map((cat) => (
           <CategoryCard
             key={cat.category_id}
@@ -153,16 +189,19 @@ function HubSection({
 
 function HubSectionSkeleton() {
   return (
-    <div className='mx-3 overflow-hidden rounded-2xl border border-gray-100 bg-white p-3.5 shadow-sm'>
+    <div className='mx-3 overflow-hidden rounded-2xl border border-gray-100 bg-white p-3.5 shadow-sm lg:mx-0'>
       <div className='mb-3 flex items-center justify-between'>
         <Skeleton className='h-4 w-28' />
         <Skeleton className='h-6 w-16 rounded-full' />
       </div>
-      <div className='flex gap-2.5 overflow-hidden bg-[var(--brand-page)]/50 p-3.5'>
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className='flex flex-nowrap items-stretch gap-2.5 overflow-hidden bg-[var(--brand-page)]/50 p-3.5 lg:gap-3'>
+        {Array.from({ length: DESKTOP_ROW_SLOTS }).map((_, i) => (
           <div
             key={i}
-            className='w-[108px] shrink-0 space-y-2 rounded-xl border border-brand-purple/10 bg-[var(--brand-lavender-chip)] p-3'
+            className={cn(
+              hubRowCardClass,
+              'space-y-2 border border-brand-purple/10 bg-[var(--brand-lavender-chip)]',
+            )}
           >
             <Skeleton className='h-3 w-full bg-brand-purple/10' />
             <Skeleton className='h-2 w-4/5 bg-brand-purple/10' />
@@ -177,7 +216,7 @@ function HubSectionSkeleton() {
 function ComingSoonStrip() {
   return (
     <div
-      className='mx-3 mb-4 rounded-2xl border border-dashed border-gray-200 bg-white px-3.5 py-3 select-none pointer-events-none'
+      className='mx-3 mb-4 rounded-2xl border border-dashed border-gray-200 bg-white px-3.5 py-3 select-none pointer-events-none lg:mx-0'
       aria-hidden
     >
       <div className='mb-1 flex flex-wrap items-center gap-2'>
@@ -218,8 +257,8 @@ export function FactoryIdeasHubPage() {
   };
 
   return (
-    <div className='flex min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-24'>
-      <header className='border-b border-gray-100 bg-white px-4 pb-3 pt-4'>
+    <div className='flex min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-24 lg:pb-8'>
+      <header className='border-b border-gray-100 bg-white px-4 pb-3 pt-4 lg:px-8 2xl:px-10'>
         <div className='mb-2.5'>
           <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
             Discover
@@ -283,7 +322,7 @@ export function FactoryIdeasHubPage() {
         </div>
       </div>
 
-      <main className='flex-1 space-y-3 py-3'>
+      <main className='flex-1 space-y-3 py-3 lg:space-y-4 lg:px-8 lg:py-4 2xl:px-10'>
         {isLoading ? (
           <>
             <HubSectionSkeleton />

@@ -166,6 +166,7 @@ export function Layout() {
     /\/factory-ideas\/products\/[^/]+\/reviews$/.test(location.pathname);
   const wideContentPaths = [
     '/',
+    '/factory-ideas-hub',
     '/factory-ideas',
     '/orders',
     '/messages',

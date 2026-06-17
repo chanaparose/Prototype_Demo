@@ -9,6 +9,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@lib/utils';
+import { isCustomerNavLinkActive } from '@/components/features/factory-ideas/factoryIdeasHubNav';
 import {
   isFactorySidebarNavActive,
   type FactorySidebarNavItem,
@@ -102,12 +103,7 @@ export function MobileBottomNav({
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/';
-    if (path === '/factory-ideas-hub')
-      return location.pathname.startsWith('/factory-ideas-hub') || location.pathname.startsWith('/factory-ideas');
-    return location.pathname === path || location.pathname.startsWith(`${path}/`);
-  };
+  const isActive = (path: string) => isCustomerNavLinkActive(location.pathname, path);
 
   const go = (path: string) => void navigate(path);
   const activeBgClass = isFactory ? 'bg-indigo-50/90' : 'bg-violet-50/90';
