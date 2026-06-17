@@ -17,6 +17,7 @@ export type IExploreShowcase = {
   image: string;
   contentType: ExploreContentType;
   category: string;
+  categoryId?: string;
   subCategoryName: string;
   postedAt: string;
   likes: number;

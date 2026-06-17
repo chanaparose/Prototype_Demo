@@ -8,6 +8,8 @@ import { HowToOrderSection } from '@/components/features/explore/HowToOrderSecti
 import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFactoryShowcase';
 import { ExploreHubPreview } from '@/components/features/explore/ExploreHubPreview';
 import { ExploreProductCarouselSection } from '@/components/features/explore/ExploreProductCarouselSection';
+import { useExploreHubFilteredContent } from '@/components/features/explore/useExploreHubFilteredContent';
+import { useExploreHubSelection } from '@/components/features/explore/useExploreHubSelection';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
@@ -45,11 +47,37 @@ export function ExploreDesktop({
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
   const [activeScope, setActiveScope] = useState<HubScope>('PD');
-  const recommendedFactories = useMemo(() => (factories ?? []).slice(0, 6), [factories]);
+  const {
+    hubs,
+    selectedHub,
+    selectedHubId,
+    setSelectedHubId,
+    categoryIds,
+    isLoading: hubsLoading,
+  } = useExploreHubSelection(activeScope);
+
+  const {
+    showcases: scopedShowcases,
+    factories: scopedFactories,
+    showcaseTitle,
+    factoryTitle,
+    factorySubtitle,
+    seeMoreShowcaseHref,
+    seeMoreFactoryHref,
+  } = useExploreHubFilteredContent({
+    activeScope,
+    exploreProducts,
+    exploreMatrials,
+    factories,
+    selectedHub,
+    categoryIds,
+    showcaseLimit: 6,
+    factoryLimit: 6,
+  });
 
   const productShowcases = useMemo(
     () =>
-      (exploreProducts ?? []).slice(0, 6).map((s) => ({
+      (activeScope === 'PD' ? scopedShowcases : []).map((s) => ({
         id: s.id,
         title: s.title,
         price: `MOQ ${s.minOrder}`,
@@ -63,12 +91,12 @@ export function ExploreDesktop({
         factoryRating: s.factoryRating,
         location: s.location,
       })),
-    [exploreProducts],
+    [activeScope, scopedShowcases],
   );
 
   const materialShowcases = useMemo(
     () =>
-      (exploreMatrials ?? []).slice(0, 6).map((s) => ({
+      (activeScope === 'MT' ? scopedShowcases : []).map((s) => ({
         id: s.id,
         title: s.title,
         price: `MOQ ${s.minOrder}`,
@@ -82,7 +110,7 @@ export function ExploreDesktop({
         factoryRating: s.factoryRating,
         location: s.location,
       })),
-    [exploreMatrials],
+    [activeScope, scopedShowcases],
   );
 
   return (
@@ -120,7 +148,15 @@ export function ExploreDesktop({
           </Button>
         </div>
 
-        <ExploreHubPreview activeScope={activeScope} onScopeChange={setActiveScope} />
+        <ExploreHubPreview
+          activeScope={activeScope}
+          onScopeChange={setActiveScope}
+          hubs={hubs}
+          selectedHub={selectedHub}
+          selectedHubId={selectedHubId}
+          onSelectedHubChange={setSelectedHubId}
+          isLoading={hubsLoading}
+        />
 
         {activeScope === 'PD' ? (
           <div data-tour='products'>
@@ -135,10 +171,11 @@ export function ExploreDesktop({
               </div>
             ) : (
               <ExploreProductCarouselSection
-                title='สินค้าแนะนำ'
+                title={showcaseTitle}
                 items={productShowcases}
                 bannerImg='assets/tryly_vertical_banner_v5_oval_final.png'
                 bannerText='คุ้มค่า ถูกใจสัตว์เลี้ยง'
+                seeMoreHref={seeMoreShowcaseHref}
                 onItemClick={(id) =>
                   navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
                 }
@@ -161,9 +198,9 @@ export function ExploreDesktop({
             </div>
           ) : (
             <ExploreProductCarouselSection
-              title='วัตถุดิบแนะนำ'
+              title={showcaseTitle}
               theme='material'
-              seeMoreHref='/factory-ideas?type=material'
+              seeMoreHref={seeMoreShowcaseHref}
               items={materialShowcases}
               bannerImg='assets/tryly_vertical_banner_raw_material_v5_oval_final.png'
               bannerText='วัตถุดิบคุณภาพสูง'
@@ -195,9 +232,11 @@ export function ExploreDesktop({
             </section>
           ) : (
             <ExploreFactoryShowcase
-              factories={recommendedFactories}
+              factories={scopedFactories}
+              title={factoryTitle}
+              subtitle={factorySubtitle}
               onFactoryClick={(id) => navigate(`/factories/${id}`)}
-              onSeeAll={() => navigate('/factory-ideas?type=factory')}
+              onSeeAll={() => navigate(seeMoreFactoryHref)}
               variant='desktop'
             />
           )}

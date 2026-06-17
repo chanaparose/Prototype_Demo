@@ -35,6 +35,7 @@ function mapRowToExploreShowcase(row: IExploreShowcaseResponse): IExploreShowcas
     image: s.image,
     contentType: s.contentType,
     category: s.category,
+    ...(s.categoryId ? { categoryId: s.categoryId } : {}),
     subCategoryName: s.sub_category_name ?? '',
     postedAt: s.postedAt,
     likes: s.likes,

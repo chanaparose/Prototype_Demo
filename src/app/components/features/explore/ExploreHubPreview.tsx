@@ -1,15 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Boxes, ChevronRight, Factory, Leaf, PackageSearch, type LucideIcon } from 'lucide-react';
 import { cn } from '@lib/utils';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import { HubSectionSkeleton } from '@/components/features/hub/HubSectionSkeleton';
-import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
+import { buildFactoryIdeasHubPageUrl } from '@/components/features/explore/exploreHubFilter';
 import type { ICategoryForHubResponse, IHubResponse } from '@/services/api/types/master.types';
 
 type ExploreHubPreviewProps = {
   activeScope: HubScope;
   onScopeChange: (scope: HubScope) => void;
+  hubs: IHubResponse[];
+  selectedHub: IHubResponse | null;
+  selectedHubId: number | null;
+  onSelectedHubChange: (hubId: number) => void;
+  isLoading?: boolean;
   className?: string;
   sectionClassName?: string;
 };
@@ -17,33 +21,17 @@ type ExploreHubPreviewProps = {
 export function ExploreHubPreview({
   activeScope,
   onScopeChange,
+  hubs,
+  selectedHub,
+  selectedHubId,
+  onSelectedHubChange,
+  isLoading = false,
   className,
   sectionClassName,
 }: ExploreHubPreviewProps) {
   const navigate = useNavigate();
-  const hubsQ = useLbiHubsQuery();
-  const hubs = useMemo(
-    () => (hubsQ.data ?? []).filter((h) => h.scope === activeScope),
-    [activeScope, hubsQ.data],
-  );
-  const [selectedHubId, setSelectedHubId] = useState<number | null>(null);
-  const isLoading = hubsQ.isLoading;
-  const selectedHub = useMemo(
-    () => hubs.find((hub) => hub.hub_id === selectedHubId) ?? hubs[0] ?? null,
-    [hubs, selectedHubId],
-  );
   const totalFactories =
     selectedHub?.categories.reduce((sum, cat) => sum + (cat.factory_count ?? 0), 0) ?? 0;
-
-  useEffect(() => {
-    if (!hubs.length) {
-      setSelectedHubId(null);
-      return;
-    }
-    if (!selectedHubId || !hubs.some((hub) => hub.hub_id === selectedHubId)) {
-      setSelectedHubId(hubs[0].hub_id);
-    }
-  }, [hubs, selectedHubId]);
 
   return (
     <section className={cn('space-y-2.5', className)} data-tour='categories'>
@@ -55,7 +43,7 @@ export function ExploreHubPreview({
           <h3 className='text-[15px] font-bold text-brand-navy-ink'>เลือกหมวดที่อยากเริ่ม</h3>
         </div>
         <Link
-          to={`/factory-ideas-hub?scope=${activeScope}`}
+          to={buildFactoryIdeasHubPageUrl(activeScope)}
           className='flex shrink-0 items-center gap-0.5 text-[12px] font-semibold text-brand-purple hover:underline'
         >
           ดูทั้งหมด <ChevronRight size={13} />
@@ -73,8 +61,8 @@ export function ExploreHubPreview({
                   <HubPill
                     key={hub.hub_id}
                     hub={hub}
-                    active={selectedHub?.hub_id === hub.hub_id}
-                    onClick={() => setSelectedHubId(hub.hub_id)}
+                    active={selectedHubId === hub.hub_id}
+                    onClick={() => onSelectedHubChange(hub.hub_id)}
                   />
                 ))}
               </div>

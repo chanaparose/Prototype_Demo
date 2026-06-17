@@ -7,6 +7,8 @@ import { ExploreHubPreview } from '@/components/features/explore/ExploreHubPrevi
 import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFactoryShowcase';
 import { ExploreFooter } from '@/components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '@/components/features/explore/HowToOrderSection';
+import { useExploreHubFilteredContent } from '@/components/features/explore/useExploreHubFilteredContent';
+import { useExploreHubSelection } from '@/components/features/explore/useExploreHubSelection';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
@@ -37,10 +39,35 @@ export function ExploreMobile({
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
   const [activeScope, setActiveScope] = useState<HubScope>('PD');
+  const {
+    hubs,
+    selectedHub,
+    selectedHubId,
+    setSelectedHubId,
+    categoryIds,
+    isLoading: hubsLoading,
+  } = useExploreHubSelection(activeScope);
 
-  const productShowcases = (exploreProducts ?? []).slice(0, 8);
-  // const promoShowcases = (explorePromotions ?? []).slice(0, 4);
-  const materialShowcases = (exploreMatrials ?? []).slice(0, 8);
+  const {
+    showcases: scopedShowcases,
+    factories: scopedFactories,
+    isHubScoped,
+    showcaseTitle,
+    factoryTitle,
+    factorySubtitle,
+    seeMoreShowcaseHref,
+    seeMoreFactoryHref,
+  } = useExploreHubFilteredContent({
+    activeScope,
+    exploreProducts,
+    exploreMatrials,
+    factories,
+    selectedHub,
+    categoryIds,
+  });
+
+  const productShowcases = activeScope === 'PD' ? scopedShowcases : [];
+  const materialShowcases = activeScope === 'MT' ? scopedShowcases : [];
 
   const hasProductShowcases = productShowcases.length > 0;
   // const hasPromoShowcases = promoShowcases.length > 0;
@@ -64,18 +91,23 @@ export function ExploreMobile({
         className='mt-[20px]'
         activeScope={activeScope}
         onScopeChange={setActiveScope}
+        hubs={hubs}
+        selectedHub={selectedHub}
+        selectedHubId={selectedHubId}
+        onSelectedHubChange={setSelectedHubId}
+        isLoading={hubsLoading}
       />
 
       {activeScope === 'PD' ? (
       <div data-tour='products' className='mb-3'>
         <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
           <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
-            <ShoppingBag size={15} className='text-brand-orange' /> สินค้าแนะนำ
+            <ShoppingBag size={15} className='text-brand-orange' /> {showcaseTitle}
           </h3>
           <Button
             variant='unstyled'
             type='button'
-            onClick={() => navigate('/factory-ideas?type=product')}
+            onClick={() => navigate(seeMoreShowcaseHref)}
             className='text-brand-orange text-[12px] font-medium flex items-center gap-0.5'
           >
             ดูเพิ่มเติม <ChevronRight size={13} />
@@ -160,17 +192,23 @@ export function ExploreMobile({
         ) : (
           <div className='px-4'>
             <div className='rounded-xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-5 text-center'>
-              <p className='text-sm font-medium text-gray-600'>ยังไม่มีสินค้าแนะนำในขณะนี้</p>
+              <p className='text-sm font-medium text-gray-600'>
+                {isHubScoped
+                  ? `ยังไม่มีสินค้าแนะนำในหมวด ${selectedHub?.name ?? ''}`
+                  : 'ยังไม่มีสินค้าแนะนำในขณะนี้'}
+              </p>
               <p className='mt-1 text-xs text-gray-400'>
-                ดูไอเดียสินค้าและโรงงานได้จากปุ่มด้านล่าง
+                {isHubScoped
+                  ? 'ลองดูสินค้าทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง'
+                  : 'ดูไอเดียสินค้าและโรงงานได้จากปุ่มด้านล่าง'}
               </p>
               <Button
                 variant='unstyled'
                 type='button'
-                onClick={() => navigate('/factory-ideas?type=product')}
+                onClick={() => navigate(seeMoreShowcaseHref)}
                 className='mt-3 w-full rounded-full border border-brand-magenta/40 bg-white py-2 text-sm font-medium text-brand-magenta hover:bg-brand-panel-hover transition-colors'
               >
-                ดูสินค้าแนะนำ
+                {isHubScoped ? `ดูสินค้าใน ${selectedHub?.name ?? 'หมวดนี้'}` : 'ดูสินค้าแนะนำ'}
               </Button>
             </div>
           </div>
@@ -182,12 +220,12 @@ export function ExploreMobile({
       <div className='mb-3'>
         <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
           <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
-            <Leaf size={15} className='text-status-success' /> วัตถุดิบแนะนำ
+            <Leaf size={15} className='text-status-success' /> {showcaseTitle}
           </h3>
           <Button
             variant='unstyled'
             type='button'
-            onClick={() => navigate('/factory-ideas?type=material')}
+            onClick={() => navigate(seeMoreShowcaseHref)}
             className='text-status-success text-[12px] font-medium flex items-center gap-0.5'
           >
             ดูเพิ่มเติม <ChevronRight size={13} />
@@ -271,9 +309,24 @@ export function ExploreMobile({
         ) : (
           <div className='px-4'>
             <div className='rounded-xl border border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-white px-4 py-5 text-center'>
-              <p className='text-sm font-medium text-gray-600'>ยังไม่มีวัตถุดิบแนะนำในขณะนี้</p>
-              <p className='mt-1 text-xs text-gray-400'>จะมีวัตถุดิบเพิ่มเร็วๆนี้</p>
-              
+              <p className='text-sm font-medium text-gray-600'>
+                {isHubScoped
+                  ? `ยังไม่มีวัตถุดิบแนะนำในหมวด ${selectedHub?.name ?? ''}`
+                  : 'ยังไม่มีวัตถุดิบแนะนำในขณะนี้'}
+              </p>
+              <p className='mt-1 text-xs text-gray-400'>
+                {isHubScoped ? 'ลองดูวัตถุดิบทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง' : 'จะมีวัตถุดิบเพิ่มเร็วๆนี้'}
+              </p>
+              {isHubScoped ? (
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={() => navigate(seeMoreShowcaseHref)}
+                  className='mt-3 w-full rounded-full border border-emerald-300 bg-white py-2 text-sm font-medium text-status-success hover:bg-emerald-50 transition-colors'
+                >
+                  {`ดูวัตถุดิบใน ${selectedHub?.name ?? 'หมวดนี้'}`}
+                </Button>
+              ) : null}
             </div>
           </div>
         )}
@@ -297,9 +350,11 @@ export function ExploreMobile({
           </section>
         ) : (
           <ExploreFactoryShowcase
-            factories={(factories ?? []).slice(0, 8)}
+            factories={scopedFactories}
+            title={factoryTitle}
+            subtitle={factorySubtitle}
             onFactoryClick={(id) => navigate(`/factories/${id}`)}
-            onSeeAll={() => navigate('/factory-ideas?type=factory')}
+            onSeeAll={() => navigate(seeMoreFactoryHref)}
             variant='mobile'
           />
         )}

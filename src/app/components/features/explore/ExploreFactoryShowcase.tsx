@@ -9,6 +9,8 @@ type Props = {
   factories: FactoryItem[];
   onFactoryClick: (id: string) => void;
   onSeeAll?: () => void;
+  title?: string;
+  subtitle?: string;
 
   variant?: 'mobile' | 'desktop';
 };
@@ -17,6 +19,8 @@ export function ExploreFactoryShowcase({
   factories,
   onFactoryClick,
   onSeeAll,
+  title = 'โรงงานแนะนำ',
+  subtitle = 'โรงงานที่ผ่านการยืนยัน พร้อมรับผลิตสินค้าคุณภาพสูง',
   variant = 'mobile',
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -99,10 +103,10 @@ export function ExploreFactoryShowcase({
     >
       <div className='flex items-end justify-between mb-3 px-1'>
         <div>
-          <h2 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>โรงงานแนะนำ</h2>
-          <p className='text-[11px] lg:text-xs text-gray-500 mt-0.5'>
-            โรงงานที่ผ่านการยืนยัน พร้อมรับผลิตสินค้าคุณภาพสูง
-          </p>
+          <h2 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
+            {title}
+          </h2>
+          <p className='text-[11px] lg:text-xs text-gray-500 mt-0.5'>{subtitle}</p>
         </div>
         {onSeeAll ? (
           <Button
