@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Sparkles } from 'lucide-react';
 import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import { HubScopeTabs } from '@/components/features/hub/HubScopeTabs';
@@ -47,7 +46,7 @@ export function FactoryIdeasHubPage() {
   const isLoading = hubsQ.isLoading;
 
   return (
-    <div className='relative isolate flex min-h-[100dvh] flex-col overflow-hidden bg-[#F8F4FF] pb-24 lg:pb-8'>
+    <div className='relative isolate flex min-h-[100dvh] flex-col overflow-hidden bg-[#FBF8FF] pb-24 lg:pb-8'>
       <HubPageContentBackdrop className='fixed inset-0' />
       <div className='relative z-10 shrink-0 border-b border-gray-100 bg-white'>
         <header className='px-4 pb-2.5 pt-4 lg:px-8 2xl:px-10'>
@@ -62,8 +61,6 @@ export function FactoryIdeasHubPage() {
               เลือกประเภท แล้วแตะหมวดที่สนใจเพื่อดูโรงงานที่ตรงกับธุรกิจของคุณ
             </p>
           </div>
-
-           
         </header>
 
         <HubScopeTabs
