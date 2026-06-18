@@ -18,7 +18,7 @@ export function HubScopeTabs({
     <div
       className={cn(
         'border-b border-gray-200 bg-white',
-        sticky && 'sticky top-0 z-20',
+        sticky && 'sticky top-14 z-20 lg:top-0',
         className,
       )}
     >

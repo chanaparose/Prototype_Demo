@@ -11,8 +11,7 @@ export function HubCategoryCard({
   onClick: () => void;
 }) {
   const subText = (cat.sub_preview ?? []).slice(0, 2).join(' · ');
-  const factoryLabel =
-    cat.factory_count > 0 ? `${cat.factory_count} โรงงาน` : 'ดูรายการในหมวดนี้';
+  const factoryLabel = cat.factory_count > 0 ? `${cat.factory_count} โรงงาน` : 'ดูรายการในหมวดนี้';
 
   return (
     <button
@@ -20,7 +19,7 @@ export function HubCategoryCard({
       onClick={onClick}
       className={cn(
         hubRowCardClass,
-        'group border border-brand-purple/15 bg-gradient-to-br from-[var(--brand-lavender-chip)] via-[var(--brand-panel-soft)] to-white shadow-[0_2px_8px_rgba(46,34,82,0.07)] transition-all hover:-translate-y-0.5 hover:border-brand-purple/35 hover:shadow-[0_4px_14px_rgba(122,75,148,0.18)] active:scale-[0.98]',
+        'group border border-white/70 bg-white/[0.68] shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_10px_26px_rgba(46,34,82,0.10)] backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-brand-purple/30 hover:bg-white/[0.86] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_14px_30px_rgba(122,75,148,0.16)] active:scale-[0.98]',
       )}
     >
       <span className='line-clamp-2 text-[11px] font-bold leading-snug text-[var(--brand-navy)] group-hover:text-brand-purple'>
@@ -60,7 +59,7 @@ export function HubSeeAllCard({
       onClick={onClick}
       className={cn(
         hubRowCardClass,
-        'border border-dashed border-brand-purple/35 bg-gradient-to-br from-white to-[var(--brand-lavender-chip)] shadow-[0_2px_8px_rgba(46,34,82,0.06)] transition-all hover:border-brand-purple/50 hover:shadow-[0_4px_14px_rgba(122,75,148,0.14)] active:scale-[0.98]',
+        'border border-dashed border-brand-purple/30 bg-white/[0.62] shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_10px_26px_rgba(46,34,82,0.09)] backdrop-blur-md transition-all hover:border-brand-purple/45 hover:bg-white/[0.84] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_14px_30px_rgba(122,75,148,0.14)] active:scale-[0.98]',
       )}
     >
       <span className='mb-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-purple/12 text-brand-purple'>

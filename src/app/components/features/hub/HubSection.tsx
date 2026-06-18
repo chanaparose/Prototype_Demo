@@ -23,7 +23,7 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
   return (
     <section
       className={cn(
-        'overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm',
+        'overflow-hidden rounded-[1.35rem] border border-white/70 bg-white/[0.78] shadow-[0_18px_55px_rgba(46,34,82,0.12)] backdrop-blur-xl ring-1 ring-brand-purple/[0.05]',
         className,
       )}
     >
@@ -45,7 +45,7 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
         </Button>
       </div>
 
-      <div className='flex flex-nowrap items-stretch gap-2.5 overflow-x-auto bg-[var(--brand-page)]/50 px-3.5 py-3.5 scrollbar-hide lg:gap-3 lg:overflow-hidden'>
+      <div className='flex flex-nowrap items-stretch gap-2.5 overflow-x-auto border-t border-white/60 bg-white/[0.24] px-3.5 py-3.5 scrollbar-hide lg:gap-3 lg:overflow-hidden'>
         {visible.map((cat) => (
           <HubCategoryCard
             key={cat.category_id}
