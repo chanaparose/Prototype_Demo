@@ -3,7 +3,11 @@ import { cn } from '@lib/utils';
 import type { IHubResponse } from '@/services/api/types/master.types';
 import { Button } from '@/components/ui/button';
 import { HubCategoryCard, HubSeeAllCard } from '@/components/features/hub/HubCategoryCard';
-import { getHubRowVisibleCount } from '@/components/features/hub/hubRowShared';
+import {
+  getHubRowVisibleCount,
+  hubSectionDividerClass,
+  hubSectionShellClass,
+} from '@/components/features/hub/hubRowShared';
 import { useIsLgUp } from '@/components/features/hub/useIsLgUp';
 
 type HubSectionProps = {
@@ -21,12 +25,7 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
   const hiddenCount = hidden.length;
 
   return (
-    <section
-      className={cn(
-        'overflow-hidden rounded-[1.35rem] border border-white/70 bg-white/[0.78] shadow-[0_18px_55px_rgba(46,34,82,0.12)] backdrop-blur-xl ring-1 ring-brand-purple/[0.05]',
-        className,
-      )}
-    >
+    <section className={cn(hubSectionShellClass, className)}>
       <div className='flex items-center justify-between gap-3 px-3.5 pb-2.5 pt-3.5'>
         <div className='min-w-0'>
           <h2 className='truncate text-[13px] font-bold text-[var(--brand-navy)]'>{hub.name}</h2>
@@ -45,7 +44,12 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
         </Button>
       </div>
 
-      <div className='flex flex-nowrap items-stretch gap-2.5 overflow-x-auto border-t border-white/60 bg-white/[0.24] px-3.5 py-3.5 scrollbar-hide lg:gap-3 lg:overflow-hidden'>
+      <div
+        className={cn(
+          'flex flex-nowrap items-stretch gap-2.5 overflow-x-auto px-3.5 py-3.5 scrollbar-hide lg:gap-3 lg:overflow-hidden',
+          hubSectionDividerClass,
+        )}
+      >
         {visible.map((cat) => (
           <HubCategoryCard
             key={cat.category_id}

@@ -1,20 +1,25 @@
 import { cn } from '@lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DESKTOP_ROW_SLOTS, hubRowCardClass } from '@/components/features/hub/hubRowShared';
+import {
+  DESKTOP_ROW_SLOTS,
+  hubRowCardClass,
+  hubSectionDividerClass,
+  hubSectionShellClass,
+} from '@/components/features/hub/hubRowShared';
 
 export function HubSectionSkeleton({ className }: { className?: string }) {
   return (
-    <div
-      className={cn(
-        'overflow-hidden rounded-2xl border border-gray-100 bg-white p-3.5 shadow-sm',
-        className,
-      )}
-    >
-      <div className='mb-3 flex items-center justify-between'>
-        <Skeleton className='h-4 w-28' />
-        <Skeleton className='h-6 w-16 rounded-full' />
+    <div className={cn(hubSectionShellClass, className)}>
+      <div className='flex items-center justify-between px-3.5 pb-2.5 pt-3.5'>
+        <Skeleton className='h-4 w-28 bg-white/40' />
+        <Skeleton className='h-6 w-16 rounded-full bg-white/40' />
       </div>
-      <div className='flex flex-nowrap items-stretch gap-2.5 overflow-hidden bg-[var(--brand-page)]/50 p-3.5 lg:gap-3'>
+      <div
+        className={cn(
+          'flex flex-nowrap items-stretch gap-2.5 overflow-hidden px-3.5 py-3.5 lg:gap-3',
+          hubSectionDividerClass,
+        )}
+      >
         {Array.from({ length: DESKTOP_ROW_SLOTS }).map((_, i) => (
           <div
             key={i}

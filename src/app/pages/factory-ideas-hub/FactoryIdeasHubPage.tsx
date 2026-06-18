@@ -51,34 +51,11 @@ export function FactoryIdeasHubPage() {
       <HubPageContentBackdrop className='fixed inset-0' />
       <div className='relative z-10 shrink-0 bg-white/[0.92] shadow-[0_1px_0_rgba(46,34,82,0.06)] backdrop-blur-xl'>
         <header className='px-4 pb-3 pt-4 lg:px-8 2xl:px-10'>
-          <div className='mb-2.5'>
             <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
               Discover
             </p>
             <h1 className={APP_PAGE_TITLE_CLASS}>หมวดหมู่โรงงาน</h1>
-          </div>
-
-          <div className='relative overflow-hidden rounded-xl bg-[linear-gradient(135deg,var(--brand-navy-deep)_0%,#4A267D_100%)] px-3 py-2.5 text-white shadow-md'>
-            <div className='pointer-events-none absolute -right-5 -top-5 h-24 w-24 rounded-full bg-[var(--brand-orange-hot)] opacity-35 blur-xl mix-blend-screen' />
-            <div className='pointer-events-none absolute right-0 top-0 h-16 w-16 translate-x-5 skew-x-[-15deg] rounded-full bg-[var(--brand-purple)] opacity-50' />
-            <div className='pointer-events-none absolute -bottom-2 -left-2 h-14 w-14 rounded-full bg-[var(--brand-purple)] opacity-25 blur-lg mix-blend-screen' />
-            <div className='relative z-10 flex items-center gap-2.5'>
-              <div className='flex shrink-0 items-center justify-center rounded-full border border-[rgba(162,56,255,0.50)] bg-[rgba(162,56,255,0.30)] p-1.5'>
-                <Sparkles size={16} className='text-white' />
-              </div>
-              <p className='flex-1 text-[11px] font-medium leading-snug text-[#EBD3FF]'>
-                เลือกหมวดเพื่อดูโรงงานและสินค้าที่ตรงกับธุรกิจของคุณ
-              </p>
-            </div>
-          </div>
-
-          <p className='mt-2.5 text-[11px] leading-relaxed text-gray-500'>
-            <span className='font-semibold text-brand-purple'>①</span> เลือกประเภทด้านล่าง{' '}
-            <span className='text-gray-300' aria-hidden>
-              ·
-            </span>{' '}
-            <span className='font-semibold text-brand-purple'>②</span> แตะหมวดที่สนใจ
-          </p>
+ 
         </header>
 
         <HubScopeTabs
