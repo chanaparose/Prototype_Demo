@@ -10,13 +10,19 @@ import {
 export function HubSectionSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn(hubSectionShellClass, className)}>
-      <div className='flex items-center justify-between px-3.5 pb-2.5 pt-3.5'>
-        <Skeleton className='h-4 w-28 bg-white/40' />
-        <Skeleton className='h-6 w-16 rounded-full bg-white/40' />
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-2.5'>
+          <Skeleton className='h-8 w-1 rounded-full bg-white/55' />
+          <div className='space-y-1.5'>
+            <Skeleton className='h-4 w-28 bg-white/55' />
+            <Skeleton className='h-2.5 w-16 bg-white/45' />
+          </div>
+        </div>
+        <Skeleton className='h-7 w-16 rounded-full bg-white/50' />
       </div>
       <div
         className={cn(
-          'flex flex-nowrap items-stretch gap-2.5 overflow-hidden px-3.5 py-3.5 lg:gap-3',
+          'flex flex-nowrap items-stretch gap-2.5 overflow-hidden pb-2 lg:gap-3',
           hubSectionDividerClass,
         )}
       >
@@ -25,7 +31,7 @@ export function HubSectionSkeleton({ className }: { className?: string }) {
             key={i}
             className={cn(
               hubRowCardClass,
-              'space-y-2 border border-brand-purple/10 bg-[var(--brand-lavender-chip)]',
+              'space-y-2 border border-white/70 bg-white/55 shadow-[0_8px_24px_rgba(46,34,82,0.04)]',
             )}
           >
             <Skeleton className='h-3 w-full bg-brand-purple/10' />

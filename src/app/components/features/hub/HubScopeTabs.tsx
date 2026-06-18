@@ -22,7 +22,7 @@ export function HubScopeTabs({
         className,
       )}
     >
-      <div className='flex overflow-x-auto scrollbar-hide'>
+      <div className='flex overflow-x-auto px-4 scrollbar-hide lg:px-8 2xl:px-10'>
         {(['PD', 'MT'] as const).map((scope) => {
           const label = HUB_SCOPE_LABELS[scope] ?? scope;
           const isActive = activeScope === scope;
@@ -35,7 +35,7 @@ export function HubScopeTabs({
             >
               <span
                 className={cn(
-                  'text-[14px] leading-none whitespace-nowrap',
+                  'text-[14px] leading-none whitespace-nowrap transition-colors',
                   isActive ? 'font-bold text-[var(--brand-navy)]' : 'font-medium text-gray-400',
                 )}
               >

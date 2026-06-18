@@ -19,16 +19,14 @@ export function HubCategoryCard({
       onClick={onClick}
       className={cn(
         hubRowCardClass,
-        'group border border-white/70 bg-white/[0.68] shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_10px_26px_rgba(46,34,82,0.10)] backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-brand-purple/30 hover:bg-white/[0.86] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_14px_30px_rgba(122,75,148,0.16)] active:scale-[0.98]',
+        'group border border-white/80 bg-white/78 shadow-[0_8px_24px_rgba(46,34,82,0.06)] backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-brand-purple/25 hover:bg-white hover:shadow-[0_12px_28px_rgba(122,75,148,0.12)] active:scale-[0.98]',
       )}
     >
-      <span className='line-clamp-2 text-[11px] font-bold leading-snug text-[var(--brand-navy)] group-hover:text-brand-purple'>
+      <span className='line-clamp-2 text-[11px] font-bold leading-snug text-[var(--brand-navy)] group-hover:text-brand-purple lg:text-[12px]'>
         {cat.name}
       </span>
       {subText ? (
-        <span className='mt-1 line-clamp-2 text-[9px] leading-tight text-[var(--brand-muted-purple)]'>
-          {subText}
-        </span>
+        <span className='mt-1 line-clamp-2 text-[9px] leading-tight text-slate-500'>{subText}</span>
       ) : null}
       <span
         className={cn(
@@ -59,7 +57,7 @@ export function HubSeeAllCard({
       onClick={onClick}
       className={cn(
         hubRowCardClass,
-        'border border-dashed border-brand-purple/30 bg-white/[0.62] shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_10px_26px_rgba(46,34,82,0.09)] backdrop-blur-md transition-all hover:border-brand-purple/45 hover:bg-white/[0.84] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_14px_30px_rgba(122,75,148,0.14)] active:scale-[0.98]',
+        'border border-dashed border-brand-purple/25 bg-white/70 shadow-[0_8px_24px_rgba(46,34,82,0.05)] backdrop-blur-md transition-all hover:border-brand-purple/45 hover:bg-white hover:shadow-[0_12px_28px_rgba(122,75,148,0.12)] active:scale-[0.98]',
       )}
     >
       <span className='mb-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-purple/12 text-brand-purple'>
