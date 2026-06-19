@@ -132,6 +132,9 @@ export const adminCommissionApi = {
   send: (invoiceId: number) =>
     httpClient.post<ICommissionInvoiceResponse>(`/admin/invoices/${invoiceId}/send`, {}),
 
+  resend: (invoiceId: number) =>
+    httpClient.post<ICommissionInvoiceResponse>(`/admin/invoices/${invoiceId}/resend`, {}),
+
   verify: (invoiceId: number, action: 'approve' | 'reject') =>
     httpClient.patch<ICommissionInvoiceResponse>(`/admin/invoices/${invoiceId}/verify`, { action }),
 
