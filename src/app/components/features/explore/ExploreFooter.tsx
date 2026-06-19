@@ -67,21 +67,18 @@ export function ExploreFooter() {
     setOpen((prev) => (prev === key ? null : key));
 
   return (
-    <footer className='mt-8 w-full flex-shrink-0 border-t border-gray-100 bg-[var(--brand-page)] pt-5 md:mt-12 md:border-gray-200 md:bg-neutral-footer md:pt-10'>
+    <footer className='mt-5 w-full flex-shrink-0 border-t border-gray-100 bg-[var(--brand-page)] pt-3 md:mt-12 md:border-gray-200 md:bg-neutral-footer md:pt-10'>
       <div className='mx-auto max-w-[1600px] px-4 md:px-6'>
         {/* ── Mobile header strip ── */}
-        <div className='mb-4 md:hidden'>
+        <div className='mb-2.5 md:hidden'>
           <p className='text-[10px] font-semibold uppercase tracking-wider text-brand-orange-deep'>
             Tryly
           </p>
-          <h2 className='text-[15px] font-bold text-brand-navy-deep'>ช่วยเหลือ & ลิงก์ด่วน</h2>
-          <p className='mt-1 text-[11px] text-slate-500'>
-            ข้อมูลสำหรับลูกค้าและพาร์ทเนอร์โรงงาน
-          </p>
+          <h2 className='text-[14px] font-bold text-brand-navy-deep'>ช่วยเหลือ & ลิงก์ด่วน</h2>
         </div>
 
         {/* ── Mobile accordions ── */}
-        <div className='mb-5 space-y-2 md:hidden'>
+        <div className='mb-3 space-y-1.5 md:hidden'>
           <AccordionItem
             title='ศูนย์ดูแลลูกค้า'
             open={open === 'support'}
@@ -129,10 +126,12 @@ export function ExploreFooter() {
         </div>
 
         {/* ── Trust & social ── */}
-        <div className='rounded-2xl border border-white/80 bg-white p-4 shadow-[0_4px_20px_rgba(46,34,82,0.04)] md:rounded-none md:border-0 md:border-t md:border-gray-300 md:bg-transparent md:p-0 md:py-6 md:shadow-none'>
-          <div className='grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-6'>
+        <div className='rounded-xl border border-white/80 bg-white p-3 shadow-[0_4px_20px_rgba(46,34,82,0.04)] md:rounded-none md:border-0 md:border-t md:border-gray-300 md:bg-transparent md:p-0 md:py-6 md:shadow-none'>
+          <div className='grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-6'>
             <div>
-              <h4 className='mb-3 text-xs font-bold text-brand-navy-deep md:text-sm'>ติดตามเรา</h4>
+              <h4 className='mb-2 text-[11px] font-bold text-brand-navy-deep md:mb-3 md:text-sm'>
+                ติดตามเรา
+              </h4>
               <div className='flex flex-wrap items-center gap-2.5'>
                 <SocialChip href='#' label='Facebook' className='bg-[#1877F2]'>
                   <Facebook size={18} />
@@ -149,7 +148,7 @@ export function ExploreFooter() {
               </div>
             </div>
 
-            <div>
+            <div className='max-md:hidden'>
               <h4 className='mb-3 text-xs font-bold text-brand-navy-deep md:text-sm'>การจัดส่ง</h4>
               <div className='flex flex-wrap items-center gap-2'>
                 <TrustChip>KERRY</TrustChip>
@@ -158,7 +157,7 @@ export function ExploreFooter() {
               </div>
             </div>
 
-            <div>
+            <div className='max-md:hidden'>
               <h4 className='mb-3 text-xs font-bold text-brand-navy-deep md:text-sm'>
                 ช่องทางการชำระเงิน
               </h4>
@@ -173,12 +172,12 @@ export function ExploreFooter() {
       </div>
 
       {/* ── Copyright bar — extends to screen bottom on mobile (nav floats over) ── */}
-      <div className='mt-4 bg-brand-navy-ink text-white max-md:pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:mt-3'>
-        <div className='mx-auto flex max-w-[1600px] flex-col items-center justify-between gap-3 px-4 py-3 text-[10px] md:flex-row md:gap-3 md:px-6 md:py-3 md:text-xs'>
+      <div className='mt-3 bg-brand-navy-ink text-white max-md:pb-[calc(3.75rem+env(safe-area-inset-bottom,0px))] md:mt-3'>
+        <div className='mx-auto flex max-w-[1600px] flex-col items-center justify-between gap-2 px-4 py-2.5 text-[9px] md:flex-row md:gap-3 md:px-6 md:py-3 md:text-xs'>
           <div className='text-center md:text-left'>
             &copy; 2026 Tryly Shopping. By Digital Media Advertising Co., Ltd.
           </div>
-          <div className='flex flex-wrap items-center justify-center gap-3 md:gap-6'>
+          <div className='hidden flex-wrap items-center justify-center gap-3 md:flex md:gap-6'>
             {LEGAL_LINKS.map((link) => (
               <a key={link.label} href={link.href} className='hover:underline'>
                 {link.label}
@@ -265,12 +264,12 @@ function AccordionItem({
   children: React.ReactNode;
 }) {
   return (
-    <div className='overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_2px_12px_rgba(46,34,82,0.04)]'>
+    <div className='overflow-hidden rounded-xl border border-gray-100 bg-white shadow-[0_2px_10px_rgba(46,34,82,0.035)]'>
       <Button
         variant='unstyled'
         type='button'
         onClick={onToggle}
-        className='flex w-full items-center justify-between gap-2 px-3.5 py-3 text-left text-[13px] font-semibold text-brand-navy-deep'
+        className='flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[12px] font-semibold text-brand-navy-deep'
         aria-expanded={open}
       >
         <span>{title}</span>
@@ -280,9 +279,7 @@ function AccordionItem({
           aria-hidden
         />
       </Button>
-      {open ? (
-        <div className='border-t border-gray-100 px-3.5 pb-3 pt-2'>{children}</div>
-      ) : null}
+      {open ? <div className='border-t border-gray-100 px-3 pb-2.5 pt-2'>{children}</div> : null}
     </div>
   );
 }
@@ -302,7 +299,7 @@ function SocialChip({
     <a
       href={href}
       title={label}
-      className={`flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-sm transition-transform active:scale-95 md:h-11 md:w-11 md:rounded-full md:hover:shadow-md ${className}`}
+      className={`flex h-8 w-8 items-center justify-center rounded-lg text-white shadow-sm transition-transform active:scale-95 md:h-11 md:w-11 md:rounded-full md:hover:shadow-md ${className}`}
     >
       {children}
     </a>
