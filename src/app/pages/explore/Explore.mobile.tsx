@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ShoppingBag, ChevronRight, Leaf, MapPin, Star, Sparkles } from 'lucide-react';
+import { ShoppingBag, ChevronRight, Leaf, MapPin, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExplorePromoCarousel } from '@/components/features/explore/ExplorePromoCarousel';
 import { ExploreHubPreview } from '@/components/features/explore/ExploreHubPreview';
@@ -13,10 +13,13 @@ import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
-import { Image } from '@/components/ui/image';
+import { ExploreFactoryRegisterCta } from '@/components/features/explore/ExploreFactoryRegisterCta';
 import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
-import { ProductCardSkeleton, FactoryCarouselCardSkeleton } from '@/components/skeletons/PageSkeletons';
+import {
+  ProductCardSkeleton,
+  FactoryCarouselCardSkeleton,
+} from '@/components/skeletons/PageSkeletons';
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
 
 type ExploreMobileProps = {
@@ -76,7 +79,7 @@ export function ExploreMobile({
   const hasMaterialShowcases = materialShowcases.length > 0;
 
   return (
-    <div className='md:hidden pt-4 space-y-3'>
+    <div className='md:hidden pt-4 space-y-5'>
       <div className='mx-4 relative rounded-2xl overflow-hidden h-[115px] shadow-md'>
         <ImageWithFallback
           src='/assets/tryly-banner-final.png'
@@ -85,12 +88,10 @@ export function ExploreMobile({
         />
       </div>
 
-       
-
       <ExplorePromoCarousel promoSlides={promoSlides} promoCodes={explorePromoCodes} />
 
       <ExploreHubPreview
-        className='mt-[20px]'
+        className='mt-6'
         activeScope={activeScope}
         onScopeChange={setActiveScope}
         hubs={hubs}
@@ -101,245 +102,249 @@ export function ExploreMobile({
       />
 
       {activeScope === 'PD' ? (
-      <div data-tour='products' className='mb-3'>
-        <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
-          <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
-            <ShoppingBag size={15} className='text-brand-orange' /> {showcaseTitle}
-          </h3>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => navigate(seeMoreShowcaseHref)}
-            className='text-brand-orange text-[12px] font-medium flex items-center gap-0.5'
-          >
-            ดูเพิ่มเติม <ChevronRight size={13} />
-          </Button>
-        </div>
-
-        {isLoading ? (
-          <div
-            className='flex gap-2 overflow-x-auto pb-2 pl-3'
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {[...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)}
-            <div className='flex-shrink-0 w-3' aria-hidden />
+        <div data-tour='products' className='mb-5'>
+          <div className='mt-7 flex items-center justify-between px-4 mb-2.5'>
+            <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
+              <ShoppingBag size={15} className='text-brand-orange' /> {showcaseTitle}
+            </h3>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => navigate(seeMoreShowcaseHref)}
+              className='text-brand-orange text-[12px] font-medium flex items-center gap-0.5'
+            >
+              ดูเพิ่มเติม <ChevronRight size={13} />
+            </Button>
           </div>
-        ) : hasProductShowcases ? (
-          <div
-            className='flex gap-2 overflow-x-auto pb-2 pl-3'
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {productShowcases.map((item) => (
-              <div
-                key={item.id}
-                role='button'
-                tabIndex={0}
-                onClick={() =>
-                  navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
-                }
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
-                  }
-                }}
-                className='flex-shrink-0 w-[155px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'
-              >
-                <div className='aspect-[4/3] relative overflow-hidden bg-gray-100'>
-                  <ImageWithFallback
-                    src={item.image}
-                    alt={item.title}
-                    className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                  />
-                  <div className='absolute top-1 left-2 bg-brand-orange px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
-                    สินค้า
-                  </div>
-                  <ShowcaseHeartButton
-                    showcaseId={item.id}
-                    isLiked={isLiked(item.id)}
-                    onToggle={toggleFavorite}
-                    className='absolute top-1 right-1'
-                  />
-                </div>
-                <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                  <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                    {item.title}
-                  </p>
-                  <div className='flex items-center gap-0.5 mt-0.5'>
-                    <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                    <span className='text-gray-500 text-[10px] truncate'>
-                      {(item.location ?? '').trim() || '—'}
-                    </span>
-                  </div>
-                  <div className='mt-auto pt-1 border-t border-gray-50'>
-                    <div className='flex items-center justify-between min-w-0'>
-                      <div className='flex items-center gap-0.5 min-w-0'>
-                        <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                        <span className='text-gray-700 text-[10px] font-semibold'>
-                          {item.factoryRating ?? 0}
-                        </span>
-                      </div>
-                      <span className='text-gray-400 text-[9px] shrink-0'>
-                        ขั้นต่ำ {item.minOrder ?? 0}{' '}
-                        {resolveUnitLabel(item.unitId, item.moqUnit)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
 
-            <div className='flex-shrink-0 w-3' aria-hidden />
-          </div>
-        ) : (
-          <div className='px-4'>
-            <div className='rounded-xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-5 text-center'>
-              <p className='text-sm font-medium text-gray-600'>
-                {isHubScoped
-                  ? `ยังไม่มีสินค้าแนะนำในหมวด ${selectedHub?.name ?? ''}`
-                  : 'ยังไม่มีสินค้าแนะนำในขณะนี้'}
-              </p>
-              <p className='mt-1 text-xs text-gray-400'>
-                {isHubScoped
-                  ? 'ลองดูสินค้าทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง'
-                  : 'ดูไอเดียสินค้าและโรงงานได้จากปุ่มด้านล่าง'}
-              </p>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => navigate(seeMoreShowcaseHref)}
-                className='mt-3 w-full rounded-full border border-brand-magenta/40 bg-white py-2 text-sm font-medium text-brand-magenta hover:bg-brand-panel-hover transition-colors'
-              >
-                {isHubScoped ? `ดูสินค้าใน ${selectedHub?.name ?? 'หมวดนี้'}` : 'ดูสินค้าแนะนำ'}
-              </Button>
+          {isLoading ? (
+            <div
+              className='flex gap-2 overflow-x-auto pb-2 pl-3'
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {[...Array(4)].map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))}
+              <div className='flex-shrink-0 w-3' aria-hidden />
             </div>
-          </div>
-        )}
-      </div>
-      ) : null}
-
-      {activeScope === 'MT' ? (
-      <div className='mb-3'>
-        <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
-          <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
-            <Leaf size={15} className='text-status-success' /> {showcaseTitle}
-          </h3>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => navigate(seeMoreShowcaseHref)}
-            className='text-status-success text-[12px] font-medium flex items-center gap-0.5'
-          >
-            ดูเพิ่มเติม <ChevronRight size={13} />
-          </Button>
-        </div>
-
-        {isLoading ? (
-          <div
-            className='flex gap-2 overflow-x-auto pb-2 pl-3'
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {[...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)}
-            <div className='flex-shrink-0 w-3' aria-hidden />
-          </div>
-        ) : hasMaterialShowcases ? (
-          <div
-            className='flex gap-2 overflow-x-auto pb-2 pl-3'
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {materialShowcases.map((item) => (
-              <div
-                key={item.id}
-                role='button'
-                tabIndex={0}
-                onClick={() =>
-                  navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
-                }
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
+          ) : hasProductShowcases ? (
+            <div
+              className='flex gap-2 overflow-x-auto pb-2 pl-3'
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {productShowcases.map((item) => (
+                <div
+                  key={item.id}
+                  role='button'
+                  tabIndex={0}
+                  onClick={() =>
+                    navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
                   }
-                }}
-                className='flex-shrink-0 w-[155px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'
-              >
-                <div className='aspect-[4/3] relative overflow-hidden bg-gray-50'>
-                  <ImageWithFallback
-                    src={item.image}
-                    alt={item.title}
-                    className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                  />
-                  <div className='absolute top-1.5 left-1.5 bg-status-success px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide'>
-                    วัตถุดิบ
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
+                    }
+                  }}
+                  className='flex-shrink-0 w-[155px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'
+                >
+                  <div className='aspect-[4/3] relative overflow-hidden bg-gray-100'>
+                    <ImageWithFallback
+                      src={item.image}
+                      alt={item.title}
+                      className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
+                    />
+                    <div className='absolute top-1 left-2 bg-brand-orange px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
+                      สินค้า
+                    </div>
+                    <ShowcaseHeartButton
+                      showcaseId={item.id}
+                      isLiked={isLiked(item.id)}
+                      onToggle={toggleFavorite}
+                      className='absolute top-1 right-1'
+                    />
                   </div>
-                  <ShowcaseHeartButton
-                    showcaseId={item.id}
-                    isLiked={isLiked(item.id)}
-                    onToggle={toggleFavorite}
-                    className='absolute top-1 right-1'
-                  />
-                </div>
-                <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                  <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                    {item.title}
-                  </p>
-                  <div className='flex items-center gap-0.5 mt-0.5'>
-                    <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                    <span className='text-gray-500 text-[10px] truncate'>
-                      {(item.location ?? '').trim() || '—'}
-                    </span>
-                  </div>
-                  <div className='mt-auto pt-1 border-t border-gray-50'>
-                    <div className='flex items-center justify-between min-w-0'>
-                      <div className='flex items-center gap-0.5 min-w-0'>
-                        <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                        <span className='text-gray-700 text-[10px] font-semibold'>
-                          {item.factoryRating ?? 0}
+                  <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
+                    <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
+                      {item.title}
+                    </p>
+                    <div className='flex items-center gap-0.5 mt-0.5'>
+                      <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
+                      <span className='text-gray-500 text-[10px] truncate'>
+                        {(item.location ?? '').trim() || '—'}
+                      </span>
+                    </div>
+                    <div className='mt-auto pt-1 border-t border-gray-50'>
+                      <div className='flex items-center justify-between min-w-0'>
+                        <div className='flex items-center gap-0.5 min-w-0'>
+                          <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
+                          <span className='text-gray-700 text-[10px] font-semibold'>
+                            {item.factoryRating ?? 0}
+                          </span>
+                        </div>
+                        <span className='text-gray-400 text-[9px] shrink-0'>
+                          ขั้นต่ำ {item.minOrder ?? 0} {resolveUnitLabel(item.unitId, item.moqUnit)}
                         </span>
                       </div>
-                      <span className='text-gray-400 text-[9px] shrink-0'>
-                        ขั้นต่ำ {item.minOrder ?? 0}{' '}
-                        {resolveUnitLabel(item.unitId, item.moqUnit)}
-                      </span>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            <div className='flex-shrink-0 w-3' aria-hidden />
-          </div>
-        ) : (
-          <div className='px-4'>
-            <div className='rounded-xl border border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-white px-4 py-5 text-center'>
-              <p className='text-sm font-medium text-gray-600'>
-                {isHubScoped
-                  ? `ยังไม่มีวัตถุดิบแนะนำในหมวด ${selectedHub?.name ?? ''}`
-                  : 'ยังไม่มีวัตถุดิบแนะนำในขณะนี้'}
-              </p>
-              <p className='mt-1 text-xs text-gray-400'>
-                {isHubScoped ? 'ลองดูวัตถุดิบทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง' : 'จะมีวัตถุดิบเพิ่มเร็วๆนี้'}
-              </p>
-              {isHubScoped ? (
+              ))}
+
+              <div className='flex-shrink-0 w-3' aria-hidden />
+            </div>
+          ) : (
+            <div className='px-4'>
+              <div className='rounded-xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-5 text-center'>
+                <p className='text-sm font-medium text-gray-600'>
+                  {isHubScoped
+                    ? `ยังไม่มีสินค้าแนะนำในหมวด ${selectedHub?.name ?? ''}`
+                    : 'ยังไม่มีสินค้าแนะนำในขณะนี้'}
+                </p>
+                <p className='mt-1 text-xs text-gray-400'>
+                  {isHubScoped
+                    ? 'ลองดูสินค้าทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง'
+                    : 'ดูไอเดียสินค้าและโรงงานได้จากปุ่มด้านล่าง'}
+                </p>
                 <Button
                   variant='unstyled'
                   type='button'
                   onClick={() => navigate(seeMoreShowcaseHref)}
-                  className='mt-3 w-full rounded-full border border-emerald-300 bg-white py-2 text-sm font-medium text-status-success hover:bg-emerald-50 transition-colors'
+                  className='mt-3 w-full rounded-full border border-brand-magenta/40 bg-white py-2 text-sm font-medium text-brand-magenta hover:bg-brand-panel-hover transition-colors'
                 >
-                  {`ดูวัตถุดิบใน ${selectedHub?.name ?? 'หมวดนี้'}`}
+                  {isHubScoped ? `ดูสินค้าใน ${selectedHub?.name ?? 'หมวดนี้'}` : 'ดูสินค้าแนะนำ'}
                 </Button>
-              ) : null}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
       ) : null}
 
-      <HowToOrderSection className='mx-4 mt-5' variant='mobile' />
+      {activeScope === 'MT' ? (
+        <div className='mb-5'>
+          <div className='mt-7 flex items-center justify-between px-4 mb-2.5'>
+            <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
+              <Leaf size={15} className='text-status-success' /> {showcaseTitle}
+            </h3>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => navigate(seeMoreShowcaseHref)}
+              className='text-status-success text-[12px] font-medium flex items-center gap-0.5'
+            >
+              ดูเพิ่มเติม <ChevronRight size={13} />
+            </Button>
+          </div>
 
-      <div className='mt-[20px]'>
+          {isLoading ? (
+            <div
+              className='flex gap-2 overflow-x-auto pb-2 pl-3'
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {[...Array(4)].map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))}
+              <div className='flex-shrink-0 w-3' aria-hidden />
+            </div>
+          ) : hasMaterialShowcases ? (
+            <div
+              className='flex gap-2 overflow-x-auto pb-2 pl-3'
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {materialShowcases.map((item) => (
+                <div
+                  key={item.id}
+                  role='button'
+                  tabIndex={0}
+                  onClick={() =>
+                    navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
+                    }
+                  }}
+                  className='flex-shrink-0 w-[155px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'
+                >
+                  <div className='aspect-[4/3] relative overflow-hidden bg-gray-50'>
+                    <ImageWithFallback
+                      src={item.image}
+                      alt={item.title}
+                      className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
+                    />
+                    <div className='absolute top-1.5 left-1.5 bg-status-success px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide'>
+                      วัตถุดิบ
+                    </div>
+                    <ShowcaseHeartButton
+                      showcaseId={item.id}
+                      isLiked={isLiked(item.id)}
+                      onToggle={toggleFavorite}
+                      className='absolute top-1 right-1'
+                    />
+                  </div>
+                  <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
+                    <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
+                      {item.title}
+                    </p>
+                    <div className='flex items-center gap-0.5 mt-0.5'>
+                      <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
+                      <span className='text-gray-500 text-[10px] truncate'>
+                        {(item.location ?? '').trim() || '—'}
+                      </span>
+                    </div>
+                    <div className='mt-auto pt-1 border-t border-gray-50'>
+                      <div className='flex items-center justify-between min-w-0'>
+                        <div className='flex items-center gap-0.5 min-w-0'>
+                          <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
+                          <span className='text-gray-700 text-[10px] font-semibold'>
+                            {item.factoryRating ?? 0}
+                          </span>
+                        </div>
+                        <span className='text-gray-400 text-[9px] shrink-0'>
+                          ขั้นต่ำ {item.minOrder ?? 0} {resolveUnitLabel(item.unitId, item.moqUnit)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className='flex-shrink-0 w-3' aria-hidden />
+            </div>
+          ) : (
+            <div className='px-4'>
+              <div className='rounded-xl border border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-white px-4 py-5 text-center'>
+                <p className='text-sm font-medium text-gray-600'>
+                  {isHubScoped
+                    ? `ยังไม่มีวัตถุดิบแนะนำในหมวด ${selectedHub?.name ?? ''}`
+                    : 'ยังไม่มีวัตถุดิบแนะนำในขณะนี้'}
+                </p>
+                <p className='mt-1 text-xs text-gray-400'>
+                  {isHubScoped
+                    ? 'ลองดูวัตถุดิบทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง'
+                    : 'จะมีวัตถุดิบเพิ่มเร็วๆนี้'}
+                </p>
+                {isHubScoped ? (
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={() => navigate(seeMoreShowcaseHref)}
+                    className='mt-3 w-full rounded-full border border-emerald-300 bg-white py-2 text-sm font-medium text-status-success hover:bg-emerald-50 transition-colors'
+                  >
+                    {`ดูวัตถุดิบใน ${selectedHub?.name ?? 'หมวดนี้'}`}
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      <HowToOrderSection className='mx-4 mt-7' variant='mobile' />
+
+      <div className='mt-7'>
         {isLoading || factoriesLoading ? (
-          <section className='mx-4 mb-3 mt-3'>
+          <section className='mx-4 mb-5 mt-7'>
             <div className='flex items-end justify-between mb-3 px-1'>
               <div>
                 <div className='h-5 w-28 bg-gray-200 rounded animate-pulse mb-1' />
@@ -347,7 +352,9 @@ export function ExploreMobile({
               </div>
             </div>
             <div className='flex gap-3 overflow-x-hidden pb-2'>
-              {[...Array(2)].map((_, i) => <FactoryCarouselCardSkeleton key={i} variant='mobile' />)}
+              {[...Array(2)].map((_, i) => (
+                <FactoryCarouselCardSkeleton key={i} variant='mobile' />
+              ))}
             </div>
           </section>
         ) : hasHubFactories ? (
@@ -360,7 +367,7 @@ export function ExploreMobile({
             variant='mobile'
           />
         ) : isHubScoped ? (
-          <section className='mx-4 mb-3 mt-3'>
+          <section className='mx-4 mb-5 mt-7'>
             <div className='mb-2 px-1'>
               <h3 className='text-[14px] font-bold text-brand-navy-ink'>{factoryTitle}</h3>
               <p className='mt-0.5 text-[11px] text-gray-500'>{factorySubtitle}</p>
@@ -369,7 +376,9 @@ export function ExploreMobile({
               <p className='text-sm font-medium text-gray-600'>
                 ยังไม่มีโรงงานแนะนำในหมวด {selectedHub?.name ?? ''}
               </p>
-              <p className='mt-1 text-xs text-gray-400'>ลองดูโรงงานทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง</p>
+              <p className='mt-1 text-xs text-gray-400'>
+                ลองดูโรงงานทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง
+              </p>
               <Button
                 variant='unstyled'
                 type='button'
@@ -383,41 +392,7 @@ export function ExploreMobile({
         ) : null}
       </div>
 
-      <div className='px-4 mt-5'><div className='relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm border border-brand-purple/30'>
-        <Image
-          src='assets/IMG_7664.jpg'
-          alt=''
-          className='absolute inset-0 w-full h-full object-cover'
-        />
-
-        <div className='absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-slate-300/80 via-slate-200/30 to-transparent pointer-events-none' />
-
-        <div className='absolute inset-x-0 bottom-0 z-10 p-3.5'>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => navigate('/register?tab=ft')}
-            className='group relative w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg font-bold text-sm text-white whitespace-nowrap
-                       bg-gradient-to-r from-brand-purple via-brand-purple-hover to-brand-violet-deep
-                       shadow-lg shadow-brand-purple/40
-                       ring-1 ring-white/20
-                       transition-all duration-200 ease-out
-                       hover:shadow-xl hover:shadow-brand-purple/60 hover:brightness-110
-                       active:scale-[0.97]'
-          >
-            <Sparkles
-              size={14}
-              className='text-white/90 group-hover:rotate-12 transition-transform duration-200'
-            />
-            <span>สมัครเลย</span>
-            <ChevronRight
-              size={14}
-              className='text-white/90 group-hover:translate-x-1 transition-transform duration-200'
-            />
-          </Button>
-        </div>
-      </div>
-      </div>
+      <ExploreFactoryRegisterCta onRegister={() => navigate('/register?tab=ft')} />
 
       <ExploreFooter />
     </div>

@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight, Sparkles } from 'lucide-react';
-import { cn } from '@lib/utils';
+import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExploreFooter } from '@/components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '@/components/features/explore/HowToOrderSection';
@@ -13,11 +12,14 @@ import { useExploreHubSelection } from '@/components/features/explore/useExplore
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
-import { Image } from '@/components/ui/image';
+import { ExploreFactoryRegisterCta } from '@/components/features/explore/ExploreFactoryRegisterCta';
 import type { IExploreShowcase } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
-import { ProductCardSkeleton, FactoryCarouselCardSkeleton } from '@/components/skeletons/PageSkeletons';
+import {
+  ProductCardSkeleton,
+  FactoryCarouselCardSkeleton,
+} from '@/components/skeletons/PageSkeletons';
 
 type ExploreDesktopProps = {
   factories: FactoryItem[];
@@ -25,18 +27,6 @@ type ExploreDesktopProps = {
   exploreMatrials?: IExploreShowcase[];
   isLoading?: boolean;
 };
-
-const REGISTER_BUTTON_CLASS = cn(
-  'group relative shrink-0 inline-flex items-center gap-1.5 xl:gap-2',
-  'max-xl:px-4 max-xl:py-2 xl:px-7 xl:py-2.5 rounded-xl',
-  'text-white font-bold text-xs xl:text-sm whitespace-nowrap',
-  'bg-gradient-to-r from-brand-purple via-brand-purple-hover to-brand-violet-deep',
-  'shadow-lg shadow-brand-purple/40 ring-1 ring-white/20',
-  'transition-all duration-200 ease-out',
-  'hover:shadow-xl hover:shadow-brand-purple/60 hover:-translate-y-0.5 hover:brightness-110',
-  'active:translate-y-0 active:scale-[0.97]',
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-purple',
-);
 
 export function ExploreDesktop({
   factories,
@@ -118,7 +108,7 @@ export function ExploreDesktop({
 
   return (
     <div className='hidden md:block min-h-screen'>
-      <div className='px-4 md:px-6 lg:px-8 2xl:px-10 py-3 lg:py-4 space-y-6 pb-0 w-full mx-auto'>
+      <div className='px-4 md:px-6 lg:px-8 2xl:px-10 py-4 lg:py-5 space-y-8 pb-0 w-full mx-auto'>
         <section className='relative rounded-2xl overflow-hidden h-[180px] 2xl:h-[220px] shadow-lg'>
           <ImageWithFallback
             src='assets/tryly_banner_slim.png'
@@ -162,7 +152,7 @@ export function ExploreDesktop({
         />
 
         {activeScope === 'PD' ? (
-          <div data-tour='products'>
+          <div data-tour='products' className='pt-1'>
             {isLoading ? (
               <div className='mt-[30px]'>
                 <div className='h-5 w-32 bg-gray-200 rounded animate-pulse mb-3' />
@@ -191,7 +181,7 @@ export function ExploreDesktop({
 
         {activeScope === 'MT' ? (
           isLoading ? (
-            <div>
+            <div className='pt-1'>
               <div className='h-5 w-32 bg-gray-200 rounded animate-pulse mb-3' />
               <div className='flex gap-3 overflow-x-hidden'>
                 {[...Array(5)].map((_, i) => (
@@ -218,7 +208,7 @@ export function ExploreDesktop({
 
         <HowToOrderSection className='mx-0' variant='desktop' />
 
-        <div>
+        <div className='pt-1'>
           {isLoading || factoriesLoading ? (
             <section>
               <div className='flex items-end justify-between mb-3 px-1'>
@@ -252,7 +242,9 @@ export function ExploreDesktop({
                 <p className='text-sm font-medium text-gray-600'>
                   ยังไม่มีโรงงานแนะนำในหมวด {selectedHub?.name ?? ''}
                 </p>
-                <p className='mt-1 text-xs text-gray-400'>ลองดูโรงงานทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง</p>
+                <p className='mt-1 text-xs text-gray-400'>
+                  ลองดูโรงงานทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง
+                </p>
                 <Button
                   variant='unstyled'
                   type='button'
@@ -267,43 +259,10 @@ export function ExploreDesktop({
           ) : null}
         </div>
 
-        <section className='rounded-xl overflow-hidden border border-brand-purple/30 shadow-sm relative py-5 px-4 md:px-8'>
-          <Image
-            src='assets/tryly_banner_v9.png'
-            alt=''
-            className='hidden xl:block absolute inset-0 w-full h-full object-cover pointer-events-none'
-          />
-          <div className='hidden xl:block absolute inset-0 bg-gradient-to-l from-white/55 via-white/10 to-transparent pointer-events-none' />
-
-          <Image
-            src='assets/tryly_tablet_banner.png'
-            alt=''
-            className='xl:hidden relative z-0 w-full h-auto object-contain object-center pointer-events-none select-none'
-          />
-
-          <div className='z-10 flex justify-end items-center w-full xl:relative xl:mt-0 max-xl:absolute max-xl:w-auto max-xl:left-auto max-xl:right-4 max-xl:bottom-4 md:max-xl:right-8 md:max-xl:bottom-5'>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => navigate('/register?tab=ft')}
-              className={REGISTER_BUTTON_CLASS}
-            >
-              <Sparkles
-                size={14}
-                className='text-white/90 group-hover:rotate-12 transition-transform duration-200'
-              />
-              <span>สมัครเลย</span>
-              <ChevronRight
-                size={14}
-                className='text-white/90 group-hover:translate-x-1 transition-transform duration-200'
-              />
-              <span
-                aria-hidden
-                className='pointer-events-none absolute inset-0 rounded-xl bg-white/0 group-hover:bg-white/10 transition-colors'
-              />
-            </Button>
-          </div>
-        </section>
+        <ExploreFactoryRegisterCta
+          variant='desktop'
+          onRegister={() => navigate('/register?tab=ft')}
+        />
       </div>
 
       <div className='lg:px-8 2xl:px-10'>

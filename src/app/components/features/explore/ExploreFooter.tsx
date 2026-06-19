@@ -67,7 +67,7 @@ export function ExploreFooter() {
     setOpen((prev) => (prev === key ? null : key));
 
   return (
-    <footer className='mt-5 w-full flex-shrink-0 border-t border-gray-100 bg-[var(--brand-page)] pt-3 md:mt-12 md:border-gray-200 md:bg-neutral-footer md:pt-10'>
+    <footer className='mt-10 w-full flex-shrink-0 border-t border-gray-100 bg-[var(--brand-page)] pt-3 md:mt-12 md:border-gray-200 md:bg-neutral-footer md:pt-10'>
       <div className='mx-auto max-w-[1600px] px-4 md:px-6'>
         {/* ── Mobile header strip ── */}
         <div className='mb-2.5 md:hidden'>
