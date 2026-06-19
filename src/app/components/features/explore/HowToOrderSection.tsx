@@ -7,15 +7,11 @@ import {
   CheckCircle,
   ArrowRight,
   Sparkles,
-  Clapperboard,
-  Play,
   Rocket,
-  X,
   ChevronRight,
 } from 'lucide-react';
 import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
-import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import {
   HOW_TO_ORDER_MEDIA,
   type HowToOrderTabId,
@@ -130,8 +126,7 @@ const STEPS = [
   },
 ] as const;
 
-const TAB_ICONS: Record<HowToOrderTabId, typeof Play> = {
-  video: Clapperboard,
+const TAB_ICONS: Record<HowToOrderTabId, typeof Rocket> = {
   steps: FileText,
   start: Rocket,
 };
@@ -150,9 +145,7 @@ export function HowToOrderSection({
   const navigate = useNavigate();
   const media = HOW_TO_ORDER_MEDIA;
   const [activeTab, setActiveTab] = useState<HowToOrderTabId>(media.defaultTab);
-  const [playerOpen, setPlayerOpen] = useState(false);
   const isDesktop = variant === 'desktop';
-  const hasVideo = Boolean(media.video.videoUrl?.trim());
 
   if (!media.enabled) return null;
 
@@ -162,14 +155,6 @@ export function HowToOrderSection({
     document.head.appendChild(tag);
     styleInjected = true;
   }
-
-  const openVideo = () => {
-    if (hasVideo) {
-      setPlayerOpen(true);
-      return;
-    }
-    navigate('/create-rfq');
-  };
 
   const tourButtonStyle = {
     background: 'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-orange) 100%)',
@@ -315,79 +300,6 @@ export function HowToOrderSection({
               );
             })}
           </div>
-
-          {activeTab === 'video' ? (
-            <div
-              role='tabpanel'
-              className={cn(
-                'rounded-xl p-3 sm:p-4',
-                isDesktop && 'flex gap-4 items-stretch',
-              )}
-              style={{
-                background: 'var(--neutral-white)',
-                border: '1px solid rgba(124,58,237,0.18)',
-                boxShadow: '0 1px 8px rgba(0,0,0,0.04)',
-              }}
-            >
-              <button
-                type='button'
-                onClick={openVideo}
-                className={cn(
-                  'group relative overflow-hidden rounded-xl shrink-0',
-                  isDesktop ? 'w-[48%] aspect-video' : 'w-full aspect-[16/10] mb-3',
-                )}
-                style={{ border: '1px solid rgba(124,58,237,0.22)' }}
-              >
-                <ImageWithFallback
-                  src={media.video.thumbnailUrl}
-                  alt={media.video.title}
-                  className='absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]'
-                />
-                <div className='absolute inset-0 bg-gradient-to-t from-[var(--brand-navy-deep)]/80 via-[var(--brand-violet)]/20 to-transparent' />
-                <span
-                  className='absolute left-2.5 top-2.5 rounded-full px-2 py-0.5 text-[9px] font-bold text-white'
-                  style={{ background: 'rgba(124,58,237,0.85)' }}
-                >
-                  {media.video.durationLabel}
-                </span>
-                <span className='absolute inset-0 flex items-center justify-center'>
-                  <span
-                    className='flex h-12 w-12 items-center justify-center rounded-full text-white transition-transform group-hover:scale-110'
-                    style={{
-                      background: 'rgba(124,58,237,0.75)',
-                      border: '2px solid rgba(255,255,255,0.35)',
-                      boxShadow: '0 4px 20px rgba(124,58,237,0.45)',
-                    }}
-                  >
-                    <Play size={20} className='ml-0.5' fill='currentColor' />
-                  </span>
-                </span>
-                <div className='absolute inset-x-0 bottom-0 p-3 text-left'>
-                  <p className='text-[13px] font-bold text-white leading-snug'>
-                    {media.video.title}
-                  </p>
-                  <p className='mt-0.5 text-[10px] text-white/80'>{media.video.subtitle}</p>
-                </div>
-              </button>
-
-              <div className={cn(isDesktop && 'flex flex-1 flex-col justify-center min-w-0')}>
-                <p className='text-[12px] sm:text-[13px] leading-relaxed text-gray-600'>
-                  {media.video.subtitle}
-                  {isDesktop ? ' — ดูภาพรวมก่อนเริ่มส่งคำขอราคา' : null}
-                </p>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  onClick={openVideo}
-                  className='mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-[12px] font-bold transition-all active:scale-[0.98] hover:opacity-90 sm:w-auto sm:px-5'
-                  style={tourButtonStyle}
-                >
-                  {hasVideo ? 'ดูวิดีโอ' : 'ลองส่ง RFQ'}
-                  <ChevronRight size={14} />
-                </Button>
-              </div>
-            </div>
-          ) : null}
 
           {activeTab === 'steps' ? (
             <div role='tabpanel'>
@@ -560,33 +472,6 @@ export function HowToOrderSection({
         </div>
       </section>
 
-      {playerOpen && hasVideo ? (
-        <div
-          className='fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm'
-          role='dialog'
-          aria-modal
-          aria-label={media.video.title}
-        >
-          <div className='relative w-full max-w-3xl aspect-video rounded-2xl overflow-hidden bg-black shadow-2xl ring-1 ring-white/10'>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => setPlayerOpen(false)}
-              className='absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80'
-              aria-label='ปิดวิดีโอ'
-            >
-              <X size={18} />
-            </Button>
-            <iframe
-              src={media.video.videoUrl}
-              title={media.video.title}
-              className='h-full w-full'
-              allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-              allowFullScreen
-            />
-          </div>
-        </div>
-      ) : null}
     </>
   );
 }

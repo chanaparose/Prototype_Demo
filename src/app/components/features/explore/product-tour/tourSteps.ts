@@ -1,10 +1,22 @@
 import { TOUR_MESSAGES_CONV_ID } from '@/utils/tourMocks';
 import type { TourStepDef } from '@/components/features/explore/product-tour/tourTypes';
 
-/** Full 7-step tour (กดปุ่ม "สาธิตการใช้งาน") */
+/** Full 6-step tour (กดปุ่ม "สาธิตการใช้งาน") */
 export const TOUR_STEPS: TourStepDef[] = [
   {
-    route: '/factory-ideas',
+    route: '/factory-ideas-hub',
+    pageKey: 'factory-ideas-hub',
+    targetSelector: '[data-tour="hub-scope-tabs"], [role="tablist"]',
+    targetTexts: ['โรงงานรับผลิต', 'วัตถุดิบ', 'หมวดหมู่'],
+    spotlightRadius: 20,
+    spotlightPad: 8,
+    badgeColor: 'var(--brand-purple)',
+    icon: '🗂️',
+    title: 'เลือกหมวดที่ตรงกับธุรกิจคุณ',
+    desc: 'เริ่มต้นที่นี่ — เลือกว่าอยากทำสินค้าประเภทไหน แล้ว Tryly จะพาไปหาโรงงานที่ใช่',
+  },
+  {
+    route: '/factory-ideas?hub_scope=PD',
     pageKey: 'factory-ideas',
     mockScenario: 'browse',
     targetSelector: '[data-tour="tab-product"]',
@@ -13,21 +25,8 @@ export const TOUR_STEPS: TourStepDef[] = [
     spotlightPad: 6,
     badgeColor: 'var(--brand-purple)',
     icon: '🔍',
-    title: 'มีโรงงานเยอะมากเลย!',
-    desc: 'โรงงานไทยเยอะมาก พร้อมโชว์ผลงานจริง ดูก่อนเลือกได้เลย',
-  },
-  {
-    route: '/',
-    pageKey: 'explore',
-    targetSelector: '[data-tour="create-rfq-cta"], [data-tour="fab"]',
-    targetTexts: ['สร้างคำขอราคา'],
-    spotlightRadius: 12,
-    spotlightPad: 8,
-    cardPlacement: 'top',
-    badgeColor: 'var(--brand-orange)',
-    icon: '➕',
-    title: 'ให้โรงงานมาหาคุณเอง',
-    desc: 'ไม่ต้องเจรจาทีละเจ้าเลย โรงงานหลายแห่งจะส่งราคามาให้คุณเอง',
+    title: 'ดูโรงงานในหมวดที่เลือก',
+    desc: 'โรงงานแต่ละเจ้าโชว์ผลงานจริง ดูตัวอย่างสินค้า วัตถุดิบ และรีวิวก่อนตัดสินใจได้เลย',
   },
   {
     route: '/create-rfq',
@@ -39,8 +38,8 @@ export const TOUR_STEPS: TourStepDef[] = [
     spotlightPad: 10,
     badgeColor: 'var(--brand-orange)',
     icon: '📋',
-    title: 'บอกความต้องการไว้เลย',
-    desc: 'เราจะส่งความต้องการของคุณให้ทุกโรงงานในหมวด ไม่ต้องเสียเวลาหาเอง',
+    title: 'ส่งคำขอราคา (RFQ) ฟรี',
+    desc: 'RFQ = คำขอราคา — กรอกความต้องการครั้งเดียว Tryly จะส่งให้โรงงานหลายเจ้าพร้อมกัน ไม่ต้องเสียเวลาติดต่อทีละที่',
   },
   {
     route: '/product-detail?showcase_id=14',
@@ -51,20 +50,8 @@ export const TOUR_STEPS: TourStepDef[] = [
     cardPlacement: 'top',
     badgeColor: 'var(--brand-teal)',
     icon: '💬',
-    title: 'คุยตรงกับโรงงานเลย',
-    desc: 'ไม่ผ่านคนกลาง ปรับแบบ ต่อรองราคา คุยได้เลยตรงๆ',
-  },
-  {
-    route: `/messages/${TOUR_MESSAGES_CONV_ID}`,
-    pageKey: 'messages',
-    mockScenario: 'messages',
-    targetTexts: ['📎', 'แนบ RFQ', 'RFQ', 'พิมพ์ข้อความ'],
-    spotlightRadius: 10,
-    cardPlacement: 'top',
-    badgeColor: 'var(--status-info)',
-    icon: '📩',
-    title: 'ส่ง RFQ ในแชทได้เลย',
-    desc: 'แนบคำขอไปในแชท โรงงานจะส่งใบเสนอราคาอย่างเป็นทางการกลับมาให้',
+    title: 'โรงงานตอบแล้ว — คุยต่อได้เลย',
+    desc: 'โรงงานที่สนใจ RFQ ของคุณจะส่งใบเสนอราคากลับมา กดแชทเพื่อปรับแบบ ต่อรองราคา หรือขอตัวอย่างได้โดยตรง',
   },
   {
     route: '/rfqs/28',
@@ -77,8 +64,8 @@ export const TOUR_STEPS: TourStepDef[] = [
     spotlightPad: 8,
     badgeColor: 'var(--brand-violet)',
     icon: '⚖️',
-    title: 'เลือกข้อเสนอที่ดีสุด',
-    desc: 'ดูราคาและเงื่อนไขจากหลายโรงงานในที่เดียว เปรียบเทียบง่ายมาก',
+    title: 'เปรียบเทียบและเลือกข้อเสนอที่ดีสุด',
+    desc: 'ดูราคา เงื่อนไข และ MOQ จากหลายโรงงานในที่เดียว เลือกเจ้าที่ตรงใจแล้วกด "ยอมรับ" ได้เลย',
   },
   {
     route: '/orders/17',
@@ -91,8 +78,8 @@ export const TOUR_STEPS: TourStepDef[] = [
     cardPlacement: 'bottom',
     badgeColor: 'var(--status-success-bright)',
     icon: '✅',
-    title: 'สั่งงาน ติดตามได้เลย',
-    desc: 'ติดตามสถานะการผลิตได้ทุกขั้นตอน Tryly พร้อมเป็นคนกลางระหว่างคุณและโรงงาน',
+    title: 'ติดตามการผลิตได้ทุกขั้นตอน',
+    desc: 'Tryly อยู่ตรงกลางระหว่างคุณกับโรงงาน ติดตามสถานะ ตรวจสอบความคืบหน้า และรับสินค้าได้อย่างมั่นใจ',
   },
 ];
 
