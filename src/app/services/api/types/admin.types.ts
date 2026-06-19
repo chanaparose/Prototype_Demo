@@ -125,10 +125,15 @@ export interface IAdminOrderListResponse {
   rfq_title?: string;
   customer_name?: string;
   customer_email?: string;
+  factory_id?: number;
   factory_name?: string;
   factory_email?: string;
-  grand_total?: number;
+  total_amount?: string | number;
+  grand_total?: string | number;
+  platform_commission_amount?: string | number;
   status?: string;
+  slip_status?: string;
+  slip_url?: string;
   created_at?: string;
   [key: string]: unknown;
 }

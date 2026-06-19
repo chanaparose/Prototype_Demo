@@ -26,11 +26,10 @@ import {
   adminConfigApi,
   adminFactoryConfigApi,
   adminFactoryCertApi,
-  adminSettlementApi,
 } from '@/services/api/adminApi';
 import { mapFactoryApprovalStatus } from '@/domain/admin/mappers/mapAdminFactory';
 import type {
-  IAdminSettlementListItemResponse,
+  IAdminOrderListResponse,
   IFactoryConfigResponse,
   IPlatformConfigItemResponse,
 } from '@/services/api/types/admin.types';
@@ -486,7 +485,7 @@ export function AdminFactoryDetailPage() {
         {(
           [
             { key: 'info', label: 'ข้อมูลโรงงาน' },
-            { key: 'settlements', label: 'Settlement' },
+            { key: 'settlements', label: 'Orders' },
             { key: 'config', label: 'Config' },
           ] as const
         ).map((t) => (
@@ -506,9 +505,9 @@ export function AdminFactoryDetailPage() {
         ))}
       </div>
 
-      {/* ── Tab: Settlement ──────────────────────────────────────────────── */}
+      {/* ── Tab: Orders ──────────────────────────────────────────────────── */}
       {activeTab === 'settlements' && factory.factory_id ? (
-        <FactorySettlementsTab factoryId={factory.factory_id} />
+        <FactoryOrdersTab factoryId={factory.factory_id} />
       ) : null}
 
       {/* ── Tab: Config ──────────────────────────────────────────────────── */}
@@ -1190,40 +1189,49 @@ function InfoRow({
   );
 }
 
-const SETTLEMENT_STATUS: Record<string, { label: string; cls: string }> = {
-  PE: { label: 'รอโอน', cls: 'bg-amber-50 text-amber-700' },
-  PR: { label: 'กำลังประมวลผล', cls: 'bg-blue-50 text-blue-700' },
-  CP: { label: 'โอนแล้ว', cls: 'bg-emerald-50 text-emerald-700' },
-  FL: { label: 'ล้มเหลว', cls: 'bg-red-50 text-red-700' },
+const ORDER_SLIP_STATUS: Record<string, { label: string; cls: string }> = {
+  PE: { label: 'รอสลีป', cls: 'bg-slate-100 text-slate-600' },
+  ST: { label: 'รอตรวจสอบ', cls: 'bg-amber-50 text-amber-700' },
+  AP: { label: 'อนุมัติแล้ว', cls: 'bg-emerald-50 text-emerald-700' },
+  RJ: { label: 'ปฏิเสธ', cls: 'bg-red-50 text-red-700' },
 };
 
-const SETTLE_LIMIT = 20;
+const ORDER_STATUS: Record<string, { label: string; cls: string }> = {
+  PD: { label: 'รอดำเนินการ', cls: 'bg-slate-100 text-slate-600' },
+  CF: { label: 'ยืนยันแล้ว', cls: 'bg-blue-50 text-blue-700' },
+  PR: { label: 'กำลังผลิต', cls: 'bg-indigo-50 text-indigo-700' },
+  SH: { label: 'จัดส่งแล้ว', cls: 'bg-cyan-50 text-cyan-700' },
+  CP: { label: 'เสร็จสิ้น', cls: 'bg-emerald-50 text-emerald-700' },
+  CL: { label: 'ยกเลิก', cls: 'bg-red-50 text-red-700' },
+};
 
-function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
-  const [settlements, setSettlements] = useState<IAdminSettlementListItemResponse[]>([]);
+const ORDERS_LIMIT = 20;
+
+function FactoryOrdersTab({ factoryId }: { factoryId: number }) {
+  const [orders, setOrders] = useState<IAdminOrderListResponse[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [expandedSlip, setExpandedSlip] = useState<number | null>(null);
 
   useEffect(() => {
     if (!factoryId) return;
     setLoading(true);
-    adminSettlementApi
-      .listByFactory(factoryId, { limit: SETTLE_LIMIT, offset: page * SETTLE_LIMIT })
-      .then((res) => {
-        const data = res as unknown as {
-          settlements: IAdminSettlementListItemResponse[];
-          total: number;
-        };
-        setSettlements(data.settlements ?? []);
-        setTotal(data.total ?? 0);
+    adminApi
+      .listOrders({ factory_id: factoryId, page, page_size: ORDERS_LIMIT })
+      .then((res: unknown) => {
+        const r = res as { data?: IAdminOrderListResponse[]; orders?: IAdminOrderListResponse[]; pagination?: { total?: number }; total?: number };
+        const list = Array.isArray(res) ? (res as IAdminOrderListResponse[]) : (r.data ?? r.orders ?? []);
+        const tot = Array.isArray(res) ? (res as IAdminOrderListResponse[]).length : (r.pagination?.total ?? r.total ?? list.length);
+        setOrders(list);
+        setTotal(tot);
       })
-      .catch((e) => setError(e instanceof Error ? e.message : 'โหลด settlement ไม่สำเร็จ'))
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'โหลด orders ไม่สำเร็จ'))
       .finally(() => setLoading(false));
   }, [factoryId, page]);
 
-  const totalPages = Math.ceil(total / SETTLE_LIMIT);
+  const totalPages = Math.ceil(total / ORDERS_LIMIT);
 
   if (error) {
     return (
@@ -1241,73 +1249,97 @@ function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
           <Table className='w-full text-sm'>
             <TableHeader>
               <TableRow className='bg-slate-50 border-b border-slate-200'>
-                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
-                  Settlement ID
-                </TableHead>
-                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
-                  Order
-                </TableHead>
-                <TableHead className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>
-                  จำนวน
-                </TableHead>
-                <TableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
-                  สถานะ
-                </TableHead>
-                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
-                  วันที่
-                </TableHead>
+                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>Order</TableHead>
+                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>RFQ</TableHead>
+                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>ลูกค้า</TableHead>
+                <TableHead className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>ยอดรวม</TableHead>
+                <TableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>สถานะ</TableHead>
+                <TableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>สลีป</TableHead>
+                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>วันที่</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className='divide-y divide-slate-50'>
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 5 }).map((__, j) => (
+                    {Array.from({ length: 7 }).map((__, j) => (
                       <TableCell key={j} className='px-4 py-3'>
                         <div className='h-4 bg-slate-100 rounded animate-pulse' />
                       </TableCell>
                     ))}
                   </TableRow>
                 ))
-              ) : settlements.length === 0 ? (
+              ) : orders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className='px-4 py-10 text-center text-sm text-slate-400'>
-                    ยังไม่มี Settlement
+                  <TableCell colSpan={7} className='px-4 py-10 text-center text-sm text-slate-400'>
+                    ยังไม่มี Order
                   </TableCell>
                 </TableRow>
               ) : (
-                settlements.map((s) => {
-                  const st = SETTLEMENT_STATUS[s.status] ?? {
-                    label: s.status,
-                    cls: 'bg-slate-100 text-slate-500',
-                  };
+                orders.map((o) => {
+                  const slipStatus = o.slip_status ?? '';
+                  const slipSt = ORDER_SLIP_STATUS[slipStatus] ?? { label: slipStatus || '—', cls: 'bg-slate-100 text-slate-500' };
+                  const orderStatus = o.status ?? '';
+                  const ordSt = ORDER_STATUS[orderStatus] ?? { label: orderStatus || '—', cls: 'bg-slate-100 text-slate-500' };
+                  const grandTotal = pickScalarNumber(o.grand_total) ?? pickScalarNumber(o.total_amount) ?? 0;
+                  const slipUrl = o.slip_url;
+                  const isExpanded = expandedSlip === o.order_id;
                   return (
-                    <TableRow key={s.settlement_id}>
-                      <TableCell className='px-4 py-3 text-xs text-slate-400 font-mono'>
-                        #{s.settlement_id}
-                      </TableCell>
-                      <TableCell className='px-4 py-3'>
-                        <Link
-                          to={`/admin/orders/${s.order_id}`}
-                          className='text-indigo-600 font-semibold text-xs hover:underline'
-                        >
-                          #{s.order_id}
-                        </Link>
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-right font-semibold tabular-nums'>
-                        {formatCurrencyNoDecimals(pickScalarNumber(s.amount) ?? 0)}
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-center'>
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${st.cls}`}
-                        >
-                          {st.label}
-                        </span>
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-xs text-slate-400'>
-                        {s.created_at ? new Date(s.created_at).toLocaleDateString('th-TH') : '—'}
-                      </TableCell>
-                    </TableRow>
+                    <>
+                      <TableRow key={o.order_id}>
+                        <TableCell className='px-4 py-3'>
+                          <Link
+                            to={`/admin/orders/${o.order_id}`}
+                            className='text-indigo-600 font-semibold text-xs hover:underline'
+                          >
+                            #{o.order_id}
+                          </Link>
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-xs text-slate-700 max-w-[180px] truncate'>
+                          {o.rfq_title || '—'}
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-xs text-slate-500'>
+                          {o.customer_name || '—'}
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-right font-semibold tabular-nums text-xs'>
+                          {formatCurrencyNoDecimals(grandTotal)}
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-center'>
+                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${ordSt.cls}`}>
+                            {ordSt.label}
+                          </span>
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-center'>
+                          {slipUrl ? (
+                            <button
+                              onClick={() => setExpandedSlip(isExpanded ? null : o.order_id)}
+                              className='text-xs text-indigo-600 hover:underline flex items-center gap-1 mx-auto'
+                            >
+                              <span className={`inline-block px-2 py-0.5 rounded-full font-semibold ${slipSt.cls}`}>{slipSt.label}</span>
+                              <span>{isExpanded ? '▲' : '▼'}</span>
+                            </button>
+                          ) : (
+                            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${slipSt.cls}`}>
+                              {slipSt.label}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-xs text-slate-400'>
+                          {o.created_at ? new Date(o.created_at).toLocaleDateString('th-TH') : '—'}
+                        </TableCell>
+                      </TableRow>
+                      {isExpanded && slipUrl && (
+                        <TableRow key={`slip-${o.order_id}`}>
+                          <TableCell colSpan={7} className='px-6 pb-4 bg-slate-50'>
+                            <img
+                              src={slipUrl}
+                              alt='สลีปการชำระเงิน'
+                              className='max-h-64 rounded-lg border border-slate-200 object-contain'
+                            />
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
                   );
                 })
               )}
