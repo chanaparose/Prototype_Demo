@@ -111,7 +111,7 @@ function SaveButton({
       className='flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50'
     >
       <Save size={14} />
-      {saving ? 'กำลังบันทึก...' : saved ? 'บันทึกแล้ว ✓' : (text ?? 'บันทึก')}
+      {saving ? 'กำลังบันทึก...' : saved ? 'บันทึกแล้ว' : (text ?? 'บันทึก')}
     </Button>
   );
 }
@@ -332,8 +332,7 @@ export function AdminConfigPage() {
   return (
     <div className='space-y-6 lg:space-y-8'>
       <div>
-        <p className='text-xs text-slate-400 font-medium'>Admin / ตั้งค่า</p>
-        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900 mt-1'>ตั้งค่าระบบ</h2>
+        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900'>ตั้งค่าระบบ</h2>
       </div>
 
       {error ? (
@@ -400,7 +399,7 @@ export function AdminConfigPage() {
                         {savingGeneral ? (
                           <><Loader2 size={12} className='animate-spin' /> กำลังบันทึก…</>
                         ) : savedGeneral ? (
-                          <><CheckCircle size={12} /> บันทึกแล้ว ✓</>
+                          <><CheckCircle size={12} /> บันทึกแล้ว</>
                         ) : (
                           <><CheckCircle size={12} /> บันทึก</>
                         )}
@@ -584,7 +583,7 @@ export function AdminConfigPage() {
                         {savingDefault ? (
                           <><Loader2 size={12} className='animate-spin' /> กำลังบันทึก…</>
                         ) : savedDefault ? (
-                          <><CheckCircle size={12} /> บันทึกแล้ว ✓</>
+                          <><CheckCircle size={12} /> บันทึกแล้ว</>
                         ) : (
                           <><CheckCircle size={12} /> บันทึก</>
                         )}
@@ -958,7 +957,7 @@ export function AdminConfigPage() {
                   {isSA ? (
                     <SaveButton
                       saving={savingVerification}
-                      saved={savedVerification}
+                      saved={false}
                       onClick={() => void handleSaveVerification()}
                     />
                   ) : null}

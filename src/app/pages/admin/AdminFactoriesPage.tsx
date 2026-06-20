@@ -114,8 +114,7 @@ export function AdminFactoriesPage() {
   return (
     <div className='space-y-6 lg:space-y-8'>
       <div>
-        <p className='text-xs text-slate-400 font-medium'>Admin / โรงงาน</p>
-        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900 mt-1'>จัดการโรงงาน</h2>
+        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900'>จัดการโรงงาน</h2>
       </div>
 
       <div className='space-y-3'>

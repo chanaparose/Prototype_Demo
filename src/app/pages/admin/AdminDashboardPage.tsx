@@ -248,8 +248,7 @@ export function AdminDashboardPage() {
   return (
     <div className='space-y-8 lg:space-y-10'>
       <div>
-        <p className='text-xs text-slate-400 font-medium'>Admin / แดชบอร์ด</p>
-        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900 mt-1'>ภาพรวมระบบ</h2>
+        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900'>ภาพรวมระบบ</h2>
       </div>
 
       {error ? (
@@ -274,13 +273,13 @@ export function AdminDashboardPage() {
               >
                 <Icon size={18} className={card.iconColor} />
               </div>
-              <p className='text-xs text-slate-500 font-medium mb-1'>{card.label}</p>
-              <p className='text-lg font-bold text-slate-900 leading-none'>
+              <p className='text-sm text-slate-500 font-medium mb-2'>{card.label}</p>
+              <p className='text-2xl font-bold text-slate-900 leading-none'>
                 {loading ? '...' : card.value}
               </p>
               {typeof card.change === 'number' && !isFlat ? (
                 <div
-                  className={`flex items-center gap-1 mt-1.5 text-xs font-semibold ${isUp ? 'text-emerald-600' : 'text-red-500'}`}
+                  className={`flex items-center gap-1 mt-2 text-sm font-semibold ${isUp ? 'text-emerald-600' : 'text-red-500'}`}
                 >
                   {isUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                   {Math.abs(card.change)}% vs เดือนที่แล้ว

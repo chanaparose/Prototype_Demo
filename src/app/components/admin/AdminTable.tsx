@@ -60,7 +60,7 @@ function AdminTableHead({ className, ...props }: React.ComponentProps<'th'>) {
   return (
     <TableHead
       className={cn(
-        'text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider',
+        'text-left px-4 py-3 text-sm font-semibold text-slate-600 uppercase tracking-wide',
         className
       )}
       {...props}

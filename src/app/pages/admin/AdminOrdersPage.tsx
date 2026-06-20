@@ -150,8 +150,7 @@ export function AdminOrdersPage() {
   return (
     <div className='space-y-6 lg:space-y-8'>
       <div>
-        <p className='text-xs text-slate-400 font-medium'>Admin / คำสั่งซื้อ</p>
-        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900 mt-1'>จัดการคำสั่งซื้อ</h2>
+        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900'>จัดการคำสั่งซื้อ</h2>
       </div>
 
       <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6'>

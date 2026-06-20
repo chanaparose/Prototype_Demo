@@ -90,10 +90,10 @@ function DetailModal({ invoice, items, actionLoading, onVerify, onClose }: Detai
         {/* Header */}
         <div className='flex items-center justify-between px-6 py-4 border-b border-slate-100'>
           <div>
-            <h3 className='text-base font-bold text-slate-900'>
+            <h3 className='text-lg font-bold text-slate-900'>
               Invoice #{invoice.invoice_id} — {invoice.factory_name}
             </h3>
-            <p className='text-xs text-slate-500'>
+            <p className='text-sm text-slate-500'>
               {MONTHS_TH[invoice.period_month]} {invoice.period_year}
               {' · '}
               <Badge variant={st.variant} size='sm'>
@@ -115,45 +115,45 @@ function DetailModal({ invoice, items, actionLoading, onVerify, onClose }: Detai
         <div className='px-6 py-4 space-y-4'>
           {/* Summary cards */}
           <div className='grid grid-cols-3 gap-3'>
-            <div className='text-center p-3 bg-slate-50 rounded-lg'>
-              <p className='text-[10px] text-slate-400 uppercase'>Orders</p>
-              <p className='text-lg font-bold'>{invoice.total_orders}</p>
+            <div className='text-center p-4 bg-slate-50 rounded-lg'>
+              <p className='text-xs text-slate-400 uppercase font-semibold'>Orders</p>
+              <p className='text-xl font-bold mt-1'>{invoice.total_orders}</p>
             </div>
-            <div className='text-center p-3 bg-slate-50 rounded-lg'>
-              <p className='text-[10px] text-slate-400 uppercase'>Commission</p>
-              <p className='text-lg font-bold'>
+            <div className='text-center p-4 bg-slate-50 rounded-lg'>
+              <p className='text-xs text-slate-400 uppercase font-semibold'>Commission</p>
+              <p className='text-xl font-bold mt-1'>
                 {formatCurrencyNoDecimals(invoice.commission_amount)}
               </p>
             </div>
-            <div className='text-center p-3 bg-indigo-50 rounded-lg'>
-              <p className='text-[10px] text-indigo-500 uppercase'>Grand Total</p>
-              <p className='text-lg font-bold text-indigo-700'>
+            <div className='text-center p-4 bg-purple-50 rounded-lg'>
+              <p className='text-xs text-purple-600 uppercase font-semibold'>Grand Total</p>
+              <p className='text-xl font-bold text-purple-700 mt-1'>
                 {formatCurrencyNoDecimals(invoice.grand_total)}
               </p>
             </div>
           </div>
 
           {/* Order breakdown */}
-          <table className='w-full text-sm'>
+          <table className='w-full text-base'>
             <thead className='border-b border-slate-100'>
               <tr>
-                <th className='text-left text-xs font-semibold text-slate-500 pb-2'>Order</th>
-                <th className='text-right text-xs font-semibold text-slate-500 pb-2'>
+                <th className='text-left text-sm font-semibold text-slate-600 pb-2'>Order</th>
+                <th className='text-right text-sm font-semibold text-slate-600 pb-2'>
                   ยอดสั่งซื้อ
                 </th>
-                <th className='text-right text-xs font-semibold text-slate-500 pb-2'>Rate</th>
-                <th className='text-right text-xs font-semibold text-slate-500 pb-2'>Commission</th>
+                <th className='text-right text-sm font-semibold text-slate-600 pb-2'>Rate</th>
+                <th className='text-right text-sm font-semibold text-slate-600 pb-2'>Commission</th>
               </tr>
             </thead>
             <tbody className='divide-y divide-slate-50'>
               {items.map((item) => (
                 <tr key={item.item_id}>
-                  <td className='py-2 text-indigo-600 font-mono text-xs'>#{item.order_id}</td>
-                  <td className='py-2 text-right tabular-nums'>
+                  <td className='py-3 text-purple-600 font-mono text-sm'>#{item.order_id}</td>
+                  <td className='py-3 text-right tabular-nums text-base'>
                     {formatCurrencyNoDecimals(item.order_amount)}
                   </td>
-                  <td className='py-2 text-right tabular-nums'>{item.commission_rate}%</td>
-                  <td className='py-2 text-right tabular-nums font-semibold'>
+                  <td className='py-3 text-right tabular-nums text-base'>{item.commission_rate}%</td>
+                  <td className='py-3 text-right tabular-nums font-semibold text-base'>
                     {formatCurrencyNoDecimals(item.commission_amount)}
                   </td>
                 </tr>
@@ -164,7 +164,7 @@ function DetailModal({ invoice, items, actionLoading, onVerify, onClose }: Detai
           {/* Slip + Verify section — only when PA */}
           {invoice.status?.trim() === 'PA' && (
             <div className='rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3'>
-              <p className='text-sm font-bold text-amber-800'>โรงงานแนบสลีปแล้ว — รอการยืนยัน</p>
+              <p className='text-base font-bold text-amber-800'>โรงงานแนบสลีปแล้ว — รอการยืนยัน</p>
 
               {invoice.slip_url && (
                 <div>
@@ -182,16 +182,16 @@ function DetailModal({ invoice, items, actionLoading, onVerify, onClose }: Detai
                         title='ปิดรูปสลีป'
                         className='absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60'
                       >
-                        <X size={12} />
+                        <X size={14} />
                       </button>
                     </div>
                   ) : (
                     <button
                       type='button'
                       onClick={() => setShowSlip(true)}
-                      className='flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors'
+                      className='flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-white border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors'
                     >
-                      <Image size={13} />
+                      <Image size={15} />
                       ดูสลีปที่โรงงานแนบ
                     </button>
                   )}
@@ -227,8 +227,8 @@ function DetailModal({ invoice, items, actionLoading, onVerify, onClose }: Detai
 
           {/* email sent info */}
           {invoice.email_sent_at && (
-            <p className='text-xs text-slate-400 flex items-center gap-1'>
-              <MailCheck size={12} />
+            <p className='text-sm text-slate-500 flex items-center gap-1'>
+              <MailCheck size={14} />
               ส่ง email แจ้งโรงงานเมื่อ {formatEmailSentAt(invoice.email_sent_at)}
             </p>
           )}
@@ -348,8 +348,7 @@ export function AdminCommissionPage() {
   return (
     <div className='space-y-6 lg:space-y-8'>
       <div>
-        <p className='text-xs text-slate-400 font-medium'>Admin / Commission</p>
-        <h2 className='text-xl font-bold text-slate-900 mt-1'>สรุปค่า Commission</h2>
+        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900'>สรุปค่า Commission</h2>
         <p className='text-xs text-slate-400 mt-0.5 flex items-center gap-1'>
           <Clock size={11} />
           ระบบสร้าง Invoice และส่ง Email โรงงานอัตโนมัติวันที่ 1 ของทุกเดือน

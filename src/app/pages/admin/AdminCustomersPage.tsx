@@ -95,9 +95,7 @@ export function AdminCustomersPage() {
     <div className='space-y-6 lg:space-y-8'>
       <div className='flex items-center justify-between'>
         <div>
-          <p className='text-xs text-slate-400 font-medium'>Admin / ลูกค้า</p>
-          <h2 className='text-2xl lg:text-3xl font-bold text-slate-900 mt-1'>ลูกค้าทั้งหมด</h2>
-          <p className='text-xs text-slate-400 mt-0.5'>จัดการและตรวจสอบข้อมูลลูกค้า</p>
+          <h2 className='text-2xl lg:text-3xl font-bold text-slate-900'>ลูกค้าทั้งหมด</h2>
         </div>
         {!loading && (
           <span className='text-sm text-slate-500 font-medium'>

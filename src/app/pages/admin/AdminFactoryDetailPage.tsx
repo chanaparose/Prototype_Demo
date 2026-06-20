@@ -437,10 +437,8 @@ export function AdminFactoryDetailPage() {
             className='inline-flex items-center gap-1 text-slate-400 hover:text-purple-600 transition-colors'
           >
             <ChevronLeft size={12} />
-            Admin / โรงงาน
+            โรงงาน
           </button>
-          <span className='text-slate-300'>/</span>
-          <span>รายละเอียด</span>
         </div>
 
         {loading ? (
@@ -811,7 +809,7 @@ export function AdminFactoryDetailPage() {
               <div className='space-y-6'>
                 {/* Approval action card */}
                 <div className='bg-white rounded-xl border border-slate-200 p-6'>
-                  <h3 className='text-sm font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100'>
+                  <h3 className='text-base font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100'>
                     สถานะโรงงาน
                   </h3>
 
@@ -819,14 +817,14 @@ export function AdminFactoryDetailPage() {
                   <div className='flex items-center justify-between mb-4'>
                     <div>
                       <span
-                        className={`inline-flex max-w-full items-center justify-center rounded-full px-2 py-0.5 text-center text-xs font-semibold leading-tight whitespace-normal sm:whitespace-nowrap ${approvalChipCls}`}
+                        className={`inline-flex max-w-full items-center justify-center rounded-full px-2.5 py-1 text-center text-sm font-semibold leading-tight whitespace-normal sm:whitespace-nowrap ${approvalChipCls}`}
                       >
                         {approvalLabel}
                       </span>
                     </div>
                     {factory.approval_status === 'approved' && (
-                      <span className='flex items-center gap-1 text-xs text-purple-600 font-semibold'>
-                        <ShieldCheck size={13} />
+                      <span className='flex items-center gap-1 text-sm text-purple-600 font-semibold'>
+                        <ShieldCheck size={14} />
                         อนุมัติแล้ว
                       </span>
                     )}
@@ -892,12 +890,12 @@ export function AdminFactoryDetailPage() {
 
                 {/* Timeline */}
                 <div className='bg-white rounded-xl border border-slate-200 p-6'>
-                  <h3 className='text-sm font-bold text-slate-900 mb-4'>ประวัติการดำเนินการ</h3>
+                  <h3 className='text-base font-bold text-slate-900 mb-4'>ประวัติการดำเนินการ</h3>
                   <div className='relative'>
                     <div className='absolute left-4 top-0 bottom-0 w-px bg-slate-200' />
                     <div className='space-y-4'>
                       {factory.timeline.length === 0 ? (
-                        <p className='text-sm text-slate-400 pl-8'>ยังไม่มีประวัติ</p>
+                        <p className='text-base text-slate-400 pl-8'>ยังไม่มีประวัติ</p>
                       ) : (
                         factory.timeline.map((event, i) => {
                           const meta = STATUS_META[event.status] ?? STATUS_META.pending;
@@ -919,11 +917,11 @@ export function AdminFactoryDetailPage() {
                                 />
                               </div>
                               <div className='flex-1 min-w-0'>
-                                <p className={`text-xs font-semibold ${meta.cls}`}>{meta.label}</p>
+                                <p className={`text-sm font-semibold ${meta.cls}`}>{meta.label}</p>
                                 {event.note ? (
-                                  <p className='text-xs text-slate-500 mt-0.5'>{event.note}</p>
+                                  <p className='text-sm text-slate-500 mt-0.5'>{event.note}</p>
                                 ) : null}
-                                <p className='text-[10px] text-slate-400 mt-1 tabular-nums'>
+                                <p className='text-xs text-slate-400 mt-1 tabular-nums'>
                                   {formatDateTime(event.timestamp)}
                                 </p>
                               </div>

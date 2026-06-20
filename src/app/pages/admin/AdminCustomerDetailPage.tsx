@@ -429,16 +429,14 @@ export function AdminCustomerDetailPage() {
   return (
     <div className='space-y-6'>
       <div>
-        <div className='flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-400'>
+        <div className='flex flex-wrap items-center gap-1.5 text-sm font-medium text-slate-400'>
           <Link
             to='/admin/customers'
             className='inline-flex items-center gap-1 text-slate-400 hover:text-purple-600 transition-colors'
           >
-            <ChevronLeft size={12} />
-            Admin / ลูกค้า
+            <ChevronLeft size={14} />
+            ลูกค้า
           </Link>
-          <span className='text-slate-300'>/</span>
-          <span>รายละเอียด</span>
         </div>
         <div className='flex items-center gap-3 mt-1'>
           <div className='w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-sm shrink-0'>

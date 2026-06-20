@@ -104,14 +104,14 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
               <div className='flex items-start gap-2'>
                 <Package size={14} className='text-purple-500 mt-0.5 shrink-0' />
                 <div>
-                  <p className='text-[10px] text-slate-400 uppercase font-semibold'>สินค้า</p>
-                  <p className='text-sm text-slate-900 font-medium'>
+                  <p className='text-xs text-slate-400 uppercase font-semibold'>สินค้า</p>
+                  <p className='text-base text-slate-900 font-medium'>
                     {pickScalarString(rfq.title, '-')}
                   </p>
-                  <p className='text-xs text-slate-500 mt-0.5'>
+                  <p className='text-sm text-slate-500 mt-0.5'>
                     จำนวน: {formatCompactNumber(pickScalarNumber(rfq.quantity) ?? 0)} {pickScalarString(rfq.unit_name) || 'ชิ้น'}
                   </p>
-                  <p className='text-xs text-slate-500'>
+                  <p className='text-sm text-slate-500'>
                     หมวดหมู่: {pickScalarString(rfq.category_name, '-')} /{' '}
                     {pickScalarString(rfq.sub_category_name, '-')}
                   </p>
@@ -120,28 +120,30 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
               <div className='flex items-start gap-2'>
                 <Calendar size={14} className='text-purple-500 mt-0.5 shrink-0' />
                 <div>
-                  <p className='text-[10px] text-slate-400 uppercase font-semibold'>กำหนดส่ง</p>
-                  <p className='text-sm text-slate-900 font-medium'>
+                  <p className='text-xs text-slate-400 uppercase font-semibold'>กำหนดส่ง</p>
+                  <p className='text-base text-slate-900 font-medium'>
                     {deliveryDate ? formatIsoDate(deliveryDate) : '-'}
                   </p>
-                  <p className='text-xs text-slate-400 mt-0.5'>
+                  <p className='text-sm text-slate-400 mt-0.5'>
                     สร้างเมื่อ {formatIsoDate(rfq.created_at as string)}
                   </p>
                 </div>
               </div>
               <div className='flex items-start gap-2'>
-                <DollarSign size={14} className='text-purple-500 mt-0.5 shrink-0' />
+                <span className='text-purple-500 mt-0.5 shrink-0 font-bold' style={{ fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '14px', height: '14px' }}>
+                  ฿
+                </span>
                 <div>
-                  <p className='text-[10px] text-slate-400 uppercase font-semibold'>งบประมาณ</p>
-                  <p className='text-sm text-slate-900 font-bold'>
-                    ฿{formatCompactNumber(pickScalarNumber(rfq.target_price) ?? 0)}
+                  <p className='text-xs text-slate-400 uppercase font-semibold'>งบประมาณ</p>
+                  <p className='text-base text-slate-900 font-bold'>
+                    {formatCompactNumber(pickScalarNumber(rfq.target_price) ?? 0)}
                   </p>
                 </div>
               </div>
             </div>
             <div className='mt-3 pt-3 border-t border-purple-100'>
-              <p className='text-[10px] text-slate-400 uppercase font-semibold mb-1'>หมายเหตุ</p>
-              <p className='text-sm text-slate-700 whitespace-pre-wrap'>
+              <p className='text-xs text-slate-400 uppercase font-semibold mb-1'>หมายเหตุ</p>
+              <p className='text-base text-slate-700 whitespace-pre-wrap'>
                 {pickScalarString(rfq.details, rfq.description, '-')}
               </p>
             </div>
@@ -196,8 +198,7 @@ export function AdminRFQsPage() {
   return (
     <div className='space-y-6 lg:space-y-8'>
       <div>
-        <p className='text-xs text-slate-400 font-medium'>Admin / RFQ</p>
-        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900 mt-1'>จัดการ RFQ</h2>
+        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900'>จัดการ RFQ</h2>
       </div>
 
       <div className='space-y-3'>
