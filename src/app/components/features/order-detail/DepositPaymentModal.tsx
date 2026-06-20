@@ -44,7 +44,14 @@ function useSlipInfo(orderId: string, open: boolean) {
   });
 }
 
-export function DepositPaymentModal({ open, onClose, orderId, factoryId, amount, onSuccess }: Props) {
+export function DepositPaymentModal({
+  open,
+  onClose,
+  orderId,
+  factoryId,
+  amount,
+  onSuccess,
+}: Props) {
   const bank = useBankAccount(factoryId, open);
   const slip = useSlipInfo(orderId, open);
   const [file, setFile] = React.useState<File | null>(null);
@@ -92,11 +99,11 @@ export function DepositPaymentModal({ open, onClose, orderId, factoryId, amount,
       formData.append('file', file);
       if (note.trim()) formData.append('note', note.trim());
       await slipApi.attach(Number(orderId), formData);
-      toast.success('แนบสลีปสำเร็จ รอโรงงานตรวจสอบ');
+      toast.success('แนบสลิปสำเร็จ รอโรงงานตรวจสอบ');
       await onSuccess?.();
       onClose();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'แนบสลีปไม่สำเร็จ';
+      const msg = err instanceof Error ? err.message : 'แนบสลิปไม่สำเร็จ';
       toast.error(msg);
     } finally {
       setSubmitting(false);
@@ -113,7 +120,9 @@ export function DepositPaymentModal({ open, onClose, orderId, factoryId, amount,
   return (
     <AppDialog
       open={open}
-      onOpenChange={(v) => { if (!v) onClose(); }}
+      onOpenChange={(v) => {
+        if (!v) onClose();
+      }}
       title='ชำระเงิน — โอนผ่านธนาคาร'
       variant='sheet'
       bodyClassName='p-4 sm:p-5 pb-2'
@@ -122,8 +131,8 @@ export function DepositPaymentModal({ open, onClose, orderId, factoryId, amount,
           <ModalFooter
             layout='stack'
             primary={{
-              label: `ส่งสลีปการโอนเงิน · ${formatCurrency(amount)}`,
-              loadingLabel: 'กำลังส่งสลีป…',
+              label: `ส่งสลิปการโอนเงิน · ${formatCurrency(amount)}`,
+              loadingLabel: 'กำลังส่งสลิป…',
               loading: submitting,
               disabled: !file || submitting,
               onClick: handleSubmit,
@@ -187,11 +196,11 @@ export function DepositPaymentModal({ open, onClose, orderId, factoryId, amount,
       {/* Slip status display */}
       {alreadySubmitted && (
         <div className='rounded-2xl border border-blue-200 bg-blue-50 p-4 mb-4'>
-          <p className='text-sm font-semibold text-blue-700'>สลีปถูกส่งแล้ว — รอโรงงานตรวจสอบ</p>
+          <p className='text-sm font-semibold text-blue-700'>สลิปถูกส่งแล้ว — รอโรงงานตรวจสอบ</p>
           {slip.data?.slip_url && (
             <img
               src={slip.data.slip_url}
-              alt='สลีปที่แนบ'
+              alt='สลิปที่แนบ'
               className='mt-2 rounded-lg max-h-40 object-contain border border-blue-100'
             />
           )}
@@ -206,7 +215,7 @@ export function DepositPaymentModal({ open, onClose, orderId, factoryId, amount,
 
       {slipStatus === 'RJ' && (
         <div className='rounded-2xl border border-red-200 bg-red-50 p-4 mb-4'>
-          <p className='text-sm font-semibold text-red-700'>สลีปถูกปฏิเสธ — กรุณาแนบใหม่</p>
+          <p className='text-sm font-semibold text-red-700'>สลิปถูกปฏิเสธ — กรุณาแนบใหม่</p>
           {slip.data?.slip_note && (
             <p className='text-xs text-red-600 mt-1'>{slip.data.slip_note}</p>
           )}
@@ -216,7 +225,7 @@ export function DepositPaymentModal({ open, onClose, orderId, factoryId, amount,
       {/* Upload slip (PE or RJ) */}
       {canUpload && (
         <div className='space-y-3'>
-          <p className='text-xs font-semibold text-slate-600'>แนบสลีปการโอนเงิน</p>
+          <p className='text-xs font-semibold text-slate-600'>แนบสลิปการโอนเงิน</p>
 
           <input
             ref={fileRef}
@@ -230,12 +239,16 @@ export function DepositPaymentModal({ open, onClose, orderId, factoryId, amount,
             <div className='relative'>
               <img
                 src={preview}
-                alt='สลีป preview'
+                alt='สลิป preview'
                 className='rounded-xl border border-slate-200 max-h-48 w-full object-contain bg-slate-50'
               />
               <button
                 type='button'
-                onClick={() => { setFile(null); setPreview(null); if (fileRef.current) fileRef.current.value = ''; }}
+                onClick={() => {
+                  setFile(null);
+                  setPreview(null);
+                  if (fileRef.current) fileRef.current.value = '';
+                }}
                 className='absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70'
               >
                 <X size={12} />
@@ -249,7 +262,7 @@ export function DepositPaymentModal({ open, onClose, orderId, factoryId, amount,
               className='w-full flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 py-8 text-slate-400 hover:border-indigo-300 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors'
             >
               <Upload size={24} />
-              <span className='text-xs font-medium'>กดเพื่อเลือกรูปสลีป</span>
+              <span className='text-xs font-medium'>กดเพื่อเลือกรูปสลิป</span>
               <span className='text-[10px] text-slate-300'>JPG, PNG ไม่เกิน 5MB</span>
             </Button>
           )}
@@ -295,7 +308,9 @@ function InfoRowCopy({
     <div className='flex items-center justify-between'>
       <span className='text-xs text-slate-400'>{label}</span>
       <span className='flex items-center gap-1.5'>
-        <span className={`text-sm font-semibold text-slate-800 ${mono ? 'font-mono tracking-wide' : ''}`}>
+        <span
+          className={`text-sm font-semibold text-slate-800 ${mono ? 'font-mono tracking-wide' : ''}`}
+        >
           {value}
         </span>
         <button

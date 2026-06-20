@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Calendar, Filter, Search, AlertTriangle } from 'lucide-react';
+import { Search, AlertTriangle } from 'lucide-react';
 import { adminApi } from '@/services/api/adminApi';
 import type { IAdminOrderListResponse } from '@/services/api/types/admin.types';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
@@ -7,15 +7,18 @@ import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  AdminTable,
+  AdminTableBody,
+  AdminTableCell,
+  AdminTableContainer,
+  AdminTableHead,
+  AdminTableHeader,
+  AdminTableRow,
   TableSkeletonRows,
-} from '@/components/ui/table';
+} from '@/components/admin/AdminTable';
 
 type OrderStatusTab = 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
 
@@ -30,12 +33,12 @@ interface AdminOrderView {
   created_at: string;
 }
 
-const STATUS_META: Record<OrderStatusTab, { label: string; cls: string }> = {
-  all: { label: 'ทั้งหมด', cls: '' },
-  pending: { label: 'รอดำเนินการ', cls: 'bg-amber-100 text-amber-700' },
-  processing: { label: 'กำลังดำเนินการ', cls: 'bg-blue-100 text-blue-700' },
-  completed: { label: 'เสร็จสิ้น', cls: 'bg-emerald-100 text-emerald-700' },
-  cancelled: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-700' },
+const STATUS_META: Record<OrderStatusTab, { label: string; variant: string }> = {
+  all: { label: 'ทั้งหมด', variant: 'default' },
+  pending: { label: 'รอดำเนินการ', variant: 'pending' },
+  processing: { label: 'กำลังดำเนินการ', variant: 'info' },
+  completed: { label: 'เสร็จสิ้น', variant: 'success' },
+  cancelled: { label: 'ยกเลิก', variant: 'error' },
 };
 
 const STATUS_TABS: { key: OrderStatusTab; label: string; apiStatus?: string }[] = [
@@ -86,24 +89,27 @@ export function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [rows, setRows] = useState<AdminOrderView[]>([]);
+  const [countRows, setCountRows] = useState<AdminOrderView[]>([]);
 
   const loadOrders = async () => {
     setLoading(true);
     setError('');
     try {
-      const status = STATUS_TABS.find((t) => t.key === statusTab)?.apiStatus;
-      const raw = await adminApi.listOrders({
-        status,
+      const baseParams = {
         date_from: dateFrom || undefined,
         date_to: dateTo || undefined,
         search: search.trim() || undefined,
         page: 1,
         page_size: 200,
-      });
-      setRows(toRows(raw).map(mapOrder));
+      };
+      const raw = await adminApi.listOrders(baseParams);
+      const mapped = toRows(raw).map(mapOrder);
+      setCountRows(mapped);
+      setRows(statusTab === 'all' ? mapped : mapped.filter((row) => inferTab(row.status) === statusTab));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดข้อมูลคำสั่งซื้อไม่สำเร็จ');
       setRows([]);
+      setCountRows([]);
     } finally {
       setLoading(false);
     }
@@ -118,17 +124,17 @@ export function AdminOrdersPage() {
 
   const counts = useMemo(() => {
     const result: Record<OrderStatusTab, number> = {
-      all: rows.length,
+      all: countRows.length,
       pending: 0,
       processing: 0,
       completed: 0,
       cancelled: 0,
     };
-    rows.forEach((r) => {
+    countRows.forEach((r) => {
       result[inferTab(r.status)] += 1;
     });
     return result;
-  }, [rows]);
+  }, [countRows]);
 
   const summary = useMemo(() => {
     return rows.reduce(
@@ -142,18 +148,18 @@ export function AdminOrdersPage() {
   }, [rows]);
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-6 lg:space-y-8'>
       <div>
         <p className='text-xs text-slate-400 font-medium'>Admin / คำสั่งซื้อ</p>
-        <h2 className='text-2xl font-bold text-slate-900 mt-1'>จัดการคำสั่งซื้อ</h2>
+        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900 mt-1'>จัดการคำสั่งซื้อ</h2>
       </div>
 
-      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6'>
         <SummaryCard
           label='ยอดรวมทั้งหมด'
           value={formatCurrencyNoDecimals(summary.total)}
-          cls='border-indigo-200 bg-indigo-50'
-          labelCls='text-indigo-600'
+          cls='border-purple-200 bg-purple-50'
+          labelCls='text-purple-600'
         />
         <SummaryCard
           label='ค่าคอมมิชชัน'
@@ -169,10 +175,9 @@ export function AdminOrdersPage() {
         />
       </div>
 
-      <div className='bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3'>
+      <div className='space-y-3'>
         <div className='flex flex-wrap items-center gap-3'>
-          <Filter size={14} className='text-slate-400 shrink-0' />
-          <div className='relative flex-1 min-w-[220px]'>
+          <div className='relative w-full max-w-sm'>
             <Search
               size={13}
               className='absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400'
@@ -182,40 +187,28 @@ export function AdminOrdersPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder='ค้นหา order/customer/factory'
-              className='w-full pl-8 pr-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+              className='w-full pl-8 pr-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500'
             />
           </div>
           <div className='flex items-center gap-2'>
             <Label className='text-xs font-semibold text-slate-600 whitespace-nowrap'>
               ตั้งแต่
             </Label>
-            <div className='relative'>
-              <Calendar
-                size={13}
-                className='absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400'
-              />
-              <Input
-                type='date'
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className='pl-8 pr-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500'
-              />
-            </div>
+            <DatePicker
+              value={dateFrom}
+              onChange={setDateFrom}
+              placeholder='วันที่เริ่มต้น'
+              className='h-9 w-36 rounded-lg border-slate-200 px-3 py-2 text-xs text-slate-900 shadow-none'
+            />
           </div>
           <div className='flex items-center gap-2'>
             <Label className='text-xs font-semibold text-slate-600 whitespace-nowrap'>ถึง</Label>
-            <div className='relative'>
-              <Calendar
-                size={13}
-                className='absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400'
-              />
-              <Input
-                type='date'
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className='pl-8 pr-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500'
-              />
-            </div>
+            <DatePicker
+              value={dateTo}
+              onChange={setDateTo}
+              placeholder='วันที่สิ้นสุด'
+              className='h-9 w-36 rounded-lg border-slate-200 px-3 py-2 text-xs text-slate-900 shadow-none'
+            />
           </div>
         </div>
 
@@ -229,18 +222,20 @@ export function AdminOrdersPage() {
                 key={tab.key}
                 type='button'
                 onClick={() => setStatusTab(tab.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                   active
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-slate-600 border border-purple-100 hover:bg-purple-50 hover:border-purple-200'
                 }`}
               >
                 {tab.label}
-                <span
-                  className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600'}`}
+                <Badge
+                  variant={active ? 'active' : 'outline'}
+                  size='sm'
+                  className={active ? '' : 'border-purple-100 bg-white text-purple-600'}
                 >
                   {count}
-                </span>
+                </Badge>
               </Button>
             );
           })}
@@ -254,111 +249,107 @@ export function AdminOrdersPage() {
         </div>
       ) : null}
 
-      <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
-        <div className='overflow-x-auto'>
-          <Table className='w-full text-sm min-w-[900px]'>
-            <TableHeader>
-              <TableRow className='bg-slate-50 border-b border-slate-200'>
-                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+      <AdminTableContainer>
+        <AdminTable className='min-w-[900px]'>
+          <AdminTableHeader>
+            <AdminTableRow>
+                <AdminTableHead>
                   Order ID
-                </TableHead>
-                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </AdminTableHead>
+                <AdminTableHead>
                   ผู้ซื้อ
-                </TableHead>
-                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </AdminTableHead>
+                <AdminTableHead>
                   โรงงาน
-                </TableHead>
-                <TableHead className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </AdminTableHead>
+                <AdminTableHead className='text-right'>
                   ยอดรวม
-                </TableHead>
-                <TableHead className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </AdminTableHead>
+                <AdminTableHead>
                   ค่าคอม
-                </TableHead>
-                <TableHead className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </AdminTableHead>
+                <AdminTableHead>
                   VAT
-                </TableHead>
-                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </AdminTableHead>
+                <AdminTableHead>
                   สถานะ
-                </TableHead>
-                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </AdminTableHead>
+                <AdminTableHead>
                   วันที่
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className='divide-y divide-slate-100'>
+                </AdminTableHead>
+              </AdminTableRow>
+            </AdminTableHeader>
+            <AdminTableBody className='divide-y divide-slate-100'>
               {loading ? (
                 <TableSkeletonRows columns={8} rows={3} />
               ) : rows.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className='py-12 text-center text-sm text-slate-400'>
+                <AdminTableRow>
+                  <AdminTableCell colSpan={8} className='py-12 text-center text-sm text-slate-400'>
                     ไม่พบคำสั่งซื้อที่ตรงกับเงื่อนไข
-                  </TableCell>
-                </TableRow>
+                  </AdminTableCell>
+                </AdminTableRow>
               ) : (
                 rows.map((order) => {
                   const tab = inferTab(order.status);
                   const meta = STATUS_META[tab];
                   return (
-                    <TableRow key={order.order_id} className='hover:bg-slate-50 transition-colors'>
-                      <TableCell className='px-4 py-3 font-mono text-xs text-indigo-600 font-semibold'>
+                    <AdminTableRow key={order.order_id} className='hover:bg-slate-50 transition-colors'>
+                      <AdminTableCell className='px-4 py-3 font-mono text-xs text-purple-600 font-semibold'>
                         #{order.order_id}
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-sm text-slate-700 max-w-[140px] truncate'>
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-sm text-slate-700 max-w-[140px] truncate'>
                         {order.buyer}
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-sm text-slate-500 max-w-[140px] truncate'>
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-sm text-slate-500 max-w-[140px] truncate'>
                         {order.factory}
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-sm text-slate-900 font-semibold text-right tabular-nums'>
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-sm text-slate-900 font-semibold text-right tabular-nums'>
                         {formatCurrencyNoDecimals(order.total_amount)}
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-sm text-indigo-700 font-semibold text-right tabular-nums'>
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-sm text-purple-700 font-semibold tabular-nums'>
                         {order.commission_amount > 0 ? (
                           formatCurrencyNoDecimals(order.commission_amount)
                         ) : (
                           <span className='text-slate-300 font-normal text-xs'>ยกเว้น</span>
                         )}
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-sm text-violet-700 font-semibold text-right tabular-nums'>
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-sm text-violet-700 font-semibold tabular-nums'>
                         {formatCurrencyNoDecimals(order.vat_amount)}
-                      </TableCell>
-                      <TableCell className='px-4 py-3'>
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${meta.cls}`}
-                        >
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3'>
+                        <Badge variant={meta.variant as any} size='sm'>
                           {meta.label}
-                        </span>
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
+                        </Badge>
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
                         {order.created_at.slice(0, 10)}
-                      </TableCell>
-                    </TableRow>
+                      </AdminTableCell>
+                    </AdminTableRow>
                   );
                 })
               )}
-            </TableBody>
+            </AdminTableBody>
             {!loading && rows.length > 0 ? (
               <tfoot>
-                <TableRow className='bg-indigo-50 border-t-2 border-indigo-200'>
-                  <TableCell className='px-4 py-3 text-xs font-bold text-indigo-700' colSpan={3}>
+                <AdminTableRow className='bg-purple-50 border-t-2 border-purple-200'>
+                  <AdminTableCell className='px-4 py-3 text-xs font-bold text-purple-700' colSpan={3}>
                     รวม {rows.length} รายการ
-                  </TableCell>
-                  <TableCell className='px-4 py-3 text-sm font-bold text-indigo-900 text-right tabular-nums'>
+                  </AdminTableCell>
+                  <AdminTableCell className='px-4 py-3 text-sm font-bold text-purple-900 text-right tabular-nums'>
                     {formatCurrencyNoDecimals(summary.total)}
-                  </TableCell>
-                  <TableCell className='px-4 py-3 text-sm font-bold text-indigo-700 text-right tabular-nums'>
+                  </AdminTableCell>
+                  <AdminTableCell className='px-4 py-3 text-sm font-bold text-purple-700 tabular-nums'>
                     {formatCurrencyNoDecimals(summary.commission)}
-                  </TableCell>
-                  <TableCell className='px-4 py-3 text-sm font-bold text-violet-700 text-right tabular-nums'>
+                  </AdminTableCell>
+                  <AdminTableCell className='px-4 py-3 text-sm font-bold text-violet-700 tabular-nums'>
                     {formatCurrencyNoDecimals(summary.vat)}
-                  </TableCell>
-                  <TableCell colSpan={2} />
-                </TableRow>
+                  </AdminTableCell>
+                  <AdminTableCell colSpan={2} />
+                </AdminTableRow>
               </tfoot>
             ) : null}
-          </Table>
-        </div>
-      </div>
+          </AdminTable>
+      </AdminTableContainer>
     </div>
   );
 }

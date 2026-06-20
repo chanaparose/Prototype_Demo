@@ -51,8 +51,8 @@ import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { factoryButtonClass } from '@/pages/factory-portal/factoryUi';
 
 const STATUS_LABEL: Record<string, { label: string; tone: FactoryStatusTone }> = {
-  WS: { label: 'รอแนบสลีป', tone: 'warning' },
-  WA: { label: 'รอยืนยันสลีป', tone: 'warning' },
+  WS: { label: 'รอแนบสลิป', tone: 'warning' },
+  WA: { label: 'รอยืนยันสลิป', tone: 'warning' },
   PP: { label: 'รอชำระเงิน', tone: 'warning' },
   PE: { label: 'หมดกำหนด', tone: 'danger' },
   PD: { label: 'ต้องดำเนินการ', tone: 'warning' },
@@ -166,8 +166,8 @@ const TAB_DEFS: {
   },
   {
     id: 'verify_slip',
-    label: 'ยืนยันสลีป',
-    shortLabel: 'สลีป',
+    label: 'ยืนยันสลิป',
+    shortLabel: 'สลิป',
     icon: <FileCheck2 size={14} className='shrink-0' />,
   },
   {

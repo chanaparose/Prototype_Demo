@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronLeft, MessageCircle, Star, X, AlertTriangle, PackageCheck, Clock } from 'lucide-react';
+import {
+  ChevronLeft,
+  MessageCircle,
+  Star,
+  X,
+  AlertTriangle,
+  PackageCheck,
+  Clock,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useData } from '@/stores/useDataStore';
 import { useAuth } from '@/stores/useAuthStore';
@@ -234,7 +242,6 @@ function OrderDetailMobileBody() {
 
   return (
     <div className='min-h-screen bg-white'>
-
       <div className='fixed inset-x-0 top-0 z-[99999] flex items-center justify-between h-12 px-4 border-b border-gray-200 bg-white/95 backdrop-blur-sm lg:hidden'>
         <Button
           variant='unstyled'
@@ -296,7 +303,7 @@ function OrderDetailMobileBody() {
             statusLabelTh={statusLabelTh}
           />
 
-          {/* WS — รอแนบสลีป */}
+          {/* WS — รอแนบสลิป */}
           {uiMode.lockReason === 'WAITING_SLIP' && uiMode.showActionBanner ? (
             <OrderActionBanner
               nextAction={nextAction}
@@ -307,14 +314,16 @@ function OrderDetailMobileBody() {
             />
           ) : null}
 
-          {/* WA — รอโรงงานตรวจสอบสลีป */}
+          {/* WA — รอโรงงานตรวจสอบสลิป */}
           {uiMode.lockReason === 'WAITING_SLIP_APPROVAL' ? (
             <div className='rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 space-y-1'>
               <div className='flex items-center gap-2'>
                 <Clock size={16} className='text-blue-500 shrink-0' />
-                <span className='text-sm font-bold text-blue-700'>รอโรงงานตรวจสอบสลีป</span>
+                <span className='text-sm font-bold text-blue-700'>รอโรงงานตรวจสอบสลิป</span>
               </div>
-              <p className='text-xs text-blue-600 ml-6'>โรงงานจะตรวจสอบสลีปของคุณและยืนยันรับเงิน จากนั้นจะเริ่มผลิตสินค้า</p>
+              <p className='text-xs text-blue-600 ml-6'>
+                โรงงานจะตรวจสอบสลิปของคุณและยืนยันรับเงิน จากนั้นจะเริ่มผลิตสินค้า
+              </p>
             </div>
           ) : null}
 
@@ -432,11 +441,13 @@ function OrderDetailMobileBody() {
           {activeSection === 'overview' && (
             <div data-tour='order-overview'>
               {quotation ? (
-                <OrderBOQCard quotation={quotation} factoryName={order.factoryName} factoryId={order.factoryId} />
+                <OrderBOQCard
+                  quotation={quotation}
+                  factoryName={order.factoryName}
+                  factoryId={order.factoryId}
+                />
               ) : null}
-              {rfq ? (
-                <RfqReferenceCard rfq={rfq} variant='accordion' defaultOpen={false} />
-              ) : null}
+              {rfq ? <RfqReferenceCard rfq={rfq} variant='accordion' defaultOpen={false} /> : null}
               <OrderOverviewSection
                 order={{
                   totalAmount: order.totalAmount,

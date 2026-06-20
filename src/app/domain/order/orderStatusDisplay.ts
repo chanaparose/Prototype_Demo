@@ -18,8 +18,8 @@ export type OrderStatusDisplayMeta = {
 
 /** ข้อความสถานะตามรหัส API (สอดคล้อง FactoryOrderCard STATUS_CONFIG) */
 export const ORDER_API_STATUS_DISPLAY: Record<string, OrderStatusDisplayMeta> = {
-  WS: { label: 'รอแนบสลีป', icon: Clock3 },
-  WA: { label: 'รอยืนยันสลีป', icon: ScanSearch },
+  WS: { label: 'รอแนบสลิป', icon: Clock3 },
+  WA: { label: 'รอยืนยันสลิป', icon: ScanSearch },
   PP: { label: 'รอชำระมัดจำ', icon: Clock3 },
   PE: { label: 'หมดกำหนดชำระ', icon: Ban },
   PD: { label: 'ชำระมัดจำแล้ว', icon: CircleDollarSign },
@@ -30,8 +30,8 @@ export const ORDER_API_STATUS_DISPLAY: Record<string, OrderStatusDisplayMeta> = 
   CN: { label: 'ยกเลิก', icon: Ban },
   CC: { label: 'ยกเลิก', icon: Ban },
   CL: { label: 'ยกเลิก', icon: Ban },
-  waiting_slip: { label: 'รอแนบสลีป', icon: Clock3 },
-  waiting_approval: { label: 'รอยืนยันสลีป', icon: ScanSearch },
+  waiting_slip: { label: 'รอแนบสลิป', icon: Clock3 },
+  waiting_approval: { label: 'รอยืนยันสลิป', icon: ScanSearch },
   pending_payment: { label: 'รอชำระมัดจำ', icon: Clock3 },
   in_production: { label: 'กำลังผลิต', icon: Settings },
   shipped: { label: 'จัดส่งแล้ว', icon: PackageCheck },

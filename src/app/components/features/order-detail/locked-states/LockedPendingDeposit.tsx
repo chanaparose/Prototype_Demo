@@ -42,7 +42,7 @@ export function LockedPendingDeposit({ ctx, onBackToOverview, onPayDeposit }: Pr
         รอการชำระเงิน
       </h2>
       <p className='mt-2 text-sm text-gray-600'>
-        กรุณาโอนเงินให้โรงงานและแนบสลีป โรงงานจะเริ่มผลิตหลังตรวจสอบสลีปแล้ว
+        กรุณาโอนเงินให้โรงงานและแนบสลิป โรงงานจะเริ่มผลิตหลังตรวจสอบสลิปแล้ว
       </p>
 
       <div
@@ -72,7 +72,7 @@ export function LockedPendingDeposit({ ctx, onBackToOverview, onPayDeposit }: Pr
         className='mt-6 w-full rounded-xl py-3 text-sm font-semibold text-white'
         style={{ background: CTA_GRADIENT }}
       >
-        โอนเงินและแนบสลีป →
+        โอนเงินและแนบสลิป →
       </Button>
 
       <Button

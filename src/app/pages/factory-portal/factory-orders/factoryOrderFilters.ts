@@ -21,9 +21,9 @@ export function matchTab(row: FactoryOrderRow, derived: DerivedCardState, tabId:
     (row.status === 'QC' &&
       [null, 'PD'].includes(row.production_summary?.current_update_status ?? null));
 
-  // WS = รอลูกค้าแนบสลีป, PP = รอลูกค้าชำระเงิน (legacy)
+  // WS = รอลูกค้าแนบสลิป, PP = รอลูกค้าชำระเงิน (legacy)
   if (tabId === 'awaiting_customer') return row.status === 'WS' || row.status === 'PP';
-  // WA = รอโรงงานยืนยันสลีป → tab เฉพาะ
+  // WA = รอโรงงานยืนยันสลิป → tab เฉพาะ
   if (tabId === 'verify_slip') return row.status === 'WA';
   if (tabId === 'needs_action') return needsAction && !isShipping && row.status !== 'WA';
   if (tabId === 'in_production')

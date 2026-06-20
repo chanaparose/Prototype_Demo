@@ -101,13 +101,13 @@ export const ORDER_STATUS_CONFIG: Record<
   { label: string; color: string; bg: string; dot: string }
 > = {
   waiting_slip: {
-    label: 'รอแนบสลีป',
+    label: 'รอแนบสลิป',
     color: ACCENT_ORANGE_DEEP,
     bg: PEACH_MIST,
     dot: ACCENT_ORANGE,
   },
   waiting_approval: {
-    label: 'รอยืนยันสลีป',
+    label: 'รอยืนยันสลิป',
     color: '#C2410C',
     bg: PEACH_SOFT,
     dot: ACCENT_ORANGE,

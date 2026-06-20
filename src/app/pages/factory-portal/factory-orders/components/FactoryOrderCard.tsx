@@ -39,8 +39,8 @@ const DEFAULT_STATUS_CONFIG = {
 
 const STATUS_CONFIG: Record<string, { label: string; tone: FactoryStatusTone; icon: LucideIcon }> =
   {
-    WS: { label: 'รอแนบสลีป', tone: 'warning', icon: Clock3 },
-    WA: { label: 'รอยืนยันสลีป', tone: 'warning', icon: ScanSearch },
+    WS: { label: 'รอแนบสลิป', tone: 'warning', icon: Clock3 },
+    WA: { label: 'รอยืนยันสลิป', tone: 'warning', icon: ScanSearch },
     PP: { label: 'รอชำระมัดจำ', tone: 'warning', icon: Clock3 },
     PE: { label: 'หมดกำหนดชำระ', tone: 'danger', icon: Ban },
     PD: { label: 'ชำระมัดจำแล้ว', tone: 'teal', icon: CircleDollarSign },

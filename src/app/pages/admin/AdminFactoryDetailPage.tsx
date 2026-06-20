@@ -36,6 +36,7 @@ import type {
 import type { FactoryApprovalStatus } from '@/domain/admin/types/adminFactory.model';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -46,13 +47,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  AdminTable,
+  AdminTableBody,
+  AdminTableCell,
+  AdminTableContainer,
+  AdminTableHead,
+  AdminTableHeader,
+  AdminTableRow,
+} from '@/components/admin/AdminTable';
 import { formatDateTime } from '@/utils/formatting/formatDate';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 
@@ -205,11 +207,7 @@ function mapDetail(raw: unknown): AdminFactoryDetailState {
     phone: pickScalarString(factory.owner_phone, factory.phone, '-'),
     registered_at: registeredAt,
     approval_status: approvalStatus,
-    business_type: pickScalarString(
-      factory.business_type_name,
-      factory.business_type,
-      '-',
-    ),
+    business_type: pickScalarString(factory.business_type_name, factory.business_type, '-'),
     province: pickScalarString(factory.province_name, factory.province, '-'),
     address: pickScalarString(factory.address_detail, factory.address, '-'),
     tax_id: pickScalarString(factory.tax_id, '-'),
@@ -342,7 +340,7 @@ export function AdminFactoryDetailPage() {
   };
 
   const handleCancelConfig = () => {
-    setSelectedConfigId(currentConfig?.config_id as number ?? '');
+    setSelectedConfigId((currentConfig?.config_id as number) ?? '');
     setConfigNote('');
     setIsEditingConfig(false);
   };
@@ -421,7 +419,6 @@ export function AdminFactoryDetailPage() {
     }
   };
 
-
   // ─────────────────────────────────────────────────────────────────────────
   // Render
   // ─────────────────────────────────────────────────────────────────────────
@@ -431,19 +428,20 @@ export function AdminFactoryDetailPage() {
 
   return (
     <div className='space-y-6'>
-
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => navigate('/admin/factories')}
-          className='flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-600 transition-colors mb-2'
-        >
-          <ChevronLeft size={14} />
-          กลับไปรายการโรงงาน
-        </Button>
-        <p className='text-xs text-slate-400 font-medium'>Admin / โรงงาน / รายละเอียด</p>
+        <div className='flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-400'>
+          <button
+            type='button'
+            onClick={() => navigate('/admin/factories')}
+            className='inline-flex items-center gap-1 text-slate-400 hover:text-purple-600 transition-colors'
+          >
+            <ChevronLeft size={12} />
+            Admin / โรงงาน
+          </button>
+          <span className='text-slate-300'>/</span>
+          <span>รายละเอียด</span>
+        </div>
 
         {loading ? (
           <div className='mt-2 space-y-2'>
@@ -459,7 +457,7 @@ export function AdminFactoryDetailPage() {
                 {approvalLabel}
               </span>
               {factory.approval_status === 'approved' ? (
-                <span className='flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700'>
+                <span className='flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700'>
                   <ShieldCheck size={11} />
                   อนุมัติแล้ว
                 </span>
@@ -496,7 +494,7 @@ export function AdminFactoryDetailPage() {
             onClick={() => setActiveTab(t.key)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === t.key
-                ? 'border-indigo-600 text-indigo-700'
+                ? 'border-purple-600 text-purple-700'
                 : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}
           >
@@ -512,7 +510,7 @@ export function AdminFactoryDetailPage() {
 
       {/* ── Tab: Config ──────────────────────────────────────────────────── */}
       {activeTab === 'config' && factory.factory_id ? (
-        <div className='bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-5'>
+        <div className='bg-white rounded-xl border border-slate-200 p-6 space-y-5'>
           <div className='flex items-start justify-between gap-4'>
             <div>
               <h3 className='text-sm font-bold text-slate-900'>Config ค่าคอมมิชชัน</h3>
@@ -524,7 +522,7 @@ export function AdminFactoryDetailPage() {
               <button
                 type='button'
                 onClick={() => setIsEditingConfig(true)}
-                className='flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors'
+                className='flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-600 border border-purple-200 rounded-lg hover:bg-purple-50 transition-colors'
               >
                 <Pencil size={12} />
                 แก้ไข
@@ -537,16 +535,28 @@ export function AdminFactoryDetailPage() {
             <p className='text-xs text-slate-500 mb-2'>Config ปัจจุบัน</p>
             <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm'>
               <div>
-                <p className='text-[10px] text-slate-400 uppercase font-semibold tracking-wide mb-0.5'>ชื่อ Config</p>
-                <p className='font-semibold text-slate-800'>{String(currentConfig?.label ?? '-')}</p>
+                <p className='text-[10px] text-slate-400 uppercase font-semibold tracking-wide mb-0.5'>
+                  ชื่อ Config
+                </p>
+                <p className='font-semibold text-slate-800'>
+                  {String(currentConfig?.label ?? '-')}
+                </p>
               </div>
               <div>
-                <p className='text-[10px] text-slate-400 uppercase font-semibold tracking-wide mb-0.5'>ค่าคอม</p>
-                <p className='font-semibold text-slate-800'>{String(currentConfig?.default_commission_rate ?? 0)}%</p>
+                <p className='text-[10px] text-slate-400 uppercase font-semibold tracking-wide mb-0.5'>
+                  ค่าคอม
+                </p>
+                <p className='font-semibold text-slate-800'>
+                  {String(currentConfig?.default_commission_rate ?? 0)}%
+                </p>
               </div>
               <div>
-                <p className='text-[10px] text-slate-400 uppercase font-semibold tracking-wide mb-0.5'>VAT</p>
-                <p className='font-semibold text-slate-800'>{String(currentConfig?.vat_rate ?? 0)}%</p>
+                <p className='text-[10px] text-slate-400 uppercase font-semibold tracking-wide mb-0.5'>
+                  VAT
+                </p>
+                <p className='font-semibold text-slate-800'>
+                  {String(currentConfig?.vat_rate ?? 0)}%
+                </p>
               </div>
             </div>
             {savedConfig && (
@@ -556,7 +566,7 @@ export function AdminFactoryDetailPage() {
 
           {/* Edit form — only shown when editing */}
           {isEditingConfig && (
-            <div className='rounded-lg border border-indigo-200 p-4 bg-indigo-50/30 space-y-4'>
+            <div className='rounded-lg border border-purple-200 p-4 bg-purple-50/30 space-y-4'>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div>
                   <Label className='block text-xs font-semibold text-slate-700 mb-1.5'>
@@ -592,7 +602,7 @@ export function AdminFactoryDetailPage() {
                   <Input
                     value={configNote}
                     onChange={(e) => setConfigNote(e.target.value)}
-                    className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                    className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500'
                     placeholder='เช่น ตกลงค่าคอมพิเศษ 3%'
                   />
                 </div>
@@ -603,9 +613,13 @@ export function AdminFactoryDetailPage() {
                   type='button'
                   onClick={handleSaveFactoryConfig}
                   disabled={savingConfig || isConfigUnchanged}
-                  className='flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60'
+                  className='flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-60'
                 >
-                  {savingConfig ? <Loader2 size={13} className='animate-spin' /> : <Save size={13} />}
+                  {savingConfig ? (
+                    <Loader2 size={13} className='animate-spin' />
+                  ) : (
+                    <Save size={13} />
+                  )}
                   {savingConfig ? 'กำลังบันทึก...' : 'บันทึก'}
                 </Button>
                 <Button
@@ -630,7 +644,7 @@ export function AdminFactoryDetailPage() {
             /* Skeleton */
             <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
               <div className='xl:col-span-2 space-y-6'>
-                <div className='bg-white rounded-xl border border-slate-200 shadow-sm p-6'>
+                <div className='bg-white rounded-xl border border-slate-200 p-6'>
                   <div className='h-4 w-28 bg-slate-100 rounded animate-pulse mb-4' />
                   <div className='grid grid-cols-2 gap-4'>
                     {Array.from({ length: 6 }).map((_, i) => (
@@ -642,7 +656,7 @@ export function AdminFactoryDetailPage() {
                   </div>
                 </div>
               </div>
-              <div className='bg-white rounded-xl border border-slate-200 shadow-sm p-6'>
+              <div className='bg-white rounded-xl border border-slate-200 p-6'>
                 <div className='h-4 w-32 bg-slate-100 rounded animate-pulse mb-4' />
                 <div className='space-y-2'>
                   {Array.from({ length: 2 }).map((_, i) => (
@@ -653,12 +667,10 @@ export function AdminFactoryDetailPage() {
             </div>
           ) : (
             <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
-
               {/* Left column */}
               <div className='xl:col-span-2 space-y-6'>
-
                 {/* Factory info */}
-                <div className='bg-white rounded-xl border border-slate-200 shadow-sm p-6'>
+                <div className='bg-white rounded-xl border border-slate-200 p-6'>
                   <h3 className='text-sm font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100'>
                     ข้อมูลโรงงาน
                   </h3>
@@ -686,7 +698,7 @@ export function AdminFactoryDetailPage() {
                 </div>
 
                 {/* Certificates table */}
-                <div className='bg-white rounded-xl border border-slate-200 shadow-sm p-6'>
+                <div className='bg-white rounded-xl border border-slate-200 p-6'>
                   <h3 className='text-sm font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100'>
                     ใบรับรอง / เอกสารยืนยัน
                   </h3>
@@ -697,29 +709,44 @@ export function AdminFactoryDetailPage() {
                       <table className='w-full text-sm'>
                         <thead>
                           <tr className='border-b border-slate-100'>
-                            <th className='text-left text-xs font-semibold text-slate-500 pb-2 pr-3'>ใบรับรอง</th>
-                            <th className='text-left text-xs font-semibold text-slate-500 pb-2 pr-3'>เลขที่</th>
-                            <th className='text-left text-xs font-semibold text-slate-500 pb-2 pr-3'>วันหมดอายุ</th>
-                            <th className='text-left text-xs font-semibold text-slate-500 pb-2 pr-3'>สถานะ</th>
-                            <th className='text-left text-xs font-semibold text-slate-500 pb-2'>ดำเนินการ</th>
+                            <th className='text-left text-xs font-semibold text-slate-500 pb-2 pr-3'>
+                              ใบรับรอง
+                            </th>
+                            <th className='text-left text-xs font-semibold text-slate-500 pb-2 pr-3'>
+                              เลขที่
+                            </th>
+                            <th className='text-left text-xs font-semibold text-slate-500 pb-2 pr-3'>
+                              วันหมดอายุ
+                            </th>
+                            <th className='text-left text-xs font-semibold text-slate-500 pb-2 pr-3'>
+                              สถานะ
+                            </th>
+                            <th className='text-left text-xs font-semibold text-slate-500 pb-2'>
+                              ดำเนินการ
+                            </th>
                           </tr>
                         </thead>
                         <tbody className='divide-y divide-slate-50'>
                           {factory.certificates.map((cert) => {
                             const vs = cert.verify_status?.trim();
-                            const certStatusMeta =
+                            const certStatusMeta: { label: string; variant: AdminBadgeVariant } =
                               vs === 'AP'
-                                ? { label: 'อนุมัติแล้ว', cls: 'bg-emerald-100 text-emerald-700' }
+                                ? { label: 'อนุมัติแล้ว', variant: 'success' }
                                 : vs === 'RJ'
-                                  ? { label: 'ปฏิเสธ', cls: 'bg-red-100 text-red-600' }
-                                  : { label: 'รอตรวจสอบ', cls: 'bg-amber-100 text-amber-700' };
+                                  ? { label: 'ปฏิเสธ', variant: 'error' }
+                                  : { label: 'รอตรวจสอบ', variant: 'pending' };
                             const expStatus = certExpireStatus(cert.expire_date);
                             return (
-                              <tr key={cert.map_id} className='hover:bg-slate-50 transition-colors align-middle'>
+                              <tr
+                                key={cert.map_id}
+                                className='hover:bg-slate-50 transition-colors align-middle'
+                              >
                                 <td className='py-3 pr-3'>
                                   <div className='flex items-center gap-1.5'>
                                     <FileText size={13} className='text-slate-400 shrink-0' />
-                                    <span className='font-medium text-slate-800'>{cert.cert_name}</span>
+                                    <span className='font-medium text-slate-800'>
+                                      {cert.cert_name}
+                                    </span>
                                   </div>
                                 </td>
                                 <td className='py-3 pr-3 text-slate-600 text-xs font-mono'>
@@ -741,10 +768,14 @@ export function AdminFactoryDetailPage() {
                                       )}
                                       {cert.expire_date}
                                       {expStatus === 'expired' && (
-                                        <span className='ml-1 px-1.5 py-0.5 bg-red-100 text-red-600 rounded text-[10px] font-bold'>หมดอายุ</span>
+                                        <span className='ml-1 px-1.5 py-0.5 bg-red-100 text-red-600 rounded text-[10px] font-bold'>
+                                          หมดอายุ
+                                        </span>
                                       )}
                                       {expStatus === 'soon' && (
-                                        <span className='ml-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold'>ใกล้หมดอายุ</span>
+                                        <span className='ml-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold'>
+                                          ใกล้หมดอายุ
+                                        </span>
                                       )}
                                     </span>
                                   ) : (
@@ -752,15 +783,15 @@ export function AdminFactoryDetailPage() {
                                   )}
                                 </td>
                                 <td className='py-3 pr-3'>
-                                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${certStatusMeta.cls}`}>
+                                  <Badge variant={certStatusMeta.variant} size='sm'>
                                     {certStatusMeta.label}
-                                  </span>
+                                  </Badge>
                                 </td>
                                 <td className='py-3'>
                                   <button
                                     type='button'
                                     onClick={() => setCertReview(cert)}
-                                    className='flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors'
+                                    className='flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors'
                                   >
                                     <Image size={11} />
                                     ตรวจสอบ
@@ -778,26 +809,27 @@ export function AdminFactoryDetailPage() {
 
               {/* Right column — actions + timeline */}
               <div className='space-y-6'>
-
                 {/* Approval action card */}
-                <div className='bg-white rounded-xl border border-slate-200 shadow-sm p-5'>
-                  <h3 className='text-xs font-bold text-slate-500 uppercase tracking-wide mb-3'>
+                <div className='bg-white rounded-xl border border-slate-200 p-6'>
+                  <h3 className='text-sm font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100'>
                     สถานะโรงงาน
                   </h3>
 
                   {/* Status display */}
                   <div className='flex items-center justify-between mb-4'>
                     <div>
-                      <span className={`px-3 py-1.5 rounded-full text-sm font-bold ${approvalChipCls}`}>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${approvalChipCls}`}
+                      >
                         {approvalLabel}
                       </span>
                     </div>
                     {factory.approval_status === 'approved' && (
-                    <span className='flex items-center gap-1 text-xs text-indigo-600 font-semibold'>
-                      <ShieldCheck size={13} />
-                      อนุมัติแล้ว
-                    </span>
-                  )}
+                      <span className='flex items-center gap-1 text-xs text-purple-600 font-semibold'>
+                        <ShieldCheck size={13} />
+                        อนุมัติแล้ว
+                      </span>
+                    )}
                   </div>
 
                   {/* Approve / Reject — only shown when pending */}
@@ -808,9 +840,13 @@ export function AdminFactoryDetailPage() {
                         type='button'
                         onClick={handleApprove}
                         disabled={saving}
-                        className='w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-60'
+                        className='w-full flex items-center justify-center gap-2 py-2.5 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-60'
                       >
-                        {saving ? <Loader2 size={14} className='animate-spin' /> : <CheckCircle size={14} />}
+                        {saving ? (
+                          <Loader2 size={14} className='animate-spin' />
+                        ) : (
+                          <CheckCircle size={14} />
+                        )}
                         อนุมัติโรงงาน
                       </Button>
                       <Button
@@ -818,7 +854,7 @@ export function AdminFactoryDetailPage() {
                         type='button'
                         onClick={() => setRejectOpen(true)}
                         disabled={saving}
-                        className='w-full flex items-center justify-center gap-2 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors border border-red-100 disabled:opacity-60'
+                        className='w-full flex items-center justify-center gap-2 py-2.5 bg-white text-red-600 text-sm font-semibold rounded-lg hover:bg-red-50 transition-colors border border-red-200 disabled:opacity-60'
                       >
                         <XCircle size={14} />
                         ปฏิเสธ
@@ -827,33 +863,35 @@ export function AdminFactoryDetailPage() {
                   ) : null}
 
                   {/* Danger zone — Suspend (SA only, เฉพาะตอน approved หรือ suspended) */}
-                  {canSuspend && (factory.approval_status === 'approved' || factory.approval_status === 'suspended') && (
-                    <div className='border-t border-slate-100 pt-3 mt-2 space-y-2'>
-                      <p className='text-[10px] font-semibold text-slate-400 uppercase tracking-wide'>
-                        การดำเนินการพิเศษ (SA only)
-                      </p>
-                      <Button
-                        variant='unstyled'
-                        type='button'
-                        onClick={() => setSuspendConfirmOpen(true)}
-                        disabled={saving}
-                        className={`w-full flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-lg transition-colors disabled:opacity-60 ${
-                          factory.approval_status === 'suspended'
-                            ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                            : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-100'
-                        }`}
-                      >
-                        <AlertTriangle size={14} />
-                        {factory.approval_status === 'suspended'
-                          ? 'ยกเลิกระงับโรงงาน'
-                          : 'ระงับโรงงาน'}
-                      </Button>
-                    </div>
-                  )}
+                  {canSuspend &&
+                    (factory.approval_status === 'approved' ||
+                      factory.approval_status === 'suspended') && (
+                      <div className='border-t border-slate-100 pt-3 mt-2 space-y-2'>
+                        <p className='text-[10px] font-semibold text-slate-400 uppercase tracking-wide'>
+                          การดำเนินการพิเศษ (SA only)
+                        </p>
+                        <Button
+                          variant='unstyled'
+                          type='button'
+                          onClick={() => setSuspendConfirmOpen(true)}
+                          disabled={saving}
+                          className={`w-full flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-lg transition-colors disabled:opacity-60 ${
+                            factory.approval_status === 'suspended'
+                              ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                              : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-100'
+                          }`}
+                        >
+                          <AlertTriangle size={14} />
+                          {factory.approval_status === 'suspended'
+                            ? 'ยกเลิกระงับโรงงาน'
+                            : 'ระงับโรงงาน'}
+                        </Button>
+                      </div>
+                    )}
                 </div>
 
                 {/* Timeline */}
-                <div className='bg-white rounded-xl border border-slate-200 shadow-sm p-6'>
+                <div className='bg-white rounded-xl border border-slate-200 p-6'>
                   <h3 className='text-sm font-bold text-slate-900 mb-4'>ประวัติการดำเนินการ</h3>
                   <div className='relative'>
                     <div className='absolute left-4 top-0 bottom-0 w-px bg-slate-200' />
@@ -872,12 +910,12 @@ export function AdminFactoryDetailPage() {
                             >
                               <div
                                 className={`w-5 h-5 rounded-full bg-white border-2 flex items-center justify-center shrink-0 z-10 mt-0.5 ${
-                                  isLast ? 'border-indigo-400' : 'border-slate-300'
+                                  isLast ? 'border-purple-400' : 'border-slate-300'
                                 }`}
                               >
                                 <Icon
                                   size={10}
-                                  className={isLast ? 'text-indigo-500' : 'text-slate-400'}
+                                  className={isLast ? 'text-purple-500' : 'text-slate-400'}
                                 />
                               </div>
                               <div className='flex-1 min-w-0'>
@@ -942,13 +980,20 @@ export function AdminFactoryDetailPage() {
                 disabled={rejectSubmitting || rejectReason.trim().length < 10}
                 className='flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-60'
               >
-                {rejectSubmitting ? <Loader2 size={13} className='animate-spin' /> : <XCircle size={13} />}
+                {rejectSubmitting ? (
+                  <Loader2 size={13} className='animate-spin' />
+                ) : (
+                  <XCircle size={13} />
+                )}
                 ยืนยันการปฏิเสธ
               </Button>
               <Button
                 variant='unstyled'
                 type='button'
-                onClick={() => { setRejectOpen(false); setRejectReason(''); }}
+                onClick={() => {
+                  setRejectOpen(false);
+                  setRejectReason('');
+                }}
                 className='flex-1 py-2.5 bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-200 transition-colors'
               >
                 ยกเลิก
@@ -990,7 +1035,9 @@ export function AdminFactoryDetailPage() {
                     : 'bg-red-600 text-white hover:bg-red-700'
                 }`}
               >
-                {factory.approval_status === 'suspended' ? 'ยืนยัน ยกเลิกระงับ' : 'ยืนยัน ระงับโรงงาน'}
+                {factory.approval_status === 'suspended'
+                  ? 'ยืนยัน ยกเลิกระงับ'
+                  : 'ยืนยัน ระงับโรงงาน'}
               </Button>
               <Button
                 variant='unstyled'
@@ -1024,16 +1071,16 @@ export function AdminFactoryDetailPage() {
                     <span className='font-mono'>เลขที่: {certReview.cert_number}</span>
                   )}
                   {certReview.expire_date && (
-                    <span className={`flex items-center gap-1 ${
-                      certExpireStatus(certReview.expire_date) === 'expired'
-                        ? 'text-red-600 font-semibold'
-                        : certExpireStatus(certReview.expire_date) === 'soon'
-                          ? 'text-amber-600 font-semibold'
-                          : ''
-                    }`}>
-                      {certExpireStatus(certReview.expire_date) !== 'ok' && (
-                        <CalendarX size={11} />
-                      )}
+                    <span
+                      className={`flex items-center gap-1 ${
+                        certExpireStatus(certReview.expire_date) === 'expired'
+                          ? 'text-red-600 font-semibold'
+                          : certExpireStatus(certReview.expire_date) === 'soon'
+                            ? 'text-amber-600 font-semibold'
+                            : ''
+                      }`}
+                    >
+                      {certExpireStatus(certReview.expire_date) !== 'ok' && <CalendarX size={11} />}
                       หมดอายุ: {certReview.expire_date}
                     </span>
                   )}
@@ -1042,6 +1089,8 @@ export function AdminFactoryDetailPage() {
               <button
                 type='button'
                 onClick={() => setCertReview(null)}
+                aria-label='ปิดหน้าต่างตรวจสอบใบรับรอง'
+                title='ปิดหน้าต่างตรวจสอบใบรับรอง'
                 className='w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors'
               >
                 <X size={16} />
@@ -1050,7 +1099,6 @@ export function AdminFactoryDetailPage() {
 
             {/* Modal body */}
             <div className='grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100'>
-
               {/* Document preview */}
               <div className='p-4 bg-slate-50 flex items-center justify-center min-h-64'>
                 {certReview.document_url ? (
@@ -1179,30 +1227,32 @@ function InfoRow({
   value: string;
 }) {
   return (
-    <div className='flex items-start gap-2.5'>
-      <Icon size={14} className='text-slate-400 mt-0.5 shrink-0' />
+    <div className='flex items-start gap-3'>
+      <Icon size={15} className='text-slate-400 mt-0.5 shrink-0' />
       <div>
-        <p className='text-[10px] text-slate-400 font-medium uppercase tracking-wide'>{label}</p>
+        <p className='text-xs text-slate-500 font-semibold'>{label}</p>
         <p className='text-sm text-slate-900 font-medium'>{value || '-'}</p>
       </div>
     </div>
   );
 }
 
-const ORDER_SLIP_STATUS: Record<string, { label: string; cls: string }> = {
-  PE: { label: 'รอสลีป', cls: 'bg-slate-100 text-slate-600' },
-  ST: { label: 'รอตรวจสอบ', cls: 'bg-amber-50 text-amber-700' },
-  AP: { label: 'อนุมัติแล้ว', cls: 'bg-emerald-50 text-emerald-700' },
-  RJ: { label: 'ปฏิเสธ', cls: 'bg-red-50 text-red-700' },
+type AdminBadgeVariant = NonNullable<React.ComponentProps<typeof Badge>['variant']>;
+
+const ORDER_SLIP_STATUS: Record<string, { label: string; variant: AdminBadgeVariant }> = {
+  PE: { label: 'รอสลีป', variant: 'pending' },
+  ST: { label: 'รอตรวจสอบ', variant: 'info' },
+  AP: { label: 'อนุมัติแล้ว', variant: 'success' },
+  RJ: { label: 'ปฏิเสธ', variant: 'error' },
 };
 
-const ORDER_STATUS: Record<string, { label: string; cls: string }> = {
-  PD: { label: 'รอดำเนินการ', cls: 'bg-slate-100 text-slate-600' },
-  CF: { label: 'ยืนยันแล้ว', cls: 'bg-blue-50 text-blue-700' },
-  PR: { label: 'กำลังผลิต', cls: 'bg-indigo-50 text-indigo-700' },
-  SH: { label: 'จัดส่งแล้ว', cls: 'bg-cyan-50 text-cyan-700' },
-  CP: { label: 'เสร็จสิ้น', cls: 'bg-emerald-50 text-emerald-700' },
-  CL: { label: 'ยกเลิก', cls: 'bg-red-50 text-red-700' },
+const ORDER_STATUS: Record<string, { label: string; variant: AdminBadgeVariant }> = {
+  PD: { label: 'รอดำเนินการ', variant: 'inactive' },
+  CF: { label: 'ยืนยันแล้ว', variant: 'info' },
+  PR: { label: 'กำลังผลิต', variant: 'active' },
+  SH: { label: 'จัดส่งแล้ว', variant: 'info' },
+  CP: { label: 'เสร็จสิ้น', variant: 'success' },
+  CL: { label: 'ยกเลิก', variant: 'error' },
 };
 
 const ORDERS_LIMIT = 20;
@@ -1221,9 +1271,18 @@ function FactoryOrdersTab({ factoryId }: { factoryId: number }) {
     adminApi
       .listOrders({ factory_id: factoryId, page, page_size: ORDERS_LIMIT })
       .then((res: unknown) => {
-        const r = res as { data?: IAdminOrderListResponse[]; orders?: IAdminOrderListResponse[]; pagination?: { total?: number }; total?: number };
-        const list = Array.isArray(res) ? (res as IAdminOrderListResponse[]) : (r.data ?? r.orders ?? []);
-        const tot = Array.isArray(res) ? (res as IAdminOrderListResponse[]).length : (r.pagination?.total ?? r.total ?? list.length);
+        const r = res as {
+          data?: IAdminOrderListResponse[];
+          orders?: IAdminOrderListResponse[];
+          pagination?: { total?: number };
+          total?: number;
+        };
+        const list = Array.isArray(res)
+          ? (res as IAdminOrderListResponse[])
+          : (r.data ?? r.orders ?? []);
+        const tot = Array.isArray(res)
+          ? (res as IAdminOrderListResponse[]).length
+          : (r.pagination?.total ?? r.total ?? list.length);
         setOrders(list);
         setTotal(tot);
       })
@@ -1244,109 +1303,117 @@ function FactoryOrdersTab({ factoryId }: { factoryId: number }) {
 
   return (
     <div className='space-y-4'>
-      <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
-        <div className='overflow-x-auto'>
-          <Table className='w-full text-sm'>
-            <TableHeader>
-              <TableRow className='bg-slate-50 border-b border-slate-200'>
-                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>Order</TableHead>
-                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>RFQ</TableHead>
-                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>ลูกค้า</TableHead>
-                <TableHead className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>ยอดรวม</TableHead>
-                <TableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>สถานะ</TableHead>
-                <TableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>สลีป</TableHead>
-                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>วันที่</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className='divide-y divide-slate-50'>
-              {loading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <TableRow key={i}>
-                    {Array.from({ length: 7 }).map((__, j) => (
-                      <TableCell key={j} className='px-4 py-3'>
-                        <div className='h-4 bg-slate-100 rounded animate-pulse' />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : orders.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className='px-4 py-10 text-center text-sm text-slate-400'>
-                    ยังไม่มี Order
-                  </TableCell>
-                </TableRow>
-              ) : (
-                orders.map((o) => {
-                  const slipStatus = o.slip_status ?? '';
-                  const slipSt = ORDER_SLIP_STATUS[slipStatus] ?? { label: slipStatus || '—', cls: 'bg-slate-100 text-slate-500' };
-                  const orderStatus = o.status ?? '';
-                  const ordSt = ORDER_STATUS[orderStatus] ?? { label: orderStatus || '—', cls: 'bg-slate-100 text-slate-500' };
-                  const grandTotal = pickScalarNumber(o.grand_total) ?? pickScalarNumber(o.total_amount) ?? 0;
-                  const slipUrl = o.slip_url;
-                  const isExpanded = expandedSlip === o.order_id;
-                  return (
-                    <>
-                      <TableRow key={o.order_id}>
-                        <TableCell className='px-4 py-3'>
-                          <Link
-                            to={`/admin/orders/${o.order_id}`}
-                            className='text-indigo-600 font-semibold text-xs hover:underline'
+      <AdminTableContainer>
+        <AdminTable>
+          <AdminTableHeader>
+            <AdminTableRow>
+              <AdminTableHead>Order</AdminTableHead>
+              <AdminTableHead>RFQ</AdminTableHead>
+              <AdminTableHead>ลูกค้า</AdminTableHead>
+              <AdminTableHead className='text-right'>ยอดรวม</AdminTableHead>
+              <AdminTableHead className='text-center'>สถานะ Order</AdminTableHead>
+              <AdminTableHead className='text-center'>สลิป</AdminTableHead>
+              <AdminTableHead>วันที่</AdminTableHead>
+            </AdminTableRow>
+          </AdminTableHeader>
+          <AdminTableBody className='divide-y divide-slate-50'>
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <AdminTableRow key={i}>
+                  {Array.from({ length: 7 }).map((__, j) => (
+                    <AdminTableCell key={j}>
+                      <div className='h-4 bg-slate-100 rounded animate-pulse' />
+                    </AdminTableCell>
+                  ))}
+                </AdminTableRow>
+              ))
+            ) : orders.length === 0 ? (
+              <AdminTableRow>
+                <AdminTableCell colSpan={7} className='py-10 text-center text-sm text-slate-400'>
+                  ยังไม่มี Order
+                </AdminTableCell>
+              </AdminTableRow>
+            ) : (
+              orders.map((o) => {
+                const slipStatus = o.slip_status ?? '';
+                const slipSt = ORDER_SLIP_STATUS[slipStatus] ?? {
+                  label: slipStatus || '—',
+                  variant: 'inactive' as const,
+                };
+                const orderStatus = o.status ?? '';
+                const ordSt = ORDER_STATUS[orderStatus] ?? {
+                  label: orderStatus || '—',
+                  variant: 'inactive' as const,
+                };
+                const grandTotal =
+                  pickScalarNumber(o.grand_total) ?? pickScalarNumber(o.total_amount) ?? 0;
+                const slipUrl = o.slip_url;
+                const isExpanded = expandedSlip === o.order_id;
+                return (
+                  <React.Fragment key={o.order_id}>
+                    <AdminTableRow>
+                      <AdminTableCell>
+                        <Link
+                          to={`/admin/orders/${o.order_id}`}
+                          className='text-indigo-600 font-semibold text-xs hover:underline'
+                        >
+                          #{o.order_id}
+                        </Link>
+                      </AdminTableCell>
+                      <AdminTableCell className='text-xs text-slate-700 max-w-[180px] truncate'>
+                        {o.rfq_title || '—'}
+                      </AdminTableCell>
+                      <AdminTableCell className='text-xs text-slate-500'>
+                        {o.customer_name || '—'}
+                      </AdminTableCell>
+                      <AdminTableCell className='text-right font-semibold tabular-nums text-xs'>
+                        {formatCurrencyNoDecimals(grandTotal)}
+                      </AdminTableCell>
+                      <AdminTableCell className='text-center'>
+                        <Badge variant={ordSt.variant} size='sm'>
+                          {ordSt.label}
+                        </Badge>
+                      </AdminTableCell>
+                      <AdminTableCell className='text-center'>
+                        {slipUrl ? (
+                          <button
+                            type='button'
+                            onClick={() => setExpandedSlip(isExpanded ? null : o.order_id)}
+                            className='text-xs text-indigo-600 hover:underline inline-flex items-center gap-1 mx-auto'
                           >
-                            #{o.order_id}
-                          </Link>
-                        </TableCell>
-                        <TableCell className='px-4 py-3 text-xs text-slate-700 max-w-[180px] truncate'>
-                          {o.rfq_title || '—'}
-                        </TableCell>
-                        <TableCell className='px-4 py-3 text-xs text-slate-500'>
-                          {o.customer_name || '—'}
-                        </TableCell>
-                        <TableCell className='px-4 py-3 text-right font-semibold tabular-nums text-xs'>
-                          {formatCurrencyNoDecimals(grandTotal)}
-                        </TableCell>
-                        <TableCell className='px-4 py-3 text-center'>
-                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${ordSt.cls}`}>
-                            {ordSt.label}
-                          </span>
-                        </TableCell>
-                        <TableCell className='px-4 py-3 text-center'>
-                          {slipUrl ? (
-                            <button
-                              onClick={() => setExpandedSlip(isExpanded ? null : o.order_id)}
-                              className='text-xs text-indigo-600 hover:underline flex items-center gap-1 mx-auto'
-                            >
-                              <span className={`inline-block px-2 py-0.5 rounded-full font-semibold ${slipSt.cls}`}>{slipSt.label}</span>
-                              <span>{isExpanded ? '▲' : '▼'}</span>
-                            </button>
-                          ) : (
-                            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${slipSt.cls}`}>
+                            <Badge variant={slipSt.variant} size='sm'>
                               {slipSt.label}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className='px-4 py-3 text-xs text-slate-400'>
-                          {o.created_at ? new Date(o.created_at).toLocaleDateString('th-TH') : '—'}
-                        </TableCell>
-                      </TableRow>
-                      {isExpanded && slipUrl && (
-                        <TableRow key={`slip-${o.order_id}`}>
-                          <TableCell colSpan={7} className='px-6 pb-4 bg-slate-50'>
-                            <img
-                              src={slipUrl}
-                              alt='สลีปการชำระเงิน'
-                              className='max-h-64 rounded-lg border border-slate-200 object-contain'
-                            />
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+                            </Badge>
+                            <span>{isExpanded ? '▲' : '▼'}</span>
+                          </button>
+                        ) : (
+                          <Badge variant={slipSt.variant} size='sm'>
+                            {slipSt.label}
+                          </Badge>
+                        )}
+                      </AdminTableCell>
+                      <AdminTableCell className='text-xs text-slate-400'>
+                        {o.created_at ? new Date(o.created_at).toLocaleDateString('th-TH') : '—'}
+                      </AdminTableCell>
+                    </AdminTableRow>
+                    {isExpanded && slipUrl && (
+                      <AdminTableRow className='hover:bg-slate-50'>
+                        <AdminTableCell colSpan={7} className='px-6 pb-4 bg-slate-50'>
+                          <img
+                            src={slipUrl}
+                            alt='สลีปการชำระเงิน'
+                            className='max-h-64 rounded-lg border border-slate-200 object-contain'
+                          />
+                        </AdminTableCell>
+                      </AdminTableRow>
+                    )}
+                  </React.Fragment>
+                );
+              })
+            )}
+          </AdminTableBody>
+        </AdminTable>
+      </AdminTableContainer>
 
       {totalPages > 1 && (
         <div className='flex items-center justify-center gap-2'>

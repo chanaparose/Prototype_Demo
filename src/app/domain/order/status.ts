@@ -5,7 +5,7 @@ export const PENDING_PAYMENT_UI_STATUSES = [
   'pending_payment',
 ] as const;
 
-/** สถานะก่อนชำระมัดจำ/ยืนยันสลีป — แสดงใน tab รอชำระ (rfq-and-orders) */
+/** สถานะก่อนชำระมัดจำ/ยืนยันสลิป — แสดงใน tab รอชำระ (rfq-and-orders) */
 export function isPendingPaymentStatus(status: string): boolean {
   const mapped = mapOrderStatusFromApi(status);
   return (PENDING_PAYMENT_UI_STATUSES as readonly string[]).includes(mapped);

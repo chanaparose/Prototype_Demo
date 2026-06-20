@@ -101,8 +101,8 @@ function unwrapOrder(raw: unknown): Record<string, unknown> {
 
 function statusLabel(code: string): string {
   const s = code.toUpperCase();
-  if (s === 'WS') return 'รอแนบสลีป';
-  if (s === 'WA') return 'รอยืนยันสลีป';
+  if (s === 'WS') return 'รอแนบสลิป';
+  if (s === 'WA') return 'รอยืนยันสลิป';
   if (s === 'PP') return 'รอชำระเงิน';
   if (s === 'PE') return 'หมดกำหนดชำระ';
   if (s === 'PD') return 'ต้องดำเนินการ';
@@ -855,7 +855,7 @@ export function FactoryOrderDetailPage() {
                         )}
                       </div>
 
-                      {/* ── สลีปการโอนเงิน ── */}
+                      {/* ── สลิปการโอนเงิน ── */}
                       <div className='px-4 py-4'>
                         <SlipVerificationCard
                           orderId={String(order.order_id ?? id)}
@@ -1046,7 +1046,7 @@ function slipStatusConfig(s: string) {
     };
   if (code === 'PE')
     return {
-      label: 'รอลูกค้าแนบสลีป',
+      label: 'รอลูกค้าแนบสลิป',
       tone: 'neutral' as const,
       box: 'neutral' as const,
       icon: 'text-slate-400',
@@ -1147,10 +1147,10 @@ function SlipVerificationCard({
         <div className='flex items-center gap-2'>
           <AlertCircle size={16} className={cfg.icon} />
           <p className={`text-sm font-bold ${cfg.title}`}>
-            {isPending && 'ลูกค้าแนบสลีปการโอนเงิน — รอตรวจสอบ'}
-            {isApproved && 'สลีปได้รับการยืนยันแล้ว'}
-            {isRejected && 'สลีปถูกปฏิเสธ'}
-            {isWaiting && 'รอลูกค้าแนบสลีปการโอนเงิน'}
+            {isPending && 'ลูกค้าแนบสลิปการโอนเงิน — รอตรวจสอบ'}
+            {isApproved && 'สลิปได้รับการยืนยันแล้ว'}
+            {isRejected && 'สลิปถูกปฏิเสธ'}
+            {isWaiting && 'รอลูกค้าแนบสลิปการโอนเงิน'}
           </p>
         </div>
         <FactoryStatusBadge tone={cfg.tone}>{cfg.label}</FactoryStatusBadge>
@@ -1165,7 +1165,7 @@ function SlipVerificationCard({
         >
           <img
             src={String(slipData.slip_url)}
-            alt='สลีปการโอนเงิน'
+            alt='สลิปการโอนเงิน'
             className='max-h-52 object-contain'
           />
         </button>
@@ -1248,7 +1248,7 @@ function SlipVerificationCard({
                   className: 'flex-1',
                 })}
               >
-                {acting ? 'กำลังดำเนินการ…' : 'ยืนยันปฏิเสธสลีป'}
+                {acting ? 'กำลังดำเนินการ…' : 'ยืนยันปฏิเสธสลิป'}
               </Button>
               <Button
                 variant='unstyled'
@@ -1278,13 +1278,13 @@ function SlipVerificationCard({
               type='button'
               onClick={() => setPreviewUrl(null)}
               className='absolute -right-3 -top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white/15 text-white shadow-none hover:bg-white/25'
-              aria-label='ปิดตัวอย่างสลีป'
+              aria-label='ปิดตัวอย่างสลิป'
             >
               <X size={20} />
             </Button>
             <img
               src={previewUrl}
-              alt='สลีปเต็ม'
+              alt='สลิปเต็ม'
               className='max-h-[85vh] max-w-full rounded-lg object-contain'
             />
           </div>

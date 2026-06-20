@@ -30,14 +30,15 @@ import { useAdminDashboardQuery } from '@/domain/admin/queries/useAdminDashboard
 import { useAdminTopCustomersQuery } from '@/domain/admin/queries/useAdminTopCustomersQuery';
 import { StatusBadge as SharedStatusBadge } from '@/shared/ui/badges/StatusBadge';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  AdminTable,
+  AdminTableBody,
+  AdminTableCell,
+  AdminTableContainer,
+  AdminTableHead,
+  AdminTableHeader,
+  AdminTableRow,
   TableSkeletonRows,
-} from '@/components/ui/table';
+} from '@/components/admin/AdminTable';
 
 interface KpiCard {
   label: string;
@@ -93,13 +94,13 @@ function TopCustomersWidget() {
   const loading = topCustomersQ.isLoading;
 
   return (
-    <div className='bg-white rounded-xl border border-slate-200 p-5 shadow-sm'>
-      <div className='flex items-center justify-between mb-4'>
+    <div className='bg-white rounded-xl border border-slate-200 p-5 lg:p-7'>
+      <div className='flex items-center justify-between mb-4 lg:mb-6'>
         <div>
           <h3 className='text-sm font-semibold text-slate-900'>Top 5 ลูกค้า</h3>
           <p className='text-xs text-slate-400 mt-0.5'>ยอดซื้อสูงสุด</p>
         </div>
-        <Link to='/admin/customers' className='text-xs text-indigo-600 hover:underline font-medium'>
+        <Link to='/admin/customers' className='text-xs text-purple-600 hover:underline font-medium'>
           ดูทั้งหมด →
         </Link>
       </div>
@@ -125,7 +126,7 @@ function TopCustomersWidget() {
               </span>
               <Link
                 to={`/admin/customers/${c.user_id}`}
-                className='flex-1 min-w-0 hover:text-indigo-600 transition-colors'
+                className='flex-1 min-w-0 hover:text-purple-600 transition-colors'
               >
                 <p className='text-sm font-medium text-slate-900 truncate'>
                   {c.first_name} {c.last_name}
@@ -133,7 +134,7 @@ function TopCustomersWidget() {
                 <p className='text-xs text-slate-400 truncate'>{c.email}</p>
               </Link>
               <div className='text-right shrink-0'>
-                <p className='text-sm font-semibold text-indigo-700'>
+                <p className='text-sm font-semibold text-purple-700'>
                   {formatCurrencyNoDecimals(pickScalarNumber(c.total_spend) ?? 0)}
                 </p>
                 <p className='text-xs text-slate-400'>{c.total_orders} ออเดอร์</p>
@@ -182,8 +183,8 @@ export function AdminDashboardPage() {
         label: 'ค่าคอมมิชชัน',
         value: toCurrency(commission),
         icon: BadgePercent,
-        iconBg: 'bg-indigo-100',
-        iconColor: 'text-indigo-600',
+        iconBg: 'bg-purple-100',
+        iconColor: 'text-purple-600',
       },
       {
         label: 'VAT รวม',
@@ -235,10 +236,10 @@ export function AdminDashboardPage() {
   }, [recentOrders]);
 
   return (
-    <div className='space-y-8'>
+    <div className='space-y-8 lg:space-y-10'>
       <div>
         <p className='text-xs text-slate-400 font-medium'>Admin / แดชบอร์ด</p>
-        <h2 className='text-2xl font-bold text-slate-900 mt-1'>ภาพรวมระบบ</h2>
+        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900 mt-1'>ภาพรวมระบบ</h2>
       </div>
 
       {error ? (
@@ -248,7 +249,7 @@ export function AdminDashboardPage() {
         </div>
       ) : null}
 
-      <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4'>
+      <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 lg:gap-6'>
         {kpiData.map((card) => {
           const Icon = card.icon;
           const isUp = typeof card.change === 'number' ? card.change > 0 : null;
@@ -256,7 +257,7 @@ export function AdminDashboardPage() {
           return (
             <div
               key={card.label}
-              className='bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow'
+              className='bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow'
             >
               <div
                 className={`w-9 h-9 rounded-lg ${card.iconBg} flex items-center justify-center mb-3`}
@@ -281,7 +282,7 @@ export function AdminDashboardPage() {
       </div>
 
       <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
-        <div className='xl:col-span-2 bg-white rounded-xl border border-slate-200 p-5 shadow-sm'>
+        <div className='xl:col-span-2 bg-white rounded-xl border border-slate-200 p-5'>
           <h3 className='text-sm font-semibold text-slate-900 mb-1'>รายได้ & ค่าคอมมิชชัน</h3>
           <p className='text-xs text-slate-400 mb-5'>6 เดือนย้อนหลัง (บาท)</p>
           <ResponsiveContainer width='100%' height={220}>
@@ -309,7 +310,7 @@ export function AdminDashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className='bg-white rounded-xl border border-slate-200 p-5 shadow-sm'>
+        <div className='bg-white rounded-xl border border-slate-200 p-5'>
           <h3 className='text-sm font-semibold text-slate-900 mb-1'>สถานะคำสั่งซื้อ</h3>
           <p className='text-xs text-slate-400 mb-4'>5 รายการล่าสุด</p>
           <ResponsiveContainer width='100%' height={220}>
@@ -346,132 +347,132 @@ export function AdminDashboardPage() {
       </div>
 
       <div className='grid grid-cols-1 xl:grid-cols-2 gap-6'>
-        <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
+        <div className='bg-white rounded-xl border border-slate-200 overflow-hidden'>
           <div className='px-5 py-4 border-b border-slate-100'>
             <h3 className='text-sm font-semibold text-slate-900'>คำสั่งซื้อล่าสุด</h3>
             <p className='text-xs text-slate-400 mt-0.5'>5 รายการล่าสุด</p>
           </div>
-          <div className='overflow-x-auto'>
-            <Table className='w-full text-sm'>
-              <TableHeader>
-                <TableRow className='bg-slate-50 border-b border-slate-100'>
-                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+          <AdminTableContainer>
+            <AdminTable>
+              <AdminTableHeader>
+                <AdminTableRow>
+                  <AdminTableHead>
                     Order ID
-                  </TableHead>
-                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                  </AdminTableHead>
+                  <AdminTableHead>
                     ผู้ซื้อ
-                  </TableHead>
-                  <TableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                  </AdminTableHead>
+                  <AdminTableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
                     ยอดรวม
-                  </TableHead>
-                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                  </AdminTableHead>
+                  <AdminTableHead>
                     สถานะ
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className='divide-y divide-slate-50'>
+                  </AdminTableHead>
+                </AdminTableRow>
+              </AdminTableHeader>
+              <AdminTableBody className='divide-y divide-slate-50'>
                 {loading ? (
                   <TableSkeletonRows columns={4} rows={3} />
                 ) : recentOrders.length === 0 ? (
-                  <TableRow>
-                    <TableCell
+                  <AdminTableRow>
+                    <AdminTableCell
                       colSpan={4}
                       className='px-4 py-10 text-center text-sm text-slate-400'
                     >
                       ไม่มีข้อมูลคำสั่งซื้อ
-                    </TableCell>
-                  </TableRow>
+                    </AdminTableCell>
+                  </AdminTableRow>
                 ) : (
                   recentOrders.map((order) => {
                     const status = orderStatusMeta(pickScalarString(order.status));
                     return (
-                      <TableRow
+                      <AdminTableRow
                         key={pickScalarString(order.order_id)}
                         className='hover:bg-slate-50 transition-colors'
                       >
-                        <TableCell className='px-4 py-3 font-mono text-xs text-indigo-600 font-semibold'>
+                        <AdminTableCell className='px-4 py-3 font-mono text-xs text-purple-600 font-semibold'>
                           #{order.order_id}
-                        </TableCell>
-                        <TableCell className='px-4 py-3 text-xs text-slate-700 max-w-[120px] truncate'>
+                        </AdminTableCell>
+                        <AdminTableCell className='px-4 py-3 text-xs text-slate-700 max-w-[120px] truncate'>
                           {order.customer_name ?? '-'}
-                        </TableCell>
-                        <TableCell className='px-4 py-3 text-xs text-slate-900 font-semibold text-right tabular-nums'>
+                        </AdminTableCell>
+                        <AdminTableCell className='px-4 py-3 text-xs text-slate-900 font-semibold text-right tabular-nums'>
                           {toCurrency(pickScalarNumber(order.total_amount) ?? 0)}
-                        </TableCell>
-                        <TableCell className='px-4 py-3'>
+                        </AdminTableCell>
+                        <AdminTableCell className='px-4 py-3'>
                           <AdminStatusBadge label={status.label} cls={status.cls} />
-                        </TableCell>
-                      </TableRow>
+                        </AdminTableCell>
+                      </AdminTableRow>
                     );
                   })
                 )}
-              </TableBody>
-            </Table>
-          </div>
+              </AdminTableBody>
+            </AdminTable>
+          </AdminTableContainer>
         </div>
 
-        <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
+        <div className='bg-white rounded-xl border border-slate-200 overflow-hidden'>
           <div className='px-5 py-4 border-b border-slate-100'>
             <h3 className='text-sm font-semibold text-slate-900'>RFQ ล่าสุด</h3>
             <p className='text-xs text-slate-400 mt-0.5'>5 รายการล่าสุด</p>
           </div>
-          <div className='overflow-x-auto'>
-            <Table className='w-full text-sm'>
-              <TableHeader>
-                <TableRow className='bg-slate-50 border-b border-slate-100'>
-                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+          <AdminTableContainer>
+            <AdminTable>
+              <AdminTableHeader>
+                <AdminTableRow className='bg-slate-50 border-b border-slate-100'>
+                  <AdminTableHead>
                     RFQ ID
-                  </TableHead>
-                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                  </AdminTableHead>
+                  <AdminTableHead>
                     ผู้ซื้อ
-                  </TableHead>
-                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                  </AdminTableHead>
+                  <AdminTableHead>
                     สถานะ
-                  </TableHead>
-                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                  </AdminTableHead>
+                  <AdminTableHead>
                     วันที่
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className='divide-y divide-slate-50'>
+                  </AdminTableHead>
+                </AdminTableRow>
+              </AdminTableHeader>
+              <AdminTableBody className='divide-y divide-slate-50'>
                 {loading ? (
                   <TableSkeletonRows columns={4} rows={3} />
                 ) : recentRfqs.length === 0 ? (
-                  <TableRow>
-                    <TableCell
+                  <AdminTableRow>
+                    <AdminTableCell
                       colSpan={4}
                       className='px-4 py-10 text-center text-sm text-slate-400'
                     >
                       ไม่มีข้อมูล RFQ
-                    </TableCell>
-                  </TableRow>
+                    </AdminTableCell>
+                  </AdminTableRow>
                 ) : (
                   recentRfqs.map((rfq) => {
                     const status = rfqStatusMeta(pickScalarString(rfq.status));
                     return (
-                      <TableRow
+                      <AdminTableRow
                         key={pickScalarString(rfq.rfq_id)}
                         className='hover:bg-slate-50 transition-colors'
                       >
-                        <TableCell className='px-4 py-3 font-mono text-xs text-indigo-600 font-semibold'>
+                        <AdminTableCell className='px-4 py-3 font-mono text-xs text-purple-600 font-semibold'>
                           #{rfq.rfq_id}
-                        </TableCell>
-                        <TableCell className='px-4 py-3 text-xs text-slate-700 max-w-[140px] truncate'>
+                        </AdminTableCell>
+                        <AdminTableCell className='px-4 py-3 text-xs text-slate-700 max-w-[140px] truncate'>
                           {rfq.customer_name ?? '-'}
-                        </TableCell>
-                        <TableCell className='px-4 py-3'>
+                        </AdminTableCell>
+                        <AdminTableCell className='px-4 py-3'>
                           <AdminStatusBadge label={status.label} cls={status.cls} />
-                        </TableCell>
-                        <TableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
+                        </AdminTableCell>
+                        <AdminTableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
                           {pickScalarString(rfq.created_at, '-').slice(0, 10)}
-                        </TableCell>
-                      </TableRow>
+                        </AdminTableCell>
+                      </AdminTableRow>
                     );
                   })
                 )}
-              </TableBody>
-            </Table>
-          </div>
+              </AdminTableBody>
+            </AdminTable>
+          </AdminTableContainer>
         </div>
       </div>
     </div>

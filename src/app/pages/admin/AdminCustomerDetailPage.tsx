@@ -9,14 +9,16 @@ import type {
   IAdminWalletTxItemResponse,
 } from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  AdminTable,
+  AdminTableBody,
+  AdminTableCell,
+  AdminTableContainer,
+  AdminTableHead,
+  AdminTableHeader,
+  AdminTableRow,
+} from '@/components/admin/AdminTable';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDate, formatDateTime } from '@/utils/formatting/formatDate';
 
@@ -43,18 +45,17 @@ const ORDER_STATUS: Record<string, { label: string; color: string }> = {
   CA: { label: 'ยกเลิก', color: 'red' },
 };
 
-function Badge({ label, color }: { label: string; color: string }) {
-  const base = `inline-block px-2 py-0.5 rounded-full text-xs font-semibold`;
-  const cls: Record<string, string> = {
-    emerald: 'bg-emerald-50 text-emerald-700',
-    red: 'bg-red-50 text-red-700',
-    blue: 'bg-blue-50 text-blue-700',
-    amber: 'bg-amber-50 text-amber-700',
-    indigo: 'bg-indigo-50 text-indigo-700',
-    purple: 'bg-purple-50 text-purple-700',
-    slate: 'bg-slate-100 text-slate-500',
+function BadgeCustom({ label, color }: { label: string; color: string }) {
+  const variantMap: Record<string, string> = {
+    emerald: 'success',
+    red: 'error',
+    blue: 'info',
+    amber: 'pending',
+    purple: 'active',
+    indigo: 'active',
+    slate: 'inactive',
   };
-  return <span className={`${base} ${cls[color] ?? cls.slate}`}>{label}</span>;
+  return <Badge variant={variantMap[color] as any} size='sm'>{label}</Badge>;
 }
 
 function StatCard({
@@ -67,13 +68,13 @@ function StatCard({
   color?: string;
 }) {
   const border: Record<string, string> = {
-    indigo: 'border-indigo-200 bg-indigo-50',
+    indigo: 'border-purple-200 bg-purple-50',
     emerald: 'border-emerald-200 bg-emerald-50',
     amber: 'border-amber-200 bg-amber-50',
     slate: 'border-slate-200 bg-slate-50',
   };
   const text: Record<string, string> = {
-    indigo: 'text-indigo-700',
+    indigo: 'text-purple-700',
     emerald: 'text-emerald-700',
     amber: 'text-amber-700',
     slate: 'text-slate-700',
@@ -100,7 +101,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 function CustomerInfoTab({ detail }: { detail: IAdminCustomerDetailResponse }) {
   return (
     <div className='space-y-5'>
-      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6'>
         <StatCard label='ออเดอร์ทั้งหมด' value={`${detail.total_orders} รายการ`} color='slate' />
         <StatCard label='ยอดซื้อรวม' value={formatCurrency(detail.total_spend)} color='indigo' />
         <StatCard
@@ -141,7 +142,7 @@ function CustomerWalletTab({ userId }: { userId: number }) {
   if (loading) {
     return (
       <div className='py-12 flex justify-center'>
-        <div className='w-7 h-7 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin' />
+        <div className='w-7 h-7 border-4 border-purple-600 border-t-transparent rounded-full animate-spin' />
       </div>
     );
   }
@@ -157,42 +158,42 @@ function CustomerWalletTab({ userId }: { userId: number }) {
 
   return (
     <div className='space-y-5'>
-      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6'>
         <StatCard label='กองทุนพร้อมใช้' value={formatCurrency(wallet.good_fund)} color='emerald' />
         <StatCard label='รอยืนยัน' value={formatCurrency(wallet.pending_fund)} color='amber' />
         <StatCard label='รวมทั้งหมด' value={formatCurrency(wallet.total)} color='indigo' />
       </div>
 
-      <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
+      <div className='bg-white rounded-xl border border-slate-200 overflow-hidden'>
         <div className='px-5 py-4 border-b border-slate-100'>
           <h3 className='text-sm font-semibold text-slate-900'>ประวัติธุรกรรม</h3>
           <p className='text-xs text-slate-400 mt-0.5'>200 รายการล่าสุด</p>
         </div>
-        <div className='overflow-x-auto'>
-          <Table className='w-full text-sm'>
-            <TableHeader>
-              <TableRow className='bg-slate-50 border-b border-slate-200'>
-                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+        <AdminTableContainer>
+          <AdminTable>
+            <AdminTableHeader>
+              <AdminTableRow>
+                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
                   วันที่
-                </TableHead>
-                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+                </AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
                   ประเภท
-                </TableHead>
-                <TableHead className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>
+                </AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>
                   จำนวน
-                </TableHead>
-                <TableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
+                </AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
                   สถานะ
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className='divide-y divide-slate-50'>
+                </AdminTableHead>
+              </AdminTableRow>
+            </AdminTableHeader>
+            <AdminTableBody className='divide-y divide-slate-50'>
               {wallet.transactions.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className='px-4 py-10 text-center text-sm text-slate-400'>
+                <AdminTableRow>
+                  <AdminTableCell colSpan={4} className='px-4 py-10 text-center text-sm text-slate-400'>
                     ยังไม่มีธุรกรรม
-                  </TableCell>
-                </TableRow>
+                  </AdminTableCell>
+                </AdminTableRow>
               ) : (
                 wallet.transactions.map((tx: IAdminWalletTxItemResponse) => {
                   const ttype = TX_TYPE[tx.type] ?? {
@@ -206,27 +207,27 @@ function CustomerWalletTab({ userId }: { userId: number }) {
                       ? 'text-emerald-600 font-semibold'
                       : 'text-red-600 font-semibold';
                   return (
-                    <TableRow key={tx.tx_id}>
-                      <TableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
+                    <AdminTableRow key={tx.tx_id}>
+                      <AdminTableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
                         {formatDateTime(tx.created_at)}
-                      </TableCell>
-                      <TableCell className='px-4 py-3'>
-                        <Badge label={ttype.label} color={ttype.color} />
-                      </TableCell>
-                      <TableCell className={`px-4 py-3 text-right tabular-nums ${amountCls}`}>
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3'>
+                        <BadgeCustom label={ttype.label} color={ttype.color} />
+                      </AdminTableCell>
+                      <AdminTableCell className={`px-4 py-3 text-right tabular-nums ${amountCls}`}>
                         {ttype.sign}
                         {formatCurrency(tx.amount)}
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-center'>
-                        <Badge label={tstatus.label} color={tstatus.color} />
-                      </TableCell>
-                    </TableRow>
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-center'>
+                        <BadgeCustom label={tstatus.label} color={tstatus.color} />
+                      </AdminTableCell>
+                    </AdminTableRow>
                   );
                 })
               )}
-            </TableBody>
-          </Table>
-        </div>
+            </AdminTableBody>
+          </AdminTable>
+        </AdminTableContainer>
       </div>
     </div>
   );
@@ -267,79 +268,77 @@ function CustomerOrdersTab({ userId }: { userId: number }) {
 
   return (
     <div className='space-y-4'>
-      <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
-        <div className='overflow-x-auto'>
-          <Table className='w-full text-sm'>
-            <TableHeader>
-              <TableRow className='bg-slate-50 border-b border-slate-200'>
-                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+      <AdminTableContainer>
+          <AdminTable className='w-full text-sm'>
+            <AdminTableHeader>
+              <AdminTableRow className='bg-slate-50 border-b border-slate-200'>
+                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
                   Order ID
-                </TableHead>
-                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+                </AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
                   โรงงาน
-                </TableHead>
-                <TableHead className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>
+                </AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>
                   ยอดรวม
-                </TableHead>
-                <TableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
+                </AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
                   สถานะ
-                </TableHead>
-                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+                </AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
                   วันที่สั่ง
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className='divide-y divide-slate-50'>
+                </AdminTableHead>
+              </AdminTableRow>
+            </AdminTableHeader>
+            <AdminTableBody className='divide-y divide-slate-50'>
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
-                  <TableRow key={i}>
+                  <AdminTableRow key={i}>
                     {Array.from({ length: 5 }).map((__, j) => (
-                      <TableCell key={j} className='px-4 py-3'>
+                      <AdminTableCell key={j} className='px-4 py-3'>
                         <div className='h-4 bg-slate-100 rounded animate-pulse' />
-                      </TableCell>
+                      </AdminTableCell>
                     ))}
-                  </TableRow>
+                  </AdminTableRow>
                 ))
               ) : orders.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className='px-4 py-10 text-center text-sm text-slate-400'>
+                <AdminTableRow>
+                  <AdminTableCell colSpan={5} className='px-4 py-10 text-center text-sm text-slate-400'>
                     ยังไม่มีออเดอร์
-                  </TableCell>
-                </TableRow>
+                  </AdminTableCell>
+                </AdminTableRow>
               ) : (
                 orders.map((o) => {
                   const st = ORDER_STATUS[o.status] ?? { label: o.status, color: 'slate' };
                   return (
-                    <TableRow key={o.order_id} className='hover:bg-slate-50 transition-colors'>
-                      <TableCell className='px-4 py-3'>
+                    <AdminTableRow key={o.order_id} className='hover:bg-slate-50 transition-colors'>
+                      <AdminTableCell className='px-4 py-3'>
                         <Link
                           to={`/admin/orders/${o.order_id}`}
-                          className='text-indigo-600 font-semibold font-mono text-xs hover:underline'
+                          className='text-purple-600 font-semibold font-mono text-xs hover:underline'
                           onClick={(e) => e.stopPropagation()}
                         >
                           #{o.order_id}
                         </Link>
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-slate-700 truncate max-w-[160px]'>
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-slate-700 truncate max-w-[160px]'>
                         {o.factory_name}
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-right font-semibold tabular-nums'>
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-right font-semibold tabular-nums'>
                         {formatCurrency(o.grand_total)}
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-center'>
-                        <Badge label={st.label} color={st.color} />
-                      </TableCell>
-                      <TableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-center'>
+                        <BadgeCustom label={st.label} color={st.color} />
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
                         {formatDate(o.created_at)}
-                      </TableCell>
-                    </TableRow>
+                      </AdminTableCell>
+                    </AdminTableRow>
                   );
                 })
               )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+            </AdminTableBody>
+          </AdminTable>
+        </AdminTableContainer>
 
       {totalPages > 1 && (
         <div className='flex items-center justify-center gap-2'>
@@ -399,7 +398,7 @@ export function AdminCustomerDetailPage() {
   if (loading) {
     return (
       <div className='py-24 flex justify-center'>
-        <div className='w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin' />
+        <div className='w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin' />
       </div>
     );
   }
@@ -411,7 +410,7 @@ export function AdminCustomerDetailPage() {
           variant='unstyled'
           type='button'
           onClick={() => navigate('/admin/customers')}
-          className='flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-600 transition-colors'
+          className='flex items-center gap-1.5 text-xs text-slate-400 hover:text-purple-600 transition-colors'
         >
           <ArrowLeft size={14} />
           กลับ
@@ -433,14 +432,14 @@ export function AdminCustomerDetailPage() {
           variant='unstyled'
           type='button'
           onClick={() => navigate('/admin/customers')}
-          className='flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-600 transition-colors mb-2'
+          className='flex items-center gap-1.5 text-xs text-slate-400 hover:text-purple-600 transition-colors mb-2'
         >
           <ArrowLeft size={14} />
           กลับไปรายการลูกค้า
         </Button>
         <p className='text-xs text-slate-400 font-medium'>Admin / ลูกค้า / รายละเอียด</p>
         <div className='flex items-center gap-3 mt-1'>
-          <div className='w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm shrink-0'>
+          <div className='w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-sm shrink-0'>
             <User size={18} />
           </div>
           <div>
@@ -474,7 +473,7 @@ export function AdminCustomerDetailPage() {
             onClick={() => setTab(t.key)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               tab === t.key
-                ? 'border-indigo-600 text-indigo-700'
+                ? 'border-purple-600 text-purple-700'
                 : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}
           >

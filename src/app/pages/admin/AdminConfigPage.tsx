@@ -31,13 +31,14 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  AdminTable,
+  AdminTableBody,
+  AdminTableCell,
+  AdminTableContainer,
+  AdminTableHead,
+  AdminTableHeader,
+  AdminTableRow,
+} from '@/components/admin/AdminTable';
 
 const RANK: Record<string, number> = { AM: 1, AD: 2, SA: 3 };
 function canEdit(role: string, minRole: 'AM' | 'AD' | 'SA'): boolean {
@@ -107,7 +108,7 @@ function SaveButton({
       type='button'
       onClick={onClick}
       disabled={saving || disabled}
-      className='flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50'
+      className='flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50'
     >
       <Save size={14} />
       {saving ? 'กำลังบันทึก...' : saved ? 'บันทึกแล้ว ✓' : (text ?? 'บันทึก')}
@@ -329,10 +330,10 @@ export function AdminConfigPage() {
   };
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-6 lg:space-y-8'>
       <div>
         <p className='text-xs text-slate-400 font-medium'>Admin / ตั้งค่า</p>
-        <h2 className='text-2xl font-bold text-slate-900 mt-1'>ตั้งค่าระบบ</h2>
+        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900 mt-1'>ตั้งค่าระบบ</h2>
       </div>
 
       {error ? (
@@ -342,7 +343,7 @@ export function AdminConfigPage() {
         </div>
       ) : null}
 
-      <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
+      <div className='bg-white rounded-xl border border-slate-200 overflow-hidden'>
         <div className='flex border-b border-slate-200 overflow-x-auto'>
           {TABS.map((tab) => (
             <Button
@@ -352,7 +353,7 @@ export function AdminConfigPage() {
               onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === tab.key
-                  ? 'border-indigo-600 text-indigo-700 bg-indigo-50/40'
+                  ? 'border-purple-600 text-purple-700 bg-purple-50/40'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
               }`}
             >
@@ -365,7 +366,7 @@ export function AdminConfigPage() {
           {loading ? <p className='text-sm text-slate-500'>กำลังโหลดการตั้งค่า...</p> : null}
 
           {!loading && activeTab === 'general' ? (
-            <div className='max-w-lg space-y-5'>
+            <div className='w-full space-y-5'>
               {/* Header row: title + Edit / Cancel+Save buttons */}
               <div className='flex items-start justify-between gap-4'>
                 <div>
@@ -394,7 +395,7 @@ export function AdminConfigPage() {
                         type='button'
                         disabled={savingGeneral}
                         onClick={() => void onSaveGeneral()}
-                        className='inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-50'
+                        className='inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 transition-colors disabled:opacity-50'
                       >
                         {savingGeneral ? (
                           <><Loader2 size={12} className='animate-spin' /> กำลังบันทึก…</>
@@ -425,31 +426,35 @@ export function AdminConfigPage() {
 
               {/* View mode */}
               {!isEditingGeneral ? (
-                <div className='space-y-0'>
+                <div className='space-y-5'>
                   <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3'>ข้อมูลแพลตฟอร์ม</p>
-                  {[
-                    { label: 'ชื่อแพลตฟอร์ม', value: generalForm.getValues('platform_name') },
-                    { label: 'อีเมลติดต่อ',   value: generalForm.getValues('contact_email') },
-                    { label: 'โทรศัพท์สนับสนุน', value: generalForm.getValues('support_phone') },
-                  ].map(({ label, value }) => (
-                    <div key={label} className='flex items-center justify-between py-2.5 border-b border-slate-100'>
-                      <span className='text-xs font-semibold text-slate-500'>{label}</span>
-                      <span className='text-sm text-slate-800'>{value || '—'}</span>
-                    </div>
-                  ))}
-                  <div className='pt-4'>
-                    <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3'>การตั้งค่าระบบ</p>
+                  <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                     {[
-                      { label: 'อายุ RFQ (วัน)',           value: generalForm.getValues('rfq_expired'),   unit: 'วัน' },
-                      { label: 'เวลาจัดส่ง Default (วัน)', value: generalForm.getValues('shipping_days'), unit: 'วัน' },
-                    ].map(({ label, value, unit }) => (
-                      <div key={label} className='flex items-center justify-between py-2.5 border-b border-slate-100'>
-                        <span className='text-xs font-semibold text-slate-500'>{label}</span>
-                        <span className='text-sm font-semibold text-slate-800 tabular-nums'>
-                          {value ? `${value} ${unit}` : '—'}
-                        </span>
+                      { label: 'ชื่อแพลตฟอร์ม', value: generalForm.getValues('platform_name') },
+                      { label: 'อีเมลติดต่อ',   value: generalForm.getValues('contact_email') },
+                      { label: 'โทรศัพท์สนับสนุน', value: generalForm.getValues('support_phone') },
+                    ].map(({ label, value }) => (
+                      <div key={label} className='rounded-xl border border-slate-100 bg-slate-50/60 px-4 py-3'>
+                        <span className='block text-xs font-semibold text-slate-500'>{label}</span>
+                        <span className='mt-1 block text-sm text-slate-800 break-words'>{value || '—'}</span>
                       </div>
                     ))}
+                  </div>
+                  <div>
+                    <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3'>การตั้งค่าระบบ</p>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                      {[
+                        { label: 'อายุ RFQ (วัน)',           value: generalForm.getValues('rfq_expired'),   unit: 'วัน' },
+                        { label: 'เวลาจัดส่ง Default (วัน)', value: generalForm.getValues('shipping_days'), unit: 'วัน' },
+                      ].map(({ label, value, unit }) => (
+                        <div key={label} className='rounded-xl border border-slate-100 bg-slate-50/60 px-4 py-3'>
+                          <span className='block text-xs font-semibold text-slate-500'>{label}</span>
+                          <span className='mt-1 block text-sm font-semibold text-slate-800 tabular-nums'>
+                            {value ? `${value} ${unit}` : '—'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -457,45 +462,47 @@ export function AdminConfigPage() {
                 <Form {...generalForm}>
                   <div className='space-y-4'>
                     <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>ข้อมูลแพลตฟอร์ม</p>
-                    <FormField
-                      control={generalForm.control}
-                      name='platform_name'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='text-xs font-semibold text-slate-700'>ชื่อแพลตฟอร์ม</FormLabel>
-                          <FormControl>
-                            <Input {...field} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={generalForm.control}
-                      name='contact_email'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='text-xs font-semibold text-slate-700'>อีเมลติดต่อ</FormLabel>
-                          <FormControl>
-                            <Input {...field} type='email' className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={generalForm.control}
-                      name='support_phone'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='text-xs font-semibold text-slate-700'>โทรศัพท์สนับสนุน</FormLabel>
-                          <FormControl>
-                            <Input {...field} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                      <FormField
+                        control={generalForm.control}
+                        name='platform_name'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className='text-xs font-semibold text-slate-700'>ชื่อแพลตฟอร์ม</FormLabel>
+                            <FormControl>
+                              <Input {...field} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={generalForm.control}
+                        name='contact_email'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className='text-xs font-semibold text-slate-700'>อีเมลติดต่อ</FormLabel>
+                            <FormControl>
+                              <Input {...field} type='email' className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={generalForm.control}
+                        name='support_phone'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className='text-xs font-semibold text-slate-700'>โทรศัพท์สนับสนุน</FormLabel>
+                            <FormControl>
+                              <Input {...field} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     <div className='border-t border-slate-100 pt-3'>
                       <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3'>การตั้งค่าระบบ</p>
                       <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
@@ -536,7 +543,7 @@ export function AdminConfigPage() {
           ) : null}
 
           {!loading && activeTab === 'commission' ? (
-            <div className='max-w-xl space-y-5'>
+            <div className='w-full space-y-5'>
               {/* Header row: title + Edit / Cancel+Save buttons */}
               <div className='flex items-start justify-between gap-4'>
                 <div>
@@ -572,7 +579,7 @@ export function AdminConfigPage() {
                         type='button'
                         disabled={savingDefault || !defaultCommConfig}
                         onClick={() => void handleSaveDefault()}
-                        className='inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-50'
+                        className='inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 transition-colors disabled:opacity-50'
                       >
                         {savingDefault ? (
                           <><Loader2 size={12} className='animate-spin' /> กำลังบันทึก…</>
@@ -602,7 +609,7 @@ export function AdminConfigPage() {
               </div>
 
               {/* Config name row — always read-only (locked) */}
-              <div className='flex items-center justify-between py-2.5 border-b border-slate-100'>
+              <div className='flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/60 px-4 py-3'>
                 <span className='text-xs font-semibold text-slate-500'>ชื่อ Config</span>
                 <div className='flex items-center gap-1.5 text-sm font-medium text-slate-700'>
                   <span className='font-mono text-xs bg-slate-100 px-2 py-0.5 rounded'>
@@ -614,16 +621,16 @@ export function AdminConfigPage() {
 
               {/* View mode */}
               {!isEditingCommission ? (
-                <div className='space-y-3'>
-                  <div className='flex items-center justify-between py-2 border-b border-slate-100'>
-                    <span className='text-xs font-semibold text-slate-500'>ค่าคอมมิชชัน</span>
-                    <span className='text-sm font-bold text-indigo-700 tabular-nums'>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <div className='rounded-xl border border-purple-100 bg-purple-50/60 px-4 py-3'>
+                    <span className='block text-xs font-semibold text-slate-500'>ค่าคอมมิชชัน</span>
+                    <span className='mt-1 block text-lg font-bold text-purple-700 tabular-nums'>
                       {pickScalarString(defaultCommConfig?.default_commission_rate) || '—'}%
                     </span>
                   </div>
-                  <div className='flex items-center justify-between py-2 border-b border-slate-100'>
-                    <span className='text-xs font-semibold text-slate-500'>VAT</span>
-                    <span className='text-sm font-semibold text-slate-700 tabular-nums'>
+                  <div className='rounded-xl border border-slate-100 bg-slate-50/60 px-4 py-3'>
+                    <span className='block text-xs font-semibold text-slate-500'>VAT</span>
+                    <span className='mt-1 block text-lg font-semibold text-slate-700 tabular-nums'>
                       {pickScalarString(defaultCommConfig?.vat_rate) || '—'}%
                     </span>
                   </div>
@@ -703,55 +710,55 @@ export function AdminConfigPage() {
                 </p>
               </div>
 
-              <div className='bg-white rounded-xl border border-slate-200 overflow-hidden'>
-                <Table className='w-full text-sm min-w-[680px]'>
-                  <TableHeader>
-                    <TableRow className='bg-slate-50 border-b border-slate-200'>
-                      <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+              <AdminTableContainer>
+                <AdminTable className='min-w-[680px]'>
+                  <AdminTableHeader>
+                    <AdminTableRow>
+                      <AdminTableHead>
                         ID
-                      </TableHead>
-                      <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                      </AdminTableHead>
+                      <AdminTableHead>
                         ชื่อ Config
-                      </TableHead>
-                      <TableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                      </AdminTableHead>
+                      <AdminTableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
                         คอม
-                      </TableHead>
-                      <TableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                      </AdminTableHead>
+                      <AdminTableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
                         VAT
-                      </TableHead>
-                      <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                      </AdminTableHead>
+                      <AdminTableHead>
                         หมดอายุ
-                      </TableHead>
-                      <TableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                      </AdminTableHead>
+                      <AdminTableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
                         Actions
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody className='divide-y divide-slate-100'>
+                      </AdminTableHead>
+                    </AdminTableRow>
+                  </AdminTableHeader>
+                  <AdminTableBody className='divide-y divide-slate-100'>
                     {sortedConfigs.map((cfg) => {
                       const isDefault = cfg.config_id === defaultCommConfig?.config_id;
                       return (
-                        <TableRow key={cfg.config_id} className='hover:bg-slate-50'>
-                          <TableCell className='px-4 py-3 text-xs text-slate-500'>
+                        <AdminTableRow key={cfg.config_id} className='hover:bg-slate-50'>
+                          <AdminTableCell className='px-4 py-3 text-xs text-slate-500'>
                             #{cfg.config_id}
-                          </TableCell>
-                          <TableCell className='px-4 py-3 text-sm font-medium text-slate-900'>
+                          </AdminTableCell>
+                          <AdminTableCell className='px-4 py-3 text-sm font-medium text-slate-900'>
                             {configLabel(cfg)}{' '}
                             {isDefault ? <Lock size={12} className='inline text-slate-400' /> : null}
-                          </TableCell>
-                          <TableCell className='px-4 py-3 text-sm text-right tabular-nums text-indigo-700 font-bold'>
+                          </AdminTableCell>
+                          <AdminTableCell className='px-4 py-3 text-sm text-right tabular-nums text-purple-700 font-bold'>
                             {formatCompactNumber(
                               pickScalarNumber(cfg.default_commission_rate) ?? 0,
                             )}
                             %
-                          </TableCell>
-                          <TableCell className='px-4 py-3 text-sm text-right tabular-nums'>
+                          </AdminTableCell>
+                          <AdminTableCell className='px-4 py-3 text-sm text-right tabular-nums'>
                             {formatCompactNumber(pickScalarNumber(cfg.vat_rate) ?? 0)}%
-                          </TableCell>
-                          <TableCell className='px-4 py-3 text-xs text-slate-500'>
+                          </AdminTableCell>
+                          <AdminTableCell className='px-4 py-3 text-xs text-slate-500'>
                             {fmtDate(cfg.effective_to)}
-                          </TableCell>
-                          <TableCell className='px-4 py-3 text-right'>
+                          </AdminTableCell>
+                          <AdminTableCell className='px-4 py-3 text-right'>
                             {!isDefault && isSA ? (
                               <Button
                                 variant='unstyled'
@@ -764,13 +771,13 @@ export function AdminConfigPage() {
                             ) : (
                               <span className='text-xs text-slate-400'>—</span>
                             )}
-                          </TableCell>
-                        </TableRow>
+                          </AdminTableCell>
+                        </AdminTableRow>
                       );
                     })}
-                  </TableBody>
-                </Table>
-              </div>
+                  </AdminTableBody>
+                </AdminTable>
+              </AdminTableContainer>
 
               {isSA ? (
                 !showNewConfigForm ? (
@@ -779,7 +786,7 @@ export function AdminConfigPage() {
                     variant='unstyled'
                     type='button'
                     onClick={() => { setShowNewConfigForm(true); setError(''); }}
-                    className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-dashed border-indigo-300 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors'
+                    className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-dashed border-purple-300 text-xs font-semibold text-purple-600 hover:bg-purple-50 transition-colors'
                   >
                     <Plus size={14} />
                     เพิ่ม Config พิเศษ
@@ -893,7 +900,7 @@ export function AdminConfigPage() {
                         type='button'
                         onClick={() => void handleCreateConfig()}
                         disabled={savingConfig}
-                        className='mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40'
+                        className='mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-40'
                       >
                         {savingConfig ? (
                           <><Loader2 size={14} className='animate-spin' /> กำลังเพิ่ม…</>
@@ -934,7 +941,7 @@ export function AdminConfigPage() {
                     >
                       <div className='flex items-center gap-3'>
                         {req.enabled ? (
-                          <CheckSquare size={18} className='text-indigo-600 shrink-0' />
+                          <CheckSquare size={18} className='text-purple-600 shrink-0' />
                         ) : (
                           <Square size={18} className='text-slate-300 shrink-0' />
                         )}
@@ -990,7 +997,7 @@ function Field({
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50'
+        className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-slate-50'
       />
     </div>
   );
@@ -1019,7 +1026,7 @@ function RateField({
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
-          className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50'
+          className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-slate-50'
         />
         <Percent size={12} className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400' />
       </div>

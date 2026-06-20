@@ -29,15 +29,46 @@ import {
 } from '@/pages/factory-portal/components/FactoryStatusBadge';
 import { factoryButtonClass, factoryCardClass } from '@/pages/factory-portal/factoryUi';
 
-const STATUS_META: Record<string, { label: string; tone: FactoryStatusTone; icon: React.ElementType }> = {
+const STATUS_META: Record<
+  string,
+  { label: string; tone: FactoryStatusTone; icon: React.ElementType }
+> = {
   DR: { label: 'แบบร่าง', tone: 'neutral', icon: Clock },
   ST: { label: 'รอชำระ', tone: 'warning', icon: Clock },
-  PA: { label: 'แนบสลีปแล้ว — รอตรวจสอบ', tone: 'info', icon: FileText },
+  PA: { label: 'แนบสลิปแล้ว — รอตรวจสอบ', tone: 'info', icon: FileText },
   VR: { label: 'ตรวจสอบแล้ว', tone: 'success', icon: CheckCircle },
 };
 
-const MONTHS_TH = ['', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-const MONTHS_SHORT = ['', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+const MONTHS_TH = [
+  '',
+  'มกราคม',
+  'กุมภาพันธ์',
+  'มีนาคม',
+  'เมษายน',
+  'พฤษภาคม',
+  'มิถุนายน',
+  'กรกฎาคม',
+  'สิงหาคม',
+  'กันยายน',
+  'ตุลาคม',
+  'พฤศจิกายน',
+  'ธันวาคม',
+];
+const MONTHS_SHORT = [
+  '',
+  'ม.ค.',
+  'ก.พ.',
+  'มี.ค.',
+  'เม.ย.',
+  'พ.ค.',
+  'มิ.ย.',
+  'ก.ค.',
+  'ส.ค.',
+  'ก.ย.',
+  'ต.ค.',
+  'พ.ย.',
+  'ธ.ค.',
+];
 
 // ─── Invoice PDF Preview ───────────────────────────────────────────────────────
 type InvoicePreviewProps = {
@@ -97,7 +128,10 @@ function InvoicePreview({ invoice, items, onClose }: InvoicePreviewProps) {
     `);
     win.document.close();
     win.focus();
-    setTimeout(() => { win.print(); win.close(); }, 400);
+    setTimeout(() => {
+      win.print();
+      win.close();
+    }, 400);
   };
 
   const created = new Date(invoice.created_at);
@@ -127,7 +161,11 @@ function InvoicePreview({ invoice, items, onClose }: InvoicePreviewProps) {
               <Printer size={13} />
               พิมพ์ / บันทึก PDF
             </Button>
-            <button type='button' onClick={onClose} className={factoryButtonClass({ variant: 'ghostIcon', size: 'icon' })}>
+            <button
+              type='button'
+              onClick={onClose}
+              className={factoryButtonClass({ variant: 'ghostIcon', size: 'icon' })}
+            >
               <X size={16} />
             </button>
           </div>
@@ -148,7 +186,9 @@ function InvoicePreview({ invoice, items, onClose }: InvoicePreviewProps) {
               </div>
               <div className='text-right'>
                 <p className='text-lg font-bold text-slate-800'>INVOICE</p>
-                <p className='mt-1 text-xs text-slate-500'>เลขที่ {invoice.invoice_id.toString().padStart(6, '0')}</p>
+                <p className='mt-1 text-xs text-slate-500'>
+                  เลขที่ {invoice.invoice_id.toString().padStart(6, '0')}
+                </p>
                 <p className='text-xs text-slate-400'>ออกเมื่อ {createdStr}</p>
               </div>
             </div>
@@ -156,12 +196,16 @@ function InvoicePreview({ invoice, items, onClose }: InvoicePreviewProps) {
             {/* Parties */}
             <div className='mb-6 grid grid-cols-2 gap-4'>
               <div className='rounded-lg bg-slate-50 p-3.5'>
-                <p className='mb-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400'>ผู้ออกใบแจ้งหนี้</p>
+                <p className='mb-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400'>
+                  ผู้ออกใบแจ้งหนี้
+                </p>
                 <p className='text-sm font-bold text-slate-800'>Tryly Co., Ltd.</p>
                 <p className='text-xs text-slate-500'>platform@tryly.co.th</p>
               </div>
               <div className='rounded-lg bg-slate-50 p-3.5'>
-                <p className='mb-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400'>เรียกเก็บจาก</p>
+                <p className='mb-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400'>
+                  เรียกเก็บจาก
+                </p>
                 <p className='text-sm font-bold text-slate-800'>{invoice.factory_name}</p>
                 <p className='text-xs text-slate-500'>Factory ID: {invoice.factory_id}</p>
               </div>
@@ -170,7 +214,9 @@ function InvoicePreview({ invoice, items, onClose }: InvoicePreviewProps) {
             {/* Period banner */}
             <div className='mb-6 flex items-center justify-between rounded-lg border border-brand-purple/20 bg-brand-lavender/30 px-4 py-3'>
               <div>
-                <p className='text-[10px] font-bold uppercase tracking-wide text-brand-purple'>รอบบิล</p>
+                <p className='text-[10px] font-bold uppercase tracking-wide text-brand-purple'>
+                  รอบบิล
+                </p>
                 <p className='text-sm font-bold text-slate-800'>
                   {MONTHS_TH[invoice.period_month]} {invoice.period_year}
                 </p>
@@ -181,7 +227,9 @@ function InvoicePreview({ invoice, items, onClose }: InvoicePreviewProps) {
               </div>
               <div className='text-right'>
                 <p className='text-[10px] text-slate-400'>ยอดขายรวม</p>
-                <p className='text-sm font-bold text-slate-800'>{formatCurrencyNoDecimals(invoice.total_amount)}</p>
+                <p className='text-sm font-bold text-slate-800'>
+                  {formatCurrencyNoDecimals(invoice.total_amount)}
+                </p>
               </div>
             </div>
 
@@ -206,10 +254,18 @@ function InvoicePreview({ invoice, items, onClose }: InvoicePreviewProps) {
               <tbody className='divide-y divide-slate-50'>
                 {items.map((item) => (
                   <tr key={item.item_id}>
-                    <td className='px-3 py-2.5 font-mono text-xs text-slate-600'>#{item.order_id}</td>
-                    <td className='px-3 py-2.5 text-right tabular-nums'>{formatCurrency(item.order_amount)}</td>
-                    <td className='px-3 py-2.5 text-right tabular-nums text-slate-500'>{item.commission_rate}%</td>
-                    <td className='px-3 py-2.5 text-right font-semibold tabular-nums'>{formatCurrency(item.commission_amount)}</td>
+                    <td className='px-3 py-2.5 font-mono text-xs text-slate-600'>
+                      #{item.order_id}
+                    </td>
+                    <td className='px-3 py-2.5 text-right tabular-nums'>
+                      {formatCurrency(item.order_amount)}
+                    </td>
+                    <td className='px-3 py-2.5 text-right tabular-nums text-slate-500'>
+                      {item.commission_rate}%
+                    </td>
+                    <td className='px-3 py-2.5 text-right font-semibold tabular-nums'>
+                      {formatCurrency(item.commission_amount)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -235,7 +291,7 @@ function InvoicePreview({ invoice, items, onClose }: InvoicePreviewProps) {
 
             {/* Footer note */}
             <p className='mt-8 border-t border-slate-100 pt-4 text-center text-[10px] text-slate-400'>
-              กรุณาชำระภายในกำหนดและแนบสลีปการโอนผ่านระบบ Tryly • invoice นี้ออกโดยระบบอัตโนมัติ
+              กรุณาชำระภายในกำหนดและแนบสลิปการโอนผ่านระบบ Tryly • invoice นี้ออกโดยระบบอัตโนมัติ
             </p>
           </div>
         </div>
@@ -281,13 +337,26 @@ function CurrentPeriodSection({ data }: { data: ICurrentPeriodSummary }) {
       {expanded && (
         <div className='border-t border-brand-purple/10 px-5 pb-5 pt-4'>
           <div className='flex flex-col gap-5 lg:flex-row lg:items-start lg:gap-8'>
-
             {/* ── Order statement table ─────────────────────────── */}
             <div className='min-w-0 flex-1 overflow-hidden rounded-lg border border-slate-100 bg-white'>
               {/* Table header */}
               <div className='grid grid-cols-[minmax(60px,1fr)_80px_110px_48px_100px_110px] border-b border-slate-100 bg-slate-50 px-4 py-2'>
-                {(['Order', 'วันที่', 'ยอดสั่งซื้อ', 'Rate', 'Commission', 'รวม (incl. VAT)'] as const).map((h, i) => (
-                  <p key={h} className={`text-[10px] font-bold uppercase tracking-wide text-slate-400 ${i > 1 ? 'text-right' : ''}`}>{h}</p>
+                {(
+                  [
+                    'Order',
+                    'วันที่',
+                    'ยอดสั่งซื้อ',
+                    'Rate',
+                    'Commission',
+                    'รวม (incl. VAT)',
+                  ] as const
+                ).map((h, i) => (
+                  <p
+                    key={h}
+                    className={`text-[10px] font-bold uppercase tracking-wide text-slate-400 ${i > 1 ? 'text-right' : ''}`}
+                  >
+                    {h}
+                  </p>
                 ))}
               </div>
 
@@ -303,17 +372,28 @@ function CurrentPeriodSection({ data }: { data: ICurrentPeriodSummary }) {
                     <div className='flex min-w-0 items-center gap-1.5'>
                       <ArrowRight size={11} className='shrink-0 text-slate-300' />
                       <div className='min-w-0'>
-                        <a href={`/factory/orders/${o.order_id}`} className='block truncate text-xs font-semibold text-brand-purple hover:underline'>
+                        <a
+                          href={`/factory/orders/${o.order_id}`}
+                          className='block truncate text-xs font-semibold text-brand-purple hover:underline'
+                        >
                           {o.rfq_title || `Order #${o.order_id}`}
                         </a>
                         <p className='font-mono text-[10px] text-slate-400'>#{o.order_id}</p>
                       </div>
                     </div>
                     <p className='text-right text-xs text-slate-500'>{dateStr}</p>
-                    <p className='text-right tabular-nums text-xs text-slate-700'>{formatCurrency(o.order_amount)}</p>
-                    <p className='text-right tabular-nums text-xs text-slate-400'>{o.commission_rate}%</p>
-                    <p className='text-right tabular-nums text-xs text-slate-700'>{formatCurrency(o.commission_amount)}</p>
-                    <p className='text-right tabular-nums text-xs font-semibold text-slate-900'>{formatCurrency(o.line_total)}</p>
+                    <p className='text-right tabular-nums text-xs text-slate-700'>
+                      {formatCurrency(o.order_amount)}
+                    </p>
+                    <p className='text-right tabular-nums text-xs text-slate-400'>
+                      {o.commission_rate}%
+                    </p>
+                    <p className='text-right tabular-nums text-xs text-slate-700'>
+                      {formatCurrency(o.commission_amount)}
+                    </p>
+                    <p className='text-right tabular-nums text-xs font-semibold text-slate-900'>
+                      {formatCurrency(o.line_total)}
+                    </p>
                   </div>
                 );
               })}
@@ -322,24 +402,36 @@ function CurrentPeriodSection({ data }: { data: ICurrentPeriodSummary }) {
               <div className='grid grid-cols-[minmax(60px,1fr)_80px_110px_48px_100px_110px] items-center border-t border-slate-200 bg-slate-50 px-4 py-2.5'>
                 <p className='text-xs font-bold text-slate-600'>รวม {data.total_orders} orders</p>
                 <p />
-                <p className='text-right tabular-nums text-xs font-bold text-slate-900'>{formatCurrency(data.total_amount)}</p>
+                <p className='text-right tabular-nums text-xs font-bold text-slate-900'>
+                  {formatCurrency(data.total_amount)}
+                </p>
                 <p />
-                <p className='text-right tabular-nums text-xs font-bold text-slate-900'>{formatCurrency(data.commission_amount)}</p>
-                <p className='text-right tabular-nums text-xs font-bold text-brand-purple'>{formatCurrency(data.grand_total)}</p>
+                <p className='text-right tabular-nums text-xs font-bold text-slate-900'>
+                  {formatCurrency(data.commission_amount)}
+                </p>
+                <p className='text-right tabular-nums text-xs font-bold text-brand-purple'>
+                  {formatCurrency(data.grand_total)}
+                </p>
               </div>
             </div>
 
             {/* ── Breakdown summary (right) ─────────────────────── */}
             <div className='shrink-0 rounded-lg border border-brand-purple/20 bg-white p-4 lg:min-w-[220px]'>
-              <p className='mb-3 text-[11px] font-bold uppercase tracking-wide text-slate-400'>สรุปค่าบริการเดือนนี้</p>
+              <p className='mb-3 text-[11px] font-bold uppercase tracking-wide text-slate-400'>
+                สรุปค่าบริการเดือนนี้
+              </p>
               <div className='space-y-2'>
                 <div className='flex justify-between text-sm text-slate-600'>
                   <span>ยอดขายรวม</span>
-                  <span className='tabular-nums font-medium'>{formatCurrency(data.total_amount)}</span>
+                  <span className='tabular-nums font-medium'>
+                    {formatCurrency(data.total_amount)}
+                  </span>
                 </div>
                 <div className='flex justify-between text-sm text-slate-600'>
                   <span>ค่า Commission</span>
-                  <span className='tabular-nums font-medium'>{formatCurrency(data.commission_amount)}</span>
+                  <span className='tabular-nums font-medium'>
+                    {formatCurrency(data.commission_amount)}
+                  </span>
                 </div>
                 <div className='flex justify-between text-sm text-slate-500'>
                   <span>VAT 7% (จาก commission)</span>
@@ -354,7 +446,6 @@ function CurrentPeriodSection({ data }: { data: ICurrentPeriodSummary }) {
                 Invoice จะออกอัตโนมัติวันที่ 1 ของเดือนถัดไป
               </p>
             </div>
-
           </div>
         </div>
       )}
@@ -395,7 +486,9 @@ export function FactoryInvoicePage() {
     }
   };
 
-  useEffect(() => { void loadInvoices(); }, []);
+  useEffect(() => {
+    void loadInvoices();
+  }, []);
 
   const openPreview = async (inv: ICommissionInvoiceResponse) => {
     setLoadingDetail(inv.invoice_id);
@@ -428,10 +521,10 @@ export function FactoryInvoicePage() {
       const formData = new FormData();
       formData.append('file', file);
       await factoryInvoiceApi.attachSlip(uploadTargetId, formData);
-      toast.success('แนบสลีปสำเร็จ');
+      toast.success('แนบสลิปสำเร็จ');
       await loadInvoices();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'แนบสลีปไม่สำเร็จ');
+      setError(err instanceof Error ? err.message : 'แนบสลิปไม่สำเร็จ');
     } finally {
       setUploading(null);
       setUploadTargetId(null);
@@ -455,7 +548,13 @@ export function FactoryInvoicePage() {
         </div>
       )}
 
-      <input ref={fileRef} type='file' accept='image/jpeg,.jpg,.jpeg' onChange={handleFileChange} className='hidden' />
+      <input
+        ref={fileRef}
+        type='file'
+        accept='image/jpeg,.jpg,.jpeg'
+        onChange={handleFileChange}
+        className='hidden'
+      />
 
       {/* Current period live statement */}
       {!loading && currentPeriod && <CurrentPeriodSection data={currentPeriod} />}
@@ -464,7 +563,9 @@ export function FactoryInvoicePage() {
       {invoices.length > 0 && (
         <div className='flex items-center gap-2 pt-2'>
           <div className='h-px flex-1 bg-slate-100' />
-          <p className='text-[11px] font-semibold uppercase tracking-wide text-slate-400'>Invoice ที่ออกแล้ว</p>
+          <p className='text-[11px] font-semibold uppercase tracking-wide text-slate-400'>
+            Invoice ที่ออกแล้ว
+          </p>
           <div className='h-px flex-1 bg-slate-100' />
         </div>
       )}
@@ -481,7 +582,9 @@ export function FactoryInvoicePage() {
       ) : invoices.length === 0 ? (
         <div className={factoryCardClass({ variant: 'empty', className: 'p-10' })}>
           <FileText size={36} className='mx-auto mb-3 text-slate-300' />
-          <p className='text-sm text-slate-500'>ยังไม่มี invoice — ระบบจะสร้างสรุปให้อัตโนมัติสิ้นเดือน</p>
+          <p className='text-sm text-slate-500'>
+            ยังไม่มี invoice — ระบบจะสร้างสรุปให้อัตโนมัติสิ้นเดือน
+          </p>
         </div>
       ) : (
         <div className='space-y-3'>
@@ -501,25 +604,38 @@ export function FactoryInvoicePage() {
                       <p className='text-sm font-bold text-slate-800'>
                         {MONTHS_SHORT[inv.period_month]} {inv.period_year}
                       </p>
-                      <span className='text-[11px] font-mono text-slate-400'>#{inv.invoice_id.toString().padStart(6, '0')}</span>
+                      <span className='text-[11px] font-mono text-slate-400'>
+                        #{inv.invoice_id.toString().padStart(6, '0')}
+                      </span>
                     </div>
                     <p className='text-xs text-slate-500'>
-                      {inv.total_orders} orders · ยอดขาย {formatCurrencyNoDecimals(inv.total_amount)}
+                      {inv.total_orders} orders · ยอดขาย{' '}
+                      {formatCurrencyNoDecimals(inv.total_amount)}
                     </p>
 
                     {/* Amount breakdown */}
                     <div className='mt-3 flex items-center gap-5'>
                       <div>
-                        <p className='text-[10px] uppercase tracking-wide text-slate-400'>Commission</p>
-                        <p className='text-sm font-bold text-slate-900'>{formatCurrencyNoDecimals(inv.commission_amount)}</p>
+                        <p className='text-[10px] uppercase tracking-wide text-slate-400'>
+                          Commission
+                        </p>
+                        <p className='text-sm font-bold text-slate-900'>
+                          {formatCurrencyNoDecimals(inv.commission_amount)}
+                        </p>
                       </div>
                       <div>
                         <p className='text-[10px] uppercase tracking-wide text-slate-400'>VAT 7%</p>
-                        <p className='text-sm font-semibold text-slate-700'>{formatCurrencyNoDecimals(inv.vat_amount)}</p>
+                        <p className='text-sm font-semibold text-slate-700'>
+                          {formatCurrencyNoDecimals(inv.vat_amount)}
+                        </p>
                       </div>
                       <div>
-                        <p className='text-[10px] font-semibold uppercase tracking-wide text-brand-purple'>ยอดชำระ</p>
-                        <p className='text-base font-bold text-brand-purple'>{formatCurrencyNoDecimals(inv.grand_total)}</p>
+                        <p className='text-[10px] font-semibold uppercase tracking-wide text-brand-purple'>
+                          ยอดชำระ
+                        </p>
+                        <p className='text-base font-bold text-brand-purple'>
+                          {formatCurrencyNoDecimals(inv.grand_total)}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -538,7 +654,11 @@ export function FactoryInvoicePage() {
                       onClick={() => openPreview(inv)}
                       className='flex items-center gap-1 text-xs font-semibold text-brand-purple hover:underline disabled:opacity-50'
                     >
-                      {isLoadingThis ? <Loader2 size={11} className='animate-spin' /> : <FileText size={11} />}
+                      {isLoadingThis ? (
+                        <Loader2 size={11} className='animate-spin' />
+                      ) : (
+                        <FileText size={11} />
+                      )}
                       ดู Invoice PDF
                       <ChevronRight size={11} />
                     </button>
@@ -551,8 +671,12 @@ export function FactoryInvoicePage() {
                         onClick={() => triggerUpload(inv.invoice_id)}
                         className={factoryButtonClass({ variant: 'primary', size: 'sm' })}
                       >
-                        {isUp ? <Loader2 size={12} className='animate-spin' /> : <Upload size={12} />}
-                        แนบสลีปค่า Comm
+                        {isUp ? (
+                          <Loader2 size={12} className='animate-spin' />
+                        ) : (
+                          <Upload size={12} />
+                        )}
+                        แนบสลิปค่า Comm
                       </Button>
                     )}
 
@@ -563,7 +687,7 @@ export function FactoryInvoicePage() {
                         className='flex items-center gap-1 text-xs font-semibold text-slate-500 hover:underline'
                       >
                         <Image size={11} />
-                        ดูสลีปที่แนบ
+                        ดูสลิปที่แนบ
                       </button>
                     )}
                   </div>
@@ -600,7 +724,7 @@ export function FactoryInvoicePage() {
             >
               <X size={16} />
             </button>
-            <img src={previewSlip} alt='สลีป' className='max-h-[85vh] max-w-full object-contain' />
+            <img src={previewSlip} alt='สลิป' className='max-h-[85vh] max-w-full object-contain' />
           </div>
         </div>
       )}
