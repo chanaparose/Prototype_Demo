@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { MessageCircle, MessageSquareDot, RefreshCw } from 'lucide-react';
 import { cn } from '@lib/utils';
-import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 import type { UiConversation } from '@/pages/messages/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -59,10 +58,10 @@ export function MessagesMobile({
     <div className='md:hidden flex min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-20'>
       <div className='border-b border-gray-100 bg-white'>
         <div className='px-4 pt-3 pb-2'>
-          <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
+          <p className='text-[11px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
             การสนทนา
           </p>
-          <h1 className={APP_PAGE_TITLE_CLASS}>ข้อความ</h1>
+          <h1 className='text-[18px] font-semibold leading-tight text-[var(--brand-navy)]'>ข้อความ</h1>
         </div>
         <div className='flex items-center gap-2 px-4 pb-3'>
           <MobileSearchField

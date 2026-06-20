@@ -4,7 +4,7 @@ import {
   Clock,
   CheckCircle2,
   Star,
-  Factory,
+  Building2,
   ShieldCheck,
   ChevronDown,
   Tags,
@@ -137,7 +137,7 @@ export function FactoryProfileInsights({
 
       {hasCategories ? (
         <InsightSection
-          icon={Factory}
+          icon={Building2}
           iconClassName='text-brand-violet-deep'
           iconBgClassName='bg-violet-50'
           title='หมวดหมู่ที่รับผลิต'

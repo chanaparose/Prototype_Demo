@@ -27,7 +27,7 @@ export function IdeaArticleCard({
   return (
     <article
       onClick={onClick}
-      className={`group relative cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white py-2.5 pl-3 pr-9 shadow-sm transition-all active:scale-[0.99] hover:border-brand-purple/20 hover:shadow-md md:py-3 md:pl-3.5 md:pr-10 ${className}`}
+      className={`group relative cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white py-2.5 pl-3 pr-9 transition-all active:scale-[0.99] hover:border-brand-purple/20 md:py-3 md:pl-3.5 md:pr-10 ${className}`}
     >
       <div className='flex gap-2.5 md:gap-3'>
         <div className='mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-page)] text-brand-magenta ring-1 ring-brand-purple/10 md:h-10 md:w-10'>

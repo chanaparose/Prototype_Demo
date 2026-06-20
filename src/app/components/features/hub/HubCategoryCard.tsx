@@ -19,18 +19,18 @@ export function HubCategoryCard({
       onClick={onClick}
       className={cn(
         hubRowCardClass,
-        'group border border-white/80 bg-white/78 shadow-[0_8px_24px_rgba(46,34,82,0.06)] backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-brand-purple/25 hover:bg-white hover:shadow-[0_12px_28px_rgba(122,75,148,0.12)] active:scale-[0.98]',
+        'group border border-brand-purple/10 bg-white transition-all hover:border-brand-purple/20 hover:bg-brand-lavender-muted/25 active:scale-[0.98]',
       )}
     >
-      <span className='line-clamp-2 text-[11px] font-bold leading-snug text-[var(--brand-navy)] group-hover:text-brand-purple lg:text-[12px]'>
+      <span className='line-clamp-2 text-sm font-bold leading-snug text-[var(--brand-navy)] group-hover:text-brand-purple'>
         {cat.name}
       </span>
       {subText ? (
-        <span className='mt-1 line-clamp-2 text-[9px] leading-tight text-slate-500'>{subText}</span>
+        <span className='mt-1 line-clamp-2 text-xs leading-tight text-slate-500'>{subText}</span>
       ) : null}
       <span
         className={cn(
-          'mt-auto pt-2.5 text-[9px] font-semibold leading-none',
+          'mt-auto pt-2 text-xs font-semibold leading-none',
           cat.factory_count > 0 ? 'text-brand-purple' : 'text-gray-400',
         )}
       >
@@ -57,16 +57,16 @@ export function HubSeeAllCard({
       onClick={onClick}
       className={cn(
         hubRowCardClass,
-        'border border-dashed border-brand-purple/25 bg-white/70 shadow-[0_8px_24px_rgba(46,34,82,0.05)] backdrop-blur-md transition-all hover:border-brand-purple/45 hover:bg-white hover:shadow-[0_12px_28px_rgba(122,75,148,0.12)] active:scale-[0.98]',
+        'border border-dashed border-brand-purple/15 bg-white transition-all hover:border-brand-purple/30 hover:bg-brand-lavender-muted/25 active:scale-[0.98]',
       )}
     >
       <span className='mb-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-purple/12 text-brand-purple'>
         <ArrowRight size={14} strokeWidth={2.5} />
       </span>
-      <span className='text-[11px] font-bold leading-snug text-brand-purple'>+{count} หมวด</span>
-      <span className='mt-0.5 text-[9px] font-medium text-brand-purple/75'>ดูครบทุกหมวด</span>
+      <span className='text-sm font-bold leading-snug text-brand-purple'>+{count} หมวด</span>
+      <span className='mt-0.5 text-xs font-medium text-brand-purple/75'>ดูครบทุกหมวด</span>
       {subText ? (
-        <span className='mt-auto line-clamp-2 pt-1.5 text-[9px] leading-tight text-[var(--brand-muted-purple)]'>
+        <span className='mt-auto line-clamp-2 pt-2 text-xs leading-tight text-[var(--brand-muted-purple)]'>
           {subText}
         </span>
       ) : null}

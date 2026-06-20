@@ -27,9 +27,7 @@ export function RfqPanel({
 
   return (
     <div className={isMobile ? '' : 'px-4 pb-4 pt-2'}>
-      <div
-        className={`mb-3 p-[5px] flex items-center justify-between ${isDesktop ? 'min-h-[56px] rounded-xl border border-[rgba(196,164,132,0.4)] bg-[#F9F8FC] px-3 py-2' : ''}`}
-      >
+      <div className='mb-3 flex min-h-[48px] items-center justify-between rounded-xl border border-gray-200 bg-[#F9F8FC] px-3 py-2'>
         <div className='flex items-center gap-2.5 flex-wrap'>
           <h3 className='text-sm font-bold text-[var(--brand-navy-deep)]'>กำลังดำเนินการ</h3>
           <span className='shrink-0 rounded-md bg-[rgba(46,34,82,0.06)] px-2 py-1 text-[11px] font-semibold text-[var(--brand-navy)] tabular-nums'>
@@ -68,7 +66,7 @@ export function RfqPanel({
           <p className='text-xs text-gray-400 mb-4'>สร้างคำขอราคาเพื่อรับใบเสนอราคาจากโรงงาน</p>
           <Link
             to='/create-rfq'
-            className='rounded-lg bg-brand-purple px-5 py-2 text-sm font-bold text-white hover:bg-brand-violet-deep transition-colors'
+            className='rounded-lg bg-brand-purple px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-violet-deep'
           >
             สร้างคำขอราคา
           </Link>

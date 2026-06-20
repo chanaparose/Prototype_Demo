@@ -1,6 +1,9 @@
 import React, { useCallback } from 'react';
+import { cn } from '@lib/utils';
 import {
   SHOWCASE_DETAIL_BRAND as BRAND,
+  SHOWCASE_DETAIL_DATA_TEXT_CLASS,
+  SHOWCASE_DETAIL_META_TEXT_CLASS,
   formatShowcaseThaiDate as formatThaiDate,
 } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { useNavigate } from 'react-router';
@@ -46,7 +49,7 @@ export function IdeaDetailDesktop() {
 
   if (loading) {
     return (
-      <div className='hidden min-h-[calc(100vh-4rem)] items-center justify-center lg:flex bg-white'>
+      <div className='hidden min-h-[calc(100vh-4rem)] items-center justify-center bg-[var(--brand-panel)] lg:flex'>
         <span
           className='h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent'
           aria-hidden
@@ -57,7 +60,7 @@ export function IdeaDetailDesktop() {
 
   if (!item || !resolvedId) {
     return (
-      <div className='hidden lg:block px-8 pt-8 pb-20 min-h-[calc(100vh-4rem)] bg-white'>
+      <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-panel)] px-8 pb-20 pt-8 lg:block'>
         <Button
           variant='unstyled'
           type='button'
@@ -82,10 +85,9 @@ export function IdeaDetailDesktop() {
   const subName = item.sub_category_name?.trim() ?? null;
 
   return (
-    <div className='hidden lg:block min-h-[calc(100vh-4rem)] bg-white'
-    >
-      <div className='px-8 pt-5 pb-3'>
-        <div className='flex items-center gap-2 text-[14px] text-gray-500'>
+    <div className='hidden min-h-[calc(100vh-4rem)] animate-[fadeIn_0.2s_ease-in] bg-[var(--brand-panel)] lg:block'>
+      <div className='mx-auto w-full px-8 pb-3 pt-5 2xl:px-10'>
+        <div className={cn('flex items-center gap-2 text-gray-400', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
           <Button
             variant='unstyled'
             type='button'
@@ -98,19 +100,19 @@ export function IdeaDetailDesktop() {
           <span>{item.category || 'บทความไอเดีย'}</span>
           {subName ? (
             <>
-              <Chevron className='w-3 h-3 text-gray-300' />
+              <Chevron className='h-3 w-3 text-gray-300' />
               <span>{subName}</span>
             </>
           ) : null}
-          <Chevron className='w-3 h-3 text-gray-300' />
-          <span className='truncate max-w-[32rem]' style={{ color: BRAND.ink }}>
+          <Chevron className='h-3 w-3 text-gray-300' />
+          <span className='max-w-[32rem] truncate text-[var(--brand-ink)]'>
             {item.title}
           </span>
         </div>
       </div>
 
-      <div className='px-8 pb-10 space-y-3 pt-5'>
-        <div className='bg-white rounded-xl border border-slate-100 p-4'>
+      <div className='mx-auto w-full space-y-3 px-8 pb-10 2xl:px-10'>
+        <div className='rounded-xl border border-gray-100 bg-white p-6'>
           <div className='space-y-3'>
             <div className='flex flex-wrap items-center gap-2'>
               <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[11px] font-semibold text-brand-magenta'>
@@ -129,7 +131,9 @@ export function IdeaDetailDesktop() {
 
             <div className='inline-flex items-center gap-1.5 text-[12px] text-gray-500'>
               <CalendarDays className='w-3.5 h-3.5' />
-              เผยแพร่ {formatThaiDate(item.postedAt)}
+              <span className={SHOWCASE_DETAIL_META_TEXT_CLASS}>
+                เผยแพร่ {formatThaiDate(item.postedAt)}
+              </span>
             </div>
           </div>
         </div>

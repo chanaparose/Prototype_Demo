@@ -176,7 +176,7 @@ export function ProductDetailDesktop() {
 
   return (
     <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-panel)] lg:block animate-[fadeIn_0.2s_ease-in]'>
-      <div className='mx-auto max-w-[1280px] px-8 2xl:px-10 pt-5 pb-3'>
+      <div className='mx-auto w-full px-8 pt-5 pb-3 2xl:px-10'>
         <div className={cn('flex items-center gap-2 text-gray-400', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
           <Button
             variant='unstyled'
@@ -199,10 +199,10 @@ export function ProductDetailDesktop() {
         </div>
       </div>
 
-      <div className='mx-auto max-w-[1280px] px-8 2xl:px-10 pb-12 space-y-3'>
+      <div className='mx-auto w-full space-y-3 px-8 pb-12 2xl:px-10'>
         <article className='rounded-xl border border-gray-100 bg-white p-6 shadow-sm'>
-          <div className='flex gap-10'>
-            <div className={cn('w-[420px] shrink-0 2xl:w-[480px]', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
+          <div className='grid grid-cols-[minmax(360px,0.42fr)_minmax(0,1fr)] gap-8 2xl:grid-cols-[minmax(480px,0.44fr)_minmax(0,1fr)] 2xl:gap-10'>
+            <div className={cn('min-w-0', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
               <ShowcaseHeroGallery
                 gallery={gallery}
                 fallbackImage={item.image}
@@ -211,7 +211,7 @@ export function ProductDetailDesktop() {
                 onActiveImageChange={setActiveImage}
                 accentColor={BRAND.orange}
                 borderColor={BRAND.border}
-                className=''
+                className='w-full'
               />
 
               <div className='mt-4 flex items-center justify-between border-t border-gray-50 pt-3 text-[14px] text-gray-500'>
@@ -248,7 +248,7 @@ export function ProductDetailDesktop() {
               </div>
             </div>
 
-            <div className={cn('flex min-w-0 flex-1 flex-col', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
+            <div className={cn('flex min-w-0 flex-col', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
               <div className='mb-3 flex flex-wrap items-center gap-1.5'>
                 {factory?.verified ? (
                   <span className='inline-flex items-center gap-1 rounded-full bg-[var(--brand-orange)]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[var(--brand-orange-vivid)]'>
@@ -462,7 +462,7 @@ export function ProductDetailDesktop() {
 
         <DetailSection eyebrow='แนะนำ' title='สินค้าที่ใกล้เคียง' className='overflow-hidden [&>div:last-child]:pt-4'>
           {relatedProducts.length > 0 ? (
-            <div className='grid grid-cols-5 gap-2 2xl:grid-cols-6'>
+            <div className='grid grid-cols-4 gap-2 xl:grid-cols-5 2xl:grid-cols-6'>
               {relatedProducts.map((rp) => (
                 <ShowcaseGridCard
                   key={rp.id}

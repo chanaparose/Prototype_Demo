@@ -59,7 +59,7 @@ export function OrderPanel({
 
   return (
     <div className={isDesktop ? 'px-4 pb-4 pt-2' : ''}>
-      <div className='mb-3 grid w-full grid-cols-5 gap-0.5 rounded-xl border border-gray-200 bg-white px-1 py-[5px]'>
+      <div className='mb-3 grid min-h-[48px] w-full grid-cols-5 gap-0.5 rounded-xl border border-gray-200 bg-[#F9F8FC] px-1 py-[5px]'>
         {ORDER_TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = orderFilter === tab.id;

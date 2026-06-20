@@ -1,5 +1,4 @@
 import React from 'react';
-import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,12 +7,12 @@ import {
   List,
   MapPin,
   SearchX,
-  Sparkles,
   Star,
 } from 'lucide-react';
 import { useSearchParams } from 'react-router';
-import { FactoryIdeasHubBackButton } from '@/components/features/factory-ideas/FactoryIdeasHubBackButton';
 import { isFromFactoryIdeasHub } from '@/components/features/factory-ideas/factoryIdeasHubNav';
+import { FactoryIdeasPageHeader } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
+import { FactoryIdeasTypeTabs } from '@/components/features/factory-ideas/FactoryIdeasTypeTabs';
 import {
   ShowcaseGridCardSkeleton,
   ShowcaseListItemSkeleton,
@@ -106,37 +105,16 @@ export function FactoryIdeasMobile() {
 
   return (
     <div className='min-h-[100dvh] bg-[var(--brand-page)] pb-24'>
-      <div className='bg-white px-4 pt-4 pb-3 border-b border-gray-100'>
-        {fromHub ? <FactoryIdeasHubBackButton hubScope={hubScope} label='กลับหมวดหมู่' /> : null}
-        <div className='mb-2.5'>
-          <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
-            Discover
-          </p>
-          <h1 className={APP_PAGE_TITLE_CLASS}>
-            {hubName ? `แนะนำโรงงาน จากหมวด ${hubName}` : 'แนะนำโรงงาน'}
-          </h1>
-        </div>
-
-        <div className='relative mb-2.5 overflow-hidden rounded-xl bg-[linear-gradient(135deg,var(--brand-navy-deep)_0%,#4A267D_100%)] px-3 py-2.5 text-white shadow-md'>
-          <div className='pointer-events-none absolute -right-5 -top-5 h-24 w-24 rounded-full bg-[var(--brand-orange-hot)] opacity-35 blur-xl mix-blend-screen' />
-          <div className='pointer-events-none absolute right-0 top-0 h-16 w-16 translate-x-5 skew-x-[-15deg] rounded-full bg-[var(--brand-purple)] opacity-50' />
-          <div className='pointer-events-none absolute -bottom-2 -left-2 h-14 w-14 rounded-full bg-[var(--brand-purple)] opacity-25 blur-lg mix-blend-screen' />
-          <div className='relative z-10 flex items-center gap-2.5'>
-            <div className='flex shrink-0 items-center justify-center rounded-full border border-[rgba(162,56,255,0.50)] bg-[rgba(162,56,255,0.30)] p-1.5'>
-              <Sparkles size={16} className='text-white' />
-            </div>
-            <div className='flex-1 min-w-0'>
-              <p className='mb-0.5 text-[11px] font-medium leading-snug text-[#EBD3FF]'>
-                พื้นที่โปรโมตจากโรงงานพาร์ทเนอร์
-              </p>
-            </div>
-            <span className='self-center rounded-md bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold leading-none tabular-nums text-[#EBD3FF]'>
-              {totalCount} รายการ
-            </span>
-          </div>
-        </div>
+      <div className='bg-[var(--brand-page)] px-4 py-3'>
+        <FactoryIdeasPageHeader
+          title={hubName ? `แนะนำโรงงาน · ${hubName}` : 'แนะนำโรงงาน'}
+          count={`${totalCount} รายการ`}
+          hubScope={hubScope}
+          showBack={fromHub}
+        />
 
         <FactoryIdeasSearchBar
+          className='mt-3'
           searchText={searchText}
           onSearchTextChange={setSearchText}
           moqFilter={moqFilter}
@@ -145,37 +123,12 @@ export function FactoryIdeasMobile() {
       </div>
 
       <div className='bg-white sticky top-14 z-20 border-b border-gray-200'>
-        {/* ── Lezhin-style tab bar ── */}
-        <div className='flex overflow-x-auto scrollbar-hide'>
-          {visibleTabs.map((tab) => {
-            const active = selectedType === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type='button'
-                data-tour={`tab-${tab.id}`}
-                onClick={() => setSelectedType(tab.id)}
-                className='relative flex-1 min-w-0 shrink-0 py-3 px-2 text-center'
-              >
-                <span
-                  className={`text-[14px] leading-none whitespace-nowrap ${
-                    active
-                      ? 'font-bold text-[var(--brand-navy)]'
-                      : 'font-medium text-gray-400'
-                  }`}
-                >
-                  {tab.label}
-                </span>
-                {active && (
-                  <span
-                    className='absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] w-8 rounded-full'
-                    style={{ background: 'var(--brand-purple)' }}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
+        <FactoryIdeasTypeTabs
+          tabs={visibleTabs}
+          activeType={selectedType}
+          onTypeChange={setSelectedType}
+          className='px-4 py-3'
+        />
 
         <div className='flex flex-wrap items-center gap-2 px-4 pb-3 mt-3'>
           <FactoryIdeasCategoryDropdown
@@ -262,7 +215,7 @@ export function FactoryIdeasMobile() {
             </div>
           )
         ) : totalCount === 0 && isListFiltered ? (
-          <div className='bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm'>
+          <div className='rounded-2xl border border-gray-100 bg-white p-8 text-center'>
             <SearchX size={30} className='mx-auto mb-2 text-gray-400' />
             <p className='text-sm font-medium text-[var(--brand-navy)]'>
               ไม่พบรายการที่ตรงกับเงื่อนไข
@@ -270,8 +223,8 @@ export function FactoryIdeasMobile() {
             <p className='text-xs text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ด ขั้นต่ำการผลิต หรือหมวดหมู่</p>
           </div>
         ) : totalCount === 0 ? (
-          <div className='bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm'>
-            <Sparkles size={30} className='mx-auto mb-2 text-gray-400' />
+          <div className='rounded-2xl border border-gray-100 bg-white p-8 text-center'>
+            <SearchX size={30} className='mx-auto mb-2 text-gray-400' />
             <p className='text-sm font-medium text-[var(--brand-navy)]'>
               เรากำลังเตรียมรายการแนะนำจากโรงงานพาร์ทเนอร์ให้คุณ
             </p>
@@ -284,7 +237,7 @@ export function FactoryIdeasMobile() {
                 {visibleFactories.map((factory) => (
                   <article
                     key={factory.id}
-                    className='h-[130px] cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-transform active:scale-[0.99]'
+                    className='h-[130px] cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white transition-transform active:scale-[0.99]'
                     onClick={() => navigate(`/factories/${factory.id}`)}
                   >
                     <div className='flex h-full gap-3 p-3'>
@@ -340,7 +293,7 @@ export function FactoryIdeasMobile() {
                 {visibleFactories.map((factory) => (
                   <article
                     key={factory.id}
-                    className='group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-all active:scale-[0.98] hover:shadow-md'
+                    className='group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-all active:scale-[0.98] hover:border-brand-purple/20'
                     onClick={() => navigate(`/factories/${factory.id}`)}
                   >
                     <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
@@ -418,7 +371,7 @@ export function FactoryIdeasMobile() {
               return (
                 <article
                   key={item.id}
-                  className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98]'
+                  className='group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-all active:scale-[0.98] hover:border-brand-purple/20'
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
                   <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
@@ -480,7 +433,7 @@ export function FactoryIdeasMobile() {
               return (
                 <article
                   key={item.id}
-                  className='h-[130px] bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden active:scale-[0.99] transition-transform cursor-pointer'
+                  className='h-[130px] cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white transition-transform active:scale-[0.99]'
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
                   <div className='flex h-full p-3 gap-3'>

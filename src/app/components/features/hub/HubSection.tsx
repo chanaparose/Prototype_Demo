@@ -28,11 +28,11 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
     <section className={cn(hubSectionShellClass, className)}>
       <div className='flex items-center justify-between gap-3'>
         <div className='flex min-w-0 items-center gap-2.5'>
-          <span className='h-8 w-1 rounded-full bg-gradient-to-b from-brand-purple to-[var(--brand-orange-deep)]' />
+          <span className='h-8 w-1 shrink-0 rounded-full bg-gradient-to-b from-brand-purple/85 to-brand-purple/35' />
           <div className='min-w-0'>
-            <h2 className='truncate text-[15px] font-bold text-[var(--brand-navy)]'>{hub.name}</h2>
+            <h2 className='truncate text-base font-bold text-[var(--brand-navy)]'>{hub.name}</h2>
             {totalFactories > 0 ? (
-              <p className='mt-0.5 text-[10px] font-medium text-slate-500'>
+              <p className='mt-0.5 text-xs font-medium text-slate-500'>
                 {totalFactories} โรงงาน
               </p>
             ) : null}
@@ -42,7 +42,7 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
           variant='unstyled'
           type='button'
           onClick={() => onNavigate(`/factory-ideas?hub_id=${hub.hub_id}&hub_scope=${hub.scope}`)}
-          className='flex shrink-0 items-center gap-0.5 rounded-full border border-white/70 bg-white/45 px-2.5 py-1.5 text-[10px] font-semibold text-brand-purple shadow-[0_6px_18px_rgba(46,34,82,0.05)] transition-colors hover:bg-white/80'
+          className='flex shrink-0 items-center gap-0.5 rounded-lg border border-brand-purple/15 bg-white px-2.5 py-1.5 text-xs font-semibold text-brand-purple transition-colors hover:border-brand-purple/30 hover:bg-brand-lavender-muted/30'
         >
           ดูครบ
           <ChevronRight size={12} strokeWidth={2.25} />
@@ -51,7 +51,7 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
 
       <div
         className={cn(
-          'flex flex-nowrap items-stretch gap-2.5 overflow-x-auto pb-2 scrollbar-hide lg:gap-3 lg:overflow-hidden',
+          'flex flex-nowrap items-stretch gap-2 overflow-x-auto pb-2 scrollbar-hide lg:gap-2.5 lg:overflow-hidden',
           hubSectionDividerClass,
         )}
       >

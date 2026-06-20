@@ -26,6 +26,7 @@ import { AlertCircle, ChevronLeft, LogIn } from 'lucide-react';
 import { useScrollHeaderCollapse } from '@/hooks/useMobileBottomNavHide';
 import {
   RFQ_BORDER,
+  RFQ_HELP_CLASS,
   RFQ_RADIUS,
   RfqCollapsibleSection,
   RfqFormSection,
@@ -400,13 +401,13 @@ export function RFQCreateWizard() {
   return (
     <div className='min-h-screen bg-[var(--brand-page)] pb-32 max-lg:pb-[calc(4.5rem+4.5rem+env(safe-area-inset-bottom))]'>
       <header className='fixed top-0 left-0 right-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur-md lg:left-64'>
-        <div className='mx-auto max-w-6xl px-4 py-3 lg:px-8'>
+        <div className='mx-auto w-full max-w-[1600px] px-4 py-3 lg:px-8 2xl:px-10'>
           <div ref={backRowRef}>
             <Button
               variant='unstyled'
               type='button'
               onClick={() => (step > 0 ? setStep(step - 1) : navigate(-1))}
-              className='-ml-1 flex shrink-0 items-center gap-0.5 text-sm text-gray-600 transition-colors hover:text-gray-900'
+              className='-ml-1 flex shrink-0 items-center gap-0.5 text-sm text-gray-600 transition-colors hover:text-gray-900 xl:text-[15px]'
               aria-label={step > 0 ? 'ขั้นก่อนหน้า' : 'กลับ'}
             >
               <ChevronLeft size={18} />
@@ -427,8 +428,8 @@ export function RFQCreateWizard() {
           >
             <div ref={collapsibleInnerRef}>
               <div className='flex items-center justify-between gap-2'>
-                <h1 className='text-lg font-bold text-brand-navy-deep'>ขอใบเสนอราคา</h1>
-                <span className='shrink-0 rounded-full bg-brand-lavender-chip px-2.5 py-0.5 text-[11px] font-semibold text-brand-violet-deep'>
+                <h1 className='text-lg font-bold text-brand-navy-deep xl:text-xl 2xl:text-2xl'>ขอใบเสนอราคา</h1>
+                <span className='shrink-0 rounded-full bg-brand-lavender-chip px-2.5 py-0.5 text-[11px] font-semibold text-brand-violet-deep xl:text-[12px]'>
                   {step + 1}/{STEPS.length} · {STEPS[step]}
                 </span>
               </div>
@@ -456,194 +457,200 @@ export function RFQCreateWizard() {
 
       <div aria-hidden style={{ height: headerSpacerHeight }} />
 
-      <main className='mx-auto max-w-6xl space-y-4 px-4 py-5 lg:px-8'>
+      <main className='mx-auto w-full max-w-[1600px] space-y-4 px-4 py-5 lg:px-8 2xl:px-10'>
         {step === 0 ? (
-          <>
-            <RfqFormSection
-              title='ประเภทคำขอ'
-              hint='เลือกประเภทก่อนกรอกรายละเอียด'
-              required
-              data-tour='request-kind'
-            >
-              <RfqKindPicker
-                kind={kind}
-                onSelect={(id) =>
-                  setDraft({
-                    request_kind: id,
-                    category_id: null,
-                    sub_category_id: undefined,
-                  })
-                }
-              />
-              {isSampleMode ? (
-                <p className='mt-2.5 text-[11px] leading-snug text-neutral-subtle'>
-                  โหมดตัวอย่าง: รายละเอียดอย่างน้อย 20 ตัวอักษร
-                </p>
-              ) : null}
-            </RfqFormSection>
-
-            <RfqFormSection
-              title='ข้อมูลงาน'
-              hint='โรงงานใช้ข้อมูลนี้ประเมินราคา'
-              required
-            >
-              <Step1Basic
-                draft={draft}
-                setDraft={setDraft}
-                categories={modeCategories}
-                subCategories={subCategories}
-                subCategoriesLoading={subCategoriesLoading}
-                mode={kind}
-                hubs={scopeHubs}
-                selectedHubId={selectedHubId}
-                onHubChange={(hubId) => {
-                  setSelectedHubId(hubId);
-                  setDraft({ category_id: null, sub_category_id: undefined });
-                }}
-              />
-            </RfqFormSection>
-
-            {showMatchStrip ? (
-              <RfqMatchStrip
-                loading={matchingLoading}
-                count={matchCount}
-                isMaterialKind={isMaterialKind}
-              />
-            ) : null}
-
-            <RfqFormSection
-              title='ส่งถึงโรงงาน'
-              hint='เลือกว่าจะส่ง RFQ ให้ใคร'
-            >
-              <RfqTargetingSelector
-                targeting={draft.targeting ?? 'all'}
-                targetFactories={draft.target_factories ?? []}
-                allFactories={allFactories}
-                onTargetingChange={(t) =>
-                  setDraft({ targeting: t, target_factories: t === 'all' ? [] : draft.target_factories ?? [] })
-                }
-                onFactoriesChange={(factories) => setDraft({ target_factories: factories })}
-              />
-            </RfqFormSection>
-
-            <RfqFormSection
-              title='จัดส่ง'
-              hint='ที่อยู่และวิธีขนส่งที่ต้องการ'
-              required
-            >
-              <Step3Commercial
-                draft={draft}
-                setDraft={setDraft}
-                onLoaded={handleStep3Loaded}
-                isGuest={!isAuthenticated}
-              />
-            </RfqFormSection>
-
-            <RfqCollapsibleSection title='ประเภทวัตถุดิบ'>
-              <Step2Specifications draft={draft} setDraft={setDraft} />
-            </RfqCollapsibleSection>
-
-            {!isSampleMode ? (
-              <RfqCollapsibleSection
-                title='มาตรฐานคุณภาพ'
-                hint='ค่าตรวจคุณภาพจะคิดแยกตามมาตรฐานที่เลือก — เรตและเงื่อนไขขึ้นอยู่กับแต่ละโรงงาน (ไม่รวมในราคาผลิตที่เสนอใน RFQ)'
+          <div className='grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.75fr)] 2xl:grid-cols-[minmax(0,1.55fr)_minmax(420px,0.8fr)]'>
+            <div className='space-y-4'>
+              <RfqFormSection
+                title='ประเภทคำขอ'
+                hint='เลือกประเภทก่อนกรอกรายละเอียด'
+                required
+                data-tour='request-kind'
               >
-                <Step4QualityReview draft={draft} setDraft={setDraft} />
-              </RfqCollapsibleSection>
-            ) : null}
+                <RfqKindPicker
+                  kind={kind}
+                  onSelect={(id) =>
+                    setDraft({
+                      request_kind: id,
+                      category_id: null,
+                      sub_category_id: undefined,
+                    })
+                  }
+                />
+                {isSampleMode ? (
+                  <p className='mt-2.5 text-[11px] leading-snug text-neutral-subtle xl:text-[12px]'>
+                    โหมดตัวอย่าง: รายละเอียดอย่างน้อย 20 ตัวอักษร
+                  </p>
+                ) : null}
+              </RfqFormSection>
 
-            {!isFormValid && blockingIssues.length > 0 ? (
-              <div className={`flex gap-2.5 ${RFQ_RADIUS} border-[0.5px] border-amber-200 bg-amber-50 px-3 py-2.5`}>
-                <AlertCircle size={18} className='shrink-0 text-amber-600 mt-0.5' />
-                <div>
-                  <p className='text-[12px] font-semibold text-amber-900'>ยังส่งไม่ได้</p>
-                  <p className='mt-0.5 text-[11px] text-amber-800'>{blockingIssues[0]}</p>
+              <RfqFormSection
+                title='ข้อมูลงาน'
+                hint='โรงงานใช้ข้อมูลนี้ประเมินราคา'
+                required
+              >
+                <Step1Basic
+                  draft={draft}
+                  setDraft={setDraft}
+                  categories={modeCategories}
+                  subCategories={subCategories}
+                  subCategoriesLoading={subCategoriesLoading}
+                  mode={kind}
+                  hubs={scopeHubs}
+                  selectedHubId={selectedHubId}
+                  onHubChange={(hubId) => {
+                    setSelectedHubId(hubId);
+                    setDraft({ category_id: null, sub_category_id: undefined });
+                  }}
+                />
+              </RfqFormSection>
+
+              {showMatchStrip ? (
+                <RfqMatchStrip
+                  loading={matchingLoading}
+                  count={matchCount}
+                  isMaterialKind={isMaterialKind}
+                />
+              ) : null}
+
+              <RfqFormSection
+                title='ส่งถึงโรงงาน'
+                hint='เลือกว่าจะส่ง RFQ ให้ใคร'
+              >
+                <RfqTargetingSelector
+                  targeting={draft.targeting ?? 'all'}
+                  targetFactories={draft.target_factories ?? []}
+                  allFactories={allFactories}
+                  onTargetingChange={(t) =>
+                    setDraft({ targeting: t, target_factories: t === 'all' ? [] : draft.target_factories ?? [] })
+                  }
+                  onFactoriesChange={(factories) => setDraft({ target_factories: factories })}
+                />
+              </RfqFormSection>
+
+              <RfqFormSection
+                title='จัดส่ง'
+                hint='ที่อยู่และวิธีขนส่งที่ต้องการ'
+                required
+              >
+                <Step3Commercial
+                  draft={draft}
+                  setDraft={setDraft}
+                  onLoaded={handleStep3Loaded}
+                  isGuest={!isAuthenticated}
+                />
+              </RfqFormSection>
+            </div>
+
+            <aside className='space-y-4 xl:self-start'>
+              <RfqCollapsibleSection title='ประเภทวัตถุดิบ'>
+                <Step2Specifications draft={draft} setDraft={setDraft} />
+              </RfqCollapsibleSection>
+
+              {!isSampleMode ? (
+                <RfqCollapsibleSection
+                  title='มาตรฐานคุณภาพ'
+                  hint='ค่าตรวจคุณภาพจะคิดแยกตามมาตรฐานที่เลือก — เรตและเงื่อนไขขึ้นอยู่กับแต่ละโรงงาน (ไม่รวมในราคาผลิตที่เสนอใน RFQ)'
+                >
+                  <Step4QualityReview draft={draft} setDraft={setDraft} />
+                </RfqCollapsibleSection>
+              ) : null}
+
+              {!isFormValid && blockingIssues.length > 0 ? (
+                <div className={`flex gap-2.5 ${RFQ_RADIUS} border-[0.5px] border-amber-200 bg-amber-50 px-3 py-2.5`}>
+                  <AlertCircle size={18} className='shrink-0 text-amber-600 mt-0.5' />
+                  <div>
+                    <p className='text-[12px] font-semibold text-amber-900 xl:text-sm'>ยังส่งไม่ได้</p>
+                    <p className='mt-0.5 text-[11px] text-amber-800 xl:text-[12px]'>{blockingIssues[0]}</p>
+                  </div>
                 </div>
-              </div>
-            ) : null}
-          </>
+              ) : null}
+            </aside>
+          </div>
         ) : (
           <div className='space-y-3'>
-            <p className='text-[12px] text-neutral-subtle px-0.5'>
+            <p className={`px-0.5 ${RFQ_HELP_CLASS}`}>
               ตรวจสอบข้อมูลก่อนส่ง — กดย้อนกลับเพื่อแก้ไข
             </p>
 
-            <RfqSummaryCard title='งานและสินค้า'>
-              <RfqSummaryItem label='ประเภทคำขอ' value={kindLabel} />
-              <RfqSummaryItem label='ชื่อโปรเจกต์' value={draft.title} />
-              <RfqSummaryItem label='หมวดหมู่' value={categoryName} />
-              <RfqSummaryItem label='หมวดย่อย' value={subCategoryName} />
-              <RfqSummaryItem label='จำนวน' value={draft.qty != null ? String(draft.qty) : undefined} />
-              <RfqSummaryItem label='รายละเอียด' value={draft.description} />
-            </RfqSummaryCard>
-
-            <RfqSummaryCard title='ส่งถึงโรงงาน'>
-              <RfqSummaryItem
-                label='วิธีส่ง'
-                value={
-                  (draft.targeting ?? 'all') === 'all'
-                    ? 'ส่งให้ทุกโรงงานที่รับงานประเภทนี้'
-                    : `เลือกเฉพาะ ${(draft.target_factories ?? []).length} โรงงาน`
-                }
-              />
-              {(draft.targeting ?? 'all') === 'specific' && (draft.target_factories ?? []).length > 0 && (
-                <RfqSummaryItem
-                  label='รายชื่อโรงงาน'
-                  value={(draft.target_factories ?? []).map((f) => f.name).join(', ')}
-                />
-              )}
-            </RfqSummaryCard>
-
-            <RfqSummaryCard title='จัดส่งและงบ'>
-              <RfqSummaryItem
-                label='งบประมาณ'
-                value={draft.target_price != null ? `${draft.target_price} บาท` : undefined}
-              />
-              <RfqSummaryItem
-                label='ระยะเวลาผลิต'
-                value={
-                  draft.target_lead_time_days != null
-                    ? `${draft.target_lead_time_days} วัน`
-                    : undefined
-                }
-              />
-              <RfqSummaryItem label='ที่อยู่จัดส่ง' value={deliveryAddressLabel} />
-              <RfqSummaryItem label='วิธีจัดส่ง' value={shippingMethodLabel} />
-            </RfqSummaryCard>
-
-            {!isSampleMode ? (
-              <RfqSummaryCard title='สเปกและคุณภาพ'>
-                <RfqSummaryItem label='วัตถุดิบ / เกรด' value={draft.material_grade} />
-                <RfqSummaryItem
-                  label='มาตรฐาน'
-                  value={draft.certifications_required.join(', ') || undefined}
-                />
-                <RfqSummaryItem
-                  label='ไฟล์อ้างอิง'
-                  value={`${draft.reference_images.length} ไฟล์`}
-                />
+            <div className='grid gap-3 xl:grid-cols-2'>
+              <RfqSummaryCard title='งานและสินค้า'>
+                <RfqSummaryItem label='ประเภทคำขอ' value={kindLabel} />
+                <RfqSummaryItem label='ชื่อโปรเจกต์' value={draft.title} />
+                <RfqSummaryItem label='หมวดหมู่' value={categoryName} />
+                <RfqSummaryItem label='หมวดย่อย' value={subCategoryName} />
+                <RfqSummaryItem label='จำนวน' value={draft.qty != null ? String(draft.qty) : undefined} />
+                <RfqSummaryItem label='รายละเอียด' value={draft.description} />
               </RfqSummaryCard>
-            ) : (
-              <section className={`${RFQ_RADIUS} ${RFQ_BORDER} bg-white px-4 py-4`}>
-                <p className='text-[13px] font-bold text-brand-navy-deep mb-2'>ยืนยันการขอตัวอย่าง</p>
-                <Label className='flex items-start gap-2 text-[12px] text-brand-navy-deep'>
-                  <Checkbox
-                    checked={acceptSampleTerms}
-                    onCheckedChange={(checked) => setAcceptSampleTerms(checked === true)}
-                    className='mt-0.5'
+
+              <RfqSummaryCard title='ส่งถึงโรงงาน'>
+                <RfqSummaryItem
+                  label='วิธีส่ง'
+                  value={
+                    (draft.targeting ?? 'all') === 'all'
+                      ? 'ส่งให้ทุกโรงงานที่รับงานประเภทนี้'
+                      : `เลือกเฉพาะ ${(draft.target_factories ?? []).length} โรงงาน`
+                  }
+                />
+                {(draft.targeting ?? 'all') === 'specific' && (draft.target_factories ?? []).length > 0 && (
+                  <RfqSummaryItem
+                    label='รายชื่อโรงงาน'
+                    value={(draft.target_factories ?? []).map((f) => f.name).join(', ')}
                   />
-                  <span>
-                    ยอมรับเงื่อนไขการสั่งตัวอย่าง และยืนยันว่ารายละเอียดเพียงพอให้โรงงานประเมินได้
-                  </span>
-                </Label>
-                <p className='mt-2 text-[11px] text-neutral-subtle'>
-                  ไฟล์อ้างอิง: {draft.reference_images.length} ไฟล์
-                </p>
-              </section>
-            )}
+                )}
+              </RfqSummaryCard>
+
+              <RfqSummaryCard title='จัดส่งและงบ'>
+                <RfqSummaryItem
+                  label='งบประมาณ'
+                  value={draft.target_price != null ? `${draft.target_price} บาท` : undefined}
+                />
+                <RfqSummaryItem
+                  label='ระยะเวลาผลิต'
+                  value={
+                    draft.target_lead_time_days != null
+                      ? `${draft.target_lead_time_days} วัน`
+                      : undefined
+                  }
+                />
+                <RfqSummaryItem label='ที่อยู่จัดส่ง' value={deliveryAddressLabel} />
+                <RfqSummaryItem label='วิธีจัดส่ง' value={shippingMethodLabel} />
+              </RfqSummaryCard>
+
+              {!isSampleMode ? (
+                <RfqSummaryCard title='สเปกและคุณภาพ'>
+                  <RfqSummaryItem label='วัตถุดิบ / เกรด' value={draft.material_grade} />
+                  <RfqSummaryItem
+                    label='มาตรฐาน'
+                    value={draft.certifications_required.join(', ') || undefined}
+                  />
+                  <RfqSummaryItem
+                    label='ไฟล์อ้างอิง'
+                    value={`${draft.reference_images.length} ไฟล์`}
+                  />
+                </RfqSummaryCard>
+              ) : (
+                <section className={`${RFQ_RADIUS} ${RFQ_BORDER} bg-white px-4 py-4`}>
+                  <p className='mb-2 text-[13px] font-bold text-brand-navy-deep xl:text-[15px] 2xl:text-base'>ยืนยันการขอตัวอย่าง</p>
+                  <Label className='flex items-start gap-2 text-[12px] text-brand-navy-deep xl:text-sm'>
+                    <Checkbox
+                      checked={acceptSampleTerms}
+                      onCheckedChange={(checked) => setAcceptSampleTerms(checked === true)}
+                      className='mt-0.5'
+                    />
+                    <span>
+                      ยอมรับเงื่อนไขการสั่งตัวอย่าง และยืนยันว่ารายละเอียดเพียงพอให้โรงงานประเมินได้
+                    </span>
+                  </Label>
+                  <p className='mt-2 text-[11px] text-neutral-subtle xl:text-[12px]'>
+                    ไฟล์อ้างอิง: {draft.reference_images.length} ไฟล์
+                  </p>
+                </section>
+              )}
+            </div>
 
             {optionalMissing.length > 0 ? (
-              <p className='text-[11px] text-neutral-subtle px-0.5'>
+              <p className={`px-0.5 ${RFQ_HELP_CLASS}`}>
                 ยังไม่ระบุ (ไม่บังคับ): {optionalMissing.join(', ')}
               </p>
             ) : null}
@@ -654,12 +661,12 @@ export function RFQCreateWizard() {
       <div
         className='fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200/90 bg-white/95 backdrop-blur-md px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:left-64'
       >
-        <div className='mx-auto flex max-w-6xl items-center justify-between gap-3 lg:px-4'>
+        <div className='mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 lg:px-8 2xl:px-10'>
           <Button
             variant='unstyled'
             type='button'
             onClick={() => (step > 0 ? setStep(step - 1) : navigate(-1))}
-            className={`shrink-0 ${RFQ_RADIUS} ${RFQ_BORDER} px-4 py-2.5 text-sm font-medium text-brand-navy-deep`}
+            className={`shrink-0 ${RFQ_RADIUS} ${RFQ_BORDER} px-4 py-2.5 text-sm font-medium text-brand-navy-deep xl:text-[15px]`}
           >
             {step === 0 ? 'ยกเลิก' : 'แก้ไข'}
           </Button>
@@ -669,7 +676,7 @@ export function RFQCreateWizard() {
               type='button'
               onClick={() => setStep(1)}
               disabled={!isFormValid}
-              className={`min-w-[9rem] max-w-[16rem] flex-1 ${RFQ_RADIUS} bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-45`}
+              className={`min-w-[9rem] max-w-[16rem] flex-1 ${RFQ_RADIUS} bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-45 xl:text-[15px]`}
             >
               ตรวจสอบและส่ง
             </Button>
@@ -678,7 +685,7 @@ export function RFQCreateWizard() {
               variant='unstyled'
               type='button'
               onClick={() => openLoginModal('/create-rfq')}
-              className={`flex min-w-0 flex-1 items-center justify-center gap-2 ${RFQ_RADIUS} bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white`}
+              className={`flex min-w-0 flex-1 items-center justify-center gap-2 ${RFQ_RADIUS} bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white xl:text-[15px]`}
             >
               <LogIn size={15} />
               ล็อกอินเพื่อส่ง
@@ -689,7 +696,7 @@ export function RFQCreateWizard() {
               type='button'
               onClick={() => void submit()}
               disabled={!isFormValid || create.isPending || (isSampleMode && !acceptSampleTerms)}
-              className={`min-w-0 flex-1 ${RFQ_RADIUS} bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-45`}
+              className={`min-w-0 flex-1 ${RFQ_RADIUS} bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-45 xl:text-[15px]`}
             >
               {create.isPending ? 'กำลังส่ง…' : 'ส่งคำขอราคา'}
             </Button>
