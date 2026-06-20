@@ -262,7 +262,7 @@ export function AdminOrdersPage() {
                 <AdminTableHead>
                   โรงงาน
                 </AdminTableHead>
-                <AdminTableHead className='text-right'>
+                <AdminTableHead>
                   ยอดรวม
                 </AdminTableHead>
                 <AdminTableHead>
@@ -303,7 +303,7 @@ export function AdminOrdersPage() {
                       <AdminTableCell className='px-4 py-3 text-sm text-slate-500 max-w-[140px] truncate'>
                         {order.factory}
                       </AdminTableCell>
-                      <AdminTableCell className='px-4 py-3 text-sm text-slate-900 font-semibold text-right tabular-nums'>
+                      <AdminTableCell className='px-4 py-3 text-sm text-slate-900 font-semibold tabular-nums'>
                         {formatCurrencyNoDecimals(order.total_amount)}
                       </AdminTableCell>
                       <AdminTableCell className='px-4 py-3 text-sm text-purple-700 font-semibold tabular-nums'>
@@ -335,7 +335,7 @@ export function AdminOrdersPage() {
                   <AdminTableCell className='px-4 py-3 text-xs font-bold text-purple-700' colSpan={3}>
                     รวม {rows.length} รายการ
                   </AdminTableCell>
-                  <AdminTableCell className='px-4 py-3 text-sm font-bold text-purple-900 text-right tabular-nums'>
+                  <AdminTableCell className='px-4 py-3 text-sm font-bold text-purple-900 tabular-nums'>
                     {formatCurrencyNoDecimals(summary.total)}
                   </AdminTableCell>
                   <AdminTableCell className='px-4 py-3 text-sm font-bold text-purple-700 tabular-nums'>

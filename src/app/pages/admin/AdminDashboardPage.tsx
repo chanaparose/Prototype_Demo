@@ -159,6 +159,16 @@ export function AdminDashboardPage() {
         : '';
 
   const { summary, revenueRows, recentOrders, recentRfqs } = dashboard;
+  const recentOrdersLabel = loading
+    ? 'กำลังโหลดข้อมูล'
+    : recentOrders.length > 0
+      ? `${recentOrders.length} รายการล่าสุด`
+      : 'ยังไม่มีรายการล่าสุด';
+  const recentRfqsLabel = loading
+    ? 'กำลังโหลดข้อมูล'
+    : recentRfqs.length > 0
+      ? `${recentRfqs.length} รายการล่าสุด`
+      : 'ยังไม่มีรายการล่าสุด';
 
   const kpiData = useMemo<KpiCard[]>(() => {
     const gross = pickScalarNumber(summary.gross_order_value, summary.total_revenue) ?? 0;
@@ -312,7 +322,7 @@ export function AdminDashboardPage() {
 
         <div className='bg-white rounded-xl border border-slate-200 p-5'>
           <h3 className='text-sm font-semibold text-slate-900 mb-1'>สถานะคำสั่งซื้อ</h3>
-          <p className='text-xs text-slate-400 mb-4'>5 รายการล่าสุด</p>
+          <p className='text-xs text-slate-400 mb-4'>{recentOrdersLabel}</p>
           <ResponsiveContainer width='100%' height={220}>
             <PieChart>
               <Pie
@@ -350,129 +360,133 @@ export function AdminDashboardPage() {
         <div className='bg-white rounded-xl border border-slate-200 overflow-hidden'>
           <div className='px-5 py-4 border-b border-slate-100'>
             <h3 className='text-sm font-semibold text-slate-900'>คำสั่งซื้อล่าสุด</h3>
-            <p className='text-xs text-slate-400 mt-0.5'>5 รายการล่าสุด</p>
+            <p className='text-xs text-slate-400 mt-0.5'>{recentOrdersLabel}</p>
           </div>
-          <AdminTableContainer>
-            <AdminTable>
-              <AdminTableHeader>
-                <AdminTableRow>
-                  <AdminTableHead>
-                    Order ID
-                  </AdminTableHead>
-                  <AdminTableHead>
-                    ผู้ซื้อ
-                  </AdminTableHead>
-                  <AdminTableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
-                    ยอดรวม
-                  </AdminTableHead>
-                  <AdminTableHead>
-                    สถานะ
-                  </AdminTableHead>
-                </AdminTableRow>
-              </AdminTableHeader>
-              <AdminTableBody className='divide-y divide-slate-50'>
-                {loading ? (
-                  <TableSkeletonRows columns={4} rows={3} />
-                ) : recentOrders.length === 0 ? (
+          <div className='px-5 pt-4 pb-5'>
+            <AdminTableContainer>
+              <AdminTable>
+                <AdminTableHeader>
                   <AdminTableRow>
-                    <AdminTableCell
-                      colSpan={4}
-                      className='px-4 py-10 text-center text-sm text-slate-400'
-                    >
-                      ไม่มีข้อมูลคำสั่งซื้อ
-                    </AdminTableCell>
+                    <AdminTableHead>
+                      Order ID
+                    </AdminTableHead>
+                    <AdminTableHead>
+                      ผู้ซื้อ
+                    </AdminTableHead>
+                    <AdminTableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                      ยอดรวม
+                    </AdminTableHead>
+                    <AdminTableHead>
+                      สถานะ
+                    </AdminTableHead>
                   </AdminTableRow>
-                ) : (
-                  recentOrders.map((order) => {
-                    const status = orderStatusMeta(pickScalarString(order.status));
-                    return (
-                      <AdminTableRow
-                        key={pickScalarString(order.order_id)}
-                        className='hover:bg-slate-50 transition-colors'
+                </AdminTableHeader>
+                <AdminTableBody className='divide-y divide-slate-50'>
+                  {loading ? (
+                    <TableSkeletonRows columns={4} rows={3} />
+                  ) : recentOrders.length === 0 ? (
+                    <AdminTableRow>
+                      <AdminTableCell
+                        colSpan={4}
+                        className='px-4 py-10 text-center text-sm text-slate-400'
                       >
-                        <AdminTableCell className='px-4 py-3 font-mono text-xs text-purple-600 font-semibold'>
-                          #{order.order_id}
-                        </AdminTableCell>
-                        <AdminTableCell className='px-4 py-3 text-xs text-slate-700 max-w-[120px] truncate'>
-                          {order.customer_name ?? '-'}
-                        </AdminTableCell>
-                        <AdminTableCell className='px-4 py-3 text-xs text-slate-900 font-semibold text-right tabular-nums'>
-                          {toCurrency(pickScalarNumber(order.total_amount) ?? 0)}
-                        </AdminTableCell>
-                        <AdminTableCell className='px-4 py-3'>
-                          <AdminStatusBadge label={status.label} cls={status.cls} />
-                        </AdminTableCell>
-                      </AdminTableRow>
-                    );
-                  })
-                )}
-              </AdminTableBody>
-            </AdminTable>
-          </AdminTableContainer>
+                        ไม่มีข้อมูลคำสั่งซื้อ
+                      </AdminTableCell>
+                    </AdminTableRow>
+                  ) : (
+                    recentOrders.map((order) => {
+                      const status = orderStatusMeta(pickScalarString(order.status));
+                      return (
+                        <AdminTableRow
+                          key={pickScalarString(order.order_id)}
+                          className='hover:bg-slate-50 transition-colors'
+                        >
+                          <AdminTableCell className='px-4 py-3 font-mono text-xs text-purple-600 font-semibold'>
+                            #{order.order_id}
+                          </AdminTableCell>
+                          <AdminTableCell className='px-4 py-3 text-xs text-slate-700 max-w-[120px] truncate'>
+                            {order.customer_name ?? '-'}
+                          </AdminTableCell>
+                          <AdminTableCell className='px-4 py-3 text-xs text-slate-900 font-semibold text-right tabular-nums'>
+                            {toCurrency(pickScalarNumber(order.total_amount) ?? 0)}
+                          </AdminTableCell>
+                          <AdminTableCell className='px-4 py-3'>
+                            <AdminStatusBadge label={status.label} cls={status.cls} />
+                          </AdminTableCell>
+                        </AdminTableRow>
+                      );
+                    })
+                  )}
+                </AdminTableBody>
+              </AdminTable>
+            </AdminTableContainer>
+          </div>
         </div>
 
         <div className='bg-white rounded-xl border border-slate-200 overflow-hidden'>
           <div className='px-5 py-4 border-b border-slate-100'>
             <h3 className='text-sm font-semibold text-slate-900'>RFQ ล่าสุด</h3>
-            <p className='text-xs text-slate-400 mt-0.5'>5 รายการล่าสุด</p>
+            <p className='text-xs text-slate-400 mt-0.5'>{recentRfqsLabel}</p>
           </div>
-          <AdminTableContainer>
-            <AdminTable>
-              <AdminTableHeader>
-                <AdminTableRow className='bg-slate-50 border-b border-slate-100'>
-                  <AdminTableHead>
-                    RFQ ID
-                  </AdminTableHead>
-                  <AdminTableHead>
-                    ผู้ซื้อ
-                  </AdminTableHead>
-                  <AdminTableHead>
-                    สถานะ
-                  </AdminTableHead>
-                  <AdminTableHead>
-                    วันที่
-                  </AdminTableHead>
-                </AdminTableRow>
-              </AdminTableHeader>
-              <AdminTableBody className='divide-y divide-slate-50'>
-                {loading ? (
-                  <TableSkeletonRows columns={4} rows={3} />
-                ) : recentRfqs.length === 0 ? (
-                  <AdminTableRow>
-                    <AdminTableCell
-                      colSpan={4}
-                      className='px-4 py-10 text-center text-sm text-slate-400'
-                    >
-                      ไม่มีข้อมูล RFQ
-                    </AdminTableCell>
+          <div className='px-5 pt-4 pb-5'>
+            <AdminTableContainer>
+              <AdminTable>
+                <AdminTableHeader>
+                  <AdminTableRow className='bg-slate-50 border-b border-slate-100'>
+                    <AdminTableHead>
+                      RFQ ID
+                    </AdminTableHead>
+                    <AdminTableHead>
+                      ผู้ซื้อ
+                    </AdminTableHead>
+                    <AdminTableHead>
+                      สถานะ
+                    </AdminTableHead>
+                    <AdminTableHead>
+                      วันที่
+                    </AdminTableHead>
                   </AdminTableRow>
-                ) : (
-                  recentRfqs.map((rfq) => {
-                    const status = rfqStatusMeta(pickScalarString(rfq.status));
-                    return (
-                      <AdminTableRow
-                        key={pickScalarString(rfq.rfq_id)}
-                        className='hover:bg-slate-50 transition-colors'
+                </AdminTableHeader>
+                <AdminTableBody className='divide-y divide-slate-50'>
+                  {loading ? (
+                    <TableSkeletonRows columns={4} rows={3} />
+                  ) : recentRfqs.length === 0 ? (
+                    <AdminTableRow>
+                      <AdminTableCell
+                        colSpan={4}
+                        className='px-4 py-10 text-center text-sm text-slate-400'
                       >
-                        <AdminTableCell className='px-4 py-3 font-mono text-xs text-purple-600 font-semibold'>
-                          #{rfq.rfq_id}
-                        </AdminTableCell>
-                        <AdminTableCell className='px-4 py-3 text-xs text-slate-700 max-w-[140px] truncate'>
-                          {rfq.customer_name ?? '-'}
-                        </AdminTableCell>
-                        <AdminTableCell className='px-4 py-3'>
-                          <AdminStatusBadge label={status.label} cls={status.cls} />
-                        </AdminTableCell>
-                        <AdminTableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
-                          {pickScalarString(rfq.created_at, '-').slice(0, 10)}
-                        </AdminTableCell>
-                      </AdminTableRow>
-                    );
-                  })
-                )}
-              </AdminTableBody>
-            </AdminTable>
-          </AdminTableContainer>
+                        ไม่มีข้อมูล RFQ
+                      </AdminTableCell>
+                    </AdminTableRow>
+                  ) : (
+                    recentRfqs.map((rfq) => {
+                      const status = rfqStatusMeta(pickScalarString(rfq.status));
+                      return (
+                        <AdminTableRow
+                          key={pickScalarString(rfq.rfq_id)}
+                          className='hover:bg-slate-50 transition-colors'
+                        >
+                          <AdminTableCell className='px-4 py-3 font-mono text-xs text-purple-600 font-semibold'>
+                            #{rfq.rfq_id}
+                          </AdminTableCell>
+                          <AdminTableCell className='px-4 py-3 text-xs text-slate-700 max-w-[140px] truncate'>
+                            {rfq.customer_name ?? '-'}
+                          </AdminTableCell>
+                          <AdminTableCell className='px-4 py-3'>
+                            <AdminStatusBadge label={status.label} cls={status.cls} />
+                          </AdminTableCell>
+                          <AdminTableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
+                            {pickScalarString(rfq.created_at, '-').slice(0, 10)}
+                          </AdminTableCell>
+                        </AdminTableRow>
+                      );
+                    })
+                  )}
+                </AdminTableBody>
+              </AdminTable>
+            </AdminTableContainer>
+          </div>
         </div>
       </div>
     </div>

@@ -140,13 +140,13 @@ export function AdminFactoriesPage() {
                 key={tab.key}
                 type='button'
                 onClick={() => setStatusTab(tab.key)}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                className={`inline-flex max-w-full items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                   active
                     ? 'bg-purple-600 text-white'
                     : 'bg-white text-slate-600 border border-purple-100 hover:bg-purple-50 hover:border-purple-200'
                 }`}
               >
-                {tab.label}
+                <span className='min-w-0 truncate'>{tab.label}</span>
                 <Badge
                   variant={active ? 'active' : 'outline'}
                   size='sm'
@@ -195,25 +195,20 @@ export function AdminFactoriesPage() {
                 return (
                   <AdminTableRow key={factory.id}>
                     <AdminTableCell>
-                        <div className='flex items-center gap-3'>
-                          <div className='w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-xs shrink-0'>
-                            {factory.factory_name.charAt(0)}
-                          </div>
-                          <div>
-                            <Button
-                              variant='unstyled'
-                              type='button'
-                              onClick={() => navigate(`/admin/factories/${factory.factory_id}`)}
-                              className='font-semibold text-slate-900 hover:text-slate-700 hover:underline text-sm text-left'
-                            >
-                              {factory.factory_name}
-                            </Button>
-                            <p className='text-[11px] text-slate-400 mt-0.5'>
-                              {factory.province} · {factory.business_type}
-                            </p>
-                          </div>
-                        </div>
-                      </AdminTableCell>
+                      <div>
+                        <Button
+                          variant='unstyled'
+                          type='button'
+                          onClick={() => navigate(`/admin/factories/${factory.factory_id}`)}
+                          className='font-semibold text-slate-900 hover:text-slate-700 hover:underline text-sm text-left'
+                        >
+                          {factory.factory_name}
+                        </Button>
+                        <p className='text-[11px] text-slate-400 mt-0.5'>
+                          {factory.province} · {factory.business_type}
+                        </p>
+                      </div>
+                    </AdminTableCell>
                       <AdminTableCell className='px-4 py-3 text-sm text-slate-700'>
                         {factory.owner_name}
                       </AdminTableCell>
@@ -227,7 +222,11 @@ export function AdminFactoriesPage() {
                         {formatThaiDate(factory.registered_at)}
                       </AdminTableCell>
                       <AdminTableCell className='px-4 py-3'>
-                        <Badge variant={variant} size='sm'>
+                        <Badge
+                          variant={variant}
+                          size='sm'
+                          className='max-w-full shrink whitespace-normal text-center leading-tight sm:whitespace-nowrap'
+                        >
                           {label}
                         </Badge>
                       </AdminTableCell>

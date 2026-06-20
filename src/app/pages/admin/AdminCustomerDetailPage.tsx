@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router';
-import { ArrowLeft, User, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, User, AlertTriangle } from 'lucide-react';
 import { adminCustomerApi } from '@/services/api/adminApi';
 import type {
   IAdminCustomerDetailResponse,
@@ -156,6 +156,11 @@ function CustomerWalletTab({ userId }: { userId: number }) {
   }
   if (!wallet) return null;
 
+  const transactionLabel =
+    wallet.transactions.length > 0
+      ? `${wallet.transactions.length} รายการล่าสุด`
+      : 'ยังไม่มีรายการล่าสุด';
+
   return (
     <div className='space-y-5'>
       <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6'>
@@ -164,10 +169,10 @@ function CustomerWalletTab({ userId }: { userId: number }) {
         <StatCard label='รวมทั้งหมด' value={formatCurrency(wallet.total)} color='indigo' />
       </div>
 
-      <div className='bg-white rounded-xl border border-slate-200 overflow-hidden'>
-        <div className='px-5 py-4 border-b border-slate-100'>
+      <div className='space-y-3'>
+        <div className='px-4'>
           <h3 className='text-sm font-semibold text-slate-900'>ประวัติธุรกรรม</h3>
-          <p className='text-xs text-slate-400 mt-0.5'>200 รายการล่าสุด</p>
+          <p className='text-xs text-slate-400 mt-0.5'>{transactionLabel}</p>
         </div>
         <AdminTableContainer>
           <AdminTable>
@@ -179,10 +184,10 @@ function CustomerWalletTab({ userId }: { userId: number }) {
                 <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
                   ประเภท
                 </AdminTableHead>
-                <AdminTableHead className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>
+                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
                   จำนวน
                 </AdminTableHead>
-                <AdminTableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
+                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
                   สถานะ
                 </AdminTableHead>
               </AdminTableRow>
@@ -214,11 +219,11 @@ function CustomerWalletTab({ userId }: { userId: number }) {
                       <AdminTableCell className='px-4 py-3'>
                         <BadgeCustom label={ttype.label} color={ttype.color} />
                       </AdminTableCell>
-                      <AdminTableCell className={`px-4 py-3 text-right tabular-nums ${amountCls}`}>
+                      <AdminTableCell className={`px-4 py-3 text-left tabular-nums ${amountCls}`}>
                         {ttype.sign}
                         {formatCurrency(tx.amount)}
                       </AdminTableCell>
-                      <AdminTableCell className='px-4 py-3 text-center'>
+                      <AdminTableCell className='px-4 py-3 text-left'>
                         <BadgeCustom label={tstatus.label} color={tstatus.color} />
                       </AdminTableCell>
                     </AdminTableRow>
@@ -312,13 +317,9 @@ function CustomerOrdersTab({ userId }: { userId: number }) {
                   return (
                     <AdminTableRow key={o.order_id} className='hover:bg-slate-50 transition-colors'>
                       <AdminTableCell className='px-4 py-3'>
-                        <Link
-                          to={`/admin/orders/${o.order_id}`}
-                          className='text-purple-600 font-semibold font-mono text-xs hover:underline'
-                          onClick={(e) => e.stopPropagation()}
-                        >
+                        <span className='text-slate-400 font-semibold font-mono text-xs'>
                           #{o.order_id}
-                        </Link>
+                        </span>
                       </AdminTableCell>
                       <AdminTableCell className='px-4 py-3 text-slate-700 truncate max-w-[160px]'>
                         {o.factory_name}
@@ -412,7 +413,7 @@ export function AdminCustomerDetailPage() {
           onClick={() => navigate('/admin/customers')}
           className='flex items-center gap-1.5 text-xs text-slate-400 hover:text-purple-600 transition-colors'
         >
-          <ArrowLeft size={14} />
+          <ChevronLeft size={14} />
           กลับ
         </Button>
         <div className='rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700 flex items-center gap-2'>
@@ -428,16 +429,17 @@ export function AdminCustomerDetailPage() {
   return (
     <div className='space-y-6'>
       <div>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => navigate('/admin/customers')}
-          className='flex items-center gap-1.5 text-xs text-slate-400 hover:text-purple-600 transition-colors mb-2'
-        >
-          <ArrowLeft size={14} />
-          กลับไปรายการลูกค้า
-        </Button>
-        <p className='text-xs text-slate-400 font-medium'>Admin / ลูกค้า / รายละเอียด</p>
+        <div className='flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-400'>
+          <Link
+            to='/admin/customers'
+            className='inline-flex items-center gap-1 text-slate-400 hover:text-purple-600 transition-colors'
+          >
+            <ChevronLeft size={12} />
+            Admin / ลูกค้า
+          </Link>
+          <span className='text-slate-300'>/</span>
+          <span>รายละเอียด</span>
+        </div>
         <div className='flex items-center gap-3 mt-1'>
           <div className='w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-sm shrink-0'>
             <User size={18} />

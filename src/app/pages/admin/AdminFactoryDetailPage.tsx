@@ -819,7 +819,7 @@ export function AdminFactoryDetailPage() {
                   <div className='flex items-center justify-between mb-4'>
                     <div>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${approvalChipCls}`}
+                        className={`inline-flex max-w-full items-center justify-center rounded-full px-2 py-0.5 text-center text-xs font-semibold leading-tight whitespace-normal sm:whitespace-nowrap ${approvalChipCls}`}
                       >
                         {approvalLabel}
                       </span>
