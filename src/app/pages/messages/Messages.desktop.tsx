@@ -7,6 +7,7 @@ import type { UiConversation } from '@/pages/messages/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { MobileSearchField } from '@/components/shared/MobileSearchField';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 
 type MessagesDesktopProps = {
   searchText: string;
@@ -63,15 +64,17 @@ export function MessagesDesktop({
     <div className='hidden h-[calc(100dvh)] w-full overflow-hidden bg-white lg:flex'>
       <aside className='flex w-[min(100%,340px)] min-w-[300px] max-w-[380px] shrink-0 flex-col border-r border-gray-100 bg-[var(--neutral-warm-surface)]/40'>
         <header className='shrink-0 border-b border-gray-100 bg-white px-4 pb-3 pt-5'>
-          <div className='mb-3 flex items-end justify-between gap-3'>
-            <div className='min-w-0'>
-              <p className='text-[11px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
-                การสนทนา
-              </p>
-              <h1 className='text-[18px] font-semibold leading-tight text-[var(--brand-navy)]'>ข้อความ</h1>
+          <div className='mb-3 flex items-start justify-between gap-3'>
+            <div className='min-w-0 flex-1'>
+              <FactoryPageHeader
+                title='ข้อความ'
+                subtitle='การสนทนา'
+                icon={MessageCircle}
+                variant='minimal'
+              />
             </div>
             {!loading && !error ? (
-              <span className='shrink-0 rounded-md border border-gray-200 bg-[var(--brand-page)] px-2 py-0.5 text-[10px] font-semibold tabular-nums text-gray-500'>
+              <span className='mt-1 shrink-0 rounded-md border border-gray-200 bg-[var(--brand-page)] px-2 py-0.5 text-[10px] font-semibold tabular-nums text-gray-500'>
                 {visibleConversations.length} รายการ
               </span>
             ) : null}

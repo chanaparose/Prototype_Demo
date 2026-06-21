@@ -9,6 +9,7 @@ import {
   ChevronUp,
   FileText,
   ClipboardList,
+  Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { type Conversation } from '@/stores/types';
@@ -656,13 +657,11 @@ function ChatRoomBody({
         onScroll={handleScroll}
         className='flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3 relative lg:px-6'
       >
-        {!apiConv && (
-          <p className='text-center text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2'>
-            กำลังโหลดข้อมูลห้องแชท… รอสักครู่ก่อนส่งข้อความ
-          </p>
-        )}
         {msgLoading && messages.length === 0 && (
-          <p className='text-center text-sm text-gray-400 py-8'>กำลังโหลดข้อความ…</p>
+          <div className='flex items-center justify-center gap-2 py-8 text-sm text-gray-400'>
+            <Loader2 size={14} className='animate-spin' />
+            <span>กำลังโหลดข้อความ…</span>
+          </div>
         )}
         {currentUserId != null &&
           messages.map((msg, i) => {

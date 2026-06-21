@@ -1,12 +1,11 @@
 import React from 'react';
-import { Plus, FileText, Package, AlertTriangle } from 'lucide-react';
+import { FileText, Package, AlertTriangle } from 'lucide-react';
 import { useRfqAndOrdersState } from '@/components/features/rfq-and-orders/hooks/useRfqAndOrdersState';
 import { Button } from '@/components/ui/button';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { OrderPanel } from '@/components/features/rfq-and-orders/components/OrderPanel';
 import { RfqPanel } from '@/components/features/rfq-and-orders/components/RfqPanel';
 import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
-import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 
 const RFQ_ORDERS_TAB_ORDER = ['rfq', 'orders'] as const;
 
@@ -27,30 +26,48 @@ function RfqOrdersTabBar({
   hasPendingPayment: boolean;
 }) {
   return (
-    <div className='flex border-t-0'>
+    <div
+      role='tablist'
+      aria-label='คำขอราคาและคำสั่งซื้อ'
+      className='grid grid-cols-2 border-b border-slate-200'
+    >
       {RFQ_ORDERS_TABS.map((tab) => {
         const active = primaryTab === tab.id;
+        const Icon = tab.id === 'rfq' ? FileText : Package;
         return (
           <button
             key={tab.id}
             type='button'
+            role='tab'
+            aria-selected={active}
             onClick={() => setPrimaryTab(tab.id)}
-            className='relative min-w-0 flex-1 px-2 py-2.5 text-center'
+            className={`relative flex min-w-0 items-center justify-center gap-1.5 px-3 py-3 text-center transition-colors ${
+              active
+                ? 'text-brand-violet-deep'
+                : 'text-slate-500 hover:text-brand-violet-deep'
+            }`}
           >
-            <span
-              className={`inline-flex items-center gap-1 text-[13px] leading-none whitespace-nowrap ${
-                active ? 'font-bold text-[var(--brand-navy)]' : 'font-medium text-gray-400'
-              }`}
-            >
-              {tab.label}
+            <Icon
+              size={15}
+              strokeWidth={2.1}
+              className={`shrink-0 ${active ? 'text-brand-violet-deep' : 'text-slate-400'}`}
+              aria-hidden
+            />
+            <span className='relative min-w-0'>
+              <span
+                className={`block truncate text-sm font-semibold leading-tight ${
+                  active ? 'text-brand-violet-deep' : 'text-slate-500'
+                }`}
+              >
+                {tab.label}
+              </span>
               {tab.id === 'orders' && hasPendingPayment && !active ? (
-                <span className='h-1.5 w-1.5 shrink-0 rounded-full bg-brand-orange animate-pulse' />
+                <span className='absolute -right-2 -top-0.5 h-1.5 w-1.5 rounded-full bg-brand-orange animate-pulse' />
               ) : null}
             </span>
             {active ? (
               <span
-                className='absolute bottom-0 left-1/2 h-[3px] w-8 -translate-x-1/2 rounded-full'
-                style={{ background: 'var(--brand-purple)' }}
+                className='absolute inset-x-4 bottom-[-1px] h-0.5 rounded-full bg-brand-violet-deep'
               />
             ) : null}
           </button>
@@ -135,7 +152,7 @@ export function RfqAndOrders() {
           />
         </div>
 
-        <div className='sticky top-14 z-20 border-b border-gray-100 bg-white'>
+        <div className='sticky top-14 z-20 border-b border-slate-200/70 bg-[var(--brand-page)]'>
           <RfqOrdersTabBar
             primaryTab={primaryTab}
             setPrimaryTab={setPrimaryTab}
