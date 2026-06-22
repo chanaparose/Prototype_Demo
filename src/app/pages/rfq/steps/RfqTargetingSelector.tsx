@@ -161,7 +161,7 @@ export function RfqTargetingSelector({
                 onFocus={() => setShowDropdown(true)}
                 onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
                 placeholder='ค้นหาชื่อโรงงาน…'
-                className='flex-1 bg-transparent text-[13px] font-normal outline-none placeholder:text-xs placeholder:font-normal placeholder:text-gray-400 xl:text-[15px] xl:placeholder:text-[13px]'
+                className='flex-1 bg-transparent text-[13px] font-normal outline-none placeholder:text-[13px] placeholder:font-normal placeholder:text-gray-400 xl:text-[15px] xl:placeholder:text-[15px]'
               />
             </div>
           </div>

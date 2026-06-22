@@ -791,7 +791,7 @@ function ChatRoomBody({
               onDoubleClick={(e) => e.currentTarget.select()}
               placeholder={apiConv ? 'พิมพ์ข้อความ…' : 'รอโหลดห้องแชท…'}
               disabled={!apiConv}
-              className='h-auto min-h-0 flex-1 select-text border-0 bg-transparent p-0 text-[13px] font-normal leading-[1.35] text-[var(--brand-navy)] shadow-none ring-0 placeholder:text-xs placeholder:font-normal placeholder:text-[var(--neutral-placeholder)] focus-visible:border-transparent focus-visible:ring-0'
+              className='h-auto min-h-0 flex-1 select-text border-0 bg-transparent p-0 text-[13px] font-normal leading-[1.35] text-[var(--brand-navy)] shadow-none ring-0 placeholder:text-[13px] placeholder:font-normal placeholder:text-[var(--neutral-placeholder)] focus-visible:border-transparent focus-visible:ring-0'
             />
           </div>
           {isBuyer ? (

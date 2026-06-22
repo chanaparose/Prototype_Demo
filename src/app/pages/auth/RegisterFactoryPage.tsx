@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const inputBase =
-  'w-full rounded-xl border bg-gray-50/50 px-4 py-2.5 text-sm font-normal text-gray-900 placeholder:text-xs placeholder:font-normal placeholder:text-gray-400 outline-none transition-shadow focus:bg-white md:py-3';
+  'w-full rounded-xl border bg-gray-50/50 px-4 py-2.5 text-sm font-normal text-gray-900 placeholder:text-sm placeholder:font-normal placeholder:text-gray-400 outline-none transition-shadow focus:bg-white md:py-3';
 const inputNormal =
   'border-gray-200 focus:ring-2 focus:ring-brand-purple/25 focus:border-brand-purple';
 const inputError = 'border-red-400 focus:ring-2 focus:ring-red-200 focus:border-red-500';

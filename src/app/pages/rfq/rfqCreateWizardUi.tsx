@@ -10,11 +10,11 @@ export const RFQ_BORDER = 'border-[0.5px] border-gray-200';
 
 /** สไตล์ช่องกรอก — ไม่มีเงา (override shadow-sm จาก ui/input) */
 export const RFQ_FIELD_CLASS = [
-  'w-full shadow-none bg-white px-3 py-2.5 text-sm font-normal text-brand-navy-deep xl:text-[15px] 2xl:text-base',
+  'w-full shadow-none bg-white px-3 py-2.5 text-[11px] font-normal text-brand-navy-deep xl:text-[13px] 2xl:text-sm',
   RFQ_RADIUS,
   RFQ_BORDER,
-  'placeholder:text-xs placeholder:font-normal placeholder:text-neutral-placeholder xl:placeholder:text-[13px] 2xl:placeholder:text-sm',
-  'data-[placeholder]:text-xs data-[placeholder]:font-normal xl:data-[placeholder]:text-[13px] 2xl:data-[placeholder]:text-sm',
+  'placeholder:text-[11px] placeholder:font-normal placeholder:text-neutral-placeholder xl:placeholder:text-[13px] 2xl:placeholder:text-sm',
+  'data-[placeholder]:text-[11px] data-[placeholder]:font-normal xl:data-[placeholder]:text-[13px] 2xl:data-[placeholder]:text-sm',
   'focus:border-brand-violet-deep focus:outline-none focus:ring-2 focus:ring-[rgba(109,40,217,0.10)]',
 ].join(' ');
 

@@ -79,7 +79,7 @@ type CtFormValues = z.infer<typeof ctSchema>;
 /* ─────────────────────────────────────────────────── */
 
 const inputBase =
-  'w-full rounded-xl border bg-white/95 px-4 py-2.5 text-sm font-normal text-[var(--brand-navy)] placeholder:text-xs placeholder:font-normal placeholder:text-[var(--neutral-placeholder)] outline-none transition-all shadow-[0_1px_2px_rgba(46,34,82,0.04)]';
+  'w-full rounded-xl border bg-white/95 px-4 py-2.5 text-sm font-normal text-[var(--brand-navy)] placeholder:text-sm placeholder:font-normal placeholder:text-[var(--neutral-placeholder)] outline-none transition-all shadow-[0_1px_2px_rgba(46,34,82,0.04)]';
 const inputNormal =
   'border-[var(--brand-lavender-muted)] focus:border-[var(--brand-mauve)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--brand-mauve)_20%,transparent)]';
 const inputError =

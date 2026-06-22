@@ -681,7 +681,7 @@ export function FactoryShowcaseEditPage() {
               <Input
                 className={factoryInputClass({
                   className:
-                    'mt-1 font-normal text-gray-900 placeholder:text-xs placeholder:font-normal placeholder:text-gray-400 shadow-none focus:outline-none focus-visible:border-brand-purple/40 focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10',
+                    'mt-1 font-normal text-gray-900 placeholder:text-sm placeholder:font-normal placeholder:text-gray-400 shadow-none focus:outline-none focus-visible:border-brand-purple/40 focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10',
                 })}
                 placeholder='ชื่อสินค้า / ไอเดีย'
                 {...form.register('title', { required: true })}
