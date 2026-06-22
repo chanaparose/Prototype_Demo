@@ -18,6 +18,7 @@ import {
   showcaseMatchesSelectedCategoryId,
 } from '@/utils/exploreToFactoryIdeasCategory';
 import {
+  getDefaultFactoryIdeasContentType,
   getFactoryIdeaDetailPath,
   type FactoryIdeasContentType,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
@@ -46,10 +47,13 @@ function useDebounce<T>(value: T, delay: number): T {
 export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdeasPageStateOptions) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const hubScope = (searchParams.get('hub_scope') as 'PD' | 'MT' | null) ?? undefined;
   const [searchText, setSearchText] = useState('');
   const [moqFilter, setMoqFilter] = useState<FactoryIdeasMoqFilterValue>('all');
 
-  const [selectedType, setSelectedType] = useState<FactoryIdeasContentType>(initialType ?? 'all');
+  const [selectedType, setSelectedType] = useState<FactoryIdeasContentType>(
+    initialType ?? getDefaultFactoryIdeasContentType(hubScope),
+  );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [categoryMenuStep, setCategoryMenuStep] = useState<'categories' | 'subs'>('categories');
@@ -65,17 +69,15 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
 
   const typeFromUrl = searchParams.get('type');
   useEffect(() => {
-    const allowed: FactoryIdeasContentType[] = [
-      'all',
-      'product',
-      'material',
-      'idea',
-      'factory',
-    ];
+    const allowed: FactoryIdeasContentType[] = ['product', 'material', 'idea', 'factory'];
+    if (typeFromUrl === 'all') {
+      setSelectedType(getDefaultFactoryIdeasContentType(hubScope));
+      return;
+    }
     if (typeFromUrl && allowed.includes(typeFromUrl as FactoryIdeasContentType)) {
       setSelectedType(typeFromUrl as FactoryIdeasContentType);
     }
-  }, [typeFromUrl]);
+  }, [typeFromUrl, hubScope]);
 
   useEffect(() => {
     const fromState = (location.state as { searchText?: string } | null)?.searchText?.trim();
@@ -90,10 +92,8 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   /** MT categories: แท็บวัตถุดิบ หรือแท็บโรงงาน + pill โรงงานวัตถุดิบ */
   const isMtCategoryScope = isMaterialTab || (isFactoryTab && factoryScope === 'MT');
 
-  // hub_id + hub_scope จากหน้า /factory-ideas-hub
+  // hub_id จากหน้า /factory-ideas-hub (hub_scope อ่านไว้ด้านบนแล้ว)
   const hubId = Number(searchParams.get('hub_id')) || undefined;
-  // hub_scope ส่งมาจาก FactoryIdeasHubPage ผ่าน URL: ?hub_scope=PD|MT
-  const hubScope = (searchParams.get('hub_scope') as 'PD' | 'MT' | null) ?? undefined;
 
   const { data: allHubs = [] } = useQuery({
     queryKey: ['lbi-hubs', 'all'],
@@ -119,7 +119,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     return apiCategoriesRaw;
   }, [apiCategoriesRaw, hubId, isMaterialTab, isProductTab]);
 
-  const loadFactories = selectedType === 'all' || selectedType === 'factory';
+  const loadFactories = selectedType === 'factory';
   const apiFactoryScope = factoryScope === 'all' ? undefined : factoryScope;
   const factoriesQ = useFactoryIdeasFactoryListQuery(loadFactories, hubId ? undefined : apiFactoryScope, hubId);
   const factoryList = factoriesQ.data ?? [];
@@ -164,11 +164,17 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
 
   // Tabs ที่แสดงใน UI — ซ่อน สินค้า เมื่อ hub เป็น MT, ซ่อน วัตถุดิบ เมื่อ hub เป็น PD
   const visibleTabIds = useMemo((): Set<string> => {
-    const all = new Set(['all', 'product', 'material', 'idea', 'factory']);
-    if (hubScope === 'MT') all.delete('product');
-    if (hubScope === 'PD') all.delete('material');
-    return all;
+    const ids = new Set(['product', 'material', 'idea', 'factory']);
+    if (hubScope === 'MT') ids.delete('product');
+    if (hubScope === 'PD') ids.delete('material');
+    return ids;
   }, [hubScope]);
+
+  useEffect(() => {
+    if (!visibleTabIds.has(selectedType)) {
+      setSelectedType(getDefaultFactoryIdeasContentType(hubScope));
+    }
+  }, [hubScope, selectedType, visibleTabIds]);
 
   // filter params (categoryId, subCategoryId, keyword) ถูกกรองฝั่ง client แล้ว
   // ไม่ส่งไป API เพื่อให้ query key คงที่ → React Query cache hit ทุกครั้งที่เปลี่ยน filter
@@ -310,10 +316,6 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
 
   const visibleItems = useMemo(() => {
     if (isFactoryTab) return [];
-    if (selectedType === 'all')
-      return filteredShowcases.filter(
-        (s) => s.contentType !== 'idea' && s.contentType !== 'promotion',
-      );
     if (selectedType === 'product')
       return filteredShowcases.filter((s) => s.contentType === 'product');
     // if (selectedType === 'promotion') return … // PM tab disabled
@@ -333,7 +335,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   );
 
   const visibleFactories = useMemo(() => {
-    if (selectedType !== 'all' && selectedType !== 'factory') return [];
+    if (selectedType !== 'factory') return [];
     const q = searchText.trim().toLowerCase();
     const selectedCategoryId =
       effectiveCategoryId && effectiveCategoryId !== 'all' ? Number(effectiveCategoryId) : null;
@@ -357,9 +359,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     ? visibleFactories.length
     : selectedType === 'idea'
       ? visibleIdeaItems.length
-      : selectedType === 'all'
-        ? totalShowcases + visibleFactories.length
-        : visibleItems.length;
+      : visibleItems.length;
 
   const isListFiltered = Boolean(
     debouncedSearchText.trim() ||

@@ -43,10 +43,12 @@ export function HubCategoryCard({
 export function HubSeeAllCard({
   count,
   hiddenNames,
+  totalFactories,
   onClick,
 }: {
   count: number;
   hiddenNames: string[];
+  totalFactories: number;
   onClick: () => void;
 }) {
   const subText = hiddenNames.slice(0, 2).join(' · ');
@@ -66,9 +68,12 @@ export function HubSeeAllCard({
       <span className='text-sm font-bold leading-snug text-brand-purple'>+{count} หมวด</span>
       <span className='mt-0.5 text-xs font-medium text-brand-purple/75'>ดูครบทุกหมวด</span>
       {subText ? (
-        <span className='mt-auto line-clamp-2 pt-2 text-xs leading-tight text-[var(--brand-muted-purple)]'>
-          {subText}
-        </span>
+        <span className='mt-0.5 line-clamp-2 text-xs text-gray-500'>{subText}</span>
+      ) : null}
+      {totalFactories > 0 ? (
+        <p className='mt-auto pt-2 text-xs font-semibold text-brand-purple'>
+          {totalFactories} โรงงานในกลุ่มนี้
+        </p>
       ) : null}
     </button>
   );

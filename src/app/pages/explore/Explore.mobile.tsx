@@ -91,7 +91,6 @@ export function ExploreMobile({
       <ExplorePromoCarousel promoSlides={promoSlides} promoCodes={explorePromoCodes} />
 
       <ExploreHubPreview
-        className='mt-6'
         activeScope={activeScope}
         onScopeChange={setActiveScope}
         hubs={hubs}

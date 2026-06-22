@@ -9,7 +9,6 @@ import {
   MapPin,
   SearchX,
   Star,
-  ChevronRight,
 } from 'lucide-react';
 import { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
 import { isFromFactoryIdeasHub } from '@/components/features/factory-ideas/factoryIdeasHubNav';
@@ -31,8 +30,6 @@ import { FactoryIdeasSearchBar } from '@/components/features/factory-ideas/Facto
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
 import type { Factory, FactoryShowcase } from '@/stores/types';
 import type { FactoryIdeasContentType } from '@/components/features/factory-ideas/factoryIdeasTheme';
-
-type FactoryRow = Factory;
 
 function DesktopShowcaseGrid({
   items,
@@ -174,75 +171,6 @@ function DesktopShowcaseList({
           </article>
         );
       })}
-      </div>
-    </section>
-  );
-}
-
-function DesktopRecommendedFactoriesRow({
-  factories,
-  onFactoryClick,
-  onSeeAll,
-}: {
-  factories: FactoryRow[];
-  onFactoryClick: (id: string) => void;
-  onSeeAll: () => void;
-}) {
-  if (factories.length === 0) return null;
-
-  return (
-    <section className='mb-8'>
-      <div className='mb-2.5 flex items-center justify-between'>
-        <h3 className='text-xs font-medium text-gray-500'>โรงงานแนะนำ</h3>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={onSeeAll}
-          className='flex items-center gap-0.5 text-xs text-gray-400 transition-colors hover:text-gray-600'
-        >
-          ดูทั้งหมด <ChevronRight size={13} />
-        </Button>
-      </div>
-      <div
-        className='flex gap-2 overflow-x-auto pb-1'
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {factories.slice(0, 12).map((factory, idx) => (
-          <article
-            key={factory.id}
-            className='w-[132px] shrink-0 cursor-pointer'
-            onClick={() => onFactoryClick(factory.id)}
-          >
-            <div className='relative aspect-square overflow-hidden rounded-lg bg-gray-100'>
-              <ImageWithFallback
-                src={factory.image}
-                alt={factory.name}
-                className='h-full w-full object-cover transition-transform duration-300 hover:scale-105'
-              />
-              {idx < 3 ? (
-                <span className='absolute left-0 top-0 z-[1] rounded-br-md bg-[var(--brand-orange-deep)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white'>
-                  Top
-                </span>
-              ) : null}
-              {factory.verified ? (
-                <div className='absolute right-1 top-1 z-[1] flex items-center gap-0.5 rounded-full bg-white/90 px-1 py-0.5 backdrop-blur-sm'>
-                  <BadgeCheck className='h-2.5 w-2.5 text-[var(--brand-purple)]' />
-                </div>
-              ) : null}
-              <div className='absolute inset-x-0 bottom-0 bg-black/45 px-1.5 py-1'>
-                <p className='flex items-center gap-0.5 truncate text-[9px] text-white'>
-                  <Star className='h-2.5 w-2.5 shrink-0 fill-amber-400 text-amber-400' />
-                  <span className='font-semibold'>{factory.rating}</span>
-                  <span className='text-white/80'>({factory.reviews})</span>
-                </p>
-              </div>
-            </div>
-            <p className='mt-1.5 line-clamp-2 text-[11px] leading-snug text-gray-800'>
-              {factory.name}
-            </p>
-          </article>
-        ))}
-        <div className='w-1 shrink-0' aria-hidden />
       </div>
     </section>
   );
@@ -522,36 +450,6 @@ export function FactoryIdeasDesktop() {
             ))}
           </div>
           )
-        ) : selectedType === 'all' ? (
-          <div>
-            <DesktopRecommendedFactoriesRow
-              factories={visibleFactories}
-              onFactoryClick={(id) => navigate(`/factories/${id}`)}
-              onSeeAll={() => setSelectedType('factory')}
-            />
-            {visibleItems.length > 0 ? (
-              viewMode === 'grid' ? (
-                <DesktopShowcaseGrid
-                  title='สินค้าและวัตถุดิบ'
-                  items={visibleItems}
-                  isLiked={isLiked}
-                  toggleFavorite={toggleFavorite}
-                  navigate={navigate}
-                  getDetailPath={getDetailPath}
-                />
-              ) : (
-                <DesktopShowcaseList
-                  title='สินค้าและวัตถุดิบ'
-                  items={visibleItems}
-                  dataFactories={data.factories}
-                  isLiked={isLiked}
-                  toggleFavorite={toggleFavorite}
-                  navigate={navigate}
-                  getDetailPath={getDetailPath}
-                />
-              )
-            ) : null}
-          </div>
         ) : selectedType === 'idea' ? (
           <div className='grid grid-cols-2 gap-2'>
             {visibleIdeaItems.map((item) => {

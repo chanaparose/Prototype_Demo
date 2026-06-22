@@ -20,13 +20,19 @@ export type FactoryIdeasContentType =
   | 'factory';
 
 export const factoryIdeasContentTypes: { id: FactoryIdeasContentType; label: string }[] = [
-  { id: 'all', label: 'ทั้งหมด' },
   { id: 'product', label: 'สินค้า' },
   // { id: 'promotion', label: 'โปรโมชัน' }, // PM disabled
   { id: 'material', label: 'วัตถุดิบ' },
   { id: 'idea', label: 'ไอเดีย' },
   { id: 'factory', label: 'โรงงาน' },
 ];
+
+export function getDefaultFactoryIdeasContentType(
+  hubScope?: 'PD' | 'MT',
+): Exclude<FactoryIdeasContentType, 'all'> {
+  if (hubScope === 'MT') return 'material';
+  return 'product';
+}
 
 /** Tabs rendered on /factory-ideas (excludes promotion/PM) */
 export const factoryIdeasVisibleContentTypes = factoryIdeasContentTypes;

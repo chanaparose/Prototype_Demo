@@ -1,6 +1,4 @@
 import { cn } from '@lib/utils';
-import { Button } from '@/components/ui/button';
-import { factoryButtonClass } from '@/pages/factory-portal/factoryUi';
 import type { FactoryIdeasContentType } from '@/components/features/factory-ideas/factoryIdeasTheme';
 
 type FactoryIdeasTypeTab = {
@@ -22,29 +20,34 @@ export function FactoryIdeasTypeTabs({
   className,
 }: FactoryIdeasTypeTabsProps) {
   return (
-    <div className={cn('flex min-w-0 items-center gap-1 overflow-x-auto scrollbar-hide', className)}>
+    <div
+      role='tablist'
+      aria-label='ประเภทรายการ'
+      className={cn(
+        'flex min-w-0 items-stretch overflow-x-auto border-b border-slate-200 scrollbar-hide',
+        className,
+      )}
+    >
       {tabs.map((type) => {
         const active = activeType === type.id;
         return (
-          <Button
-            variant='unstyled'
+          <button
             key={type.id}
             type='button'
+            role='tab'
+            aria-selected={active}
             data-tour={`tab-${type.id}`}
             onClick={() => onTypeChange(type.id)}
-            className={factoryButtonClass({
-              variant: active ? 'primary' : 'toolbar',
-              size: 'sm',
-              className: cn(
-                'whitespace-nowrap rounded-lg px-3.5 font-semibold',
-                active
-                  ? 'shadow-[0_4px_12px_rgba(122,75,148,0.18)]'
-                  : 'text-slate-600 hover:border-brand-purple/30 hover:text-brand-purple',
-              ),
-            })}
+            className={cn(
+              'relative shrink-0 whitespace-nowrap px-4 py-2.5 text-sm font-semibold transition-colors',
+              active ? 'text-brand-violet-deep' : 'text-slate-500 hover:text-brand-violet-deep',
+            )}
           >
             {type.label}
-          </Button>
+            {active ? (
+              <span className='absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-brand-violet-deep' />
+            ) : null}
+          </button>
         );
       })}
     </div>

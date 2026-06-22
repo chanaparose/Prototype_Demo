@@ -31,11 +31,7 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
           <span className='h-8 w-1 shrink-0 rounded-full bg-gradient-to-b from-brand-purple/85 to-brand-purple/35' />
           <div className='min-w-0'>
             <h2 className='truncate text-base font-bold text-[var(--brand-navy)]'>{hub.name}</h2>
-            {totalFactories > 0 ? (
-              <p className='mt-0.5 text-xs font-medium text-slate-500'>
-                {totalFactories} โรงงาน
-              </p>
-            ) : null}
+             
           </div>
         </div>
         <Button
@@ -44,7 +40,7 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
           onClick={() => onNavigate(`/factory-ideas?hub_id=${hub.hub_id}&hub_scope=${hub.scope}`)}
           className='flex shrink-0 items-center gap-0.5 rounded-lg border border-brand-purple/15 bg-white px-2.5 py-1.5 text-xs font-semibold text-brand-purple transition-colors hover:border-brand-purple/30 hover:bg-brand-lavender-muted/30'
         >
-          ดูครบ
+          ดูทั้งหมด
           <ChevronRight size={12} strokeWidth={2.25} />
         </Button>
       </div>
@@ -70,6 +66,7 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
           <HubSeeAllCard
             count={hiddenCount}
             hiddenNames={hidden.map((c) => c.name)}
+            totalFactories={totalFactories}
             onClick={() => onNavigate(`/factory-ideas?hub_id=${hub.hub_id}&hub_scope=${hub.scope}`)}
           />
         ) : null}

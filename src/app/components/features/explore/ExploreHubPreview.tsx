@@ -35,15 +35,25 @@ export function ExploreHubPreview({
 
   return (
     <section className={cn('relative px-4 md:px-0', className)} data-tour='categories'>
-      <div className='relative overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm md:p-5'>
+      <div className='mb-2.5 flex items-center justify-between md:hidden'>
+        <h3 className='text-[14px] font-bold text-brand-navy-ink'>เลือกหมวดที่อยากเริ่ม</h3>
+        <Link
+          to={buildFactoryIdeasHubPageUrl(activeScope)}
+          className='flex shrink-0 items-center gap-0.5 text-[12px] font-medium text-brand-purple'
+        >
+          หมวดหมู่ทั้งหมด <ChevronRight size={13} />
+        </Link>
+      </div>
+
+      <div className='relative overflow-hidden rounded-xl border border-gray-100 bg-white p-2.5 shadow-sm md:rounded-lg md:border-slate-200 md:p-5'>
         <ExploreHubPreviewBackdrop />
 
-        <div className='relative z-10 mb-3 flex items-center justify-between'>
+        <div className='relative z-10 mb-2.5 hidden items-center justify-between md:mb-3 md:flex'>
           <div className='min-w-0'>
             <p className='text-[11px] font-bold uppercase tracking-[0.08em] text-brand-orange/75'>
               Explore by category
             </p>
-            <h3 className='text-lg font-bold text-brand-navy-ink'>เลือกหมวดที่อยากเริ่ม</h3>
+            <h3 className='text-lg text-brand-navy-ink'>เลือกหมวดที่อยากเริ่ม</h3>
           </div>
           <Link
             to={buildFactoryIdeasHubPageUrl(activeScope)}
@@ -53,11 +63,11 @@ export function ExploreHubPreview({
           </Link>
         </div>
 
-        <div className='relative z-10 space-y-2.5'>
+        <div className='relative z-10 space-y-2 md:space-y-2.5'>
           <ScopeSwitch activeScope={activeScope} onScopeChange={onScopeChange} />
 
           {!isLoading && hubs.length > 0 ? (
-            <div className='grid grid-cols-2 gap-2 pb-0.5 sm:flex sm:overflow-x-auto sm:scrollbar-hide'>
+            <div className='grid grid-cols-2 gap-1.5 pb-0.5 sm:flex sm:gap-2 sm:overflow-x-auto sm:scrollbar-hide'>
               {hubs.map((hub) => (
                 <HubPill
                   key={hub.hub_id}
@@ -76,23 +86,18 @@ export function ExploreHubPreview({
           ) : null}
 
           {!isLoading && hubs.length === 0 ? (
-            <div className='rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center'>
-              <p className='text-sm text-gray-500'>ยังไม่มีหมวดในขอบเขตนี้</p>
+            <div className='rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-center md:rounded-xl md:px-4 md:py-6'>
+              <p className='text-xs text-gray-500 md:text-sm'>ยังไม่มีหมวดในขอบเขตนี้</p>
             </div>
           ) : null}
 
           {!isLoading && selectedHub ? (
-            <div className={cn('rounded-2xl bg-slate-50/80 p-2.5', sectionClassName)}>
-              <div className='mb-2.5 flex items-center justify-between gap-2 px-0.5'>
+            <div className={cn('rounded-xl bg-slate-50/80 p-2 md:rounded-2xl md:p-2.5', sectionClassName)}>
+              <div className='mb-2 flex items-center justify-between gap-2 px-0.5 md:mb-2.5'>
                 <div className='min-w-0'>
-                  <h4 className='truncate text-sm font-bold text-[var(--brand-navy)]'>
+                  <h4 className='truncate text-[13px] font-bold text-[var(--brand-navy)] md:text-sm'>
                     {selectedHub.name}
                   </h4>
-                  <p className='mt-0.5 text-xs text-gray-500'>
-                    {totalFactories > 0
-                      ? `${totalFactories} โรงงานพร้อมรับงาน`
-                      : 'เลือกดูหมวดที่เกี่ยวข้อง'}
-                  </p>
                 </div>
                 <button
                   type='button'
@@ -101,15 +106,16 @@ export function ExploreHubPreview({
                       `/factory-ideas?hub_id=${selectedHub.hub_id}&hub_scope=${selectedHub.scope}`,
                     )
                   }
-                  className='flex shrink-0 items-center gap-0.5 rounded-full px-2.5 py-1 text-xs font-semibold text-brand-purple transition-colors hover:bg-white/60'
+                  className='flex shrink-0 items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold text-brand-purple transition-colors hover:bg-white/60 md:px-2.5 md:py-1 md:text-xs'
                 >
-                  ดูครบ
-                  <ChevronRight size={13} />
+                  ดูทั้งหมด
+                  <ChevronRight size={12} className='md:hidden' />
+                  <ChevronRight size={13} className='hidden md:block' />
                 </button>
               </div>
 
               {selectedHub.categories.length > 0 ? (
-                <div className='flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide'>
+                <div className='flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide md:gap-2'>
                   {selectedHub.categories.slice(0, 8).map((cat) => (
                     <CompactCategoryCard
                       key={cat.category_id}
@@ -123,7 +129,7 @@ export function ExploreHubPreview({
                   ))}
                 </div>
               ) : (
-                <div className='rounded-lg bg-white px-3 py-4 text-center text-xs text-gray-400'>
+                <div className='rounded-lg bg-white px-3 py-3 text-center text-[10px] text-gray-400 md:py-4 md:text-xs'>
                   ยังไม่มีหมวดย่อยในกลุ่มนี้
                 </div>
               )}
@@ -167,18 +173,23 @@ function ScopeSwitch({
             type='button'
             onClick={() => onScopeChange(scope)}
             className={cn(
-              'relative flex h-11 items-center justify-center gap-1.5 text-sm font-bold transition-colors',
+              'relative flex h-9 items-center justify-center gap-1 text-[12px] font-bold transition-colors md:h-11 md:gap-1.5 md:text-sm',
               active ? 'text-brand-purple' : 'text-slate-500 hover:text-[var(--brand-navy)]',
             )}
           >
             <Icon
+              size={13}
+              strokeWidth={2.25}
+              className={cn(active ? 'text-brand-purple' : 'text-slate-400', 'md:hidden')}
+            />
+            <Icon
               size={14}
               strokeWidth={2.25}
-              className={active ? 'text-brand-purple' : 'text-slate-400'}
+              className={cn(active ? 'text-brand-purple' : 'text-slate-400', 'hidden md:block')}
             />
             {label}
             {active ? (
-              <span className='absolute bottom-[-1px] left-1/2 h-0.5 w-14 -translate-x-1/2 rounded-full bg-brand-purple' />
+              <span className='absolute bottom-[-1px] left-1/2 h-0.5 w-10 -translate-x-1/2 rounded-full bg-brand-purple md:w-14' />
             ) : null}
           </button>
         );
@@ -203,7 +214,7 @@ function HubPill({
       type='button'
       onClick={onClick}
       className={cn(
-        'flex h-10 w-full min-w-0 items-center justify-between gap-2 rounded-lg border px-3.5 text-left text-sm font-semibold transition-colors sm:w-auto sm:min-w-[8.5rem]',
+        'flex h-8 w-full min-w-0 items-center justify-between gap-1.5 rounded-lg border px-2.5 text-left text-[12px] font-semibold transition-colors sm:w-auto sm:min-w-[8.5rem] md:h-10 md:gap-2 md:px-3.5 md:text-sm',
         active
           ? 'border-brand-purple/40 bg-brand-lavender-chip text-brand-violet-deep'
           : 'border-slate-200 bg-white text-slate-600 hover:border-brand-purple/25 hover:bg-brand-lavender-chip/35 hover:text-brand-violet-deep',
@@ -239,26 +250,27 @@ function CompactCategoryCard({
     <button
       type='button'
       onClick={onClick}
-      className='group flex h-28 w-[154px] shrink-0 flex-col rounded-lg border border-slate-200 bg-white px-3 py-3 text-left transition-colors hover:border-brand-purple/50 hover:bg-slate-50/50 active:bg-slate-50 md:w-[176px]'
+      className='group flex h-[96px] w-[155px] shrink-0 flex-col rounded-lg border border-gray-100 bg-white px-2.5 py-2.5 text-left transition-colors hover:border-brand-purple/40 hover:bg-slate-50/50 active:bg-slate-50 md:h-28 md:w-[176px] md:border-slate-200 md:px-3 md:py-3'
     >
-      <div className='mb-1.5 flex items-center gap-1.5'>
-        <span className='flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-brand-purple/10 text-brand-purple'>
-          <PackageSearch size={14} strokeWidth={2.25} />
+      <div className='mb-1 flex items-center gap-1 md:mb-1.5 md:gap-1.5'>
+        <span className='flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-brand-purple/10 text-brand-purple md:h-6 md:w-6 md:rounded-lg'>
+          <PackageSearch size={12} strokeWidth={2.25} className='md:hidden' />
+          <PackageSearch size={14} strokeWidth={2.25} className='hidden md:block' />
         </span>
-        <span className='line-clamp-1 text-sm font-bold leading-tight text-[var(--brand-navy)] group-hover:text-brand-purple'>
+        <span className='line-clamp-1 text-xs font-medium leading-tight text-gray-700 group-hover:text-brand-purple md:text-sm md:text-[var(--brand-navy)]'>
           {cat.name}
         </span>
       </div>
       {subText ? (
-        <span className='line-clamp-2 text-xs leading-tight text-[var(--brand-muted-purple)]'>
+        <span className='line-clamp-2 text-[10px] leading-tight text-[var(--brand-muted-purple)] md:text-xs'>
           {subText}
         </span>
       ) : (
-        <span className='text-xs text-gray-400'>ดูรายการในหมวดนี้</span>
+        <span className='text-[10px] text-gray-400 md:text-xs'>ดูรายการในหมวดนี้</span>
       )}
       <span
         className={cn(
-          'mt-auto text-xs font-bold leading-none',
+          'mt-auto text-[9px] font-semibold leading-none md:text-xs md:font-bold',
           cat.factory_count > 0 ? 'text-brand-purple' : 'text-gray-400',
         )}
       >

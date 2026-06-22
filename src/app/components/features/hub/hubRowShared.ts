@@ -7,7 +7,7 @@ export type HubScope = 'PD' | 'MT';
 
 export const VISIBLE_CARDS_MOBILE = 2;
 export const VISIBLE_CARDS_DESKTOP = 5;
-/** แถว desktop ออกรับสูงสุด 5 หมวด + การ์ดดูครบ = 6 ช่อง */
+/** แถว desktop ออกรับสูงสุด 5 หมวด + การ์ดดูทั้งหมด = 6 ช่อง */
 export const DESKTOP_ROW_SLOTS = 6;
 
 export const hubRowCardClass =

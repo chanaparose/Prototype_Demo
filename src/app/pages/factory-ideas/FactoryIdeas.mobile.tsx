@@ -26,7 +26,7 @@ import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasP
 import {
   factoryIdeasContentTypeBadge as contentTypeBadge,
   factoryIdeasContentTypeLabel as contentTypeLabel,
-  type FactoryIdeasContentType,
+  factoryIdeasVisibleContentTypes,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
@@ -37,14 +37,6 @@ import {
   factoryIdeasFactoryScopeOrder,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
-
-const MOBILE_TABS: { id: FactoryIdeasContentType; label: string }[] = [
-  { id: 'all',      label: 'ทั้งหมด' },
-  { id: 'product',  label: 'สินค้า'  },
-  { id: 'material', label: 'วัตถุดิบ' },
-  { id: 'idea',     label: 'ไอเดีย'  },
-  { id: 'factory',  label: 'โรงงาน'  },
-];
 
 export function FactoryIdeasMobile() {
   const navigate = useNavigate();
@@ -99,9 +91,9 @@ export function FactoryIdeasMobile() {
     visibleTabIds,
     hubScope,
     hubName,
-  } = useFactoryIdeasPageState({ layout: 'mobile', initialType: 'all' });
+  } = useFactoryIdeasPageState({ layout: 'mobile' });
 
-  const visibleTabs = MOBILE_TABS.filter((t) => visibleTabIds.has(t.id));
+  const visibleTabs = factoryIdeasVisibleContentTypes.filter((t) => visibleTabIds.has(t.id));
 
   return (
     <div className='min-h-[100dvh] bg-[var(--brand-page)] pb-24'>
@@ -122,15 +114,15 @@ export function FactoryIdeasMobile() {
         />
       </div>
 
-      <div className='bg-white sticky top-14 z-20 border-b border-gray-200'>
+      <div className='sticky top-14 z-20 border-b border-gray-200 bg-white'>
         <FactoryIdeasTypeTabs
           tabs={visibleTabs}
           activeType={selectedType}
           onTypeChange={setSelectedType}
-          className='px-4 py-3'
+          className='px-2'
         />
 
-        <div className='flex flex-wrap items-center gap-2 px-4 pb-3 mt-3'>
+        <div className='mt-2 flex flex-wrap items-center gap-2 px-4 pb-3'>
           <FactoryIdeasCategoryDropdown
             variant='mobile'
             categoryMenuRef={categoryMenuRef}
