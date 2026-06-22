@@ -26,7 +26,7 @@ export function ShowcaseGridCard({
 
   return (
     <article
-      className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col'
+      className='group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-all hover:border-brand-purple/20'
       onClick={onClick}
     >
       <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>

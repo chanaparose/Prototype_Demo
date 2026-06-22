@@ -16,6 +16,7 @@ type AppSheetDialogProps = {
   footer?: ReactNode;
   className?: string;
   bodyClassName?: string;
+  titleClassName?: string;
 };
 
 export function AppSheetDialog({
@@ -26,6 +27,7 @@ export function AppSheetDialog({
   footer,
   className,
   bodyClassName,
+  titleClassName,
 }: AppSheetDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -36,7 +38,7 @@ export function AppSheetDialog({
         )}
       >
         <DialogHeader className='border-b border-gray-100 px-4 py-3 text-left'>
-          <DialogTitle className='text-sm font-semibold'>{title}</DialogTitle>
+          <DialogTitle className={cn('text-sm font-semibold', titleClassName)}>{title}</DialogTitle>
         </DialogHeader>
         <div className={cn('overflow-y-auto', bodyClassName ?? 'p-4 sm:p-5')}>{children}</div>
         {footer ? (

@@ -1,4 +1,4 @@
-import { ChevronRight, Factory, Sparkles } from 'lucide-react';
+import { Building2, ChevronRight, Sparkles } from 'lucide-react';
 import { cn } from '@lib/utils';
 
 type ExploreFactoryRegisterCtaProps = {
@@ -38,7 +38,7 @@ export function ExploreFactoryRegisterCta({
 
         <div className='relative z-10 flex min-w-0 flex-1 items-center gap-3'>
           <span className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 md:h-10 md:w-10'>
-            <Factory size={isDesktop ? 18 : 16} className='text-white' strokeWidth={2.25} />
+            <Building2 size={isDesktop ? 18 : 16} className='text-white' strokeWidth={2.25} />
           </span>
           <div className='min-w-0'>
             <p className='text-[12px] font-bold leading-snug text-white md:text-[13px]'>

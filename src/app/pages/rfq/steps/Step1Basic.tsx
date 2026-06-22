@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { cn } from '@lib/utils';
-import { RFQ_BORDER, RFQ_FIELD_CLASS, RFQ_RADIUS } from '@/pages/rfq/rfqCreateWizardUi';
+import { RFQ_BORDER, RFQ_FIELD_CLASS, RFQ_LABEL_CLASS, RFQ_RADIUS } from '@/pages/rfq/rfqCreateWizardUi';
 import { UnitPicker, type UnitOption } from '@/pages/rfq/steps/UnitPicker';
 
 type SubCategory = {
@@ -110,7 +110,7 @@ export function Step1Basic({
     <div className='space-y-4'>
       <div className='grid gap-3 lg:grid-cols-[minmax(0,1.7fr)_minmax(240px,0.7fr)]'>
         <label className='block'>
-          <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>
+          <span className={`mb-1 block ${RFQ_LABEL_CLASS}`}>
             ชื่อโปรเจกต์ / สินค้า <span className='text-brand-orange-deep'>*</span>
           </span>
           <Input
@@ -121,7 +121,7 @@ export function Step1Basic({
           />
         </label>
         <label className='block'>
-          <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>งบประมาณโดยประมาณ</span>
+          <span className={`mb-1 block ${RFQ_LABEL_CLASS}`}>งบประมาณโดยประมาณ</span>
           <Input
             type='number'
             min={0}
@@ -133,7 +133,7 @@ export function Step1Basic({
         </label>
       </div>
       <label className='block'>
-        <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>
+        <span className={`mb-1 block ${RFQ_LABEL_CLASS}`}>
           รายละเอียด <span className='text-brand-orange-deep'>*</span>
         </span>
         <Textarea
@@ -146,7 +146,7 @@ export function Step1Basic({
       </label>
 
       <div className='space-y-2'>
-        <p className='text-[11px] font-semibold text-brand-navy-deep'>รูป / เอกสารอ้างอิง</p>
+        <p className={RFQ_LABEL_CLASS}>รูป / เอกสารอ้างอิง</p>
         <Input
           ref={fileInputRef}
           type='file'
@@ -163,7 +163,7 @@ export function Step1Basic({
           type='button'
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading || draft.reference_images.length >= 5}
-          className={`w-full ${RFQ_RADIUS} border-[0.5px] border-dashed border-brand-mauve-light/60 bg-white px-3 py-3 text-[12px] font-medium text-brand-violet-deep transition-colors hover:bg-brand-lavender-chip/40`}
+          className={`w-full ${RFQ_RADIUS} border-[0.5px] border-dashed border-brand-mauve-light/60 bg-white px-3 py-3 text-[12px] font-medium text-brand-violet-deep transition-colors hover:bg-brand-lavender-chip/40 xl:text-sm`}
         >
           {uploading
             ? 'กำลังอัปโหลด...'
@@ -186,7 +186,7 @@ export function Step1Basic({
                     onError={() => setBrokenImages((prev) => ({ ...prev, [idx]: true }))}
                   />
                 ) : (
-                  <div className='flex h-full w-full items-center justify-center px-2 text-center text-[11px] text-gray-600'>
+                  <div className='flex h-full w-full items-center justify-center px-2 text-center text-[11px] text-gray-600 xl:text-[12px]'>
                     เอกสารอ้างอิง #{idx + 1}
                   </div>
                 )}
@@ -207,7 +207,7 @@ export function Step1Basic({
 
       {hubs.length > 0 ? (
         <label className='block'>
-          <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>กลุ่มธุรกิจ</span>
+          <span className={`mb-1 block ${RFQ_LABEL_CLASS}`}>กลุ่มธุรกิจ</span>
           <Select
             value={selectedHubId != null ? String(selectedHubId) : '__all'}
             onValueChange={(v) => onHubChange?.(v === '__all' ? null : Number(v))}
@@ -229,7 +229,7 @@ export function Step1Basic({
 
       <div className={`grid gap-3 ${showSubCategory ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
         <label className='block min-w-0'>
-          <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>
+          <span className={`mb-1 block ${RFQ_LABEL_CLASS}`}>
             หมวดหมู่ <span className='text-brand-orange-deep'>*</span>
           </span>
           <Select
@@ -256,7 +256,7 @@ export function Step1Basic({
         </label>
         {showSubCategory ? (
           <label className='block min-w-0'>
-            <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>หมวดย่อย</span>
+            <span className={`mb-1 block ${RFQ_LABEL_CLASS}`}>หมวดย่อย</span>
           <Select
             value={draft.sub_category_id != null ? String(draft.sub_category_id) : ''}
             onValueChange={(next) =>
@@ -284,7 +284,7 @@ export function Step1Basic({
           </label>
         ) : null}
         <label className='block min-w-0'>
-          <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>
+          <span className={`mb-1 block ${RFQ_LABEL_CLASS}`}>
             จำนวน <span className='text-brand-orange-deep'>*</span>
           </span>
           <div className='flex gap-2'>
@@ -300,7 +300,7 @@ export function Step1Basic({
               units={units}
               value={draft.unit_id}
               onChange={(unitId) => setDraft({ unit_id: unitId })}
-              triggerClassName={cn(fieldClass, 'w-[130px]')}
+              triggerClassName={cn(fieldClass, 'h-9 w-[130px]')}
             />
           </div>
         </label>

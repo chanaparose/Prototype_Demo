@@ -1,5 +1,11 @@
+import { Building2, Package } from 'lucide-react';
 import { cn } from '@lib/utils';
 import { HUB_SCOPE_LABELS, type HubScope } from '@/components/features/hub/hubRowShared';
+
+const SCOPE_META: Record<HubScope, { description: string; icon: typeof Building2 }> = {
+  PD: { description: 'ค้นหาโรงงานผลิตสินค้า', icon: Building2 },
+  MT: { description: 'ค้นหาแหล่งวัตถุดิบ', icon: Package },
+};
 
 type HubScopeTabsProps = {
   activeScope: HubScope;
@@ -17,39 +23,62 @@ export function HubScopeTabs({
   return (
     <div
       className={cn(
-        'border-b border-gray-200 bg-white',
+        'w-full border-b border-slate-200/70 bg-[var(--brand-page)]',
         sticky && 'sticky top-14 z-20 lg:top-0',
         className,
       )}
     >
-      <div className='flex overflow-x-auto px-4 scrollbar-hide lg:px-8 2xl:px-10'>
-        {(['PD', 'MT'] as const).map((scope) => {
-          const label = HUB_SCOPE_LABELS[scope] ?? scope;
-          const isActive = activeScope === scope;
-          return (
-            <button
-              key={scope}
-              type='button'
-              onClick={() => onScopeChange(scope)}
-              className='relative min-w-0 flex-1 shrink-0 px-2 py-3 text-center'
-            >
-              <span
+      <div className='px-4 lg:px-8 2xl:px-10'>
+        <div
+          role='tablist'
+          aria-label='เลือกประเภทหมวดหมู่'
+          className='grid grid-cols-2 border-b border-slate-200'
+        >
+          {(['PD', 'MT'] as const).map((scope) => {
+            const label = HUB_SCOPE_LABELS[scope] ?? scope;
+            const meta = SCOPE_META[scope];
+            const Icon = meta.icon;
+            const isActive = activeScope === scope;
+            return (
+              <button
+                key={scope}
+                type='button'
+                role='tab'
+                aria-selected={isActive}
+                onClick={() => onScopeChange(scope)}
                 className={cn(
-                  'text-[14px] leading-none whitespace-nowrap transition-colors',
-                  isActive ? 'font-bold text-[var(--brand-navy)]' : 'font-medium text-gray-400',
+                  'relative flex min-w-0 items-center justify-center gap-1.5 px-3 py-3 text-center transition-colors',
+                  isActive
+                    ? 'text-brand-violet-deep'
+                    : 'text-slate-500 hover:text-brand-violet-deep',
                 )}
               >
-                {label}
-              </span>
-              {isActive ? (
-                <span
-                  className='absolute bottom-0 left-1/2 h-[3px] w-8 -translate-x-1/2 rounded-full'
-                  style={{ background: 'var(--brand-purple)' }}
+                <Icon
+                  size={15}
+                  strokeWidth={2.1}
+                  className={cn('shrink-0', isActive ? 'text-brand-violet-deep' : 'text-slate-400')}
+                  aria-hidden
                 />
-              ) : null}
-            </button>
-          );
-        })}
+                <span className='min-w-0'>
+                  <span className='block truncate text-sm font-semibold leading-tight md:text-[15px]'>
+                    {label}
+                  </span>
+                  <span
+                    className={cn(
+                      'mt-0.5 hidden truncate text-[11px] font-normal leading-tight sm:block',
+                      isActive ? 'text-brand-violet-deep/70' : 'text-slate-400',
+                    )}
+                  >
+                    {meta.description}
+                  </span>
+                </span>
+                {isActive ? (
+                  <span className='absolute inset-x-4 bottom-[-1px] h-0.5 rounded-full bg-brand-violet-deep' />
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

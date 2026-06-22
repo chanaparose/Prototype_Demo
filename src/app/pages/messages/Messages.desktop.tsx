@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { MessageCircle, MessageSquareDot, RefreshCw } from 'lucide-react';
 import { cn } from '@lib/utils';
-import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 import { ChatRoomEmbedded } from '@/pages/chat-room';
 import { ConversationRow } from '@/pages/messages/ConversationRow';
 import type { UiConversation } from '@/pages/messages/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { MobileSearchField } from '@/components/shared/MobileSearchField';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 
 type MessagesDesktopProps = {
   searchText: string;
@@ -64,15 +64,17 @@ export function MessagesDesktop({
     <div className='hidden h-[calc(100dvh)] w-full overflow-hidden bg-white lg:flex'>
       <aside className='flex w-[min(100%,340px)] min-w-[300px] max-w-[380px] shrink-0 flex-col border-r border-gray-100 bg-[var(--neutral-warm-surface)]/40'>
         <header className='shrink-0 border-b border-gray-100 bg-white px-4 pb-3 pt-5'>
-          <div className='mb-3 flex items-end justify-between gap-3'>
-            <div className='min-w-0'>
-              <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
-                การสนทนา
-              </p>
-              <h1 className={APP_PAGE_TITLE_CLASS}>ข้อความ</h1>
+          <div className='mb-3 flex items-start justify-between gap-3'>
+            <div className='min-w-0 flex-1'>
+              <FactoryPageHeader
+                title='ข้อความ'
+                subtitle='การสนทนา'
+                icon={MessageCircle}
+                variant='minimal'
+              />
             </div>
             {!loading && !error ? (
-              <span className='shrink-0 rounded-md border border-gray-200 bg-[var(--brand-page)] px-2 py-0.5 text-[10px] font-semibold tabular-nums text-gray-500'>
+              <span className='mt-1 shrink-0 rounded-md border border-gray-200 bg-[var(--brand-page)] px-2 py-0.5 text-[10px] font-semibold tabular-nums text-gray-500'>
                 {visibleConversations.length} รายการ
               </span>
             ) : null}
@@ -183,11 +185,7 @@ function ChatPlaceholder() {
         title='เลือกการสนทนา'
         description='เลือกการสนทนาจากรายการทางซ้ายเพื่อเริ่มแชทกับโรงงาน'
         className='relative z-[1] max-w-sm py-10'
-        icon={
-          <span className='flex h-16 w-16 items-center justify-center rounded-2xl border border-gray-100 bg-white text-[var(--brand-mauve)] shadow-sm'>
-            <MessageSquareDot size={28} />
-          </span>
-        }
+        icon={<MessageSquareDot size={28} className='text-[var(--brand-mauve)]' />}
       />
     </div>
   );
@@ -204,11 +202,7 @@ function DesktopEmptyState({ unreadOnly }: { unreadOnly: boolean }) {
             : 'ข้อความจากโรงงานจะปรากฏที่นี่หลังจากที่คุณส่ง RFQ'
         }
         className='py-4'
-        icon={
-          <span className='flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-lavender)] text-[var(--brand-mauve)]'>
-            <MessageCircle size={26} />
-          </span>
-        }
+        icon={<MessageCircle size={26} className='text-[var(--brand-mauve)]' />}
       />
     </div>
   );

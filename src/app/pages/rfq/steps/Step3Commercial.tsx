@@ -2,6 +2,8 @@ import { Input } from '@/components/ui/input';
 import {
   RFQ_BORDER,
   RFQ_FIELD_CLASS,
+  RFQ_HELP_CLASS,
+  RFQ_LABEL_CLASS,
   RFQ_RADIUS,
   rfqChoiceClass,
 } from '@/pages/rfq/rfqCreateWizardUi';
@@ -164,8 +166,8 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
   return (
     <div className='grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.75fr)]'>
       <div className='min-w-0'>
-        <p className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
-          <MapPin size={14} className='text-violet-500' />
+        <p className={`mb-2 flex items-center gap-1.5 text-gray-700 ${RFQ_LABEL_CLASS}`}>
+          <MapPin size={14} className='text-brand-violet-deep' />
           ที่อยู่จัดส่งสินค้า <span className='text-red-400 ml-0.5'>*</span>
         </p>
 
@@ -174,14 +176,14 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
             variant='unstyled'
             type='button'
             onClick={() => openLoginModal('/create-rfq')}
-            className={`flex w-full items-center gap-3 ${RFQ_RADIUS} border-[0.5px] border-dashed border-violet-200 bg-white px-4 py-4 text-left transition-all hover:bg-violet-50 active:scale-[0.99]`}
+            className={`flex w-full items-center gap-3 ${RFQ_RADIUS} border-[0.5px] border-dashed border-brand-violet-soft bg-white px-4 py-4 text-left transition-all hover:bg-brand-violet-soft/60 active:scale-[0.99]`}
           >
-            <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100'>
-              <LogIn size={18} className='text-violet-500' />
+            <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-lavender-chip'>
+              <LogIn size={18} className='text-brand-violet-deep' />
             </div>
             <div>
-              <p className='text-sm font-semibold text-violet-700'>ล็อกอินเพื่อเลือกที่อยู่จัดส่ง</p>
-              <p className='text-xs text-violet-500 mt-0.5'>
+              <p className='text-sm font-semibold text-brand-violet-deep xl:text-[15px] 2xl:text-base'>ล็อกอินเพื่อเลือกที่อยู่จัดส่ง</p>
+              <p className='text-xs text-brand-purple/70 mt-0.5 xl:text-[13px]'>
                 กรอกข้อมูลสินค้าได้เลย — ระบุที่อยู่ได้หลังจากล็อกอิน
               </p>
             </div>
@@ -198,11 +200,11 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
             onClick={() => setModalOpen(true)}
             className={`w-full ${RFQ_RADIUS} border-[0.5px] border-dashed border-gray-200 p-5 flex flex-col items-center gap-2 bg-gray-50 hover:bg-gray-100 active:scale-[0.98] transition-all`}
           >
-            <div className='w-10 h-10 rounded-full bg-violet-50 flex items-center justify-center'>
-              <Plus size={20} className='text-violet-500' />
+            <div className='w-10 h-10 rounded-full bg-brand-violet-soft flex items-center justify-center'>
+              <Plus size={20} className='text-brand-violet-deep' />
             </div>
-            <span className='text-[13px] font-semibold text-gray-600'>เพิ่มที่อยู่จัดส่ง</span>
-            <span className='text-[10px] text-gray-400'>จำเป็นต้องมีที่อยู่สำหรับจัดส่งสินค้า</span>
+            <span className='text-[13px] font-semibold text-gray-600 xl:text-[15px]'>เพิ่มที่อยู่จัดส่ง</span>
+            <span className='text-[10px] text-gray-400 xl:text-[12px]'>จำเป็นต้องมีที่อยู่สำหรับจัดส่งสินค้า</span>
           </Button>
         ) : (
           <div className='flex flex-col gap-2'>
@@ -228,22 +230,22 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
                   <div className='flex items-start gap-2.5'>
                     <MapPin
                       size={15}
-                      className={`shrink-0 mt-0.5 ${active ? 'text-violet-500' : 'text-gray-400'}`}
+                      className={`shrink-0 mt-0.5 ${active ? 'text-brand-violet-deep' : 'text-gray-400'}`}
                     />
                     <div className='flex-1 min-w-0'>
                       <p
-                        className={`text-[12px] leading-relaxed ${active ? 'text-violet-800 font-semibold' : 'text-gray-600'}`}
+                        className={`text-[12px] leading-relaxed xl:text-sm ${active ? 'text-brand-violet-deep font-semibold' : 'text-gray-600'}`}
                       >
                         {label}
                       </p>
                       {addr.isDefault && (
-                        <span className='inline-block mt-1 text-[9px] font-semibold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600'>
+                        <span className='inline-block mt-1 text-[9px] font-semibold px-2 py-0.5 rounded-full bg-brand-lavender-chip text-brand-violet-deep xl:text-[10px]'>
                           ค่าเริ่มต้น
                         </span>
                       )}
                     </div>
                     {active && (
-                      <CheckCircle2 size={17} className='text-violet-500 shrink-0 mt-0.5' />
+                      <CheckCircle2 size={17} className='text-brand-violet-deep shrink-0 mt-0.5' />
                     )}
                   </div>
                 </Button>
@@ -253,7 +255,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
               variant='unstyled'
               type='button'
               onClick={() => setModalOpen(true)}
-              className={`w-full flex items-center justify-center gap-1.5 py-2.5 ${RFQ_RADIUS} border-[0.5px] border-dashed border-gray-200 text-[12px] font-medium text-gray-500 hover:bg-gray-50 active:scale-[0.98] transition-all`}
+              className={`w-full flex items-center justify-center gap-1.5 py-2.5 ${RFQ_RADIUS} border-[0.5px] border-dashed border-gray-200 text-[12px] font-medium text-gray-500 hover:bg-gray-50 active:scale-[0.98] transition-all xl:text-sm`}
             >
               <Plus size={14} />
               เพิ่มที่อยู่ใหม่
@@ -263,11 +265,11 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
       </div>
 
       <div className='min-w-0'>
-        <p className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
-          <Truck size={14} className='text-violet-500' />
+        <p className={`mb-2 flex items-center gap-1.5 text-gray-700 ${RFQ_LABEL_CLASS}`}>
+          <Truck size={14} className='text-brand-violet-deep' />
           วิธีจัดส่งที่ต้องการ <span className='text-red-400 ml-0.5'>*</span>
         </p>
-        <p className='text-[11px] text-gray-400 mb-2'>
+        <p className={`mb-2 text-gray-400 ${RFQ_HELP_CLASS}`}>
           โรงงานจะเห็นข้อมูลนี้เพื่อออกใบเสนอราคาที่ถูกต้อง
         </p>
         <div className='flex flex-col gap-1.5'>
@@ -282,16 +284,16 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
                 onClick={() => setDraft({ shipping_method_id: method.id })}
                 className={`flex w-full items-center gap-3 px-4 py-3 text-left active:scale-[0.98] ${rfqChoiceClass(active)}`}
               >
-                <ShippingIcon size={18} className='shrink-0 text-violet-500' />
+                <ShippingIcon size={18} className='shrink-0 text-brand-violet-deep' />
                 <span
-                  className={`text-[13px] font-medium flex-1 ${active ? 'text-violet-800' : 'text-gray-600'}`}
+                  className={`text-[13px] font-medium flex-1 xl:text-[15px] ${active ? 'text-brand-violet-deep' : 'text-gray-600'}`}
                 >
                   {method.name}
                 </span>
                 <div
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${active ? 'border-violet-500' : 'border-gray-300'}`}
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${active ? 'border-brand-violet-deep' : 'border-gray-300'}`}
                 >
-                  {active && <div className='w-2.5 h-2.5 rounded-full bg-violet-500' />}
+                  {active && <div className='w-2.5 h-2.5 rounded-full bg-brand-violet-deep' />}
                 </div>
               </Button>
             );
@@ -300,7 +302,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
       </div>
 
       <div className='lg:col-span-2'>
-        <p className='text-[13px] font-bold text-gray-700 mb-2'>ระยะเวลาผลิตที่ต้องการ (วัน)</p>
+        <p className={`mb-2 text-gray-700 ${RFQ_LABEL_CLASS}`}>ระยะเวลาผลิตที่ต้องการ (วัน)</p>
         <Input
           type='number'
           min={1}

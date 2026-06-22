@@ -1,10 +1,8 @@
 import React from 'react';
-import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
   BadgeCheck,
-  Sparkles,
   LayoutGrid,
   List,
   Loader2,
@@ -14,8 +12,9 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
-import { FactoryIdeasHubBackButton } from '@/components/features/factory-ideas/FactoryIdeasHubBackButton';
 import { isFromFactoryIdeasHub } from '@/components/features/factory-ideas/factoryIdeasHubNav';
+import { FactoryIdeasPageHeader } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
+import { FactoryIdeasTypeTabs } from '@/components/features/factory-ideas/FactoryIdeasTypeTabs';
 import { IdeaArticleCard } from '@/components/features/factory-ideas/IdeaArticleCard';
 import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasPageState';
 import {
@@ -99,7 +98,7 @@ function DesktopShowcaseList({
         return (
           <article
             key={item.id}
-            className='group bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 overflow-hidden'
+            className='group cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all duration-200 hover:border-brand-purple/20'
             onClick={() => navigate(getDetailPath(item.contentType, item.id))}
           >
             <div className='flex items-center gap-4 p-4'>
@@ -296,58 +295,32 @@ export function FactoryIdeasDesktop() {
     getDetailPath,
     hubScope,
     hubName,
+    visibleTabIds,
   } = useFactoryIdeasPageState({ layout: 'desktop' });
+  const visibleTypes = CONTENT_TYPES.filter((type) => visibleTabIds.has(type.id));
 
   return (
     <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-page)] lg:block'>
-      <div className='bg-white border-b border-gray-100 shadow-sm sticky top-0 z-10'>
-        <div className='px-8 2xl:px-10 py-4 space-y-4'>
-          {fromHub ? (
-            <FactoryIdeasHubBackButton hubScope={hubScope} label='กลับหมวดหมู่' className='mb-0' />
-          ) : null}
-          <div className='mb-1'>
-            <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
-              Discover
-            </p>
-            <h1 className={APP_PAGE_TITLE_CLASS}>
-              {hubName ? `แนะนำโรงงาน · ${hubName}` : 'แนะนำโรงงาน'}
-            </h1>
-          </div>
-          <div className='relative overflow-hidden rounded-xl bg-[linear-gradient(135deg,var(--brand-navy-deep)_0%,#4A267D_100%)] px-4 py-3 text-white shadow-md'>
-            <div className='pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-[var(--brand-orange-hot)] opacity-35 blur-xl mix-blend-screen' />
-            <div className='pointer-events-none absolute right-0 top-0 h-20 w-20 translate-x-6 skew-x-[-15deg] rounded-full bg-[var(--brand-purple)] opacity-50' />
-            <div className='relative z-10 flex items-center gap-3'>
-              <div className='shrink-0 rounded-full border border-[rgba(162,56,255,0.50)] bg-[rgba(162,56,255,0.30)] p-2'>
-                <Sparkles size={18} className='text-white' />
-              </div>
-              <p className='flex-1 min-w-0 text-xs font-medium leading-snug text-[#EBD3FF]'>
-                พื้นที่โปรโมตจากโรงงานพาร์ทเนอร์
-              </p>
-              <span className='shrink-0 rounded-md bg-white/10 px-2 py-1 text-xs font-semibold tabular-nums text-[#EBD3FF]'>
-                {totalCount} รายการ
-              </span>
+      <div className='sticky top-0 z-10 bg-[var(--brand-page)]'>
+        <div className='px-8 py-4 2xl:px-10'>
+          <div className='flex items-start justify-between gap-4'>
+            <div className='min-w-0 flex-1'>
+              <FactoryIdeasPageHeader
+                title={hubName ? `แนะนำโรงงาน · ${hubName}` : 'แนะนำโรงงาน'}
+                count={`${totalCount} รายการ`}
+                hubScope={hubScope}
+                showBack={fromHub}
+              />
             </div>
           </div>
 
-          <div className='flex h-9 w-full items-center gap-2'>
-            <div className='flex h-9 shrink-0 items-center gap-0.5 rounded-lg bg-[rgba(46,34,82,0.06)] p-0.5'>
-              {CONTENT_TYPES.map((type) => (
-                <Button
-                  variant='unstyled'
-                  key={type.id}
-                  type='button'
-                  data-tour={`tab-${type.id}`}
-                  onClick={() => setSelectedType(type.id)}
-                  className={`inline-flex h-8 min-w-[4.25rem] items-center justify-center rounded-md px-3 text-xs transition-all ${
-                    selectedType === type.id
-                      ? 'bg-[var(--brand-orange-deep)] font-semibold text-[var(--neutral-white)] shadow-[0_1px_6px_rgba(227,136,68,0.3)]'
-                      : 'font-medium text-[var(--brand-navy)] hover:bg-white/60'
-                  }`}
-                >
-                  {type.label}
-                </Button>
-              ))}
-            </div>
+          <div className='mt-3 flex h-9 w-full items-center gap-2'>
+            <FactoryIdeasTypeTabs
+              tabs={visibleTypes}
+              activeType={selectedType}
+              onTypeChange={setSelectedType}
+              className='shrink-0'
+            />
 
             {!isFactoryTab && (
               <>
@@ -416,15 +389,15 @@ export function FactoryIdeasDesktop() {
         </div>
       </div>
 
-      <div className={`px-8 2xl:px-10 py-6 transition-opacity duration-200 ${showcasesFetching ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className={`px-8 py-6 transition-opacity duration-200 2xl:px-10 ${showcasesFetching ? 'opacity-50 pointer-events-none' : ''}`}>
         <TabSwipeContent activeKey={selectedType} tabOrder={factoryIdeasTabOrder}>
         {showcasesLoading || factoriesLoading ? (
-          <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm gap-2'>
+          <div className='flex h-64 flex-col items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white'>
             <Loader2 className='h-8 w-8 animate-spin text-[var(--brand-mauve)]' />
             <p className='text-sm text-gray-500'>กำลังโหลดจากเซิร์ฟเวอร์…</p>
           </div>
         ) : totalCount === 0 && isListFiltered ? (
-          <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm'>
+          <div className='flex h-64 flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white'>
             <SearchX size={36} className='mb-3 text-gray-400' />
             <p className='text-[14px] font-medium text-[var(--brand-navy)]'>
               ไม่พบรายการที่ตรงกับเงื่อนไข
@@ -432,8 +405,8 @@ export function FactoryIdeasDesktop() {
             <p className='text-[12px] text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ด ขั้นต่ำการผลิต หรือหมวดหมู่</p>
           </div>
         ) : totalCount === 0 ? (
-          <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm'>
-            <Sparkles size={36} className='mb-3 text-gray-400' />
+          <div className='flex h-64 flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white'>
+            <SearchX size={36} className='mb-3 text-gray-400' />
             <p className='text-[14px] font-medium text-[var(--brand-navy)]'>
               เรากำลังเตรียมรายการแนะนำจากโรงงานพาร์ทเนอร์ให้คุณ
             </p>
@@ -445,7 +418,7 @@ export function FactoryIdeasDesktop() {
               {visibleFactories.map((factory) => (
                 <article
                   key={factory.id}
-                  className='group cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:shadow-md'
+                  className='group cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all duration-200 hover:border-brand-purple/20'
                   onClick={() => navigate(`/factories/${factory.id}`)}
                 >
                   <div className='flex items-center gap-4 p-4'>
@@ -498,7 +471,7 @@ export function FactoryIdeasDesktop() {
             {visibleFactories.map((factory) => (
               <article
                 key={factory.id}
-                className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col'
+                className='group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-all hover:border-brand-purple/20'
                 onClick={() => navigate(`/factories/${factory.id}`)}
               >
                 <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>

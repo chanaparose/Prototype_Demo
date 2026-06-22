@@ -90,25 +90,25 @@ export function RfqTargetingSelector({
             {/* Radio dot */}
             <div
               className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
-                active ? 'border-violet-500' : 'border-gray-300'
+                active ? 'border-brand-violet-deep' : 'border-gray-300'
               }`}
             >
-              {active && <div className='h-2.5 w-2.5 rounded-full bg-violet-500' />}
+              {active && <div className='h-2.5 w-2.5 rounded-full bg-brand-violet-deep' />}
             </div>
 
             {mode === 'all' ? (
-              <Users size={16} className={active ? 'text-violet-500' : 'text-gray-400'} />
+              <Users size={16} className={active ? 'text-brand-violet-deep' : 'text-gray-400'} />
             ) : (
-              <Building2 size={16} className={active ? 'text-violet-500' : 'text-gray-400'} />
+              <Building2 size={16} className={active ? 'text-brand-violet-deep' : 'text-gray-400'} />
             )}
 
             <div className='min-w-0'>
               <p
-                className={`text-[13px] font-semibold ${active ? 'text-violet-800' : 'text-gray-700'}`}
+                className={`text-[13px] font-semibold xl:text-[15px] ${active ? 'text-brand-violet-deep' : 'text-gray-700'}`}
               >
                 {mode === 'all' ? 'ส่งให้ทุกโรงงานที่รับงานประเภทนี้' : 'เลือกโรงงานที่ต้องการ'}
               </p>
-              <p className='mt-0.5 text-[11px] text-gray-400'>
+              <p className='mt-0.5 text-[11px] text-gray-400 xl:text-[12px] 2xl:text-[13px]'>
                 {mode === 'all'
                   ? 'ระบบจับคู่โรงงานที่เหมาะสมโดยอัตโนมัติ'
                   : 'ค้นหาชื่อโรงงานแล้วเพิ่มเข้า list ได้ทีละรายการ'}
@@ -127,14 +127,14 @@ export function RfqTargetingSelector({
               {targetFactories.map((f) => (
                 <span
                   key={f.id}
-                  className='flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-100 px-2.5 py-1 text-[12px] font-medium text-violet-800'
+                  className='flex items-center gap-1.5 rounded-full border border-brand-violet-soft bg-brand-lavender-chip px-2.5 py-1 text-[12px] font-medium text-brand-violet-deep xl:text-[13px]'
                 >
                   <Building2 size={11} className='shrink-0' />
                   <span className='max-w-[140px] truncate'>{f.name}</span>
                   <button
                     type='button'
                     onClick={() => removeFactory(f.id)}
-                    className='ml-0.5 text-violet-400 transition-colors hover:text-violet-600'
+                    className='ml-0.5 text-brand-purple/55 transition-colors hover:text-brand-violet-deep'
                     aria-label={`ลบ ${f.name}`}
                   >
                     <X size={11} />
@@ -147,7 +147,7 @@ export function RfqTargetingSelector({
           {/* Search input */}
           <div ref={anchorRef}>
             <div
-              className={`flex items-center gap-2 bg-white px-3 py-2.5 transition-all focus-within:border-violet-400 focus-within:ring-1 focus-within:ring-violet-400/30 ${RFQ_RADIUS} ${RFQ_BORDER}`}
+              className={`flex items-center gap-2 bg-white px-3 py-2.5 transition-all focus-within:border-brand-violet-deep focus-within:ring-1 focus-within:ring-brand-purple/20 ${RFQ_RADIUS} ${RFQ_BORDER}`}
             >
               <Search size={14} className='shrink-0 text-gray-400' />
               <input
@@ -161,7 +161,7 @@ export function RfqTargetingSelector({
                 onFocus={() => setShowDropdown(true)}
                 onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
                 placeholder='ค้นหาชื่อโรงงาน…'
-                className='flex-1 bg-transparent text-[13px] font-normal outline-none placeholder:text-xs placeholder:font-normal placeholder:text-gray-400'
+                className='flex-1 bg-transparent text-[13px] font-normal outline-none placeholder:text-xs placeholder:font-normal placeholder:text-gray-400 xl:text-[15px] xl:placeholder:text-[13px]'
               />
             </div>
           </div>
@@ -180,7 +180,7 @@ export function RfqTargetingSelector({
                 className={`overflow-hidden bg-white shadow-lg ${RFQ_RADIUS} border-[0.5px] border-gray-100`}
               >
                 {results.length === 0 ? (
-                  <p className='px-4 py-3 text-[12px] text-gray-400'>ไม่พบโรงงานที่ค้นหา</p>
+                  <p className='px-4 py-3 text-[12px] text-gray-400 xl:text-sm'>ไม่พบโรงงานที่ค้นหา</p>
                 ) : (
                   results.map((f) => {
                     const already = targetFactories.some((tf) => tf.id === f.id);
@@ -193,13 +193,13 @@ export function RfqTargetingSelector({
                         className={`flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left transition-colors ${
                           already
                             ? 'cursor-not-allowed opacity-40'
-                            : 'hover:bg-violet-50 active:bg-violet-100'
+                            : 'hover:bg-brand-violet-soft/60 active:bg-brand-violet-soft'
                         }`}
                       >
                         <Building2 size={14} className='shrink-0 text-gray-400' />
-                        <span className='flex-1 text-[13px] text-gray-800'>{f.name}</span>
+                        <span className='flex-1 text-[13px] text-gray-800 xl:text-sm'>{f.name}</span>
                         {already && (
-                          <span className='text-[10px] text-violet-400'>เพิ่มแล้ว</span>
+                          <span className='text-[10px] text-brand-purple/60 xl:text-[11px]'>เพิ่มแล้ว</span>
                         )}
                       </button>
                     );
@@ -212,7 +212,7 @@ export function RfqTargetingSelector({
 
           {/* Warning when no factories selected */}
           {targetFactories.length === 0 && (
-            <p className='mt-2 flex items-center gap-1 text-[11px] text-amber-600'>
+            <p className='mt-2 flex items-center gap-1 text-[11px] text-amber-600 xl:text-[12px]'>
               <AlertTriangle size={12} />
               ต้องเพิ่มโรงงานอย่างน้อย 1 รายการเพื่อส่ง RFQ
             </p>

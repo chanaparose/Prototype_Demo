@@ -1,13 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router';
-import { Plus, FileText, Package, AlertTriangle } from 'lucide-react';
+import { FileText, Package, AlertTriangle } from 'lucide-react';
 import { useRfqAndOrdersState } from '@/components/features/rfq-and-orders/hooks/useRfqAndOrdersState';
 import { Button } from '@/components/ui/button';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { OrderPanel } from '@/components/features/rfq-and-orders/components/OrderPanel';
 import { RfqPanel } from '@/components/features/rfq-and-orders/components/RfqPanel';
 import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
-import { createRfqCtaHeaderClass } from '@/styles/createRfqCta';
-import { APP_PAGE_TITLE_CLASS } from '@lib/appTypography';
 
 const RFQ_ORDERS_TAB_ORDER = ['rfq', 'orders'] as const;
 
@@ -28,30 +26,48 @@ function RfqOrdersTabBar({
   hasPendingPayment: boolean;
 }) {
   return (
-    <div className='flex border-t-0'>
+    <div
+      role='tablist'
+      aria-label='คำขอราคาและคำสั่งซื้อ'
+      className='grid grid-cols-2 border-b border-slate-200'
+    >
       {RFQ_ORDERS_TABS.map((tab) => {
         const active = primaryTab === tab.id;
+        const Icon = tab.id === 'rfq' ? FileText : Package;
         return (
           <button
             key={tab.id}
             type='button'
+            role='tab'
+            aria-selected={active}
             onClick={() => setPrimaryTab(tab.id)}
-            className='relative min-w-0 flex-1 px-2 py-2.5 text-center'
+            className={`relative flex min-w-0 items-center justify-center gap-1.5 px-3 py-3 text-center transition-colors ${
+              active
+                ? 'text-brand-violet-deep'
+                : 'text-slate-500 hover:text-brand-violet-deep'
+            }`}
           >
-            <span
-              className={`inline-flex items-center gap-1 text-[13px] leading-none whitespace-nowrap ${
-                active ? 'font-bold text-[var(--brand-navy)]' : 'font-medium text-gray-400'
-              }`}
-            >
-              {tab.label}
+            <Icon
+              size={15}
+              strokeWidth={2.1}
+              className={`shrink-0 ${active ? 'text-brand-violet-deep' : 'text-slate-400'}`}
+              aria-hidden
+            />
+            <span className='relative min-w-0'>
+              <span
+                className={`block truncate text-sm font-semibold leading-tight ${
+                  active ? 'text-brand-violet-deep' : 'text-slate-500'
+                }`}
+              >
+                {tab.label}
+              </span>
               {tab.id === 'orders' && hasPendingPayment && !active ? (
-                <span className='h-1.5 w-1.5 shrink-0 rounded-full bg-brand-orange animate-pulse' />
+                <span className='absolute -right-2 -top-0.5 h-1.5 w-1.5 rounded-full bg-brand-orange animate-pulse' />
               ) : null}
             </span>
             {active ? (
               <span
-                className='absolute bottom-0 left-1/2 h-[3px] w-8 -translate-x-1/2 rounded-full'
-                style={{ background: 'var(--brand-purple)' }}
+                className='absolute inset-x-4 bottom-[-1px] h-0.5 rounded-full bg-brand-violet-deep'
               />
             ) : null}
           </button>
@@ -113,44 +129,30 @@ export function RfqAndOrders() {
   return (
     <>
       {/* ── Desktop header ── */}
-      <header className='sticky top-0 z-20 hidden border-b border-gray-100 bg-white lg:block'>
-        <div className='mx-auto flex max-w-6xl items-center justify-between gap-3 px-8 py-4 2xl:px-10'>
-          <div className='min-w-0'>
-            <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
-              คำขอและคำสั่งซื้อ
-            </p>
-            <h1 className={APP_PAGE_TITLE_CLASS}>
-              คำขอราคา & คำสั่งซื้อ
-            </h1>
-          </div>
-          <Link to='/create-rfq' className={createRfqCtaHeaderClass}>
-            <Plus
-              size={14}
-              className='text-white/90 transition-transform duration-200 group-hover:rotate-90'
-            />
-            <span>สร้างคำขอราคา</span>
-            <span
-              aria-hidden
-              className='pointer-events-none absolute inset-0 rounded-lg bg-white/0 transition-colors group-hover:bg-white/10'
-            />
-          </Link>
+      <header className='sticky top-0 z-20 hidden lg:block'>
+        <div className='px-8 py-4 2xl:px-10'>
+          <FactoryPageHeader
+            title='คำขอราคา & คำสั่งซื้อ'
+            subtitle='คำขอและคำสั่งซื้อ'
+            icon={FileText}
+            action={{ label: 'สร้างคำขอราคา', to: '/create-rfq' }}
+            variant='minimal'
+          />
         </div>
       </header>
 
       {/* ── Mobile: title flush under layout logo + sticky tabs ── */}
       <div className='flex min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-20 lg:hidden'>
-        <div className='border-b border-gray-100 bg-white'>
-          <div className='px-4 pt-3 pb-2'>
-            <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
-              คำขอและคำสั่งซื้อ
-            </p>
-            <h1 className={APP_PAGE_TITLE_CLASS}>
-              คำขอราคา & คำสั่งซื้อ
-            </h1>
-          </div>
+        <div className='px-4 py-3'>
+          <FactoryPageHeader
+            title='คำขอราคา & คำสั่งซื้อ'
+            subtitle='คำขอและคำสั่งซื้อ'
+            icon={FileText}
+            variant='minimal'
+          />
         </div>
 
-        <div className='sticky top-14 z-20 border-b border-gray-100 bg-white'>
+        <div className='sticky top-14 z-20 border-b border-slate-200/70 bg-[var(--brand-page)]'>
           <RfqOrdersTabBar
             primaryTab={primaryTab}
             setPrimaryTab={setPrimaryTab}
@@ -176,8 +178,8 @@ export function RfqAndOrders() {
 
       {/* ── Desktop: two-column panels ── */}
       <div className='hidden h-full flex-col bg-[var(--brand-page)] px-8 py-6 lg:flex 2xl:px-10'>
-        <div className='grid min-h-0 flex-1 grid-cols-2 gap-5'>
-          <div className='flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white'>
+        <div className='grid h-full flex-1 grid-cols-2 gap-5'>
+          <div className='flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white'>
             <div className='flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-3.5'>
               <div className='flex items-center gap-2.5'>
                 <FileText size={16} className='shrink-0 text-brand-violet-deep' />
@@ -192,7 +194,7 @@ export function RfqAndOrders() {
             </div>
           </div>
 
-          <div className='flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white'>
+          <div className='flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white'>
             <div className='flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-3.5'>
               <div className='flex items-center gap-2.5'>
                 <Package size={16} className='shrink-0 text-brand-orange-vivid' />

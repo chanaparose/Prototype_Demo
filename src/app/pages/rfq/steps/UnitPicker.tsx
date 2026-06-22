@@ -107,7 +107,7 @@ export function UnitPicker({ units, value, onChange, triggerClassName }: Props) 
         className={cn(
           'flex w-[130px] shrink-0 items-center justify-between gap-1 text-left transition-colors',
           triggerClassName ??
-            'rounded-xl border border-gray-200 bg-[var(--neutral-warm-surface)]/50 px-3 py-2 text-sm font-medium text-brand-navy-deep hover:border-gray-300',
+            'rounded-xl border border-gray-200 bg-[var(--neutral-warm-surface)]/50 px-3 py-2 text-sm font-medium text-brand-navy-deep hover:border-gray-300 xl:text-[15px]',
         )}
       >
         <span className='truncate'>{triggerLabel}</span>
@@ -122,6 +122,7 @@ export function UnitPicker({ units, value, onChange, triggerClassName }: Props) 
           if (!v) setSearch('');
         }}
         title='เลือกหน่วยนับ'
+        titleClassName='text-base font-bold text-brand-navy-deep xl:text-lg'
         bodyClassName='p-0'
         footer={
           <div className='flex gap-2 w-full'>
@@ -129,7 +130,7 @@ export function UnitPicker({ units, value, onChange, triggerClassName }: Props) 
               variant='unstyled'
               type='button'
               onClick={() => handleSelect(null)}
-              className='flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors'
+              className='flex-1 py-2.5 rounded-xl border border-brand-violet-soft bg-white text-sm font-semibold text-brand-violet-deep transition-colors hover:bg-brand-lavender-chip/50 xl:text-[15px]'
             >
               ใช้ค่าเริ่มต้น (ชิ้น)
             </Button>
@@ -137,7 +138,7 @@ export function UnitPicker({ units, value, onChange, triggerClassName }: Props) 
               variant='unstyled'
               type='button'
               onClick={() => setOpen(false)}
-              className='flex-1 py-2.5 rounded-xl bg-brand-royal text-sm font-semibold text-white hover:bg-brand-royal/90 transition-colors'
+              className='flex-1 py-2.5 rounded-xl bg-brand-violet-deep text-sm font-semibold text-white transition-colors hover:bg-brand-purple xl:text-[15px]'
             >
               ยืนยัน
             </Button>
@@ -153,7 +154,7 @@ export function UnitPicker({ units, value, onChange, triggerClassName }: Props) 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder='ค้นหาหน่วย เช่น kg, ลิตร, กล่อง...'
-              className='pl-9 pr-8 py-2.5 rounded-xl border-gray-200 text-sm bg-gray-50 focus:bg-white'
+              className='pl-9 pr-8 py-2.5 rounded-xl border-gray-200 text-sm bg-gray-50 focus:bg-white xl:text-[15px] xl:placeholder:text-[13px]'
             />
             {search && (
               <Button
@@ -174,9 +175,9 @@ export function UnitPicker({ units, value, onChange, triggerClassName }: Props) 
             <button
               type='button'
               onClick={() => setActiveGroup(null)}
-              className={`shrink-0 px-3 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
+              className={`shrink-0 px-3 py-2.5 text-xs font-semibold border-b-2 transition-colors xl:text-[13px] ${
                 activeGroup === null
-                  ? 'border-brand-royal text-brand-royal'
+                  ? 'border-brand-violet-deep text-brand-violet-deep'
                   : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}
             >
@@ -190,13 +191,13 @@ export function UnitPicker({ units, value, onChange, triggerClassName }: Props) 
                   key={g.key}
                   type='button'
                   onClick={() => setActiveGroup(g.key)}
-                  className={`shrink-0 flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
+                  className={`shrink-0 flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold border-b-2 transition-colors xl:text-[13px] ${
                     isActive
-                      ? 'border-brand-royal text-brand-royal'
+                      ? 'border-brand-violet-deep text-brand-violet-deep'
                       : 'border-transparent text-gray-400 hover:text-gray-600'
                   }`}
                 >
-                  <Icon size={13} style={{ color: isActive ? g.color : '#9CA3AF' }} />
+                  <Icon size={13} style={{ color: isActive ? 'var(--brand-violet-deep)' : '#9CA3AF' }} />
                   {g.label_th}
                 </button>
               );
@@ -220,8 +221,8 @@ export function UnitPicker({ units, value, onChange, triggerClassName }: Props) 
                       >
                         <Icon size={13} style={{ color: g.color }} />
                       </div>
-                      <span className='text-xs font-bold text-gray-700'>{g.label_th}</span>
-                      <span className='text-[10px] text-gray-400'>{g.label_en}</span>
+                      <span className='text-xs font-bold text-gray-700 xl:text-sm'>{g.label_th}</span>
+                      <span className='text-[10px] text-gray-400 xl:text-[12px]'>{g.label_en}</span>
                     </div>
                     <div className='grid grid-cols-3 gap-2'>
                       {g.items.map((u) => {
@@ -233,21 +234,21 @@ export function UnitPicker({ units, value, onChange, triggerClassName }: Props) 
                             onClick={() => handleSelect(u)}
                             className={`relative flex flex-col items-center gap-0.5 p-3 rounded-xl border text-center transition-all active:scale-[0.97] ${
                               isSelected
-                                ? 'border-brand-royal bg-indigo-50 ring-2 ring-brand-royal/20'
+                                ? 'border-brand-violet-deep bg-brand-violet-soft ring-2 ring-brand-purple/15'
                                 : 'border-gray-150 bg-white hover:border-gray-300 hover:bg-gray-50'
                             }`}
                           >
                             {isSelected && (
                               <div className='absolute top-1.5 right-1.5'>
-                                <Check size={12} className='text-brand-royal' />
+                                <Check size={12} className='text-brand-violet-deep' />
                               </div>
                             )}
-                            <span className='text-sm font-bold text-gray-800'>{u.name_th}</span>
-                            <span className='text-[10px] text-gray-400 leading-tight'>
+                            <span className='text-sm font-bold text-gray-800 xl:text-[15px]'>{u.name_th}</span>
+                            <span className='text-[10px] text-gray-400 leading-tight xl:text-[12px]'>
                               {u.name_en}
                             </span>
                             <span
-                              className='mt-0.5 inline-block rounded-md px-1.5 py-0.5 text-[10px] font-mono font-semibold'
+                              className='mt-0.5 inline-block rounded-md px-1.5 py-0.5 text-[10px] font-mono font-semibold xl:text-[11px]'
                               style={{ backgroundColor: g.bg, color: g.color }}
                             >
                               {u.code}
@@ -263,7 +264,7 @@ export function UnitPicker({ units, value, onChange, triggerClassName }: Props) 
           ) : filtered.length === 0 ? (
             <div className='flex flex-col items-center gap-2 py-8'>
               <Search size={28} className='text-gray-200' />
-              <p className='text-xs text-gray-400'>
+              <p className='text-xs text-gray-400 xl:text-sm'>
                 {search ? `ไม่พบหน่วย "${search}"` : 'ไม่มีรายการ'}
               </p>
             </div>
@@ -279,19 +280,19 @@ export function UnitPicker({ units, value, onChange, triggerClassName }: Props) 
                     onClick={() => handleSelect(u)}
                     className={`relative flex flex-col items-center gap-0.5 p-3 rounded-xl border text-center transition-all active:scale-[0.97] ${
                       isSelected
-                        ? 'border-brand-royal bg-indigo-50 ring-2 ring-brand-royal/20'
+                        ? 'border-brand-violet-deep bg-brand-violet-soft ring-2 ring-brand-purple/15'
                         : 'border-gray-150 bg-white hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
                     {isSelected && (
                       <div className='absolute top-1.5 right-1.5'>
-                        <Check size={12} className='text-brand-royal' />
+                        <Check size={12} className='text-brand-violet-deep' />
                       </div>
                     )}
-                    <span className='text-sm font-bold text-gray-800'>{u.name_th}</span>
-                    <span className='text-[10px] text-gray-400 leading-tight'>{u.name_en}</span>
+                    <span className='text-sm font-bold text-gray-800 xl:text-[15px]'>{u.name_th}</span>
+                    <span className='text-[10px] text-gray-400 leading-tight xl:text-[12px]'>{u.name_en}</span>
                     <span
-                      className='mt-0.5 inline-block rounded-md px-1.5 py-0.5 text-[10px] font-mono font-semibold'
+                      className='mt-0.5 inline-block rounded-md px-1.5 py-0.5 text-[10px] font-mono font-semibold xl:text-[11px]'
                       style={{ backgroundColor: meta.bg, color: meta.color }}
                     >
                       {u.code}
