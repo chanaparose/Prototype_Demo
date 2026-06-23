@@ -70,7 +70,7 @@ export function ShowcaseGridCard({
                 {item.factoryRating ?? 0}
               </span>
             </div>
-            <span className='text-gray-400 text-[8px] shrink-0'>
+            <span className='text-gray-400 text-[9px] shrink-0'>
               ขั้นต่ำ {item.minOrder} {resolveUnitLabel(item.unitId, item.moqUnit)}
             </span>
           </div>

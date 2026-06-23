@@ -60,7 +60,7 @@ export function HubScopeTabs({
                   aria-hidden
                 />
                 <span className='min-w-0'>
-                  <span className='block truncate text-sm font-semibold leading-tight md:text-[15px]'>
+                  <span className='block truncate text-[12px] font-semibold leading-tight md:text-sm'>
                     {label}
                   </span>
                   <span

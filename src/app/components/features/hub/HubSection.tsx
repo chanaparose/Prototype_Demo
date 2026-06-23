@@ -30,7 +30,7 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
         <div className='flex min-w-0 items-center gap-2.5'>
           <span className='h-8 w-1 shrink-0 rounded-full bg-gradient-to-b from-brand-purple/85 to-brand-purple/35' />
           <div className='min-w-0'>
-            <h2 className='truncate text-base font-bold text-[var(--brand-navy)]'>{hub.name}</h2>
+            <h2 className='truncate text-[14px] font-bold text-[var(--brand-navy)]'>{hub.name}</h2>
              
           </div>
         </div>

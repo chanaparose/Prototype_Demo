@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, PackageSearch } from 'lucide-react';
 import { cn } from '@lib/utils';
 import type { ICategoryForHubResponse } from '@/services/api/types/master.types';
 import { hubRowCardClass } from '@/components/features/hub/hubRowShared';
@@ -11,30 +11,32 @@ export function HubCategoryCard({
   onClick: () => void;
 }) {
   const subText = (cat.sub_preview ?? []).slice(0, 2).join(' · ');
-  const factoryLabel = cat.factory_count > 0 ? `${cat.factory_count} โรงงาน` : 'ดูรายการในหมวดนี้';
 
   return (
-    <button
-      type='button'
-      onClick={onClick}
-      className={cn(
-        hubRowCardClass,
-        'group border border-brand-purple/10 bg-white transition-all hover:border-brand-purple/20 hover:bg-brand-lavender-muted/25 active:scale-[0.98]',
-      )}
-    >
-      <span className='line-clamp-2 text-sm font-bold leading-snug text-[var(--brand-navy)] group-hover:text-brand-purple'>
-        {cat.name}
-      </span>
+    <button type='button' onClick={onClick} className={hubRowCardClass}>
+      <div className='mb-1 flex items-center gap-1 lg:mb-1.5 lg:gap-1.5'>
+        <span className='flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-brand-purple/10 text-brand-purple lg:h-6 lg:w-6 lg:rounded-lg'>
+          <PackageSearch size={12} strokeWidth={2.25} className='lg:hidden' />
+          <PackageSearch size={14} strokeWidth={2.25} className='hidden lg:block' />
+        </span>
+        <span className='line-clamp-1 text-xs font-medium leading-tight text-gray-700 group-hover:text-brand-purple lg:text-sm lg:text-[var(--brand-navy)]'>
+          {cat.name}
+        </span>
+      </div>
       {subText ? (
-        <span className='mt-1 line-clamp-2 text-xs leading-tight text-slate-500'>{subText}</span>
-      ) : null}
+        <span className='line-clamp-2 text-[10px] leading-tight text-[var(--brand-muted-purple)] lg:text-xs'>
+          {subText}
+        </span>
+      ) : (
+        <span className='text-[10px] text-gray-400 lg:text-xs'>ดูรายการในหมวดนี้</span>
+      )}
       <span
         className={cn(
-          'mt-auto pt-2 text-xs font-semibold leading-none',
+          'mt-auto text-[9px] font-semibold leading-none lg:text-xs lg:font-bold',
           cat.factory_count > 0 ? 'text-brand-purple' : 'text-gray-400',
         )}
       >
-        {factoryLabel}
+        {cat.factory_count > 0 ? `${cat.factory_count} โรงงาน` : 'ดูหมวดนี้'}
       </span>
     </button>
   );
@@ -57,23 +59,28 @@ export function HubSeeAllCard({
     <button
       type='button'
       onClick={onClick}
-      className={cn(
-        hubRowCardClass,
-        'border border-dashed border-brand-purple/15 bg-white transition-all hover:border-brand-purple/30 hover:bg-brand-lavender-muted/25 active:scale-[0.98]',
-      )}
+      className={cn(hubRowCardClass, 'border-dashed hover:border-brand-purple/40')}
     >
-      <span className='mb-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-purple/12 text-brand-purple'>
-        <ArrowRight size={14} strokeWidth={2.5} />
-      </span>
-      <span className='text-sm font-bold leading-snug text-brand-purple'>+{count} หมวด</span>
-      <span className='mt-0.5 text-xs font-medium text-brand-purple/75'>ดูครบทุกหมวด</span>
+      <div className='mb-1 flex items-center gap-1 lg:mb-1.5 lg:gap-1.5'>
+        <span className='flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-brand-purple/10 text-brand-purple lg:h-6 lg:w-6 lg:rounded-lg'>
+          <ArrowRight size={12} strokeWidth={2.25} className='lg:hidden' />
+          <ArrowRight size={14} strokeWidth={2.25} className='hidden lg:block' />
+        </span>
+        <span className='line-clamp-1 text-xs font-medium leading-tight text-brand-purple lg:text-sm'>
+          +{count} หมวด
+        </span>
+      </div>
       {subText ? (
-        <span className='mt-0.5 line-clamp-2 text-xs text-gray-500'>{subText}</span>
-      ) : null}
+        <span className='line-clamp-2 text-[10px] leading-tight text-[var(--brand-muted-purple)] lg:text-xs'>
+          {subText}
+        </span>
+      ) : (
+        <span className='text-[10px] text-gray-400 lg:text-xs'>ดูครบทุกหมวด</span>
+      )}
       {totalFactories > 0 ? (
-        <p className='mt-auto pt-2 text-xs font-semibold text-brand-purple'>
+        <span className='mt-auto text-[9px] font-semibold leading-none text-brand-purple lg:text-xs lg:font-bold'>
           {totalFactories} โรงงานในกลุ่มนี้
-        </p>
+        </span>
       ) : null}
     </button>
   );
