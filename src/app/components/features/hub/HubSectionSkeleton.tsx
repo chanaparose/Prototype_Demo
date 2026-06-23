@@ -14,8 +14,8 @@ export function HubSectionSkeleton({ className }: { className?: string }) {
         <div className='flex items-center gap-2.5'>
           <Skeleton className='h-8 w-1 rounded-full bg-white/55' />
           <div className='space-y-1.5'>
-            <Skeleton className='h-4 w-28 bg-white/55' />
-            <Skeleton className='h-2.5 w-16 bg-white/45' />
+            <Skeleton className='h-3.5 w-28 bg-white/55' />
+            <Skeleton className='h-2.5 w-20 bg-white/45' />
           </div>
         </div>
         <Skeleton className='h-7 w-16 rounded-full bg-white/50' />

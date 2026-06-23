@@ -30,18 +30,25 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
         <div className='flex min-w-0 items-center gap-2.5'>
           <span className='h-8 w-1 shrink-0 rounded-full bg-gradient-to-b from-brand-purple/85 to-brand-purple/35' />
           <div className='min-w-0'>
-            <h2 className='truncate text-[14px] font-bold text-[var(--brand-navy)]'>{hub.name}</h2>
-             
+            <h2 className='truncate text-[14px] font-bold text-[var(--brand-navy)] lg:text-[15px]'>
+              {hub.name}
+            </h2>
+            <p className='mt-0.5 truncate text-[11px] text-gray-500'>
+              {hub.categories.length} หมวด
+              {totalFactories > 0 ? ` · ${totalFactories} โรงงาน` : ''}
+            </p>
           </div>
         </div>
         <Button
           variant='unstyled'
           type='button'
           onClick={() => onNavigate(`/factory-ideas?hub_id=${hub.hub_id}&hub_scope=${hub.scope}`)}
-          className='flex shrink-0 items-center gap-0.5 rounded-lg border border-brand-purple/15 bg-white px-2.5 py-1.5 text-xs font-semibold text-brand-purple transition-colors hover:border-brand-purple/30 hover:bg-brand-lavender-muted/30'
+          className='group flex shrink-0 items-center gap-1 rounded-full py-1 pl-2.5 pr-1 text-[12px] font-medium text-brand-purple transition-colors hover:bg-brand-purple/8 active:bg-brand-purple/12'
         >
           ดูทั้งหมด
-          <ChevronRight size={12} strokeWidth={2.25} />
+          <span className='flex h-5 w-5 items-center justify-center rounded-full bg-brand-purple/10 transition-colors group-hover:bg-brand-purple/15'>
+            <ChevronRight size={11} strokeWidth={2.5} />
+          </span>
         </Button>
       </div>
 
