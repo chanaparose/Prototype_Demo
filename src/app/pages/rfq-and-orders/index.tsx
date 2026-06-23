@@ -55,7 +55,7 @@ function RfqOrdersTabBar({
             />
             <span className='relative min-w-0'>
               <span
-                className={`block truncate text-sm font-semibold leading-tight ${
+                className={`block truncate text-[12px] font-semibold leading-tight ${
                   active ? 'text-brand-violet-deep' : 'text-slate-500'
                 }`}
               >
@@ -183,7 +183,7 @@ export function RfqAndOrders() {
             <div className='flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-3.5'>
               <div className='flex items-center gap-2.5'>
                 <FileText size={16} className='shrink-0 text-brand-violet-deep' />
-                <h2 className='text-sm font-bold text-[var(--brand-navy)]'>คำขอราคา</h2>
+                <h2 className='text-[13px] font-bold text-[var(--brand-navy)]'>คำขอราคา</h2>
                 <span className='rounded-md border border-gray-200 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-gray-500'>
                   {activeRfqCount}
                 </span>
@@ -198,7 +198,7 @@ export function RfqAndOrders() {
             <div className='flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-3.5'>
               <div className='flex items-center gap-2.5'>
                 <Package size={16} className='shrink-0 text-brand-orange-vivid' />
-                <h2 className='text-sm font-bold text-[var(--brand-navy)]'>คำสั่งซื้อ</h2>
+                <h2 className='text-[13px] font-bold text-[var(--brand-navy)]'>คำสั่งซื้อ</h2>
                 <span className='rounded-md border border-gray-200 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-gray-500'>
                   {activeOrderCount}
                 </span>

@@ -21,7 +21,7 @@ export function HistoryRfqRow({ rfq }: { rfq: Rfq }) {
             <CategoryIcon value={rfq.categoryIcon} size={14} className='text-gray-400' />
           </div>
           <div className='min-w-0'>
-            <p className='text-sm font-semibold text-gray-700 truncate'>{rfq.projectName}</p>
+            <p className='text-xs font-semibold text-gray-700 truncate'>{rfq.projectName}</p>
             <p className='text-[10px] text-gray-400 flex items-center gap-1.5 mt-0.5'>
               <Calendar size={9} />
               {formatDate(rfq.createdAt)}

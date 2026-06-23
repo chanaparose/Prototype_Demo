@@ -29,8 +29,8 @@ export function RfqPanel({
     <div className={isMobile ? '' : 'px-4 pb-4 pt-2'}>
       <div className='mb-3 flex min-h-[48px] items-center justify-between rounded-xl border border-gray-200 bg-[#F9F8FC] px-3 py-2'>
         <div className='flex items-center gap-2.5 flex-wrap'>
-          <h3 className='text-sm font-bold text-[var(--brand-navy-deep)]'>กำลังดำเนินการ</h3>
-          <span className='shrink-0 rounded-md bg-[rgba(46,34,82,0.06)] px-2 py-1 text-[11px] font-semibold text-[var(--brand-navy)] tabular-nums'>
+          <h3 className='text-[13px] font-bold text-[var(--brand-navy-deep)]'>กำลังดำเนินการ</h3>
+          <span className='shrink-0 rounded-md bg-[rgba(46,34,82,0.06)] px-2 py-1 text-[10px] font-semibold text-[var(--brand-navy)] tabular-nums'>
             {activeRfqs.length} รายการ
           </span>
           {totalPendingReview > 0 && (
@@ -60,13 +60,13 @@ export function RfqPanel({
           <div className='mb-3 flex h-14 w-14 items-center justify-center rounded-lg'>
             <FileText size={24} className='text-gray-300' />
           </div>
-          <p className='text-gray-700 font-semibold text-sm mb-1'>
+          <p className='text-gray-700 font-semibold text-[13px] mb-1'>
             ยังไม่มีคำขอราคาที่ดำเนินการอยู่
           </p>
-          <p className='text-xs text-gray-400 mb-4'>สร้างคำขอราคาเพื่อรับใบเสนอราคาจากโรงงาน</p>
+          <p className='text-[10px] text-gray-400 mb-4'>สร้างคำขอราคาเพื่อรับใบเสนอราคาจากโรงงาน</p>
           <Link
             to='/create-rfq'
-            className='rounded-lg bg-brand-purple px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-violet-deep'
+            className='rounded-lg bg-brand-purple px-5 py-2 text-xs font-medium text-white transition-colors hover:bg-brand-violet-deep'
           >
             สร้างคำขอราคา
           </Link>

@@ -115,7 +115,7 @@ export function OrderPanel({
           <div className='mb-3 flex h-14 w-14 items-center justify-center rounded-lg'>
             <Package size={24} className='text-gray-300' />
           </div>
-          <p className='text-gray-700 font-semibold text-sm mb-1'>ยังไม่มีคำสั่งซื้อ</p>
+          <p className='text-gray-700 font-semibold text-[13px] mb-1'>ยังไม่มีคำสั่งซื้อ</p>
           <p className='text-xs text-gray-400 max-w-[200px]'>
             คำสั่งซื้อจะปรากฏที่นี่หลังจากยืนยันใบเสนอราคา
           </p>
@@ -145,10 +145,10 @@ export function OrderPanel({
                     </div>
                     <div className='min-w-0 flex-1'>
                       <p className='text-[10px] text-gray-400 mb-0.5'>#{order.id}</p>
-                      <p className='text-sm text-gray-900 font-bold truncate leading-tight'>
+                      <p className='text-xs text-gray-900 font-bold truncate leading-tight'>
                         {order.projectName}
                       </p>
-                      <p className='text-[11px] text-gray-500 truncate'>{order.factoryName}</p>
+                      <p className='text-[10px] text-gray-500 truncate'>{order.factoryName}</p>
                     </div>
                   </div>
                   <span
@@ -167,7 +167,7 @@ export function OrderPanel({
                     return (
                       <>
                         <StepIcon size={14} className='shrink-0 text-gray-500' />
-                        <span className='text-[11px] font-semibold text-gray-700 flex-1'>
+                        <span className='text-[10px] font-semibold text-gray-700 flex-1'>
                           {stepInfo.label}
                         </span>
                          

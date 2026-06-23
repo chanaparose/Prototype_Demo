@@ -50,12 +50,12 @@ export function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
               >
                 {rfq.category}
               </p>
-              <h3 className='text-gray-900 font-bold text-sm leading-tight truncate'>
+              <h3 className='text-gray-900 font-bold text-xs leading-tight truncate'>
                 {rfq.projectName}
               </h3>
             </div>
           </div>
-          <span className='shrink-0 rounded-full bg-[var(--brand-lavender)] px-3 py-1 text-[11px] font-bold text-[var(--brand-purple)]'>
+          <span className='shrink-0 rounded-full bg-[var(--brand-lavender)] px-3 py-1 text-[10px] font-bold text-[var(--brand-purple)]'>
             {statusCfg.label}
           </span>
         </div>
@@ -73,7 +73,7 @@ export function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
                 {totalOffers} โรงงานตอบแล้ว
               </span>
             </div>
-            <div className='text-[11px] text-[var(--neutral-subtle)] flex items-center gap-2'>
+            <div className='text-[10px] text-[var(--neutral-subtle)] flex items-center gap-2'>
               <span>
                 ตอบรับแล้ว <span className='font-bold text-emerald-700'>{accepted}</span>
               </span>
