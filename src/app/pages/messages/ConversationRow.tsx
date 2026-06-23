@@ -24,7 +24,9 @@ export function ConversationRow({
 
   const preview = conv.hasQuote
     ? 'มีใบเสนอราคาใหม่'
-    : conv.lastMessage?.trim() || conv.rfqName || '—';
+    : conv.lastMessageType === 'IM'
+      ? '🖼 รูปภาพ'
+      : conv.lastMessage?.trim() || conv.rfqName || '—';
 
   return (
     <Button

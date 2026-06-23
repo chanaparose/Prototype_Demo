@@ -16,20 +16,25 @@ export function useConversations() {
   const items = useMemo(() => {
     if (!enabled || currentUserId == null) return [];
     return sortConversations(
-      (conversationsQ.data ?? []).map((conv: IConversationResponse) => {
-        const view = resolveCounterparty(conv, currentUserId);
-        return {
-          id: String(conv.conv_id),
-          conv,
-          view,
-          rfqName: '',
-          lastMessage: conv.last_message ?? '',
-          lastMessageAt: conv.updated_at ?? '',
-          updatedAt: conv.updated_at ?? '',
-          unread: resolveUnreadCount(conv, currentUserId),
-          hasQuote: Boolean(conv.has_quote),
-        };
-      }),
+      (conversationsQ.data ?? [])
+        .filter((conv: IConversationResponse) =>
+          (conv.last_message ?? '').trim() !== '' || (conv.last_message_type ?? '').trim() !== ''
+        )
+        .map((conv: IConversationResponse) => {
+          const view = resolveCounterparty(conv, currentUserId);
+          return {
+            id: String(conv.conv_id),
+            conv,
+            view,
+            rfqName: '',
+            lastMessage: conv.last_message ?? '',
+            lastMessageType: conv.last_message_type ?? '',
+            lastMessageAt: conv.updated_at ?? '',
+            updatedAt: conv.updated_at ?? '',
+            unread: resolveUnreadCount(conv, currentUserId),
+            hasQuote: Boolean(conv.has_quote),
+          };
+        }),
     );
   }, [conversationsQ.data, currentUserId, enabled]);
 

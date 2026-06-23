@@ -80,6 +80,7 @@ export function mapConversationFromApi(row: Record<string, unknown>): IConversat
     customer_id: Number.isFinite(customerId) ? customerId : 0,
     factory_id: Number.isFinite(factoryId) ? factoryId : 0,
     last_message: pickScalarString(row.last_message, row.lastMessage),
+    last_message_type: pickScalarString(row.last_message_type as string | undefined) || undefined,
     unread_customer: unread.unread_customer,
     unread_factory: unread.unread_factory,
     ...(unread.viewer_unread != null ? { viewer_unread: unread.viewer_unread } : {}),

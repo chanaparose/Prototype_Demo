@@ -18,6 +18,7 @@ export interface IConversationResponse {
   customer_id: number;
   factory_id: number;
   last_message: string;
+  last_message_type?: string;
   unread_customer: number;
   unread_factory: number;
   /** When API returns a single viewer-scoped unread without splitting by party */

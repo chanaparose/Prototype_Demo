@@ -7,6 +7,7 @@ export type UiConversation = {
   view: CounterpartyView;
   rfqName: string;
   lastMessage: string;
+  lastMessageType: string;
   lastMessageAt: string;
   updatedAt: string;
   unread: number;

@@ -35,6 +35,7 @@ export type ApiConversation = {
   rfq_id?: number | null;
   rfq_title?: string | null;
   last_message?: string;
+  last_message_type?: string;
   last_message_at?: string;
   unread_customer: number;
   unread_factory: number;
@@ -94,6 +95,7 @@ export function parseApiConversation(row: Record<string, unknown>): ApiConversat
     rfq_title: rfqTitle || null,
     customer_image: pickScalarString(row.customer_image) || undefined,
     last_message_at: pickScalarString(row.last_message_at, row.lastMessageAt, api.last_message_at),
+    last_message_type: pickScalarString(row.last_message_type as string | undefined) || undefined,
     created_at: pickScalarString(row.created_at) || undefined,
     updated_at: pickScalarString(row.updated_at, row.time, row.created_at, api.updated_at),
   };
