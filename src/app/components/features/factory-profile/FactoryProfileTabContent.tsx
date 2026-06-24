@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { MapPin, Star } from 'lucide-react';
+import { cn } from '@lib/utils';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { ReviewPreviewSection } from '@/components/features/reviews/ReviewPreviewSection';
 import { normalizeFactoryReview } from '@/components/features/reviews/reviewBrowseUtils';
 import { formatThaiDate } from '@/components/features/factory-profile/utils';
@@ -113,37 +113,37 @@ export function FactoryProfileTabContent({
   }) => (
     <div
       onClick={onClick}
-      className='bg-white rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:border-gray-300 transition-all group flex flex-col active:scale-[0.98]'
+      className='group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-colors hover:border-brand-purple/25 active:scale-[0.98]'
     >
       <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
         <ImageWithFallback
           src={item.image}
           alt={item.title}
-          className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
+          className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
         />
         <span
-          className='absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white'
+          className='absolute left-1 top-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold text-white'
           style={{ backgroundColor: badgeColor }}
         >
           {badgeLabel}
         </span>
       </div>
-      <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-        <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
+      <div className='flex flex-1 flex-col justify-between gap-0.5 p-2'>
+        <p className='mb-0.5 truncate text-xs font-medium leading-tight text-gray-700 transition-colors group-hover:text-brand-purple'>
           {item.title}
         </p>
-        <div className='flex items-center gap-0.5 mt-0.5'>
-          <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-          <span className='text-gray-500 text-[10px] truncate'>{factory.location || '—'}</span>
+        <div className='mt-0.5 flex items-center gap-0.5'>
+          <MapPin size={10} className='shrink-0 text-gray-400' strokeWidth={2.25} />
+          <span className='truncate text-[10px] text-gray-500'>{factory.location || '—'}</span>
         </div>
-        <div className='mt-auto pt-1 border-t border-gray-50'>
-          <div className='flex items-center justify-between min-w-0'>
-            <div className='flex items-center gap-0.5 min-w-0'>
-              <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-              <span className='text-gray-700 text-[10px] font-semibold'>{factory.rating}</span>
-              <span className='text-gray-400 text-[9px] truncate'>({factory.reviews})</span>
+        <div className='mt-auto border-t border-gray-50 pt-1'>
+          <div className='flex min-w-0 items-center justify-between'>
+            <div className='flex min-w-0 items-center gap-0.5'>
+              <Star size={10} className='shrink-0 fill-amber-400 text-amber-400' />
+              <span className='text-[10px] font-semibold text-gray-700'>{factory.rating}</span>
+              <span className='truncate text-[9px] text-gray-400'>({factory.reviews})</span>
             </div>
-            <span className='text-gray-400 text-[8px] shrink-0'>ขั้นต่ำ {item.minOrder ?? 0}</span>
+            <span className='shrink-0 text-[9px] text-gray-400'>ขั้นต่ำ {item.minOrder ?? 0}</span>
           </div>
         </div>
       </div>
@@ -152,141 +152,139 @@ export function FactoryProfileTabContent({
 
   return (
     <div>
-      {/* Tab bar — in-flow inside card (avoid sticky + negative margin overlap) */}
-      <div className='border-b border-gray-100 bg-white'>
-        <div className='flex overflow-x-auto scrollbar-hide'>
-          {TABS.map((tab) => {
-            const active = activeTab === tab.id;
-            const count = tabCounts[tab.id];
-            return (
-              <button
-                key={tab.id}
-                type='button'
-                onClick={() => onTabChange(tab.id)}
-                className='relative flex-1 min-w-0 shrink-0 py-3 px-2 text-center'
-              >
-                <span
-                  className={`text-[14px] leading-none whitespace-nowrap ${
-                    active
-                      ? 'font-bold text-[var(--brand-navy)]'
-                      : 'font-medium text-gray-400'
-                  }`}
-                >
-                  {tab.label}
-                  {count > 0 ? (
-                    <span
-                      className={`ml-1 text-[12px] tabular-nums ${
-                        active ? 'font-bold text-[var(--brand-navy)]' : 'font-medium text-gray-400'
-                      }`}
-                    >
-                      {count}
-                    </span>
-                  ) : null}
-                </span>
-                {active && (
-                  <span
-                    className='absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] w-8 rounded-full'
-                    style={{ background: 'var(--brand-purple)' }}
-                  />
+      <div
+        role='tablist'
+        aria-label='เนื้อหาโปรไฟล์โรงงาน'
+        className='flex overflow-x-auto border-b border-slate-200 scrollbar-hide'
+      >
+        {TABS.map((tab) => {
+          const active = activeTab === tab.id;
+          const count = tabCounts[tab.id];
+          return (
+            <button
+              key={tab.id}
+              type='button'
+              role='tab'
+              aria-selected={active}
+              onClick={() => onTabChange(tab.id)}
+              className={cn(
+                'relative min-w-0 flex-1 shrink-0 px-2 py-2.5 text-center transition-colors',
+                active ? 'text-brand-purple' : 'text-slate-500 hover:text-[var(--brand-navy)]',
+              )}
+            >
+              <span
+                className={cn(
+                  'whitespace-nowrap text-[12px] font-bold leading-none',
+                  !active && 'font-semibold',
                 )}
-              </button>
-            );
-          })}
-        </div>
+              >
+                {tab.label}
+                {count > 0 ? (
+                  <span className='ml-0.5 tabular-nums text-[10px] font-semibold'>{count}</span>
+                ) : null}
+              </span>
+              {active ? (
+                <span className='absolute bottom-[-1px] left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-brand-purple md:w-10' />
+              ) : null}
+            </button>
+          );
+        })}
       </div>
 
-      <div className='space-y-3 px-4 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-5'>
-      {activeTab === 'products' && (
-        <div>
-          {productItems.length === 0 ? (
-            <div className='bg-white rounded-lg border border-gray-200 px-6 py-8 text-sm text-gray-500 text-center'>
-              โรงงานนี้ยังไม่มีสินค้าแนะนำ
-            </div>
-          ) : (
-            <div className='grid grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 gap-3'>
-              {productItems.map((item) => (
-                <ShowcaseGridCard
-                  key={item.id}
-                  item={item}
-                  onClick={() => onProductClick(item.id)}
-                  badgeLabel='สินค้า'
-                  badgeColor='var(--brand-orange)'
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      <div className='space-y-2.5 px-3 pb-5 pt-3 lg:px-5 lg:pb-6 lg:pt-4'>
+        {activeTab === 'products' && (
+          <div>
+            {productItems.length === 0 ? (
+              <div className='rounded-lg border border-dashed border-gray-100 bg-slate-50/80 px-4 py-8 text-center text-[12px] text-gray-500'>
+                โรงงานนี้ยังไม่มีสินค้าแนะนำ
+              </div>
+            ) : (
+              <div className='grid grid-cols-2 gap-2 lg:grid-cols-4 2xl:grid-cols-5 lg:gap-2.5'>
+                {productItems.map((item) => (
+                  <ShowcaseGridCard
+                    key={item.id}
+                    item={item}
+                    onClick={() => onProductClick(item.id)}
+                    badgeLabel='สินค้า'
+                    badgeColor='var(--brand-orange)'
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-      {activeTab === 'materials' && (
-        <div>
-          {materialItems.length === 0 ? (
-            <div className='bg-white rounded-lg border border-gray-200 p-5 text-sm text-gray-500 text-center'>
-              โรงงานนี้ยังไม่มีวัตถุดิบ
-            </div>
-          ) : (
-            <div className='grid grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 gap-3'>
-              {materialItems.map((item) => (
-                <ShowcaseGridCard
-                  key={item.id}
-                  item={item}
-                  onClick={() => onProductClick(item.id)}
-                  badgeLabel='วัตถุดิบ'
-                  badgeColor='var(--status-success)'
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+        {activeTab === 'materials' && (
+          <div>
+            {materialItems.length === 0 ? (
+              <div className='rounded-lg border border-dashed border-gray-100 bg-slate-50/80 px-4 py-8 text-center text-[12px] text-gray-500'>
+                โรงงานนี้ยังไม่มีวัตถุดิบ
+              </div>
+            ) : (
+              <div className='grid grid-cols-2 gap-2 lg:grid-cols-4 2xl:grid-cols-5 lg:gap-2.5'>
+                {materialItems.map((item) => (
+                  <ShowcaseGridCard
+                    key={item.id}
+                    item={item}
+                    onClick={() => onProductClick(item.id)}
+                    badgeLabel='วัตถุดิบ'
+                    badgeColor='var(--status-success)'
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-      {activeTab === 'articles' && (
-        <div>
-          {articleShowcases.length === 0 ? (
-            <div className='bg-white rounded-xl border border-slate-100 p-5 text-sm text-gray-500 text-center'>
-              โรงงานนี้ยังไม่มีบทความ
-            </div>
-          ) : (
-            <div className='space-y-3'>
-              {articleShowcases.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => onIdeaClick(item.id)}
-                  className='bg-white rounded-xl overflow-hidden border border-slate-100 cursor-pointer hover:border-slate-200 transition-all group flex flex-col active:scale-[0.98] p-4 min-w-0'
-                >
-                  <div className='flex items-center gap-2 mb-2'>
-                    <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta'>
-                      ไอเดีย
-                    </span>
-                    <p className='text-[10px] text-gray-400 truncate'>
-                      {item.postedAt ? formatThaiDate(item.postedAt) : ''}
+        {activeTab === 'articles' && (
+          <div>
+            {articleShowcases.length === 0 ? (
+              <div className='rounded-lg border border-dashed border-gray-100 bg-slate-50/80 px-4 py-8 text-center text-[12px] text-gray-500'>
+                โรงงานนี้ยังไม่มีบทความ
+              </div>
+            ) : (
+              <div className='space-y-2'>
+                {articleShowcases.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => onIdeaClick(item.id)}
+                    className='group flex min-w-0 cursor-pointer flex-col rounded-lg border border-gray-100 bg-white p-3 transition-colors hover:border-brand-purple/25 active:scale-[0.98]'
+                  >
+                    <div className='mb-1.5 flex items-center gap-2'>
+                      <span className='inline-flex items-center rounded-full bg-brand-purple/10 px-2 py-0.5 text-[9px] font-semibold text-brand-purple'>
+                        ไอเดีย
+                      </span>
+                      <p className='truncate text-[10px] text-gray-400'>
+                        {item.postedAt ? formatThaiDate(item.postedAt) : ''}
+                      </p>
+                    </div>
+                    <p className='line-clamp-2 text-xs font-semibold text-[var(--brand-navy)]'>
+                      {item.title}
+                    </p>
+                    <p className='mt-1 line-clamp-3 text-[10px] leading-relaxed text-gray-500'>
+                      {item.excerpt}
+                    </p>
+                    <p className='mt-2 border-t border-gray-100 pt-1.5 text-[9px] text-gray-400'>
+                      แตะเพื่ออ่านต่อ
                     </p>
                   </div>
-                  <p className='text-sm text-gray-900 line-clamp-2' style={{ fontWeight: 700 }}>
-                    {item.title}
-                  </p>
-                  <p className='text-xs text-gray-500 mt-1 line-clamp-3'>{item.excerpt}</p>
-                  <div className='mt-3 pt-2 border-t border-gray-100'>
-                    <p className='text-[10px] text-gray-400'>แตะเพื่ออ่านต่อ</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-      {activeTab === 'review' && (
-        <ReviewPreviewSection
-          reviews={reviews.map(normalizeFactoryReview)}
-          onViewAll={onViewAllReviews}
-          footerNote={
-            factoryId
-              ? 'การรีวิวทำผ่านหน้าออเดอร์ที่เสร็จสมบูรณ์แล้วเท่านั้น เพื่อป้องกันรีวิวปลอมและรีวิวซ้ำ'
-              : undefined
-          }
-        />
-      )}
+        {activeTab === 'review' && (
+          <ReviewPreviewSection
+            reviews={reviews.map(normalizeFactoryReview)}
+            onViewAll={onViewAllReviews}
+            footerNote={
+              factoryId
+                ? 'การรีวิวทำผ่านหน้าออเดอร์ที่เสร็จสมบูรณ์แล้วเท่านั้น เพื่อป้องกันรีวิวปลอมและรีวิวซ้ำ'
+                : undefined
+            }
+          />
+        )}
       </div>
     </div>
   );

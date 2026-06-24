@@ -10,6 +10,7 @@ import {
   Tags,
   type LucideIcon,
 } from 'lucide-react';
+import { cn } from '@lib/utils';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { groupFactoryCategorySubs } from '@/components/features/factory-profile/utils';
@@ -52,14 +53,17 @@ function InsightSection({
 }) {
   return (
     <div className='border-t border-gray-100'>
-      <div className='flex items-center justify-between gap-2 px-4 py-3'>
-        <div className='flex min-w-0 items-center gap-2'>
+      <div className='flex items-center justify-between gap-2 px-3 py-2.5'>
+        <div className='flex min-w-0 items-center gap-1.5'>
           <div
-            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${iconBgClassName}`}
+            className={cn(
+              'flex h-6 w-6 shrink-0 items-center justify-center rounded-md',
+              iconBgClassName,
+            )}
           >
-            <Icon size={14} className={iconClassName} />
+            <Icon size={12} strokeWidth={2.25} className={iconClassName} />
           </div>
-          <span className='text-[13px] font-semibold text-brand-navy-deep'>{title}</span>
+          <span className='text-xs font-semibold text-[var(--brand-navy)]'>{title}</span>
         </div>
         {trailing}
       </div>
@@ -110,27 +114,27 @@ export function FactoryProfileInsights({
     {
       icon: Star,
       label: 'เรทติ้ง',
-      value: isDesktop ? `${rating} (${reviews} รีวิว)` : `${rating}`,
+      value: isDesktop ? `${rating} (${reviews})` : `${rating}`,
     },
   ];
 
   return (
-    <div className='overflow-hidden rounded-2xl border border-white/80 bg-white shadow-sm'>
-      <div className='border-b border-gray-100 px-4 py-3'>
-        <p className='text-[10px] font-semibold uppercase tracking-wider text-slate-400'>
+    <div className='overflow-hidden rounded-xl border border-gray-100 bg-white'>
+      <div className='border-b border-gray-100 px-3 py-2'>
+        <p className='text-[10px] font-semibold uppercase tracking-wide text-gray-400'>
           ข้อมูลโรงงาน
         </p>
       </div>
 
-      <div className={`grid gap-2 p-3 ${isDesktop ? 'grid-cols-2' : 'grid-cols-4'}`}>
+      <div className={cn('grid gap-1.5 p-2.5', isDesktop ? 'grid-cols-2' : 'grid-cols-4')}>
         {statItems.map((s) => (
           <div
             key={s.label}
-            className='rounded-xl border border-gray-100 bg-[var(--brand-page)]/50 px-2 py-3 text-center'
+            className='rounded-lg border border-gray-100 bg-slate-50/50 px-1.5 py-2 text-center'
           >
-            <s.icon size={15} className='mx-auto mb-1.5 text-brand-violet-deep' />
-            <p className='text-[12px] font-bold leading-tight text-brand-navy-deep'>{s.value}</p>
-            <p className='mt-0.5 text-[9px] text-slate-400'>{s.label}</p>
+            <s.icon size={13} strokeWidth={2.25} className='mx-auto mb-1 text-brand-purple' />
+            <p className='text-xs font-semibold leading-tight text-[var(--brand-navy)]'>{s.value}</p>
+            <p className='mt-0.5 text-[9px] text-gray-400'>{s.label}</p>
           </div>
         ))}
       </div>
@@ -138,35 +142,36 @@ export function FactoryProfileInsights({
       {hasCategories ? (
         <InsightSection
           icon={Building2}
-          iconClassName='text-brand-violet-deep'
-          iconBgClassName='bg-violet-50'
+          iconClassName='text-brand-purple'
+          iconBgClassName='bg-brand-purple/10'
           title='หมวดหมู่ที่รับผลิต'
           trailing={
             <Button
               variant='unstyled'
               type='button'
               onClick={() => setShowCategorySubs((v) => !v)}
-              className='inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-brand-violet-deep'
+              className='inline-flex shrink-0 items-center gap-0.5 text-[12px] font-medium text-brand-purple'
             >
               <span>{groupedCategorySubs.length} หมวด</span>
               <ChevronDown
-                size={14}
-                className={`transition-transform ${showCategorySubs ? 'rotate-180' : ''}`}
+                size={12}
+                strokeWidth={2.25}
+                className={cn('transition-transform', showCategorySubs && 'rotate-180')}
               />
             </Button>
           }
         >
           {showCategorySubs ? (
-            <div className='space-y-1.5 border-t border-gray-100 px-4 pb-3 pt-2'>
+            <div className='space-y-1 border-t border-gray-100 px-3 pb-2.5 pt-1.5'>
               {groupedCategorySubs.map(([cat, subs]) => (
-                <div key={cat} className='rounded-xl bg-violet-50/60 px-3 py-2.5'>
-                  <p className='text-[11px] font-bold text-violet-900'>{cat}</p>
+                <div key={cat} className='rounded-lg bg-slate-50/80 px-2.5 py-2'>
+                  <p className='text-[12px] font-semibold text-[var(--brand-navy)]'>{cat}</p>
                   {subs.length > 0 ? (
-                    <p className='mt-0.5 text-[11px] leading-relaxed text-violet-700'>
+                    <p className='mt-0.5 text-[10px] leading-relaxed text-gray-500'>
                       {subs.join(' · ')}
                     </p>
                   ) : (
-                    <p className='mt-0.5 text-[11px] text-violet-500'>ไม่มีหมวดย่อย</p>
+                    <p className='mt-0.5 text-[10px] text-gray-400'>ไม่มีหมวดย่อย</p>
                   )}
                 </div>
               ))}
@@ -182,7 +187,7 @@ export function FactoryProfileInsights({
           iconBgClassName='bg-emerald-50'
           title='มาตรฐาน / ใบรับรอง'
         >
-          <div className='flex flex-wrap gap-1.5 border-t border-gray-100 px-4 pb-3 pt-2'>
+          <div className='flex flex-wrap gap-1 border-t border-gray-100 px-3 pb-2.5 pt-1.5'>
             {profileCertificates.map((c) => (
               <StatusBadge key={c} variant='active' size='sm'>
                 {c}
@@ -204,15 +209,15 @@ export function FactoryProfileInsights({
       {hasTags ? (
         <InsightSection
           icon={Tags}
-          iconClassName='text-slate-500'
-          iconBgClassName='bg-slate-50'
+          iconClassName='text-gray-500'
+          iconBgClassName='bg-slate-100'
           title='ความเชี่ยวชาญ'
         >
-          <div className='flex flex-wrap gap-1.5 border-t border-gray-100 px-4 pb-3 pt-2'>
+          <div className='flex flex-wrap gap-1 border-t border-gray-100 px-3 pb-2.5 pt-1.5'>
             {tags.map((tag) => (
               <span
                 key={tag}
-                className='rounded-full border border-gray-100 bg-[var(--brand-page)] px-2.5 py-1 text-[11px] font-medium text-slate-600'
+                className='rounded-full border border-gray-100 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-gray-600'
               >
                 {tag}
               </span>
