@@ -141,10 +141,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
               </div>
               <h1 className='text-sm font-bold leading-snug text-[var(--brand-navy)]'>{factory.name}</h1>
               <div className='mt-1.5 flex flex-col gap-0.5'>
-                <span className='inline-flex items-center gap-1 text-[12px] text-gray-500'>
-                  <Star size={11} className='fill-amber-400 text-amber-400' />
-                  {factory.rating} · {factory.reviews} รีวิว
-                </span>
+                 
                 {address ? (
                   <span className='inline-flex items-start gap-1 text-[12px] text-gray-500'>
                     <MapPin size={11} className='mt-0.5 shrink-0 text-brand-purple/60' />

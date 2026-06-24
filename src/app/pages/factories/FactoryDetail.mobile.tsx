@@ -5,7 +5,6 @@ import {
   ShieldCheck,
   MapPin,
   MessageCircle,
-  Star,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
@@ -94,7 +93,9 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
         >
           <ArrowLeft size={20} strokeWidth={2.25} />
         </Button>
-         
+        <p className='min-w-0 flex-1 truncate text-center text-[14px] font-bold text-brand-navy-ink'>
+          {factory.name}
+        </p>
         {canChat ? (
           <Button
             variant='unstyled'

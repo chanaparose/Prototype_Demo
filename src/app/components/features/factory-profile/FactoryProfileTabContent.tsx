@@ -168,19 +168,21 @@ export function FactoryProfileTabContent({
               aria-selected={active}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                'relative min-w-0 flex-1 shrink-0 px-2 py-2.5 text-center transition-colors',
+                'relative flex h-9 min-w-0 flex-1 shrink-0 items-center justify-center px-2 transition-colors md:h-11',
                 active ? 'text-brand-purple' : 'text-slate-500 hover:text-[var(--brand-navy)]',
               )}
             >
               <span
                 className={cn(
-                  'whitespace-nowrap text-[12px] font-bold leading-none',
+                  'whitespace-nowrap text-[12px] font-bold leading-none md:text-sm',
                   !active && 'font-semibold',
                 )}
               >
                 {tab.label}
                 {count > 0 ? (
-                  <span className='ml-0.5 tabular-nums text-[10px] font-semibold'>{count}</span>
+                  <span className='ml-0.5 tabular-nums text-[10px] font-semibold md:text-xs'>
+                    {count}
+                  </span>
                 ) : null}
               </span>
               {active ? (

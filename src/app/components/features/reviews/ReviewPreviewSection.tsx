@@ -24,13 +24,11 @@ export function ReviewPreviewSection({
 }: ReviewPreviewSectionProps) {
   return (
     <div className={className}>
-      <div className='rounded-lg border border-gray-200 bg-white p-4'>
-        <div className='mb-2.5 flex items-center justify-between'>
-          <p
-            className='inline-flex items-center gap-1.5 text-sm text-gray-900'
-            style={{ fontWeight: 700 }}
-          >
-            <Star className='h-4 w-4 fill-amber-400 text-amber-400' />
+      <div className='rounded-lg border border-gray-100 bg-white p-3 md:p-3.5'>
+        <div className='mb-2 flex items-center justify-between gap-2'>
+          <p className='inline-flex items-center gap-1 text-[13px] font-bold text-[var(--brand-navy)] md:text-sm'>
+            <Star size={13} className='fill-amber-400 text-amber-400 md:hidden' strokeWidth={2.25} />
+            <Star size={14} className='hidden fill-amber-400 text-amber-400 md:block' strokeWidth={2.25} />
             คะแนนสินค้า ({reviews.length})
           </p>
           {onViewAll ? (
@@ -38,50 +36,52 @@ export function ReviewPreviewSection({
               variant='unstyled'
               type='button'
               onClick={onViewAll}
-              className='inline-flex items-center gap-0.5 text-xs font-medium text-gray-500 hover:text-gray-700'
+              className='inline-flex shrink-0 items-center gap-0.5 text-[12px] font-medium text-brand-purple transition-colors hover:underline'
             >
-              ดูทั้งหมด <ChevronRight className='h-3 w-3' />
+              ดูทั้งหมด <ChevronRight size={13} strokeWidth={2.25} />
             </Button>
           ) : null}
         </div>
 
-        <div className='relative mb-3'>
-          <Search className='absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400' />
+        <div className='relative mb-2.5'>
+          <Search
+            size={14}
+            strokeWidth={2.25}
+            className='absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400'
+          />
           <Input
             type='text'
             disabled
             placeholder='ค้นหารีวิวจากผู้ซื้อคนอื่น'
-            className='w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-8 pr-3 text-xs text-gray-500'
+            className='w-full rounded-lg border border-gray-100 bg-slate-50/80 py-2 pl-8 pr-3 text-[12px] text-gray-500 placeholder:text-gray-400'
           />
         </div>
 
-        <div className='space-y-2.5'>
+        <div className='space-y-2'>
           {reviews.length === 0 ? (
-            <p className='text-sm text-gray-500'>ยังไม่มีรีวิว</p>
+            <p className='rounded-lg border border-dashed border-gray-100 bg-slate-50/80 py-6 text-center text-[12px] text-gray-500'>
+              ยังไม่มีรีวิว
+            </p>
           ) : (
             reviews.slice(0, previewLimit).map((review) => (
-              <div key={review.id} className='rounded-xl bg-gray-50 p-3'>
-                <div className='mb-1 flex items-center justify-between'>
-                  <p className='text-xs text-gray-700' style={{ fontWeight: 600 }}>
-                    {review.reviewer}
-                  </p>
-                  <p className='inline-flex items-center gap-1 text-[11px] text-gray-500'>
-                    <ThumbsUp className='h-3 w-3' />
+              <div key={review.id} className='rounded-lg border border-gray-100 bg-slate-50/80 p-2.5'>
+                <div className='mb-0.5 flex items-center justify-between gap-2'>
+                  <p className='truncate text-xs font-medium text-gray-700'>{review.reviewer}</p>
+                  <p className='inline-flex shrink-0 items-center gap-0.5 text-[10px] text-gray-500'>
+                    <ThumbsUp size={10} strokeWidth={2.25} />
                     มีประโยชน์ ({Number(review.helpfulCount ?? 0)})
                   </p>
                 </div>
-                <p className='mb-1 text-[11px] text-amber-600'>★ {review.rating}</p>
+                <p className='mb-0.5 text-[10px] font-semibold text-amber-600'>★ {review.rating}</p>
                 {review.optionText ? (
-                  <p className='mb-1 text-[11px] text-gray-500'>
-                    ตัวเลือกสินค้า: {review.optionText}
-                  </p>
+                  <p className='mb-0.5 text-[10px] text-gray-500'>ตัวเลือกสินค้า: {review.optionText}</p>
                 ) : null}
-                <p className='text-xs text-gray-600'>{review.comment}</p>
+                <p className='text-[10px] leading-relaxed text-gray-600'>{review.comment}</p>
                 {review.date ? (
-                  <p className='mt-1 text-[10px] text-gray-400'>{formatThaiDate(review.date)}</p>
+                  <p className='mt-1 text-[9px] text-gray-400'>{formatThaiDate(review.date)}</p>
                 ) : null}
                 {review.imageUrls && review.imageUrls.length > 0 ? (
-                  <div className='mt-2'>
+                  <div className='mt-1.5'>
                     <ReviewImageAttachments
                       urls={review.imageUrls}
                       onPreviewUrl={(u) => openImageLightbox(u)}
@@ -89,11 +89,11 @@ export function ReviewPreviewSection({
                   </div>
                 ) : null}
                 {review.factoryReply ? (
-                  <div className='mt-2 rounded-lg border border-violet-100 bg-violet-50/60 px-3 py-2'>
-                    <p className='mb-0.5 text-[10px] font-semibold text-brand-purple'>
+                  <div className='mt-2 rounded-lg border border-brand-purple/15 bg-brand-purple/[0.04] px-2.5 py-2'>
+                    <p className='mb-0.5 text-[9px] font-semibold text-brand-purple'>
                       การตอบกลับจากโรงงาน
                     </p>
-                    <p className='text-[11px] leading-relaxed text-slate-700'>{review.factoryReply}</p>
+                    <p className='text-[10px] leading-relaxed text-gray-600'>{review.factoryReply}</p>
                   </div>
                 ) : null}
               </div>
@@ -102,8 +102,8 @@ export function ReviewPreviewSection({
         </div>
 
         {footerNote ? (
-          <div className='mt-4 border-t border-gray-100 pt-4'>
-            <p className='text-xs text-gray-500'>{footerNote}</p>
+          <div className='mt-3 border-t border-gray-100 pt-2.5'>
+            <p className='text-[10px] leading-relaxed text-gray-500'>{footerNote}</p>
           </div>
         ) : null}
       </div>
