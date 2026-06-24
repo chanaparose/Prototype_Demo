@@ -135,17 +135,17 @@ export function FactoryListRowSkeleton() {
 // ─── 7. Notification item (Notifications page) ───────────────────────────────
 export function NotificationItemSkeleton() {
   return (
-    <div className='bg-white p-3 rounded-2xl border border-slate-50 flex items-center gap-3'>
-      <Skeleton className='w-12 h-12 rounded-2xl shrink-0' />
-      <div className='flex-1 space-y-2'>
+    <div className='flex items-center gap-2.5 rounded-lg border border-gray-100 bg-white p-2.5'>
+      <Skeleton className='h-9 w-9 shrink-0 rounded-lg' />
+      <div className='flex-1 space-y-1.5'>
         <div className='flex justify-between gap-2'>
-          <Skeleton className='h-3.5 w-2/5' />
-          <Skeleton className='h-3 w-14 shrink-0' />
+          <Skeleton className='h-3 w-2/5' />
+          <Skeleton className='h-2.5 w-12 shrink-0' />
         </div>
-        <Skeleton className='h-3 w-full' />
-        <Skeleton className='h-3 w-4/5' />
+        <Skeleton className='h-2.5 w-full' />
+        <Skeleton className='h-2.5 w-4/5' />
       </div>
-      <Skeleton className='w-8 h-8 rounded-lg shrink-0' />
+      <Skeleton className='h-7 w-7 shrink-0 rounded-md' />
     </div>
   );
 }

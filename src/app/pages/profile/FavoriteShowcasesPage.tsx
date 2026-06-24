@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Search, ChevronLeft, Heart, Package, Lightbulb } from 'lucide-react';
 import { motion } from 'motion/react';
+import { cn } from '@lib/utils';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useShowcases } from '@/hooks/useShowcases';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
@@ -69,101 +70,99 @@ export function FavoriteShowcasesPage() {
 
   return (
     <div className='flex min-h-screen flex-col bg-white pb-20'>
-      <div className='flex items-center justify-between px-4 pb-3 pt-4'>
+      <div className='flex items-center justify-between gap-2 px-4 pb-2 pt-3'>
         <Button
           variant='unstyled'
           type='button'
           onClick={() => navigate(-1)}
-          className='flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm'
+          className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-slate-50'
           aria-label='ย้อนกลับ'
         >
-          <ChevronLeft size={22} className='text-gray-700' />
+          <ChevronLeft size={20} strokeWidth={2.25} />
         </Button>
-        <div className='flex flex-col items-center'>
-          <p className='text-[12px] text-gray-400'>บันทึกไว้</p>
-          <div className='flex items-center gap-2'>
-            <h1 className='truncate text-[16px] text-gray-900' style={{ fontWeight: 700 }}>
-              รายการโปรด
-            </h1>
-            
-          </div>
-        </div>
-        <div className='h-10 w-10' aria-hidden />
+        <h1 className='truncate text-[14px] font-bold text-brand-navy-ink'>รายการโปรด</h1>
+        <div className='h-9 w-9 shrink-0' aria-hidden />
       </div>
 
-      <div className='flex-1 px-4 py-3'>
-        <div className='relative mb-3'>
-          <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4'>
-            <Search className='h-5 w-5 text-slate-400' />
+      <div className='flex-1 px-4 py-2'>
+        <div className='relative mb-2.5'>
+          <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3'>
+            <Search className='h-4 w-4 text-gray-400' />
           </div>
           <Input
             type='text'
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className='block w-full rounded-xl border border-slate-100 bg-white py-3 pl-11 pr-4 text-sm text-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.04)] transition-all focus:outline-none focus:ring-2 focus:ring-brand-purple'
+            className='block w-full rounded-lg border border-gray-100 bg-white py-2 pl-9 pr-3 text-[12px] text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-brand-purple/30'
             placeholder='ค้นหารายการโปรด...'
           />
         </div>
 
-        <div className='mb-3 grid grid-cols-3 gap-2'>
+        <div
+          role='tablist'
+          aria-label='ประเภทรายการโปรด'
+          className='mb-2.5 grid grid-cols-3 border-b border-slate-200'
+        >
           {TABS.map((t) => {
             const active = tab === t.id;
             return (
-              <Button
-                variant='unstyled'
+              <button
                 key={t.id}
                 type='button'
+                role='tab'
+                aria-selected={active}
                 onClick={() => setTab(t.id)}
-                className='rounded-lg border px-1.5 py-1.5 text-[10px] font-semibold transition-colors sm:px-2 sm:text-[11px]'
-                style={{
-                  borderColor: active ? 'var(--brand-purple)' : 'var(--neutral-slate-border)',
-                  background: active ? '#F3E8FF' : 'var(--neutral-white)',
-                  color: active ? '#7E22CE' : 'var(--neutral-slate-subtle)',
-                }}
+                className={cn(
+                  'relative flex h-9 items-center justify-center text-[12px] font-bold transition-colors',
+                  active ? 'text-brand-purple' : 'text-slate-500 hover:text-[var(--brand-navy)]',
+                )}
               >
                 {t.label}
-              </Button>
+                {active ? (
+                  <span className='absolute bottom-[-1px] left-1/2 h-0.5 w-10 -translate-x-1/2 rounded-full bg-brand-purple' />
+                ) : null}
+              </button>
             );
           })}
         </div>
 
-        <div className='mb-4 flex items-center justify-end'>
-          <span className='text-[11px] text-slate-400'>{filtered.length} รายการ</span>
+        <div className='mb-3 flex items-center justify-end'>
+          <span className='text-[10px] text-gray-400'>{filtered.length} รายการ</span>
         </div>
 
         <TabSwipeContent activeKey={tab} tabOrder={FAVORITES_TAB_ORDER}>
-        <div className='space-y-3'>
-          {loading ? (
-            <>
-              {[...Array(6)].map((_, i) => (
-                <NotificationItemSkeleton key={i} />
-              ))}
-            </>
-          ) : filtered.length === 0 ? (
-            <div className='py-12 text-center text-sm text-slate-500'>
-              {totalCount === 0
-                ? 'ยังไม่มีรายการโปรด — กดหัวใจที่ showcase เพื่อบันทึก'
-                : 'ไม่พบรายการในหมวดนี้'}
-            </div>
-          ) : (
-            filtered.map((item, i) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03 }}
-              >
-                <Link to={detailHref(item)} className='block'>
-                  <FavoriteShowcaseCard
-                    item={item}
-                    isLiked={isLiked(item.id)}
-                    onToggleFavorite={() => void toggleFavorite(item.id)}
-                  />
-                </Link>
-              </motion.div>
-            ))
-          )}
-        </div>
+          <div className='space-y-2'>
+            {loading ? (
+              <>
+                {[...Array(6)].map((_, i) => (
+                  <NotificationItemSkeleton key={i} />
+                ))}
+              </>
+            ) : filtered.length === 0 ? (
+              <div className='rounded-lg border border-dashed border-gray-100 bg-slate-50/80 py-10 text-center text-[12px] text-gray-500'>
+                {totalCount === 0
+                  ? 'ยังไม่มีรายการโปรด — กดหัวใจที่ showcase เพื่อบันทึก'
+                  : 'ไม่พบรายการในหมวดนี้'}
+              </div>
+            ) : (
+              filtered.map((item, i) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(i * 0.02, 0.12) }}
+                >
+                  <Link to={detailHref(item)} className='block'>
+                    <FavoriteShowcaseCard
+                      item={item}
+                      isLiked={isLiked(item.id)}
+                      onToggleFavorite={() => void toggleFavorite(item.id)}
+                    />
+                  </Link>
+                </motion.div>
+              ))
+            )}
+          </div>
         </TabSwipeContent>
       </div>
     </div>
@@ -181,9 +180,9 @@ function FavoriteShowcaseCard({
 }) {
   const Icon = typeIcon(item.contentType);
   return (
-    <div className='flex items-center gap-3 rounded-2xl border border-brand-purple/15 bg-violet-50/30 p-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)] transition-all'>
-      <div className='relative h-12 w-12 shrink-0'>
-        <div className='h-full w-full overflow-hidden rounded-2xl bg-violet-100'>
+    <div className='flex items-center gap-2.5 rounded-lg border border-gray-100 bg-white p-2.5 transition-colors hover:border-brand-purple/25 hover:bg-slate-50/50'>
+      <div className='relative h-11 w-11 shrink-0'>
+        <div className='h-full w-full overflow-hidden rounded-lg bg-brand-purple/10'>
           {item.image ? (
             <ImageWithFallback
               src={item.image}
@@ -192,28 +191,30 @@ function FavoriteShowcaseCard({
             />
           ) : (
             <div className='flex h-full w-full items-center justify-center'>
-              <Icon size={20} className='text-brand-purple' />
+              <Icon size={16} strokeWidth={2.25} className='text-brand-purple' />
             </div>
           )}
         </div>
-        <span className='absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-white bg-rose-500'>
-          <Heart size={8} className='fill-white text-white' />
+        <span className='absolute -right-0.5 -top-0.5 flex h-3 w-3 items-center justify-center rounded-full border border-white bg-rose-500'>
+          <Heart size={7} className='fill-white text-white' />
         </span>
       </div>
 
       <div className='min-w-0 flex-1'>
-        <div className='mb-1 flex items-start justify-between gap-2'>
-          <h3 className='line-clamp-1 text-[13px] font-bold text-slate-800'>{item.title}</h3>
-          <span className='inline-flex shrink-0 items-center gap-0.5 rounded-full bg-white/80 px-1.5 py-0.5 text-[10px] font-semibold text-brand-purple'>
-            <Icon size={10} />
+        <div className='mb-0.5 flex items-start justify-between gap-2'>
+          <h3 className='line-clamp-1 text-xs font-medium leading-tight text-gray-700'>
+            {item.title}
+          </h3>
+          <span className='inline-flex shrink-0 items-center gap-0.5 rounded-full border border-gray-100 bg-slate-50 px-1.5 py-0.5 text-[9px] font-semibold text-brand-purple'>
+            <Icon size={9} strokeWidth={2.25} />
             {typeLabel(item.contentType)}
           </span>
         </div>
-        <p className='line-clamp-1 text-[13px] font-medium text-slate-600'>
+        <p className='line-clamp-1 text-[10px] text-gray-500'>
           {item.factoryName || 'โรงงาน'}
         </p>
         {item.category ? (
-          <p className='mt-0.5 line-clamp-1 text-[11px] text-slate-400'>{item.category}</p>
+          <p className='mt-0.5 line-clamp-1 text-[10px] text-gray-400'>{item.category}</p>
         ) : null}
       </div>
 
@@ -222,7 +223,7 @@ function FavoriteShowcaseCard({
         isLiked={isLiked}
         onToggle={onToggleFavorite}
         size='md'
-        className='shrink-0 border border-slate-200 !bg-white'
+        className='shrink-0 border border-gray-100 !bg-white'
       />
     </div>
   );

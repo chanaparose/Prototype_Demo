@@ -14,6 +14,7 @@ import {
   FileCheck,
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { cn } from '@lib/utils';
 import { notificationsApi } from '@/services/api/chatApi';
 import { fetchNotificationsPage } from '@/domain/notifications/queries/useNotificationQueries';
 import { NOTI_SUPERSEDE_RULES } from '@/domain/notifications/mappers/mapNotification';
@@ -25,6 +26,12 @@ import { NotificationItemSkeleton } from '@/components/skeletons/PageSkeletons';
 import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 
 const NOTIFICATION_TAB_ORDER = ['all', 'rfq', 'order'] as const;
+
+const NOTIFICATION_TABS = [
+  { key: 'all' as const, label: 'ทั้งหมด' },
+  { key: 'rfq' as const, label: 'RFQ' },
+  { key: 'order' as const, label: 'Order' },
+];
 
 export function NotificationsMobile() {
   const navigate = useNavigate();
@@ -53,7 +60,6 @@ export function NotificationsMobile() {
         setTotal(pageRes.total);
         setNotifications((prev) => {
           if (!append) return pageRes.items;
-          // dedup by noti_id — ป้องกัน item ซ้ำเมื่อ load more ขณะ item ใหม่เลื่อน offset
           const existingIds = new Set(prev.map((n) => n.noti_id));
           return [...prev, ...pageRes.items.filter((n) => !existingIds.has(n.noti_id))];
         });
@@ -68,15 +74,12 @@ export function NotificationsMobile() {
     [tab],
   );
 
-  // Reload from beginning when tab changes
   useEffect(() => {
     setNotifications([]);
     void load(0, false);
   }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Tab filtering is server-side; apply local search, unread filter, and dedup
   const filtered = useMemo(() => {
-    // 1) dedup by noti_id (กรณี race condition / overlap ระหว่าง tab switch)
     const seen = new Set<number>();
     let unique = notifications.filter((n) => {
       if (seen.has(n.noti_id)) return false;
@@ -84,7 +87,6 @@ export function NotificationsMobile() {
       return true;
     });
 
-    // 2) semantic dedup — suppress broad-type เมื่อมี specific-type สำหรับ rfq_id เดียวกัน
     if (NOTI_SUPERSEDE_RULES.length > 0) {
       const specificKeys = new Set<string>();
       for (const n of unique) {
@@ -166,180 +168,185 @@ export function NotificationsMobile() {
   const canLoadMore = notifications.length < total;
 
   return (
-    <div className='min-h-screen flex flex-col pb-20 bg-white'>
-      <div className='flex items-center justify-between px-4 pt-4 pb-3'>
+    <div className='flex min-h-screen flex-col bg-white pb-20'>
+      <div className='flex items-center justify-between gap-2 px-4 pb-2 pt-3'>
         <Button
           variant='unstyled'
           type='button'
           onClick={() => navigate(-1)}
-          className='w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center'
+          className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-slate-50'
+          aria-label='ย้อนกลับ'
         >
-          <ChevronLeft size={22} className='text-gray-700' />
+          <ChevronLeft size={20} strokeWidth={2.25} />
         </Button>
-        <div className='flex flex-col items-center'>
-          <p className='text-[12px] text-gray-400'>แจ้งเตือน</p>
-          <div className='flex items-center gap-2'>
-            <h1 className='text-[16px] text-gray-900 truncate' style={{ fontWeight: 700 }}>
-              การแจ้งเตือน
-            </h1>
-             
-          </div>
-        </div>
+        <h1 className='truncate text-[14px] font-bold text-brand-navy-ink'>การแจ้งเตือน</h1>
         {unreadCount > 0 ? (
           <Button
             variant='unstyled'
             type='button'
             onClick={() => void markAllRead()}
             disabled={markingAll}
-            className='text-[11px] font-semibold text-brand-purple disabled:opacity-50 px-2 py-1 rounded-lg hover:bg-violet-50'
+            className='shrink-0 rounded-full px-2 py-1 text-[12px] font-medium text-brand-purple transition-colors hover:bg-brand-purple/8 disabled:opacity-50'
           >
             {markingAll ? '…' : 'อ่านทั้งหมด'}
           </Button>
         ) : (
-          <div className='w-10 h-10' aria-hidden />
+          <div className='h-9 w-9 shrink-0' aria-hidden />
         )}
       </div>
 
-      <div className='px-4 py-3 flex-1'>
-        <div className='relative mb-3'>
-          <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
-            <Search className='h-5 w-5 text-slate-400' />
+      <div className='flex-1 px-4 py-2'>
+        <div className='relative mb-2.5'>
+          <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3'>
+            <Search className='h-4 w-4 text-gray-400' />
           </div>
           <Input
             type='text'
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className='block w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl text-sm text-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.04)] focus:outline-none focus:ring-2 focus:ring-brand-purple transition-all'
+            className='block w-full rounded-lg border border-gray-100 bg-white py-2 pl-9 pr-3 text-[12px] text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-brand-purple/30'
             placeholder='ค้นหาการแจ้งเตือน...'
           />
         </div>
 
-        <div className='mb-3 grid grid-cols-3 gap-2'>
-          {[
-            { key: 'all', label: 'ทั้งหมด' },
-            { key: 'rfq', label: 'RFQ' },
-            { key: 'order', label: 'Order' },
-          ].map((t) => {
+        <div
+          role='tablist'
+          aria-label='ประเภทการแจ้งเตือน'
+          className='mb-2.5 grid grid-cols-3 border-b border-slate-200'
+        >
+          {NOTIFICATION_TABS.map((t) => {
             const active = tab === t.key;
             return (
-              <Button
-                variant='unstyled'
+              <button
                 key={t.key}
                 type='button'
-                onClick={() => setTab(t.key as 'all' | 'rfq' | 'order')}
-                className='rounded-lg px-2 py-1.5 text-[11px] font-semibold border transition-colors'
-                style={{
-                  borderColor: active ? 'var(--brand-purple)' : 'var(--neutral-slate-border)',
-                  background: active ? '#F3E8FF' : 'var(--neutral-white)',
-                  color: active ? '#7E22CE' : 'var(--neutral-slate-subtle)',
-                }}
+                role='tab'
+                aria-selected={active}
+                onClick={() => setTab(t.key)}
+                className={cn(
+                  'relative flex h-9 items-center justify-center text-[12px] font-bold transition-colors',
+                  active ? 'text-brand-purple' : 'text-slate-500 hover:text-[var(--brand-navy)]',
+                )}
               >
                 {t.label}
-              </Button>
+                {active ? (
+                  <span className='absolute bottom-[-1px] left-1/2 h-0.5 w-10 -translate-x-1/2 rounded-full bg-brand-purple' />
+                ) : null}
+              </button>
             );
           })}
         </div>
-        <div className='mb-4 flex items-center justify-between'>
+
+        <div className='mb-3 flex items-center justify-between'>
           <Button
             variant='unstyled'
             type='button'
             onClick={() => setOnlyUnread((v) => !v)}
-            className='inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors'
-            style={{
-              borderColor: onlyUnread ? 'var(--brand-purple)' : 'var(--neutral-slate-border)',
-              background: onlyUnread ? '#F3E8FF' : 'var(--neutral-white)',
-              color: onlyUnread ? '#7E22CE' : 'var(--neutral-slate-subtle)',
-            }}
+            className={cn(
+              'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[12px] font-semibold transition-colors',
+              onlyUnread
+                ? 'border-brand-purple/30 bg-brand-purple/8 text-brand-purple'
+                : 'border-gray-100 bg-white text-slate-500 hover:border-brand-purple/20',
+            )}
           >
             ยังไม่อ่าน
             {unreadCount > 0 ? (
-              <span className='rounded-full bg-white px-1.5 py-0.5 text-[10px]'>{unreadCount}</span>
+              <span
+                className={cn(
+                  'rounded-full px-1.5 py-0.5 text-[9px] font-bold',
+                  onlyUnread ? 'bg-white/80 text-brand-purple' : 'bg-slate-100 text-slate-500',
+                )}
+              >
+                {unreadCount}
+              </span>
             ) : null}
           </Button>
-          <span className='text-[11px] text-slate-400'>{filtered.length} รายการ</span>
+          <span className='text-[10px] text-gray-400'>{filtered.length} รายการ</span>
         </div>
 
         {error ? (
-          <div className='mb-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-600'>
+          <div className='mb-2.5 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-[12px] text-red-600'>
             {error}
           </div>
         ) : null}
 
         <TabSwipeContent activeKey={tab} tabOrder={NOTIFICATION_TAB_ORDER}>
-        <div className='space-y-3'>
-          {loading ? (
-            <>
-              {[...Array(6)].map((_, i) => (
-                <NotificationItemSkeleton key={i} />
-              ))}
-            </>
-          ) : filtered.length === 0 ? (
-            <div className='text-center py-12 text-slate-500 text-sm'>ไม่พบการแจ้งเตือน</div>
-          ) : (
-            filtered.map((notif, i) => {
-              const dest = resolveNotificationPath(notif);
-              return (
-                <motion.div
-                  key={notif.noti_id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                >
-                  {dest ? (
-                    <Link
-                      to={dest}
-                      className='block'
-                      onClick={() => {
-                        if (!notif.is_read) void markRead(notif.noti_id);
-                      }}
-                    >
-                      <NotificationCard
-                        notif={notif}
-                        onDelete={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          void removeNotification(notif.noti_id);
+          <div className='space-y-2'>
+            {loading ? (
+              <>
+                {[...Array(6)].map((_, i) => (
+                  <NotificationItemSkeleton key={i} />
+                ))}
+              </>
+            ) : filtered.length === 0 ? (
+              <div className='rounded-lg border border-dashed border-gray-100 bg-slate-50/80 py-10 text-center text-[12px] text-gray-500'>
+                ไม่พบการแจ้งเตือน
+              </div>
+            ) : (
+              filtered.map((notif, i) => {
+                const dest = resolveNotificationPath(notif);
+                return (
+                  <motion.div
+                    key={notif.noti_id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i * 0.02, 0.12) }}
+                  >
+                    {dest ? (
+                      <Link
+                        to={dest}
+                        className='block'
+                        onClick={() => {
+                          if (!notif.is_read) void markRead(notif.noti_id);
                         }}
-                      />
-                    </Link>
-                  ) : (
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      className='block w-full text-left'
-                      onClick={() => {
-                        if (!notif.is_read) void markRead(notif.noti_id);
-                      }}
-                    >
-                      <NotificationCard
-                        notif={notif}
-                        onDelete={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          void removeNotification(notif.noti_id);
+                      >
+                        <NotificationCard
+                          notif={notif}
+                          onDelete={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            void removeNotification(notif.noti_id);
+                          }}
+                        />
+                      </Link>
+                    ) : (
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        className='block w-full text-left'
+                        onClick={() => {
+                          if (!notif.is_read) void markRead(notif.noti_id);
                         }}
-                      />
-                    </Button>
-                  )}
-                </motion.div>
-              );
-            })
-          )}
-        </div>
-
-        {canLoadMore ? (
-          <div className='mt-4 flex justify-center'>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => void load(offset + LIMIT, true)}
-              disabled={loadingMore}
-              className='px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 disabled:opacity-50'
-            >
-              {loadingMore ? 'กำลังโหลด...' : 'โหลดเพิ่ม'}
-            </Button>
+                      >
+                        <NotificationCard
+                          notif={notif}
+                          onDelete={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            void removeNotification(notif.noti_id);
+                          }}
+                        />
+                      </Button>
+                    )}
+                  </motion.div>
+                );
+              })
+            )}
           </div>
-        ) : null}
+
+          {canLoadMore ? (
+            <div className='mt-4 flex justify-center'>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => void load(offset + LIMIT, true)}
+                disabled={loadingMore}
+                className='rounded-full border border-gray-100 px-4 py-1.5 text-[12px] font-medium text-slate-600 transition-colors hover:border-brand-purple/25 hover:text-brand-purple disabled:opacity-50'
+              >
+                {loadingMore ? 'กำลังโหลด...' : 'โหลดเพิ่ม'}
+              </Button>
+            </div>
+          ) : null}
         </TabSwipeContent>
       </div>
     </div>
@@ -357,47 +364,50 @@ function NotificationCard({
   const icon = getNotificationIcon(notif.type);
   return (
     <div
-      className={`bg-white p-3 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.02)] border transition-all flex items-center gap-3 ${
-        read ? 'border-slate-50' : 'border-brand-purple/20 bg-violet-50/30'
-      }`}
+      className={cn(
+        'flex items-center gap-2.5 rounded-lg border bg-white p-2.5 transition-colors',
+        read ? 'border-gray-100' : 'border-brand-purple/20 bg-brand-purple/[0.03]',
+      )}
     >
-      <div className='relative w-12 h-12 shrink-0'>
-        <div className='w-full h-full rounded-2xl bg-violet-100 flex items-center justify-center'>
+      <div className='relative h-9 w-9 shrink-0'>
+        <div className='flex h-full w-full items-center justify-center rounded-lg bg-brand-purple/10'>
           {icon}
         </div>
         {!read ? (
-          <span className='absolute -top-1 -right-1 w-3.5 h-3.5 bg-brand-purple border-2 border-white rounded-full' />
+          <span className='absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border border-white bg-brand-purple' />
         ) : null}
       </div>
 
-      <div className='flex-1 min-w-0'>
-        <div className='flex justify-between items-start gap-2 mb-1'>
+      <div className='min-w-0 flex-1'>
+        <div className='mb-0.5 flex items-start justify-between gap-2'>
           <h3
-            className={`line-clamp-1 text-[13px] ${read ? 'font-semibold text-slate-700' : 'font-bold text-slate-800'}`}
+            className={cn(
+              'line-clamp-1 text-xs leading-tight',
+              read ? 'font-medium text-gray-700' : 'font-semibold text-[var(--brand-navy)]',
+            )}
           >
             {notif.title}
           </h3>
           <span
-            className={`text-[11px] font-semibold shrink-0 ${!read ? 'text-brand-purple' : 'text-slate-400'}`}
+            className={cn(
+              'shrink-0 text-[10px] font-medium',
+              !read ? 'text-brand-purple' : 'text-gray-400',
+            )}
           >
             {formatDateTime(notif.created_at)}
           </span>
         </div>
-        <p
-          className={`text-[13px] line-clamp-2 ${read ? 'font-medium text-slate-500' : 'font-medium text-slate-600'}`}
-        >
-          {notif.message}
-        </p>
+        <p className='line-clamp-2 text-[10px] leading-snug text-gray-500'>{notif.message}</p>
       </div>
 
       <Button
         variant='unstyled'
         type='button'
         onClick={onDelete}
-        className='shrink-0 w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-200 flex items-center justify-center'
+        className='flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-gray-100 text-gray-400 transition-colors hover:border-red-200 hover:text-red-500'
         aria-label='ลบการแจ้งเตือน'
       >
-        <Trash2 size={14} />
+        <Trash2 size={13} strokeWidth={2.25} />
       </Button>
     </div>
   );
@@ -437,21 +447,21 @@ function normalizeInternalPath(path?: string): string | null {
 function getNotificationIcon(type: string) {
   switch (type) {
     case 'quote_received':
-      return <FileText className='text-brand-purple' size={20} />;
+      return <FileText className='text-brand-purple' size={16} strokeWidth={2.25} />;
     case 'rfq_expired':
     case 'rfq_closed':
-      return <XCircle className='text-red-400' size={20} />;
+      return <XCircle className='text-red-400' size={16} strokeWidth={2.25} />;
     case 'order_confirmed':
-      return <FileCheck className='text-green-500' size={20} />;
+      return <FileCheck className='text-green-500' size={16} strokeWidth={2.25} />;
     case 'order_status_changed':
-      return <ShoppingBag className='text-brand-purple' size={20} />;
+      return <ShoppingBag className='text-brand-purple' size={16} strokeWidth={2.25} />;
     case 'production_updated':
-      return <Truck className='text-brand-purple' size={20} />;
+      return <Truck className='text-brand-purple' size={16} strokeWidth={2.25} />;
     case 'order_completed':
-      return <CheckCircle className='text-green-500' size={20} />;
+      return <CheckCircle className='text-green-500' size={16} strokeWidth={2.25} />;
     case 'payment_due':
-      return <CreditCard className='text-brand-purple' size={20} />;
+      return <CreditCard className='text-brand-purple' size={16} strokeWidth={2.25} />;
     default:
-      return <Bell className='text-brand-purple' size={20} />;
+      return <Bell className='text-brand-purple' size={16} strokeWidth={2.25} />;
   }
 }
