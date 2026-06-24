@@ -1,6 +1,9 @@
-import React, { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { Search, ChevronLeft, Heart, Package, Lightbulb } from 'lucide-react';
+import { useAuth } from '@/stores/useAuthStore';
+import { useAuthModalStore } from '@/stores/useAuthModalStore';
+import { EmptyState } from '@/components/ui/empty-state';
 import { motion } from 'motion/react';
 import { cn } from '@lib/utils';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -41,10 +44,21 @@ function typeIcon(type: FactoryShowcase['contentType']) {
 
 export function FavoriteShowcasesPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { open: openModal } = useAuthModalStore();
+  const modalShown = useRef(false);
   const { likedIds, loading: favoritesLoading, isLiked, toggleFavorite } = useFavorites();
   const { showcases, loading: showcasesLoading } = useShowcases();
   const [tab, setTab] = useState<FavoritesTab>('all');
   const [searchText, setSearchText] = useState('');
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated && !modalShown.current) {
+      modalShown.current = true;
+      openModal(location.pathname + location.search);
+    }
+  }, [isAuthenticated, authLoading, openModal, location.pathname, location.search]);
 
   const allFavorites = useMemo(() => {
     if (!showcases.length || likedIds.size === 0) return [] as FactoryShowcase[];
@@ -67,6 +81,36 @@ export function FavoriteShowcasesPage() {
 
   const loading = favoritesLoading || showcasesLoading;
   const totalCount = allFavorites.length;
+
+  if (authLoading) return null;
+
+  if (!isAuthenticated) {
+    return (
+      <div className='flex min-h-[100dvh] flex-col bg-[var(--brand-page)]'>
+        <div className='px-2 pt-3'>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => navigate(-1)}
+            className='flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 hover:bg-slate-100'
+          >
+            <ChevronLeft size={22} />
+          </Button>
+        </div>
+        <div className='flex flex-1 flex-col items-center justify-center px-4'>
+          <EmptyState
+            title='ยังไม่มีรายการโปรด'
+            description='เข้าสู่ระบบเพื่อดูรายการโปรดของคุณ'
+            icon={
+              <span className='flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50'>
+                <Heart size={26} className='text-rose-400' />
+              </span>
+            }
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='flex min-h-screen flex-col bg-white pb-20'>

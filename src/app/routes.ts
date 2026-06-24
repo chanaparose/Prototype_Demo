@@ -100,6 +100,9 @@ export const router = createBrowserRouter([
           { path: 'factory-ideas/ideas/:id', Component: IdeaDetail },
           { path: 'orders', Component: RfqAndOrders },
           { path: 'messages', Component: Messages },
+          // Pages below handle guest state internally (show empty state after modal dismissal)
+          { path: 'notifications', Component: Notifications },
+          { path: 'profile/favorites', Component: FavoriteShowcasesPage },
           // create-rfq is intentionally outside AuthGuard — guests can browse the
           // form freely; the submit button handles the auth gate inline.
           { path: 'create-rfq', Component: CreateRfq },
@@ -112,8 +115,6 @@ export const router = createBrowserRouter([
               { path: 'profile/change-password', Component: ChangePasswordPage },
               { path: 'profile/transactions', Component: TransactionHistoryPage },
               { path: 'profile/reviews', Component: MyReviewsPage },
-              { path: 'profile/favorites', Component: FavoriteShowcasesPage },
-              { path: 'notifications', Component: Notifications },
               { path: 'quotations/:id', Component: QuoteDetailCustomer },
               { path: 'rfqs/:id', Component: RFQDetail },
               { path: 'orders/:id', Component: OrderDetail },
