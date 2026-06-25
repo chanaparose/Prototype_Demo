@@ -4,6 +4,10 @@ import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
 import { AppSheetDialog } from '@/components/ui/app-sheet-dialog';
 import {
+  factoryIdeasFilterButtonClass,
+  factoryIdeasFilterButtonSizeClass,
+} from '@/components/features/factory-ideas/factoryIdeasTheme';
+import {
   FACTORY_IDEAS_MOQ_OPTIONS,
   type FactoryIdeasMoqFilterValue,
 } from '@/components/features/factory-ideas/factoryIdeasMoqFilter';
@@ -11,16 +15,19 @@ import {
 type FactoryIdeasMoqFilterChipProps = {
   moqFilter: FactoryIdeasMoqFilterValue;
   onMoqFilterChange: (value: FactoryIdeasMoqFilterValue) => void;
+  variant?: 'chip' | 'filter';
   className?: string;
 };
 
 export function FactoryIdeasMoqFilterChip({
   moqFilter,
   onMoqFilterChange,
+  variant = 'chip',
   className,
 }: FactoryIdeasMoqFilterChipProps) {
   const [open, setOpen] = useState(false);
   const active = moqFilter !== 'all';
+  const isFilter = variant === 'filter';
   const moqLabel =
     FACTORY_IDEAS_MOQ_OPTIONS.find((opt) => opt.value === moqFilter)?.label ?? 'ขั้นต่ำทั้งหมด';
   const chipLabel = active ? moqLabel : 'ขั้นต่ำ';
@@ -38,15 +45,26 @@ export function FactoryIdeasMoqFilterChip({
         aria-label={`กรองขั้นต่ำจำนวนการผลิต: ${moqLabel}`}
         onClick={() => setOpen(true)}
         className={cn(
-          'flex h-8 min-w-0 items-center justify-center gap-0.5 rounded-full border px-1.5 text-[11px] font-medium transition-colors',
-          active
-            ? 'border-brand-purple/30 bg-brand-lavender-chip/70 text-brand-violet-deep'
-            : 'border-gray-200/90 bg-white/80 text-slate-600',
+          isFilter
+            ? `flex min-w-0 items-center justify-between gap-1.5 rounded-lg border transition-colors ${factoryIdeasFilterButtonSizeClass} ${factoryIdeasFilterButtonClass(active)}`
+            : cn(
+                'flex h-8 min-w-0 items-center justify-center gap-0.5 rounded-full border px-1.5 text-[11px] font-medium transition-colors',
+                active
+                  ? 'border-brand-purple/30 bg-brand-lavender-chip/70 text-brand-violet-deep'
+                  : 'border-gray-200/90 bg-white/80 text-slate-600',
+              ),
           className,
         )}
       >
         <span className='truncate'>{chipLabel}</span>
-        <ChevronDown size={12} strokeWidth={2.25} className='shrink-0 opacity-60' />
+        <ChevronDown
+          size={isFilter ? 13 : 12}
+          strokeWidth={2.25}
+          className={cn(
+            'shrink-0',
+            isFilter ? (active ? 'text-brand-purple' : 'text-slate-400') : 'opacity-60',
+          )}
+        />
       </Button>
 
       <AppSheetDialog open={open} onOpenChange={setOpen} title='ขั้นต่ำจำนวนการผลิต' bodyClassName='p-0'>

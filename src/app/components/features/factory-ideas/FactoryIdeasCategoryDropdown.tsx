@@ -3,14 +3,18 @@ import { ChevronDown, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@lib/utils';
-import { factoryIdeasTheme as COLORS } from '@/components/features/factory-ideas/factoryIdeasTheme';
+import {
+  factoryIdeasFilterButtonClass,
+  factoryIdeasFilterButtonSizeClass,
+  factoryIdeasTheme as COLORS,
+} from '@/components/features/factory-ideas/factoryIdeasTheme';
 
 type CategoryRow = { id: string; name: string };
 type SubCategoryRow = { id: string; name: string; sortOrder: number };
 
 type FactoryIdeasCategoryDropdownProps = {
   variant: 'desktop' | 'mobile';
-  triggerVariant?: 'bar' | 'chip';
+  triggerVariant?: 'bar' | 'chip' | 'filter';
   categoryMenuRef: RefObject<HTMLDivElement | null>;
   categoryMenuOpen: boolean;
   setCategoryMenuOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
@@ -69,12 +73,13 @@ export function FactoryIdeasCategoryDropdown({
 
   if (variant === 'mobile') {
     const isChip = triggerVariant === 'chip';
+    const isFilter = triggerVariant === 'filter';
     return (
       <div
         ref={categoryMenuRef}
         className={cn(
           'relative z-30',
-          isChip ? 'min-w-0' : 'min-w-[min(100%,10rem)] flex-1',
+          isChip || isFilter ? 'min-w-0' : 'min-w-[min(100%,10rem)] flex-1',
           className,
         )}
       >
@@ -82,17 +87,19 @@ export function FactoryIdeasCategoryDropdown({
           variant='unstyled'
           type='button'
           onClick={() => setCategoryMenuOpen((o) => !o)}
-          className={
-            isChip
-              ? `inline-flex h-8 w-full items-center justify-between gap-1 rounded-full border px-2.5 text-[11px] font-medium transition-colors ${
-                  categoryActive
-                    ? 'border-brand-purple/30 bg-brand-lavender-chip/70 text-brand-violet-deep'
-                    : 'border-gray-200/90 bg-white/80 text-slate-600'
-                }`
-              : 'flex w-full items-center justify-between gap-1.5 rounded-lg border px-3 py-2 text-[12px] transition-all'
-          }
+          className={cn(
+            isFilter
+              ? `inline-flex w-full items-center justify-between gap-1.5 rounded-lg border transition-colors ${factoryIdeasFilterButtonSizeClass} ${factoryIdeasFilterButtonClass(categoryActive)}`
+              : isChip
+                ? `inline-flex h-8 w-full items-center justify-between gap-1 rounded-full border px-2.5 text-[11px] font-medium transition-colors ${
+                    categoryActive
+                      ? 'border-brand-purple/30 bg-brand-lavender-chip/70 text-brand-violet-deep'
+                      : 'border-gray-200/90 bg-white/80 text-slate-600'
+                  }`
+                : 'flex w-full items-center justify-between gap-1.5 rounded-lg border px-3 py-2 text-[12px] transition-all',
+          )}
           style={
-            isChip
+            isChip || isFilter
               ? undefined
               : {
                   borderColor: categoryActive ? COLORS.purple : 'var(--neutral-border)',
@@ -102,18 +109,25 @@ export function FactoryIdeasCategoryDropdown({
                 }
           }
         >
-          <span className='truncate'>{isChip ? chipLabel : categoryMenuTriggerLabel}</span>
+          <span className='truncate'>
+            {isChip || isFilter ? chipLabel : categoryMenuTriggerLabel}
+          </span>
           <ChevronDown
-            size={isChip ? 12 : 14}
+            size={isFilter ? 13 : isChip ? 12 : 14}
             strokeWidth={2.25}
-            className={`shrink-0 transition-transform duration-200 ${categoryMenuOpen ? 'rotate-180' : ''} ${isChip ? 'opacity-60' : ''}`}
+            className={cn(
+              'shrink-0 transition-transform duration-200',
+              categoryMenuOpen && 'rotate-180',
+              (isChip || isFilter) && (categoryActive ? 'text-brand-purple' : 'text-slate-400'),
+              isChip && !categoryActive && 'opacity-60',
+            )}
           />
         </Button>
         {categoryMenuOpen && (
           <div
             className={
-              isChip
-                ? 'absolute top-full left-0 z-50 mt-1 max-h-[50vh] w-max min-w-full max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-xl'
+              isChip || isFilter
+                ? 'absolute top-full left-0 z-50 mt-1.5 max-h-[50vh] w-max min-w-full max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-xl'
                 : 'absolute top-full left-0 right-0 z-40 mt-1 max-h-[50vh] overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-xl'
             }
           >

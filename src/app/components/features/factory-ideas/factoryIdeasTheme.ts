@@ -14,6 +14,26 @@ export const factoryIdeasTheme = {
 /** Matches FactoryIdeasViewModeToggle width (2×w-7 + gap + padding). */
 export const factoryIdeasToolbarTrailingWidthClass = 'w-[3.875rem]';
 
+/** Unified mobile filter toolbar — flat on sticky bar (no outer card frame). */
+export const factoryIdeasToolbarCardClass = 'overflow-visible flex flex-col gap-1.5';
+
+export const factoryIdeasFilterButtonSizeClass =
+  'h-8 px-2.5 text-[12px] font-medium';
+
+export const factoryIdeasFilterButtonIdleClass =
+  'border-gray-200/80 bg-white text-slate-700 hover:border-gray-300 active:bg-gray-50/80';
+
+export const factoryIdeasFilterButtonActiveClass =
+  'border-brand-purple/30 bg-brand-lavender-chip/75 text-brand-violet-deep';
+
+export function factoryIdeasFilterButtonClass(active: boolean): string {
+  return active ? factoryIdeasFilterButtonActiveClass : factoryIdeasFilterButtonIdleClass;
+}
+
+/** Search + view toggle row — visible but lighter than primary filter dropdowns. */
+export const factoryIdeasToolbarSecondarySurfaceClass =
+  'rounded-lg border border-gray-200/80 bg-white';
+
 /** Plain-text preview for list cards — strips markdown markers, keeps full width for line-clamp. */
 export function factoryIdeasExcerptPreview(raw: string): string {
   return raw
@@ -96,6 +116,12 @@ export const factoryIdeasContentTypeBadge: Record<
 export function factoryIdeasSearchPlaceholder(type: FactoryIdeasContentType): string {
   if (type === 'all') return 'ค้นหาในแท็บนี้…';
   return `ค้นหา${factoryIdeasContentTypeLabel[type]}ในแท็บนี้…`;
+}
+
+/** Secondary search — de-emphasized vs category/MOQ dropdowns on mobile toolbar. */
+export function factoryIdeasSecondarySearchPlaceholder(type: FactoryIdeasContentType): string {
+  if (type === 'all') return 'ค้นหาเพิ่มเติม…';
+  return `ค้นหา${factoryIdeasContentTypeLabel[type]}เพิ่มเติม…`;
 }
 
 export function normalizeFactoryIdeaFactory(r: Record<string, unknown>): Factory {

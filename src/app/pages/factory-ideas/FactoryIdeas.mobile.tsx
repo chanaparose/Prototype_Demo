@@ -24,9 +24,10 @@ import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasP
 import {
   factoryIdeasContentTypeBadge as contentTypeBadge,
   factoryIdeasContentTypeLabel as contentTypeLabel,
-  factoryIdeasSearchPlaceholder,
   factoryIdeasListExcerpt,
-  factoryIdeasToolbarTrailingWidthClass,
+  factoryIdeasSecondarySearchPlaceholder,
+  factoryIdeasToolbarCardClass,
+  factoryIdeasToolbarSecondarySurfaceClass,
   factoryIdeasVisibleContentTypes,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
@@ -120,56 +121,64 @@ export function FactoryIdeasMobile() {
           className='px-2'
         />
 
-        <div className='px-4 pt-2 pb-3'>
-          <div className='grid grid-cols-[minmax(0,1fr)_3.875rem] items-center gap-x-1.5 gap-y-2'>
-            <FactoryIdeasSearchBar
-              searchText={searchText}
-              onSearchTextChange={setSearchText}
-              moqFilter={moqFilter}
-              onMoqFilterChange={setMoqFilter}
-              searchPlaceholder={factoryIdeasSearchPlaceholder(selectedType)}
-              showMoqButton={false}
-              className='min-w-0 w-full'
-              fieldClassName='border-gray-100 bg-slate-50/90 shadow-none focus-within:shadow-none'
-            />
+        <div className='px-4 pt-1.5 pb-2'>
+          <div className={factoryIdeasToolbarCardClass}>
+            <div className='flex items-center gap-1.5'>
+              <FactoryIdeasCategoryDropdown
+                variant='mobile'
+                triggerVariant='filter'
+                className='min-w-0 flex-1'
+                categoryMenuRef={categoryMenuRef}
+                categoryMenuOpen={categoryMenuOpen}
+                setCategoryMenuOpen={setCategoryMenuOpen}
+                categoryMenuStep={categoryMenuStep}
+                setCategoryMenuStep={setCategoryMenuStep}
+                categoryFilters={categoryFilters}
+                effectiveCategoryId={effectiveCategoryId}
+                selectedSubCategoryId={selectedSubCategoryId}
+                setSelectedSubCategoryId={setSelectedSubCategoryId}
+                isMaterialTab={isMtCategoryScope}
+                categoryMenuTriggerLabel={categoryMenuTriggerLabel}
+                menuHighlightCategoryId={menuHighlightCategoryId}
+                setMenuHighlightCategoryId={setMenuHighlightCategoryId}
+                panelSubs={panelSubs}
+                panelSubsLoading={panelSubsLoading}
+                applyCategory={applyCategory}
+                closeCategoryMenu={closeCategoryMenu}
+                pickSubCategory={pickSubCategory}
+                categoryOptionSelected={categoryOptionSelected}
+                categoriesWithSubs={categoriesWithSubs}
+              />
 
-            <FactoryIdeasViewModeToggle
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-              className={factoryIdeasToolbarTrailingWidthClass}
-            />
+              {!isFactoryTab ? (
+                <FactoryIdeasMoqFilterChip
+                  variant='filter'
+                  moqFilter={moqFilter}
+                  onMoqFilterChange={setMoqFilter}
+                  className='w-[6.25rem] shrink-0'
+                />
+              ) : null}
+            </div>
 
-            <FactoryIdeasCategoryDropdown
-              variant='mobile'
-              triggerVariant='chip'
-              className='min-w-0 w-full'
-              categoryMenuRef={categoryMenuRef}
-              categoryMenuOpen={categoryMenuOpen}
-              setCategoryMenuOpen={setCategoryMenuOpen}
-              categoryMenuStep={categoryMenuStep}
-              setCategoryMenuStep={setCategoryMenuStep}
-              categoryFilters={categoryFilters}
-              effectiveCategoryId={effectiveCategoryId}
-              selectedSubCategoryId={selectedSubCategoryId}
-              setSelectedSubCategoryId={setSelectedSubCategoryId}
-              isMaterialTab={isMtCategoryScope}
-              categoryMenuTriggerLabel={categoryMenuTriggerLabel}
-              menuHighlightCategoryId={menuHighlightCategoryId}
-              setMenuHighlightCategoryId={setMenuHighlightCategoryId}
-              panelSubs={panelSubs}
-              panelSubsLoading={panelSubsLoading}
-              applyCategory={applyCategory}
-              closeCategoryMenu={closeCategoryMenu}
-              pickSubCategory={pickSubCategory}
-              categoryOptionSelected={categoryOptionSelected}
-              categoriesWithSubs={categoriesWithSubs}
-            />
+            <div className='grid grid-cols-[minmax(0,1fr)_3.25rem] items-center gap-1'>
+              <FactoryIdeasSearchBar
+                searchText={searchText}
+                onSearchTextChange={setSearchText}
+                moqFilter={moqFilter}
+                onMoqFilterChange={setMoqFilter}
+                searchPlaceholder={factoryIdeasSecondarySearchPlaceholder(selectedType)}
+                showMoqButton={false}
+                className='min-w-0 w-full'
+                fieldClassName={`min-h-8 gap-1.5 px-2 py-0.5 shadow-none ${factoryIdeasToolbarSecondarySurfaceClass} [&_input]:text-xs [&_input]:text-slate-700 [&_input]:placeholder:text-[11px] [&_input]:placeholder:text-slate-400 focus-within:border-gray-300 focus-within:ring-1 focus-within:ring-gray-200/70`}
+              />
 
-            <FactoryIdeasMoqFilterChip
-              moqFilter={moqFilter}
-              onMoqFilterChange={setMoqFilter}
-              className={factoryIdeasToolbarTrailingWidthClass}
-            />
+              <FactoryIdeasViewModeToggle
+                compact
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                className='w-[3.25rem]'
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -461,7 +470,7 @@ export function FactoryIdeasMobile() {
                         ) : null}
                       </div>
 
-                      <div className='mt-1 flex min-w-0 items-center justify-between gap-2 border-t border-gray-50 pt-1'>
+                      <div className='mt-5 flex min-w-0 items-center justify-between gap-2 border-t border-gray-50 pt-1'>
                         <Button
                           variant='unstyled'
                           type='button'
