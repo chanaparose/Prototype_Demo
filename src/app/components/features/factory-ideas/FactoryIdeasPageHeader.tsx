@@ -13,6 +13,20 @@ type FactoryIdeasPageHeaderProps = {
   className?: string;
 };
 
+/** Soft brand wash — use on the parent section, not inside a bordered card. */
+export function FactoryIdeasHeaderBackdrop({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}
+      aria-hidden
+    >
+      <div className='absolute inset-0 bg-gradient-to-br from-brand-purple/[0.07] via-[var(--brand-page)] to-brand-orange/[0.06]' />
+      <div className='absolute -right-16 -top-16 h-40 w-40 rounded-full bg-brand-orange/[0.09] blur-3xl' />
+      <div className='absolute -left-12 top-6 h-36 w-36 rounded-full bg-brand-purple/[0.07] blur-3xl' />
+    </div>
+  );
+}
+
 export function FactoryIdeasPageHeader({
   title,
   count,
@@ -23,39 +37,39 @@ export function FactoryIdeasPageHeader({
   const navigate = useNavigate();
 
   return (
-    <div className={cn('border-b border-slate-200/70 pb-4', className)}>
-      <div className='flex items-start justify-between gap-3'>
-        <div className='min-w-0'>
-          <div className='mb-1.5 flex min-w-0 items-center gap-1.5 text-xs font-medium text-slate-400'>
-            {showBack ? (
-              <>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  onClick={() => navigate(getFactoryIdeasHubPath(hubScope))}
-                  className='-ml-1 inline-flex h-6 shrink-0 items-center gap-1 rounded-md px-1 text-xs font-medium text-slate-500 transition-colors hover:text-brand-purple'
-                >
-                  <ArrowLeft size={15} strokeWidth={2.25} aria-hidden />
-                  กลับหมวดหมู่
-                </Button>
-                <span className='h-3 w-px shrink-0 bg-slate-200' aria-hidden />
-              </>
-            ) : null}
-            <Layers size={16} className='shrink-0 text-brand-purple/70' strokeWidth={1.9} />
-            <span className='truncate'>Discover</span>
-          </div>
-          <h1 className='truncate text-xl font-bold text-slate-950 sm:text-2xl'>{title}</h1>
+    <div className={cn('flex items-start justify-between gap-3', className)}>
+      <div className='min-w-0'>
+        <div className='mb-1 flex min-w-0 items-center gap-1.5 text-[11px] font-medium text-slate-400'>
+          {showBack ? (
+            <>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => navigate(getFactoryIdeasHubPath(hubScope))}
+                className='-ml-1 inline-flex h-6 shrink-0 items-center gap-1 rounded-md px-1 text-[12px] font-medium text-slate-500 transition-colors hover:text-brand-purple'
+              >
+                <ArrowLeft size={15} strokeWidth={2.25} aria-hidden />
+                กลับหมวดหมู่
+              </Button>
+              <span className='h-3 w-px shrink-0 bg-slate-200/80' aria-hidden />
+            </>
+          ) : null}
+          <Layers size={14} className='shrink-0 text-brand-purple/60' strokeWidth={2.25} />
+          <span className='truncate'>Discover</span>
         </div>
-
-        <span
-          className={factoryBadgeClass({
-            variant: 'count',
-            className: 'mt-0.5 shrink-0 bg-slate-100 text-slate-700',
-          })}
-        >
-          {count}
-        </span>
+        <h1 className='truncate text-[16px] font-bold leading-snug text-brand-navy-ink sm:text-lg'>
+          {title}
+        </h1>
       </div>
+
+      <span
+        className={factoryBadgeClass({
+          variant: 'count',
+          className: 'mt-0.5 shrink-0 bg-white/70 text-slate-600 backdrop-blur-sm',
+        })}
+      >
+        {count}
+      </span>
     </div>
   );
 }

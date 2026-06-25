@@ -3,15 +3,13 @@ import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
   BadgeCheck,
-  LayoutGrid,
-  List,
   MapPin,
   SearchX,
   Star,
 } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { isFromFactoryIdeasHub } from '@/components/features/factory-ideas/factoryIdeasHubNav';
-import { FactoryIdeasPageHeader } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
+import { FactoryIdeasPageHeader, FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
 import { FactoryIdeasTypeTabs } from '@/components/features/factory-ideas/FactoryIdeasTypeTabs';
 import {
   ShowcaseGridCardSkeleton,
@@ -26,11 +24,15 @@ import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasP
 import {
   factoryIdeasContentTypeBadge as contentTypeBadge,
   factoryIdeasContentTypeLabel as contentTypeLabel,
+  factoryIdeasSearchPlaceholder,
+  factoryIdeasToolbarTrailingWidthClass,
   factoryIdeasVisibleContentTypes,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import { FactoryIdeasSearchBar } from '@/components/features/factory-ideas/FactoryIdeasSearchBar';
+import { FactoryIdeasMoqFilterChip } from '@/components/features/factory-ideas/FactoryIdeasMoqFilterChip';
+import { FactoryIdeasViewModeToggle } from '@/components/features/factory-ideas/FactoryIdeasViewModeToggle';
 import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 import {
   factoryIdeasTabOrder,
@@ -97,24 +99,19 @@ export function FactoryIdeasMobile() {
 
   return (
     <div className='min-h-[100dvh] bg-[var(--brand-page)] pb-24'>
-      <div className='bg-[var(--brand-page)] px-4 py-3'>
-        <FactoryIdeasPageHeader
-          title={hubName ? `แนะนำโรงงาน · ${hubName}` : 'แนะนำโรงงาน'}
-          count={`${totalCount} รายการ`}
-          hubScope={hubScope}
-          showBack={fromHub}
-        />
-
-        <FactoryIdeasSearchBar
-          className='mt-3'
-          searchText={searchText}
-          onSearchTextChange={setSearchText}
-          moqFilter={moqFilter}
-          onMoqFilterChange={setMoqFilter}
-        />
+      <div className='relative overflow-hidden px-4 pb-2 pt-3'>
+        <FactoryIdeasHeaderBackdrop />
+        <div className='relative z-10'>
+          <FactoryIdeasPageHeader
+            title={hubName ? `แนะนำโรงงาน · ${hubName}` : 'แนะนำโรงงาน'}
+            count={`${totalCount} รายการ`}
+            hubScope={hubScope}
+            showBack={fromHub}
+          />
+        </div>
       </div>
 
-      <div className='sticky top-14 z-20 border-b border-gray-200 bg-white'>
+      <div className='sticky top-14 z-20 overflow-visible border-b border-gray-100/80 bg-[var(--brand-page)]/95 backdrop-blur-sm'>
         <FactoryIdeasTypeTabs
           tabs={visibleTabs}
           activeType={selectedType}
@@ -122,58 +119,56 @@ export function FactoryIdeasMobile() {
           className='px-2'
         />
 
-        <div className='mt-2 flex flex-wrap items-center gap-2 px-4 pb-3'>
-          <FactoryIdeasCategoryDropdown
-            variant='mobile'
-            categoryMenuRef={categoryMenuRef}
-            categoryMenuOpen={categoryMenuOpen}
-            setCategoryMenuOpen={setCategoryMenuOpen}
-            categoryMenuStep={categoryMenuStep}
-            setCategoryMenuStep={setCategoryMenuStep}
-            categoryFilters={categoryFilters}
-            effectiveCategoryId={effectiveCategoryId}
-            selectedSubCategoryId={selectedSubCategoryId}
-            setSelectedSubCategoryId={setSelectedSubCategoryId}
-            isMaterialTab={isMtCategoryScope}
-            categoryMenuTriggerLabel={categoryMenuTriggerLabel}
-            menuHighlightCategoryId={menuHighlightCategoryId}
-            setMenuHighlightCategoryId={setMenuHighlightCategoryId}
-            panelSubs={panelSubs}
-            panelSubsLoading={panelSubsLoading}
-            applyCategory={applyCategory}
-            closeCategoryMenu={closeCategoryMenu}
-            pickSubCategory={pickSubCategory}
-            categoryOptionSelected={categoryOptionSelected}
-            categoriesWithSubs={categoriesWithSubs}
-          />
+        <div className='px-4 pt-2 pb-3'>
+          <div className='grid grid-cols-[minmax(0,1fr)_3.875rem] items-center gap-x-1.5 gap-y-2'>
+            <FactoryIdeasSearchBar
+              searchText={searchText}
+              onSearchTextChange={setSearchText}
+              moqFilter={moqFilter}
+              onMoqFilterChange={setMoqFilter}
+              searchPlaceholder={factoryIdeasSearchPlaceholder(selectedType)}
+              showMoqButton={false}
+              className='min-w-0 w-full'
+              fieldClassName='border-gray-100 bg-slate-50/90 shadow-none focus-within:shadow-none'
+            />
 
-          <div className='flex shrink-0 items-center gap-0.5 rounded-lg border border-gray-200 bg-[var(--neutral-warm-surface)] p-0.5'>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => setViewMode('grid')}
-              className={`rounded-md p-1.5 transition-all ${
-                viewMode === 'grid'
-                  ? 'bg-[var(--neutral-white)] text-[var(--brand-mauve)] shadow-sm'
-                  : 'text-[var(--neutral-placeholder)]'
-              }`}
-              aria-label='มุมมองตาราง'
-            >
-              <LayoutGrid size={14} />
-            </Button>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => setViewMode('list')}
-              className={`rounded-md p-1.5 transition-all ${
-                viewMode === 'list'
-                  ? 'bg-[var(--neutral-white)] text-[var(--brand-mauve)] shadow-sm'
-                  : 'text-[var(--neutral-placeholder)]'
-              }`}
-              aria-label='มุมมองรายการ'
-            >
-              <List size={14} />
-            </Button>
+            <FactoryIdeasViewModeToggle
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              className={factoryIdeasToolbarTrailingWidthClass}
+            />
+
+            <FactoryIdeasCategoryDropdown
+              variant='mobile'
+              triggerVariant='chip'
+              className='min-w-0 w-full'
+              categoryMenuRef={categoryMenuRef}
+              categoryMenuOpen={categoryMenuOpen}
+              setCategoryMenuOpen={setCategoryMenuOpen}
+              categoryMenuStep={categoryMenuStep}
+              setCategoryMenuStep={setCategoryMenuStep}
+              categoryFilters={categoryFilters}
+              effectiveCategoryId={effectiveCategoryId}
+              selectedSubCategoryId={selectedSubCategoryId}
+              setSelectedSubCategoryId={setSelectedSubCategoryId}
+              isMaterialTab={isMtCategoryScope}
+              categoryMenuTriggerLabel={categoryMenuTriggerLabel}
+              menuHighlightCategoryId={menuHighlightCategoryId}
+              setMenuHighlightCategoryId={setMenuHighlightCategoryId}
+              panelSubs={panelSubs}
+              panelSubsLoading={panelSubsLoading}
+              applyCategory={applyCategory}
+              closeCategoryMenu={closeCategoryMenu}
+              pickSubCategory={pickSubCategory}
+              categoryOptionSelected={categoryOptionSelected}
+              categoriesWithSubs={categoriesWithSubs}
+            />
+
+            <FactoryIdeasMoqFilterChip
+              moqFilter={moqFilter}
+              onMoqFilterChange={setMoqFilter}
+              className={factoryIdeasToolbarTrailingWidthClass}
+            />
           </div>
         </div>
       </div>

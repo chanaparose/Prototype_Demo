@@ -18,6 +18,7 @@ type FactoryIdeasSearchBarProps = {
   fieldClassName?: string;
   filterClassName?: string;
   searchPlaceholder?: string;
+  showMoqButton?: boolean;
 };
 
 export function FactoryIdeasSearchBar({
@@ -28,7 +29,8 @@ export function FactoryIdeasSearchBar({
   className,
   fieldClassName,
   filterClassName,
-  searchPlaceholder = 'ค้นหาไอเดีย สินค้า หรือชื่อโรงงาน…',
+  searchPlaceholder = 'ค้นหาในแท็บนี้…',
+  showMoqButton = true,
 }: FactoryIdeasSearchBarProps) {
   const [moqSheetOpen, setMoqSheetOpen] = useState(false);
   const moqActive = moqFilter !== 'all';
@@ -46,12 +48,15 @@ export function FactoryIdeasSearchBar({
         <MobileSearchField
           className={cn(
             'min-h-8 min-w-0 flex-1 gap-1.5 px-2.5 py-1 focus-within:ring-1',
+            !showMoqButton && 'shadow-none focus-within:shadow-none',
             fieldClassName,
           )}
+          noShadow={!showMoqButton}
           value={searchText}
           onChange={onSearchTextChange}
           placeholder={searchPlaceholder}
         />
+        {showMoqButton ? (
         <Button
           variant='unstyled'
           type='button'
@@ -73,8 +78,10 @@ export function FactoryIdeasSearchBar({
             ) : null}
           </span>
         </Button>
+        ) : null}
       </div>
 
+      {showMoqButton ? (
       <AppSheetDialog
         open={moqSheetOpen}
         onOpenChange={setMoqSheetOpen}
@@ -112,6 +119,7 @@ export function FactoryIdeasSearchBar({
           })}
         </ul>
       </AppSheetDialog>
+      ) : null}
     </>
   );
 }

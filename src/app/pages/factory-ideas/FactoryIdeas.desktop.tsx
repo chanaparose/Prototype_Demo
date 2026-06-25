@@ -12,13 +12,14 @@ import {
 } from 'lucide-react';
 import { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
 import { isFromFactoryIdeasHub } from '@/components/features/factory-ideas/factoryIdeasHubNav';
-import { FactoryIdeasPageHeader } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
+import { FactoryIdeasPageHeader, FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
 import { FactoryIdeasTypeTabs } from '@/components/features/factory-ideas/FactoryIdeasTypeTabs';
 import { IdeaArticleCard } from '@/components/features/factory-ideas/IdeaArticleCard';
 import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasPageState';
 import {
   factoryIdeasContentTypeBadge as contentTypeBadge,
   factoryIdeasContentTypeLabel as contentTypeLabel,
+  factoryIdeasSearchPlaceholder,
   factoryIdeasVisibleContentTypes as CONTENT_TYPES,
   factoryIdeasTabOrder,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
@@ -229,20 +230,18 @@ export function FactoryIdeasDesktop() {
 
   return (
     <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-page)] lg:block'>
-      <div className='sticky top-0 z-10 bg-[var(--brand-page)]'>
-        <div className='px-8 py-4 2xl:px-10'>
-          <div className='flex items-start justify-between gap-4'>
-            <div className='min-w-0 flex-1'>
-              <FactoryIdeasPageHeader
-                title={hubName ? `แนะนำโรงงาน · ${hubName}` : 'แนะนำโรงงาน'}
-                count={`${totalCount} รายการ`}
-                hubScope={hubScope}
-                showBack={fromHub}
-              />
-            </div>
-          </div>
+      <div className='sticky top-0 z-10'>
+        <div className='relative overflow-hidden border-b border-gray-100/80'>
+          <FactoryIdeasHeaderBackdrop />
+          <div className='relative z-10 px-8 py-4 2xl:px-10'>
+            <FactoryIdeasPageHeader
+              title={hubName ? `แนะนำโรงงาน · ${hubName}` : 'แนะนำโรงงาน'}
+              count={`${totalCount} รายการ`}
+              hubScope={hubScope}
+              showBack={fromHub}
+            />
 
-          <div className='mt-3 flex h-9 w-full items-center gap-2'>
+            <div className='mt-3 flex h-9 w-full items-center gap-2'>
             <FactoryIdeasTypeTabs
               tabs={visibleTypes}
               activeType={selectedType}
@@ -281,6 +280,7 @@ export function FactoryIdeasDesktop() {
             <FactoryIdeasSearchBar
               className='h-9 min-w-0 flex-1'
               fieldClassName='h-9 min-h-9 py-0 text-xs'
+              searchPlaceholder={factoryIdeasSearchPlaceholder(selectedType)}
               searchText={searchText}
               onSearchTextChange={setSearchText}
               moqFilter={moqFilter}
@@ -313,6 +313,7 @@ export function FactoryIdeasDesktop() {
                 <List size={14} />
               </Button>
             </div>
+          </div>
           </div>
         </div>
       </div>

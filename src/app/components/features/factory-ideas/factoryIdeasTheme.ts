@@ -11,6 +11,9 @@ export const factoryIdeasTheme = {
   teal: 'var(--brand-teal)',
 } as const;
 
+/** Matches FactoryIdeasViewModeToggle width (2×w-7 + gap + padding). */
+export const factoryIdeasToolbarTrailingWidthClass = 'w-[3.875rem]';
+
 export type FactoryIdeasContentType =
   | 'all'
   | 'product'
@@ -64,6 +67,11 @@ export const factoryIdeasContentTypeBadge: Record<
   idea: factoryIdeasTheme.purple,
   factory: factoryIdeasTheme.teal,
 };
+
+export function factoryIdeasSearchPlaceholder(type: FactoryIdeasContentType): string {
+  if (type === 'all') return 'ค้นหาในแท็บนี้…';
+  return `ค้นหา${factoryIdeasContentTypeLabel[type]}ในแท็บนี้…`;
+}
 
 export function normalizeFactoryIdeaFactory(r: Record<string, unknown>): Factory {
   const provinceName = String(r.province_name ?? r.provinceName ?? '').trim();

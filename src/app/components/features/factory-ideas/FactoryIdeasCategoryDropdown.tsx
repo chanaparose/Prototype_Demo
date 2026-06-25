@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@lib/utils';
 import { factoryIdeasTheme as COLORS } from '@/components/features/factory-ideas/factoryIdeasTheme';
 
 type CategoryRow = { id: string; name: string };
@@ -9,6 +10,7 @@ type SubCategoryRow = { id: string; name: string; sortOrder: number };
 
 type FactoryIdeasCategoryDropdownProps = {
   variant: 'desktop' | 'mobile';
+  triggerVariant?: 'bar' | 'chip';
   categoryMenuRef: RefObject<HTMLDivElement | null>;
   categoryMenuOpen: boolean;
   setCategoryMenuOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
@@ -30,10 +32,12 @@ type FactoryIdeasCategoryDropdownProps = {
   categoryOptionSelected: (effectiveCategoryId: string, optionId: string) => boolean;
   /** IDs of categories that have ≥1 sub-category */
   categoriesWithSubs?: ReadonlySet<string>;
+  className?: string;
 };
 
 export function FactoryIdeasCategoryDropdown({
   variant,
+  triggerVariant = 'bar',
   categoryMenuRef,
   categoryMenuOpen,
   setCategoryMenuOpen,
@@ -54,31 +58,65 @@ export function FactoryIdeasCategoryDropdown({
   pickSubCategory,
   categoryOptionSelected,
   categoriesWithSubs,
+  className,
 }: FactoryIdeasCategoryDropdownProps) {
   const hasSubs = (catId: string) => categoriesWithSubs?.has(catId) ?? !isMaterialTab;
+  const categoryActive = effectiveCategoryId !== 'all';
+  const chipLabel =
+    categoryActive && categoryMenuTriggerLabel
+      ? categoryMenuTriggerLabel
+      : 'หมวดหมู่';
+
   if (variant === 'mobile') {
+    const isChip = triggerVariant === 'chip';
     return (
-      <div ref={categoryMenuRef} className='relative flex-1 min-w-[min(100%,10rem)] z-30'>
+      <div
+        ref={categoryMenuRef}
+        className={cn(
+          'relative z-30',
+          isChip ? 'min-w-0' : 'min-w-[min(100%,10rem)] flex-1',
+          className,
+        )}
+      >
         <Button
           variant='unstyled'
           type='button'
           onClick={() => setCategoryMenuOpen((o) => !o)}
-          className='w-full flex items-center justify-between gap-1.5 px-3 py-2 rounded-lg border text-[12px] transition-all'
-          style={{
-            borderColor: effectiveCategoryId !== 'all' ? COLORS.purple : 'var(--neutral-border)',
-            backgroundColor: effectiveCategoryId !== 'all' ? COLORS.lightPurpleBg : COLORS.gray,
-            color: effectiveCategoryId !== 'all' ? COLORS.purple : 'var(--neutral-subtle)',
-            fontWeight: effectiveCategoryId !== 'all' ? 600 : 400,
-          }}
+          className={
+            isChip
+              ? `inline-flex h-8 w-full items-center justify-between gap-1 rounded-full border px-2.5 text-[11px] font-medium transition-colors ${
+                  categoryActive
+                    ? 'border-brand-purple/30 bg-brand-lavender-chip/70 text-brand-violet-deep'
+                    : 'border-gray-200/90 bg-white/80 text-slate-600'
+                }`
+              : 'flex w-full items-center justify-between gap-1.5 rounded-lg border px-3 py-2 text-[12px] transition-all'
+          }
+          style={
+            isChip
+              ? undefined
+              : {
+                  borderColor: categoryActive ? COLORS.purple : 'var(--neutral-border)',
+                  backgroundColor: categoryActive ? COLORS.lightPurpleBg : COLORS.gray,
+                  color: categoryActive ? COLORS.purple : 'var(--neutral-subtle)',
+                  fontWeight: categoryActive ? 600 : 400,
+                }
+          }
         >
-          <span className='truncate'>{categoryMenuTriggerLabel}</span>
+          <span className='truncate'>{isChip ? chipLabel : categoryMenuTriggerLabel}</span>
           <ChevronDown
-            size={14}
-            className={`shrink-0 transition-transform duration-200 ${categoryMenuOpen ? 'rotate-180' : ''}`}
+            size={isChip ? 12 : 14}
+            strokeWidth={2.25}
+            className={`shrink-0 transition-transform duration-200 ${categoryMenuOpen ? 'rotate-180' : ''} ${isChip ? 'opacity-60' : ''}`}
           />
         </Button>
         {categoryMenuOpen && (
-          <div className='absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-gray-200 shadow-xl py-1 max-h-[50vh] overflow-y-auto z-40'>
+          <div
+            className={
+              isChip
+                ? 'absolute top-full left-0 z-50 mt-1 max-h-[50vh] w-max min-w-full max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-xl'
+                : 'absolute top-full left-0 right-0 z-40 mt-1 max-h-[50vh] overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-xl'
+            }
+          >
             {categoryMenuStep === 'categories' ? (
               categoryFilters.map((cat) => {
                 const selected = categoryOptionSelected(effectiveCategoryId, cat.id);
