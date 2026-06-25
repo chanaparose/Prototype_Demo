@@ -14,6 +14,31 @@ export const factoryIdeasTheme = {
 /** Matches FactoryIdeasViewModeToggle width (2×w-7 + gap + padding). */
 export const factoryIdeasToolbarTrailingWidthClass = 'w-[3.875rem]';
 
+/** Plain-text preview for list cards — strips markdown markers, keeps full width for line-clamp. */
+export function factoryIdeasExcerptPreview(raw: string): string {
+  return raw
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^>\s?/gm, '')
+    .replace(/\n+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+/** List-card excerpt — drops title duplicate and empty tails so the card stays scannable. */
+export function factoryIdeasListExcerpt(title: string, raw?: string | null): string | null {
+  if (!raw?.trim()) return null;
+
+  let text = factoryIdeasExcerptPreview(raw);
+  const normalizedTitle = title.trim();
+
+  if (text.startsWith(normalizedTitle)) {
+    text = text.slice(normalizedTitle.length).replace(/^[\s.,:;|–—-]+/, '').trim();
+  }
+
+  if (!text || text.length < 6 || text === normalizedTitle) return null;
+  return text;
+}
+
 export type FactoryIdeasContentType =
   | 'all'
   | 'product'

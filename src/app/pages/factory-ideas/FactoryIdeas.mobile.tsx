@@ -25,6 +25,7 @@ import {
   factoryIdeasContentTypeBadge as contentTypeBadge,
   factoryIdeasContentTypeLabel as contentTypeLabel,
   factoryIdeasSearchPlaceholder,
+  factoryIdeasListExcerpt,
   factoryIdeasToolbarTrailingWidthClass,
   factoryIdeasVisibleContentTypes,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
@@ -417,13 +418,14 @@ export function FactoryIdeasMobile() {
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
               const badgeColor = contentTypeBadge[item.contentType];
+              const listExcerpt = factoryIdeasListExcerpt(item.title, item.excerpt);
               return (
                 <article
                   key={item.id}
-                  className='h-[130px] cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white transition-transform active:scale-[0.99]'
+                  className='min-h-[118px] cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white transition-transform active:scale-[0.99]'
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
-                  <div className='flex h-full p-3 gap-3'>
+                  <div className='flex gap-3 p-3'>
                     <div className='relative w-[100px] shrink-0 rounded-xl overflow-hidden bg-gray-100'>
                       <ImageWithFallback
                         src={item.image}
@@ -444,22 +446,22 @@ export function FactoryIdeasMobile() {
                       />
                     </div>
 
-                    <div className='flex flex-col flex-1 min-w-0 justify-between'>
-                      <div className='min-w-0'>
-                        {item.category && (
-                          <p className='text-[9px] text-gray-400 truncate mb-0.5'>
-                            {item.category}
-                          </p>
-                        )}
+                    <div className='flex min-w-0 flex-1 flex-col gap-1'>
+                      <div className='min-w-0 space-y-0.5'>
+                        {item.category ? (
+                          <p className='truncate text-[9px] text-gray-400'>{item.category}</p>
+                        ) : null}
                         <h3 className='line-clamp-2 min-w-0 text-[12px] font-bold leading-snug text-[var(--brand-navy)]'>
                           {item.title}
                         </h3>
-                        <p className='text-[10px] leading-[15px] text-gray-500 line-clamp-2 mt-1'>
-                          {item.excerpt || ' '}
-                        </p>
+                        {listExcerpt ? (
+                          <p className='line-clamp-2 min-w-0 text-[10px] leading-[14px] text-gray-400'>
+                            {listExcerpt}
+                          </p>
+                        ) : null}
                       </div>
 
-                      <div className='flex items-center justify-between gap-2 mt-auto pt-1.5 border-t border-gray-50 min-w-0'>
+                      <div className='mt-1 flex min-w-0 items-center justify-between gap-2 border-t border-gray-50 pt-1'>
                         <Button
                           variant='unstyled'
                           type='button'
@@ -467,16 +469,16 @@ export function FactoryIdeasMobile() {
                             e.stopPropagation();
                             navigate(`/factories/${item.factoryId}`);
                           }}
-                          className='flex min-w-0 items-center gap-1 text-left text-[10px] font-semibold text-[var(--brand-navy)] active:opacity-80'
+                          className='flex min-w-0 items-center gap-1 text-left text-[10px] font-medium text-gray-500 active:opacity-80'
                         >
                           <span className='truncate'>{item.factoryName}</span>
                           {factory?.verified && (
                             <BadgeCheck className='h-3 w-3 shrink-0 text-[var(--brand-mauve)]' />
                           )}
                         </Button>
-                        <span className='text-[9px] text-gray-400 shrink-0'>
+                        <span className='shrink-0 text-[9px] text-gray-400'>
                           ขั้นต่ำ{' '}
-                          <span className='font-semibold tabular-nums text-[var(--brand-navy)]'>
+                          <span className='font-semibold tabular-nums text-gray-600'>
                             {item.minOrder}
                           </span>{' '}
                           {resolveUnitLabel(item.unitId, item.moqUnit)}
