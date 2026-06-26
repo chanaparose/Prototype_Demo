@@ -1,7 +1,7 @@
 import type { IConversationResponse } from '@/types/api';
 import { getCustomerAvatarUrl } from '@/utils/customerAvatar';
 
-export const FACTORY_FALLBACK_AVATAR = '/assets/avatars/factory-fallback.svg';
+export const FACTORY_FALLBACK_AVATAR = '/assets/tryly_vertical_banner_v3_new_concept_0.png';
 
 export interface CounterpartyView {
   title: string;
