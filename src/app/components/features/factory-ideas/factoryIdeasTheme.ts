@@ -24,9 +24,17 @@ export const factoryIdeasChromeGradientClass =
 /** Main list surface below chrome. */
 export const factoryIdeasContentSurfaceClass = 'bg-white';
 
-/** Type tabs on mobile — continues header fade into white. */
+/** Type tabs on mobile — flat white bar (no inset / glass layering). */
 export const factoryIdeasTypeTabsChromeClass =
-  'border-b border-slate-200/50 bg-gradient-to-b from-transparent via-white/75 to-white';
+  'border-b border-slate-200/50 bg-white shadow-none';
+
+/** Active tab pill — solid brand purple (matches ExploreHubPreview links). */
+export const factoryIdeasTypeTabsActiveIndicatorClass = 'bg-brand-purple';
+
+/** Segmented tab label states. */
+export const factoryIdeasTypeTabsActiveLabelClass = 'font-semibold text-brand-purple';
+export const factoryIdeasTypeTabsIdleLabelClass =
+  'font-normal text-slate-400 hover:text-brand-purple';
 
 export const factoryIdeasFilterButtonSizeClass =
   'h-8 px-2.5 text-[12px] font-medium';

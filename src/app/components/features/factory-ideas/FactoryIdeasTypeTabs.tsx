@@ -1,6 +1,9 @@
 import { cn } from '@lib/utils';
 import {
+  factoryIdeasTypeTabsActiveIndicatorClass,
+  factoryIdeasTypeTabsActiveLabelClass,
   factoryIdeasTypeTabsChromeClass,
+  factoryIdeasTypeTabsIdleLabelClass,
   type FactoryIdeasContentType,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 
@@ -26,7 +29,7 @@ export function FactoryIdeasTypeTabs({
 }: FactoryIdeasTypeTabsProps) {
   if (variant === 'segmented') {
     return (
-      <div className={cn('px-4', className)}>
+      <div className={cn(className)}>
         <div
           role='tablist'
           aria-label='ประเภทรายการ'
@@ -46,16 +49,19 @@ export function FactoryIdeasTypeTabs({
                 data-tour={`tab-${type.id}`}
                 onClick={() => onTypeChange(type.id)}
                 className={cn(
-                  'relative min-w-0 flex-1 shrink-0 whitespace-nowrap px-3 pb-3 pt-2.5 text-[14px] transition-colors',
+                  'relative min-w-0 flex-1 shrink-0 whitespace-nowrap px-3 pb-3 pt-2.5 text-[14px] shadow-none transition-colors',
                   active
-                    ? 'font-semibold text-brand-violet-deep'
-                    : 'font-normal text-slate-400 hover:text-brand-violet-deep/80',
+                    ? factoryIdeasTypeTabsActiveLabelClass
+                    : factoryIdeasTypeTabsIdleLabelClass,
                 )}
               >
                 {type.label}
                 {active ? (
                   <span
-                    className='absolute bottom-0 left-1/2 h-[3px] w-[62%] max-w-[3.25rem] -translate-x-1/2 rounded-full bg-brand-violet-deep'
+                    className={cn(
+                      'absolute bottom-0 left-1/2 h-[3px] w-[62%] max-w-[3.25rem] -translate-x-1/2 rounded-full',
+                      factoryIdeasTypeTabsActiveIndicatorClass,
+                    )}
                     aria-hidden
                   />
                 ) : null}

@@ -104,7 +104,7 @@ export function FactoryIdeasMobile() {
   return (
     <div className={`min-h-[100dvh] pb-24 ${factoryIdeasContentSurfaceClass}`}>
       <div className={factoryIdeasChromeGradientClass}>
-        <div className='relative overflow-hidden px-4 pb-1 pt-3'>
+        <div className='relative overflow-hidden px-4 pb-3 pt-3'>
           <FactoryIdeasHeaderBackdrop />
           <div className='relative z-10'>
             <FactoryIdeasPageHeader
@@ -116,7 +116,7 @@ export function FactoryIdeasMobile() {
           </div>
         </div>
 
-        <div className='sticky top-14 z-20 overflow-visible bg-gradient-to-b from-transparent via-white/80 to-white backdrop-blur-md'>
+        <div className='sticky top-14 z-20 overflow-visible bg-white shadow-none'>
           <FactoryIdeasTypeTabs
             variant='segmented'
             tabs={visibleTabs}
