@@ -124,7 +124,7 @@ export function FactoryIdeasMobile() {
             onTypeChange={setSelectedType}
           />
 
-          <div className='px-4 pt-2 pb-2'>
+          <div className='px-4 pt-3 pb-2'>
             <div className={factoryIdeasToolbarCardClass}>
             <div className='flex items-center gap-1.5'>
               <FactoryIdeasCategoryDropdown

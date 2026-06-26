@@ -53,6 +53,8 @@ import {
 } from '@/pages/chat-room/useChatRoomSession';
 import { resolveCounterparty, FACTORY_FALLBACK_AVATAR } from '@/utils/counterparty';
 import { ChatPartyHeader } from '@/components/features/chat/ChatPartyHeader';
+import { FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
+import { factoryIdeasChromeGradientClass } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import type { IConversationResponse } from '@/types/api';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -545,109 +547,175 @@ function ChatRoomBody({
     >
       <div
         className={cn(
-          'shrink-0 border-b border-gray-100 bg-white/95 backdrop-blur-sm',
+          'shrink-0',
           isFullMobile
-            ? 'px-3 pt-2.5 pb-2'
-            : isEmbeddedPanel
-              ? 'px-5 py-3'
-              : 'px-4 pt-4 pb-3 shadow-sm',
+            ? cn(factoryIdeasChromeGradientClass, 'lg:border-b lg:border-gray-100/80')
+            : 'border-b border-gray-100 bg-white/95 backdrop-blur-sm',
         )}
       >
         <div
           className={cn(
-            'flex items-center justify-between gap-2',
-            showMiniDash && 'mb-2',
+            'relative overflow-hidden',
+            isFullMobile
+              ? 'px-4 pb-3 pt-3 lg:px-8 lg:py-4 2xl:px-10'
+              : isEmbeddedPanel
+                ? 'px-5 py-3'
+                : 'px-4 pt-4 pb-3 shadow-sm',
           )}
         >
-          {variant === 'full' ? (
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={onBack}
-              aria-label='กลับไป'
-              className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 lg:h-10 lg:w-10 lg:rounded-xl'
+          {isFullMobile ? <FactoryIdeasHeaderBackdrop /> : null}
+          <div className='relative z-10'>
+            <div
+              className={cn(
+                'flex items-center justify-between gap-2',
+                showMiniDash && !isFullMobile && 'mb-2',
+              )}
             >
-              <ChevronLeft size={20} className='text-gray-700 lg:h-[22px] lg:w-[22px]' />
-            </Button>
-          ) : !isEmbeddedPanel ? (
-            <div className='w-9 shrink-0 lg:w-10' />
-          ) : null}
-          <div className='min-w-0 flex-1'>
-            {counterpartyView ? (
-              <ChatPartyHeader
-                view={{
-                  ...counterpartyView,
-                  avatarUrl: counterpartyView.avatarUrl || FACTORY_FALLBACK_AVATAR,
-                }}
-                density='header'
-                compact={isFullMobile}
-              />
-            ) : (
-              <div className='flex items-center gap-2'>
-                <ImageWithFallback
-                  src={conv.factoryAvatar}
-                  alt={conv.factoryName}
-                  className='h-7 w-7 shrink-0 rounded-lg object-cover bg-gray-100 lg:h-8 lg:w-8 lg:rounded-xl'
-                />
-                <p className='truncate text-[13px] font-bold text-brand-navy lg:text-sm'>
-                  {conv.factoryName || 'การสนทนา'}
-                </p>
-              </div>
-            )}
-          </div>
-           
-        </div>
-
-        {showMiniDash ? (
-          <div className='overflow-hidden rounded-xl bg-brand-page transition-all duration-300 lg:rounded-2xl'>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => setMiniDashOpen(!miniDashOpen)}
-              className='flex w-full items-center justify-between px-2.5 py-2 lg:px-3 lg:py-2.5'
-            >
-              <div className='flex min-w-0 items-center gap-1.5'>
-                <ClipboardList size={14} className='shrink-0 text-brand-mauve' />
-                <span className='max-w-[min(100%,140px)] truncate text-[11px] font-semibold text-brand-navy sm:max-w-[200px] lg:text-xs'>
-                  {conv.rfqName || 'RFQ / ใบเสนอราคา'}
-                </span>
-              </div>
-              <div className='flex shrink-0 items-center gap-1.5'>
-                <span className='rounded-full bg-brand-navy/[0.08] px-1.5 py-0.5 text-[8px] font-semibold text-brand-navy lg:px-2 lg:text-[9px]'>
-                  {apiConv?.has_quote ? 'มีใบเสนอราคา' : 'สถานะ'}
-                </span>
-                {miniDashOpen ? (
-                  <ChevronUp size={13} className='text-gray-400 lg:h-3.5 lg:w-3.5' />
+              {variant === 'full' ? (
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={onBack}
+                  aria-label='กลับไป'
+                  className='flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:text-brand-purple lg:h-9 lg:w-9'
+                >
+                  <ChevronLeft size={20} className='lg:h-[22px] lg:w-[22px]' />
+                </Button>
+              ) : !isEmbeddedPanel ? (
+                <div className='w-9 shrink-0 lg:w-10' />
+              ) : null}
+              <div className='min-w-0 flex-1'>
+                {counterpartyView ? (
+                  <ChatPartyHeader
+                    view={{
+                      ...counterpartyView,
+                      avatarUrl: counterpartyView.avatarUrl || FACTORY_FALLBACK_AVATAR,
+                    }}
+                    density='header'
+                    compact={isFullMobile}
+                  />
                 ) : (
-                  <ChevronDown size={13} className='text-gray-400 lg:h-3.5 lg:w-3.5' />
+                  <div className='flex items-center gap-2'>
+                    <ImageWithFallback
+                      src={conv.factoryAvatar}
+                      alt={conv.factoryName}
+                      className='h-7 w-7 shrink-0 rounded-lg object-cover bg-gray-100 lg:h-8 lg:w-8 lg:rounded-xl'
+                    />
+                    <p className='truncate text-[16px] font-semibold leading-snug text-brand-navy-ink sm:text-lg'>
+                      {conv.factoryName || 'การสนทนา'}
+                    </p>
+                  </div>
                 )}
               </div>
-            </Button>
+            </div>
 
-            {miniDashOpen && latestQuote?.quoteData && (
-              <div className='border-t border-brand-mauve/15 px-2.5 pb-2 lg:px-3 lg:pb-3'>
-                <div className='mt-2 flex gap-2 lg:mt-2.5 lg:gap-3'>
-                  <div className='flex-1 rounded-lg bg-white p-2 text-center lg:rounded-xl lg:p-2.5'>
-                    <p className='text-xs font-bold text-brand-orange-deep lg:text-sm'>
-                      {formatCurrency(latestQuote.quoteData.price)}
-                    </p>
-                    <p className='text-[8px] text-gray-500 lg:text-[9px]'>ราคา</p>
+            {showMiniDash && !isFullMobile ? (
+              <div className='overflow-hidden rounded-xl bg-brand-page transition-all duration-300 lg:rounded-2xl'>
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={() => setMiniDashOpen(!miniDashOpen)}
+                  className='flex w-full items-center justify-between px-2.5 py-2 lg:px-3 lg:py-2.5'
+                >
+                  <div className='flex min-w-0 items-center gap-1.5'>
+                    <ClipboardList size={14} className='shrink-0 text-brand-mauve' />
+                    <span className='max-w-[min(100%,140px)] truncate text-[11px] font-semibold text-brand-navy sm:max-w-[200px] lg:text-xs'>
+                      {conv.rfqName || 'RFQ / ใบเสนอราคา'}
+                    </span>
                   </div>
-                  <div className='flex-1 rounded-lg bg-white p-2 text-center lg:rounded-xl lg:p-2.5'>
-                    <p className='text-xs font-bold text-brand-navy lg:text-sm'>
-                      {latestQuote.quoteData.leadTime} วัน
-                    </p>
-                    <p className='text-[8px] text-gray-500 lg:text-[9px]'>lead time</p>
+                  <div className='flex shrink-0 items-center gap-1.5'>
+                    <span className='rounded-full bg-brand-navy/[0.08] px-1.5 py-0.5 text-[8px] font-semibold text-brand-navy lg:px-2 lg:text-[9px]'>
+                      {apiConv?.has_quote ? 'มีใบเสนอราคา' : 'สถานะ'}
+                    </span>
+                    {miniDashOpen ? (
+                      <ChevronUp size={13} className='text-gray-400 lg:h-3.5 lg:w-3.5' />
+                    ) : (
+                      <ChevronDown size={13} className='text-gray-400 lg:h-3.5 lg:w-3.5' />
+                    )}
                   </div>
-                  <div className='flex-1 rounded-lg bg-white p-2 text-center lg:rounded-xl lg:p-2.5'>
-                    <p className='text-xs font-bold text-brand-navy lg:text-sm'>
-                      {latestQuote.quoteData.validUntil}
-                    </p>
-                    <p className='text-[8px] text-gray-500 lg:text-[9px]'>ใช้ได้ถึง</p>
+                </Button>
+
+                {miniDashOpen && latestQuote?.quoteData && (
+                  <div className='border-t border-brand-mauve/15 px-2.5 pb-2 lg:px-3 lg:pb-3'>
+                    <div className='mt-2 flex gap-2 lg:mt-2.5 lg:gap-3'>
+                      <div className='flex-1 rounded-lg bg-white p-2 text-center lg:rounded-xl lg:p-2.5'>
+                        <p className='text-xs font-bold text-brand-orange-deep lg:text-sm'>
+                          {formatCurrency(latestQuote.quoteData.price)}
+                        </p>
+                        <p className='text-[8px] text-gray-500 lg:text-[9px]'>ราคา</p>
+                      </div>
+                      <div className='flex-1 rounded-lg bg-white p-2 text-center lg:rounded-xl lg:p-2.5'>
+                        <p className='text-xs font-bold text-brand-navy lg:text-sm'>
+                          {latestQuote.quoteData.leadTime} วัน
+                        </p>
+                        <p className='text-[8px] text-gray-500 lg:text-[9px]'>lead time</p>
+                      </div>
+                      <div className='flex-1 rounded-lg bg-white p-2 text-center lg:rounded-xl lg:p-2.5'>
+                        <p className='text-xs font-bold text-brand-navy lg:text-sm'>
+                          {latestQuote.quoteData.validUntil}
+                        </p>
+                        <p className='text-[8px] text-gray-500 lg:text-[9px]'>ใช้ได้ถึง</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        {showMiniDash && isFullMobile ? (
+          <div className='border-t border-slate-200/50 bg-white px-4 pb-2 lg:px-8 lg:pb-3 2xl:px-10'>
+            <div className='overflow-hidden rounded-xl bg-brand-page transition-all duration-300'>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => setMiniDashOpen(!miniDashOpen)}
+                className='flex w-full items-center justify-between px-2.5 py-2'
+              >
+                <div className='flex min-w-0 items-center gap-1.5'>
+                  <ClipboardList size={14} className='shrink-0 text-brand-mauve' />
+                  <span className='max-w-[min(100%,140px)] truncate text-[11px] font-semibold text-brand-navy sm:max-w-[200px]'>
+                    {conv.rfqName || 'RFQ / ใบเสนอราคา'}
+                  </span>
+                </div>
+                <div className='flex shrink-0 items-center gap-1.5'>
+                  <span className='rounded-full bg-brand-navy/[0.08] px-1.5 py-0.5 text-[8px] font-semibold text-brand-navy'>
+                    {apiConv?.has_quote ? 'มีใบเสนอราคา' : 'สถานะ'}
+                  </span>
+                  {miniDashOpen ? (
+                    <ChevronUp size={13} className='text-gray-400' />
+                  ) : (
+                    <ChevronDown size={13} className='text-gray-400' />
+                  )}
+                </div>
+              </Button>
+
+              {miniDashOpen && latestQuote?.quoteData && (
+                <div className='border-t border-brand-mauve/15 px-2.5 pb-2'>
+                  <div className='mt-2 flex gap-2'>
+                    <div className='flex-1 rounded-lg bg-white p-2 text-center'>
+                      <p className='text-xs font-bold text-brand-orange-deep'>
+                        {formatCurrency(latestQuote.quoteData.price)}
+                      </p>
+                      <p className='text-[8px] text-gray-500'>ราคา</p>
+                    </div>
+                    <div className='flex-1 rounded-lg bg-white p-2 text-center'>
+                      <p className='text-xs font-bold text-brand-navy'>
+                        {latestQuote.quoteData.leadTime} วัน
+                      </p>
+                      <p className='text-[8px] text-gray-500'>lead time</p>
+                    </div>
+                    <div className='flex-1 rounded-lg bg-white p-2 text-center'>
+                      <p className='text-xs font-bold text-brand-navy'>
+                        {latestQuote.quoteData.validUntil}
+                      </p>
+                      <p className='text-[8px] text-gray-500'>ใช้ได้ถึง</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         ) : null}
       </div>

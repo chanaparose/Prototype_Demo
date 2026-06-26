@@ -22,8 +22,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/stores/useAuthStore';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
-import { AlertCircle, ChevronLeft, LogIn } from 'lucide-react';
+import { AlertCircle, ChevronLeft, FileText, LogIn } from 'lucide-react';
 import { useScrollHeaderCollapse } from '@/hooks/useMobileBottomNavHide';
+import {
+  factoryIdeasChromeGradientClass,
+  factoryIdeasContentSurfaceClass,
+} from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
+import { cn } from '@lib/utils';
 import {
   RFQ_BORDER,
   RFQ_HELP_CLASS,
@@ -399,40 +405,64 @@ export function RFQCreateWizard() {
     8 * headerReveal;
 
   return (
-    <div className='min-h-screen bg-[var(--brand-page)] pb-32 max-lg:pb-[calc(4.5rem+4.5rem+env(safe-area-inset-bottom))]'>
-      <header className='fixed top-0 left-0 right-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur-md lg:left-64'>
-        <div className='mx-auto w-full max-w-[1600px] px-4 py-3 lg:px-8 2xl:px-10'>
-          <div ref={backRowRef}>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => (step > 0 ? setStep(step - 1) : navigate(-1))}
-              className='-ml-1 flex shrink-0 items-center gap-0.5 text-sm text-gray-600 transition-colors hover:text-gray-900 xl:text-[15px]'
-              aria-label={step > 0 ? 'ขั้นก่อนหน้า' : 'กลับ'}
-            >
-              <ChevronLeft size={18} />
-              กลับ
-            </Button>
-          </div>
+    <div
+      className={cn(
+        'min-h-screen pb-32 max-lg:pb-[calc(4.5rem+4.5rem+env(safe-area-inset-bottom))]',
+        factoryIdeasContentSurfaceClass,
+        'lg:bg-[var(--brand-page)]',
+      )}
+    >
+      <header
+        className={cn(
+          'fixed top-0 left-0 right-0 z-40 lg:left-64',
+          factoryIdeasChromeGradientClass,
+          'lg:border-b lg:border-gray-100/80',
+        )}
+      >
+        <div className='relative mx-auto w-full max-w-[1600px] overflow-hidden px-4 py-3 lg:px-8 lg:py-4 2xl:px-10'>
+          <FactoryIdeasHeaderBackdrop />
+          <div className='relative z-10'>
+            <div ref={backRowRef}>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => (step > 0 ? setStep(step - 1) : navigate(-1))}
+                className='-ml-1 inline-flex h-6 shrink-0 items-center gap-1 rounded-md px-1 text-[12px] font-medium text-slate-500 transition-colors hover:text-brand-purple'
+                aria-label={step > 0 ? 'ขั้นก่อนหน้า' : 'กลับ'}
+              >
+                <ChevronLeft size={15} strokeWidth={2.25} />
+                กลับ
+              </Button>
+            </div>
 
-          <div
-            className={headerCollapse > 0.92 ? 'pointer-events-none' : undefined}
-            style={{
-              height: collapsibleHeight
-                ? `${collapsibleHeight * headerReveal}px`
-                : undefined,
-              opacity: Math.max(0, 1 - headerCollapse * 1.15),
-              overflow: 'hidden',
-              marginTop: `${8 * headerReveal}px`,
-            }}
-          >
-            <div ref={collapsibleInnerRef}>
-              <div className='flex items-center justify-between gap-2'>
-                <h1 className='text-lg font-bold text-brand-navy-deep xl:text-xl 2xl:text-2xl'>ขอใบเสนอราคา</h1>
-                <span className='shrink-0 rounded-full bg-brand-lavender-chip px-2.5 py-0.5 text-[11px] font-semibold text-brand-violet-deep xl:text-[12px]'>
-                  {step + 1}/{STEPS.length} · {STEPS[step]}
-                </span>
-              </div>
+            <div
+              className={headerCollapse > 0.92 ? 'pointer-events-none' : undefined}
+              style={{
+                height: collapsibleHeight
+                  ? `${collapsibleHeight * headerReveal}px`
+                  : undefined,
+                opacity: Math.max(0, 1 - headerCollapse * 1.15),
+                overflow: 'hidden',
+                marginTop: `${8 * headerReveal}px`,
+              }}
+            >
+              <div ref={collapsibleInnerRef}>
+                <div className='mb-1 flex min-w-0 items-center gap-1.5 text-[11px] font-medium text-slate-400'>
+                  <FileText
+                    size={14}
+                    className='shrink-0 text-brand-purple/60'
+                    strokeWidth={2.25}
+                  />
+                  <span className='truncate'>สร้าง RFQ</span>
+                </div>
+                <div className='flex items-center justify-between gap-2'>
+                  <h1 className='truncate text-[16px] font-semibold leading-snug text-brand-navy-ink sm:text-lg'>
+                    ขอใบเสนอราคา
+                  </h1>
+                  <span className='inline-flex shrink-0 items-center justify-center rounded-full bg-brand-violet-soft px-2 py-0.5 text-[10px] font-semibold text-brand-purple'>
+                    {step + 1}/{STEPS.length} · {STEPS[step]}
+                  </span>
+                </div>
               <div className='mt-2.5 flex gap-1'>
                 {STEPS.map((s, i) => (
                   <Button
@@ -451,6 +481,7 @@ export function RFQCreateWizard() {
                 ))}
               </div>
             </div>
+          </div>
           </div>
         </div>
       </header>

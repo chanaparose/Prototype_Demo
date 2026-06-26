@@ -4,7 +4,7 @@ import { cn } from '@lib/utils';
 import type { CounterpartyView } from '@/utils/counterparty';
 import { FACTORY_FALLBACK_AVATAR } from '@/utils/counterparty';
 import { Button } from '@/components/ui/button';
-import { Avatar } from '@/components/ui/avatar';
+
 
 interface Props {
   view: CounterpartyView;
@@ -37,20 +37,20 @@ export function ChatPartyHeader({
       className={cn('flex w-full items-center text-left', compact ? 'gap-2' : 'gap-3')}
       aria-label='ดูข้อมูลการสนทนา'
     >
-      <Avatar
-        src={view.avatarUrl}
-        alt={view.title}
-        fallbackSrc={FACTORY_FALLBACK_AVATAR}
-        fallback={view.title.slice(0, 1)}
-        className={`${frameClass} shrink-0`}
-        imageClassName='object-cover'
-        style={{ width: size, height: size }}
-      />
+       
       <div className='flex-1 min-w-0'>
         <div className='flex items-center gap-1'>
           <p
-            className={cn('truncate text-gray-900', compact ? 'text-[13px]' : 'text-sm')}
-            style={{ fontWeight: 600 }}
+            className={cn(
+              'truncate text-gray-900',
+              density === 'header'
+                ? compact
+                  ? 'text-[16px] font-semibold leading-snug text-brand-navy-ink'
+                  : 'text-sm font-semibold text-brand-navy-ink sm:text-base'
+                : compact
+                  ? 'text-[13px] font-semibold'
+                  : 'text-sm font-semibold',
+            )}
           >
             {view.title}
           </p>
