@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Layers } from 'lucide-react';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
-import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import { factoryIdeasChromeGradientClass } from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { HubScopeTabs } from '@/components/features/hub/HubScopeTabs';
 import { HubSection } from '@/components/features/hub/HubSection';
 import { HubSectionSkeleton } from '@/components/features/hub/HubSectionSkeleton';
@@ -72,34 +73,37 @@ export function FactoryIdeasHubPage() {
   return (
     <>
       <div className='flex min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-24 lg:hidden'>
-        <div className='px-4 py-3'>
-          <FactoryPageHeader
+        <div className={factoryIdeasChromeGradientClass}>
+          <PageHeader
             title='หมวดหมู่โรงงาน'
             subtitle='Discover'
             icon={Layers}
             variant='minimal'
+            withBackdrop
+            className='px-4 pb-3 pt-3'
+          />
+
+          <HubScopeTabs
+            activeScope={activeScope}
+            onScopeChange={setActiveScope}
+            sticky
+            className='bg-white shadow-none'
           />
         </div>
-
-        <HubScopeTabs
-          activeScope={activeScope}
-          onScopeChange={setActiveScope}
-          sticky
-        />
 
         <main className='flex-1 px-4 py-5'>{renderContent()}</main>
       </div>
 
       <div className='hidden min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-8 lg:flex'>
-        <div className='sticky top-0 z-20 bg-[var(--brand-page)]'>
-          <header className='px-8 py-4 2xl:px-10'>
-            <FactoryPageHeader
-              title='หมวดหมู่โรงงาน'
-              subtitle='Discover'
-              icon={Layers}
-              variant='minimal'
-            />
-          </header>
+        <div className='sticky top-0 z-20'>
+          <PageHeader
+            title='หมวดหมู่โรงงาน'
+            subtitle='Discover'
+            icon={Layers}
+            variant='minimal'
+            withBackdrop
+            className='border-b border-gray-100/80 px-8 py-4 2xl:px-10'
+          />
 
           <HubScopeTabs
             activeScope={activeScope}

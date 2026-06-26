@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import type { LucideIcon } from 'lucide-react';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@lib/utils';
+import { FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
 
 export function PageHeader({
   title,
@@ -12,6 +13,7 @@ export function PageHeader({
   action,
   actionNode,
   variant = 'card',
+  withBackdrop = false,
   className,
 }: {
   title: string;
@@ -21,6 +23,7 @@ export function PageHeader({
   action?: { label: string; to: string };
   actionNode?: React.ReactNode;
   variant?: 'card' | 'minimal';
+  withBackdrop?: boolean;
   className?: string;
 }) {
   const content = (
@@ -33,9 +36,9 @@ export function PageHeader({
         ) : null}
         <div className='min-w-0'>
           {variant === 'minimal' ? (
-            <div className='mb-1.5 flex min-w-0 items-center gap-1.5 text-xs font-medium text-slate-400'>
+            <div className='mb-1 flex min-w-0 items-center gap-1.5 text-[11px] font-medium text-slate-400'>
               {Icon ? (
-                <Icon size={16} className='shrink-0 text-brand-purple/70' strokeWidth={1.9} />
+                <Icon size={14} className='shrink-0 text-brand-purple/60' strokeWidth={2.25} />
               ) : null}
               {subtitle ? <span className='truncate'>{subtitle}</span> : null}
             </div>
@@ -45,7 +48,7 @@ export function PageHeader({
           <h1
             className={
               variant === 'minimal'
-                ? 'truncate text-xl font-bold text-slate-950 sm:text-2xl'
+                ? 'truncate text-[16px] font-semibold leading-snug text-brand-navy-ink sm:text-lg'
                 : 'truncate text-lg font-bold text-slate-900 sm:text-xl'
             }
           >
@@ -75,6 +78,15 @@ export function PageHeader({
   );
 
   if (variant === 'minimal') {
+    if (withBackdrop) {
+      return (
+        <div className={cn('relative overflow-hidden', className)}>
+          <FactoryIdeasHeaderBackdrop />
+          <div className='relative z-10'>{content}</div>
+        </div>
+      );
+    }
+
     return (
       <div className={cn('border-b border-slate-200/70 pb-4', className)}>
         {content}

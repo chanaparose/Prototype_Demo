@@ -241,7 +241,7 @@ export function FactoryIdeasDesktop() {
               showBack={fromHub}
             />
 
-            <div className='mt-3 flex h-9 w-full items-center gap-2'>
+            <div className='mt-3 flex w-full items-center gap-2'>
             <FactoryIdeasTypeTabs
               tabs={visibleTypes}
               activeType={selectedType}
