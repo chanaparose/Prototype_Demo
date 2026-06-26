@@ -93,7 +93,7 @@ export function FactoryIdeasHubPage() {
           />
         </div>
 
-        <main className={`flex-1 px-4 pt-3 ${factoryIdeasContentSurfaceClass}`}>
+        <main className={`flex-1 px-4 pt-5 ${factoryIdeasContentSurfaceClass}`}>
           <TabSwipeContent activeKey={activeScope} tabOrder={HUB_SCOPE_ORDER}>
             {renderContent()}
           </TabSwipeContent>
