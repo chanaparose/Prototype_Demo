@@ -191,14 +191,14 @@ export function IdeaDetailMobile() {
                 className='block w-full text-left'
               >
                 <div className='flex items-center gap-1'>
-                  <span className='truncate text-[12px] font-semibold text-brand-navy-ink'>
+                  <span className='truncate text-[14px] font-semibold text-brand-navy-ink'>
                     {item.factoryName}
                   </span>
                   {factory?.verified ? (
                     <BadgeCheck size={13} className='shrink-0 text-brand-purple' />
                   ) : null}
                 </div>
-                <div className='mt-0.5 flex items-center gap-1.5 text-[10px] text-gray-400'>
+                <div className='mt-0.5 flex items-center gap-1.5 text-[12px] text-gray-400'>
                   {factory?.location ? (
                     <>
                       <MapPin size={9} className='shrink-0' />
@@ -230,7 +230,7 @@ export function IdeaDetailMobile() {
               variant='unstyled'
               type='button'
               onClick={() => void toggleFavorite(item.id)}
-              className='inline-flex items-center gap-1 text-[13px] active:opacity-70'
+              className='inline-flex items-center gap-1 text-[12px] active:opacity-70'
             >
               <Heart
                 className='h-3 w-3'
