@@ -97,21 +97,38 @@ export function FactoryIdeasMobile() {
     visibleTabIds,
     hubScope,
     hubName,
+    hubId,
   } = useFactoryIdeasPageState({ layout: 'mobile' });
+
+  const [, setSearchParams] = useSearchParams();
+
+  const handleHubChange = (newHubId: number, scope: 'PD' | 'MT' | undefined) => {
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set('hub_id', String(newHubId));
+      if (scope) p.set('hub_scope', scope);
+      else p.delete('hub_scope');
+      p.delete('category_id');
+      p.delete('sub_category_id');
+      return p;
+    });
+  };
 
   const visibleTabs = factoryIdeasVisibleContentTypes.filter((t) => visibleTabIds.has(t.id));
 
   return (
     <div className={`min-h-[100dvh] pb-24 ${factoryIdeasContentSurfaceClass}`}>
       <div className={factoryIdeasChromeGradientClass}>
-        <div className='relative overflow-hidden px-4 pb-3 pt-3'>
+        <div className='relative px-4 pb-3 pt-3'>
           <FactoryIdeasHeaderBackdrop />
           <div className='relative z-10'>
             <FactoryIdeasPageHeader
-              title={hubName ? `แนะนำโรงงาน · ${hubName}` : 'แนะนำโรงงาน'}
+              title={hubName ? `${hubName}` : 'แนะนำโรงงาน'}
               count={`${totalCount} รายการ`}
               hubScope={hubScope}
               showBack={fromHub}
+              currentHubId={hubId}
+              onHubChange={handleHubChange}
             />
           </div>
         </div>

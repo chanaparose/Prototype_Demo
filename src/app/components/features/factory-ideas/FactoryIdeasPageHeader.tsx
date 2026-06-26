@@ -1,15 +1,20 @@
-import { ArrowLeft, Layers } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Layers } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
 import { getFactoryIdeasHubPath } from '@/components/features/factory-ideas/factoryIdeasHubNav';
 import { factoryBadgeClass } from '@/pages/factory-portal/factoryUi';
+import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 type FactoryIdeasPageHeaderProps = {
   title: string;
   count: string;
   hubScope?: 'PD' | 'MT';
   showBack?: boolean;
+  currentHubId?: number;
+  onHubChange?: (hubId: number, scope: 'PD' | 'MT' | undefined) => void;
   className?: string;
 };
 
@@ -33,9 +38,37 @@ export function FactoryIdeasPageHeader({
   count,
   hubScope,
   showBack = false,
+  currentHubId,
+  onHubChange,
   className,
 }: FactoryIdeasPageHeaderProps) {
   const navigate = useNavigate();
+  const { data: allHubs = [] } = useLbiHubsQuery();
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (!dropdownRef.current?.contains(e.target as Node) && !triggerRef.current?.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const handleToggle = () => {
+    if (!open) {
+      const rect = triggerRef.current?.getBoundingClientRect();
+      if (rect) setDropdownPos({ top: rect.bottom + 6, left: rect.left });
+    }
+    setOpen((v) => !v);
+  };
+
+  const canSwitch = !!(onHubChange && allHubs.length > 0);
 
   return (
     <div className={cn('flex items-start justify-between gap-3', className)}>
@@ -58,9 +91,64 @@ export function FactoryIdeasPageHeader({
           <Layers size={14} className='shrink-0 text-brand-purple/60' strokeWidth={2.25} />
           <span className='truncate'>Discover</span>
         </div>
-        <h1 className='truncate text-[16px] font-semibold leading-snug text-brand-navy-ink sm:text-lg'>
-          {title}
-        </h1>
+
+        {canSwitch ? (
+          <div className='relative'>
+            <button
+              ref={triggerRef}
+              type='button'
+              onClick={handleToggle}
+              className='flex items-center gap-1 text-left'
+            >
+              <h1 className='truncate text-[16px] font-semibold leading-snug text-brand-navy-ink sm:text-lg'>
+                {title}
+              </h1>
+              <ChevronDown
+                size={16}
+                strokeWidth={2.25}
+                className={cn(
+                  'shrink-0 text-brand-purple transition-transform',
+                  open && 'rotate-180',
+                )}
+              />
+            </button>
+
+            {open ? createPortal(
+              <div
+                ref={dropdownRef}
+                className='fixed z-[9999] w-52 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg'
+                style={{ top: dropdownPos.top, left: dropdownPos.left }}
+              >
+                {allHubs.map((hub) => (
+                  <button
+                    key={hub.hub_id}
+                    type='button'
+                    onClick={() => {
+                      onHubChange(hub.hub_id, hub.scope as 'PD' | 'MT' | undefined);
+                      setOpen(false);
+                    }}
+                    className={cn(
+                      'flex w-full items-center gap-2 px-3.5 py-2.5 text-left text-[13px] transition-colors hover:bg-brand-lavender-chip',
+                      hub.hub_id === currentHubId
+                        ? 'font-semibold text-brand-purple'
+                        : 'font-medium text-slate-700',
+                    )}
+                  >
+                    {hub.hub_id === currentHubId && (
+                      <span className='h-1.5 w-1.5 shrink-0 rounded-full bg-brand-purple' />
+                    )}
+                    <span className={hub.hub_id === currentHubId ? '' : 'pl-3.5'}>{hub.name}</span>
+                  </button>
+                ))}
+              </div>,
+              document.body,
+            ) : null}
+          </div>
+        ) : (
+          <h1 className='truncate text-[16px] font-semibold leading-snug text-brand-navy-ink sm:text-lg'>
+            {title}
+          </h1>
+        )}
       </div>
 
       <span
