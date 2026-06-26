@@ -19,7 +19,7 @@ import {
   FactoryListRowSkeleton,
 } from '@/components/skeletons/PageSkeletons';
 import { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
-import { IdeaArticleCard } from '@/components/features/factory-ideas/IdeaArticleCard';
+import { IdeaPostCard } from '@/components/features/factory-ideas/IdeaPostCard';
 import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasPageState';
 import {
   factoryIdeasContentTypeBadge as contentTypeBadge,
@@ -365,23 +365,16 @@ export function FactoryIdeasMobile() {
             )}
           </TabSwipeContent>
         ) : selectedType === 'idea' ? (
-          <div className='grid grid-cols-1 gap-2'>
-            {visibleIdeaItems.map((item) => {
-              const factory = data.factories.find((f) => f.id === item.factoryId);
-              return (
-                <IdeaArticleCard
-                  key={item.id}
-                  id={item.id}
-                  title={item.title}
-                  excerpt={item.excerpt}
-                  factoryName={item.factoryName}
-                  factoryVerified={factory?.verified}
-                  isLiked={isLiked(item.id)}
-                  onToggleFavorite={toggleFavorite}
-                  onClick={() => navigate(getDetailPath(item.contentType, item.id))}
-                />
-              );
-            })}
+          <div className='flex flex-col gap-3'>
+            {visibleIdeaItems.map((item) => (
+              <IdeaPostCard
+                key={item.id}
+                item={item}
+                isLiked={isLiked(item.id)}
+                onToggleFavorite={toggleFavorite}
+                onClick={() => navigate(getDetailPath(item.contentType, item.id))}
+              />
+            ))}
           </div>
         ) : viewMode === 'grid' ? (
           <div className='grid grid-cols-2 md:grid-cols-3 gap-2'>
