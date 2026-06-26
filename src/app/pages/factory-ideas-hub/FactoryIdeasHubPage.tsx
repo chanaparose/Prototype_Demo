@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Layers } from 'lucide-react';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
-import { factoryIdeasChromeGradientClass } from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { factoryIdeasChromeGradientClass, factoryIdeasContentSurfaceClass } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 import { HubScopeTabs } from '@/components/features/hub/HubScopeTabs';
 import { HubSection } from '@/components/features/hub/HubSection';
 import { HubSectionSkeleton } from '@/components/features/hub/HubSectionSkeleton';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
+
+const HUB_SCOPE_ORDER: HubScope[] = ['PD', 'MT'];
 
 function ComingSoonStrip() {
   return (
@@ -72,7 +75,7 @@ export function FactoryIdeasHubPage() {
 
   return (
     <>
-      <div className='flex min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-24 lg:hidden'>
+      <div className={`flex min-h-[100dvh] flex-col pb-24 lg:hidden ${factoryIdeasContentSurfaceClass}`}>
         <div className={factoryIdeasChromeGradientClass}>
           <PageHeader
             title='หมวดหมู่โรงงาน'
@@ -91,7 +94,11 @@ export function FactoryIdeasHubPage() {
           />
         </div>
 
-        <main className='flex-1 px-4 py-5'>{renderContent()}</main>
+        <main className={`flex-1 px-4 pt-3 ${factoryIdeasContentSurfaceClass}`}>
+          <TabSwipeContent activeKey={activeScope} tabOrder={HUB_SCOPE_ORDER}>
+            {renderContent()}
+          </TabSwipeContent>
+        </main>
       </div>
 
       <div className='hidden min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-8 lg:flex'>
@@ -111,7 +118,11 @@ export function FactoryIdeasHubPage() {
           />
         </div>
 
-        <main className='flex-1 px-8 py-6 2xl:px-10'>{renderContent()}</main>
+        <main className='flex-1 px-8 py-6 2xl:px-10'>
+          <TabSwipeContent activeKey={activeScope} tabOrder={HUB_SCOPE_ORDER}>
+            {renderContent()}
+          </TabSwipeContent>
+        </main>
       </div>
     </>
   );

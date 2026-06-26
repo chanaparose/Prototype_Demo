@@ -32,7 +32,7 @@ export function HubScopeTabs({
         <div
           role='tablist'
           aria-label='เลือกประเภทหมวดหมู่'
-          className='grid grid-cols-2 border-b border-slate-200'
+          className='grid grid-cols-2 border-slate-200'
         >
           {(['PD', 'MT'] as const).map((scope) => {
             const label = HUB_SCOPE_LABELS[scope] ?? scope;
