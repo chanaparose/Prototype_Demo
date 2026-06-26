@@ -9,7 +9,7 @@ type MarkdownTypography = 'default' | 'showcase-detail';
 type Props = {
   source: string;
   className?: string;
-  /** `showcase-detail` — flat 14px body / 16px headings to match product detail */
+  /** `showcase-detail` — flat 13px body / 14px headings & strong */
   typography?: MarkdownTypography;
 };
 

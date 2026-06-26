@@ -3,18 +3,23 @@ import { type FactoryShowcase } from '@/stores/types';
 import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
 import { useRelatedShowcases } from '@/hooks/useRelatedShowcases';
 import { Image } from '@/components/ui/image';
+import { SHOWCASE_DETAIL_META_TEXT_CLASS } from '@/components/features/showcase-detail/showcaseDetailShared';
+import { cn } from '@lib/utils';
 
 interface RelatedShowcasesSectionProps {
   linkedShowcases: unknown;
   onItemClick?: (item: FactoryShowcase) => void;
   /** `inline` — ฝังในเนื้อหาบทความ (mobile), `card` — section แยก (desktop) */
   variant?: 'card' | 'inline';
+  /** ซ่อนหัวข้อเมื่ออยู่ใน tab panel */
+  embedded?: boolean;
 }
 
 export function RelatedShowcasesSection({
   linkedShowcases,
   onItemClick,
   variant = 'card',
+  embedded = false,
 }: RelatedShowcasesSectionProps) {
   const { showcaseIds } = React.useMemo(
     () => partitionLinkedShowcases(linkedShowcases),
@@ -28,10 +33,15 @@ export function RelatedShowcasesSection({
 
   if (variant === 'inline') {
     return (
-      <aside className='mt-5 border-t border-gray-100 pt-4' aria-label='อ้างอิงในไอเดียนี้'>
-        <h2 className='text-[13px] font-bold text-[var(--brand-navy)] mb-2.5'>
-          อ้างอิงในไอเดียนี้
-        </h2>
+      <aside
+        className={cn(!embedded && 'mt-5 border-t border-gray-100 pt-4')}
+        aria-label='อ้างอิงในไอเดียนี้'
+      >
+        {!embedded ? (
+          <h2 className={cn('mb-2 font-normal', SHOWCASE_DETAIL_META_TEXT_CLASS)}>
+            อ้างอิงในไอเดียนี้
+          </h2>
+        ) : null}
         <div className='-mx-1 flex gap-2.5 overflow-x-auto px-1 pb-0.5 snap-x snap-mandatory'>
           {items.map((item) => (
             <article
@@ -62,7 +72,7 @@ export function RelatedShowcasesSection({
                 >
                   {item.contentType === 'promotion' ? 'โปรโมชัน' : 'สินค้า'}
                 </span>
-                <p className='mt-1 text-[11px] font-semibold leading-snug text-gray-800 line-clamp-2'>
+                <p className='mt-1 text-[12px] font-medium leading-snug text-gray-600 line-clamp-2'>
                   {item.title}
                 </p>
               </div>

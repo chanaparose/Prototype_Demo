@@ -139,10 +139,7 @@ export function IdeaDetailDesktop() {
         </div>
 
         <article className='bg-white rounded-xl p-8 border border-slate-100'>
-          <MarkdownBody
-            source={markdown}
-            className='max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]'
-          />
+          <MarkdownBody source={markdown} typography='showcase-detail' />
         </article>
 
         <div className='rounded-xl border border-slate-100 p-3 bg-white'>
