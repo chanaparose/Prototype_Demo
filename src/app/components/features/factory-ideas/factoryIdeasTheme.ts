@@ -28,13 +28,13 @@ export const factoryIdeasContentSurfaceClass = 'bg-white';
 export const factoryIdeasTypeTabsChromeClass =
   'border-b border-slate-200/50 bg-white shadow-none';
 
-/** Active tab pill — solid brand purple (matches ExploreHubPreview links). */
-export const factoryIdeasTypeTabsActiveIndicatorClass = 'bg-brand-purple';
+/** Active tab pill — subtle accent below page title hierarchy. */
+export const factoryIdeasTypeTabsActiveIndicatorClass = 'bg-brand-purple/70';
 
-/** Segmented tab label states. */
-export const factoryIdeasTypeTabsActiveLabelClass = 'font-semibold text-brand-purple';
+/** Segmented tab label states — lighter than h1 (font-bold text-brand-navy-ink). */
+export const factoryIdeasTypeTabsActiveLabelClass = 'font-medium text-brand-navy-ink';
 export const factoryIdeasTypeTabsIdleLabelClass =
-  'font-normal text-slate-400 hover:text-brand-purple';
+  'font-normal text-slate-400 hover:text-slate-600';
 
 export const factoryIdeasFilterButtonSizeClass =
   'h-8 px-2.5 text-[12px] font-medium';

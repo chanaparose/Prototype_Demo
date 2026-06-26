@@ -59,7 +59,7 @@ export function FactoryIdeasTypeTabs({
                 {active ? (
                   <span
                     className={cn(
-                      'absolute bottom-0 left-1/2 h-[3px] w-[62%] max-w-[3.25rem] -translate-x-1/2 rounded-full',
+                      'absolute bottom-0 left-1/2 h-[2px] w-[58%] max-w-[3rem] -translate-x-1/2 rounded-full',
                       factoryIdeasTypeTabsActiveIndicatorClass,
                     )}
                     aria-hidden

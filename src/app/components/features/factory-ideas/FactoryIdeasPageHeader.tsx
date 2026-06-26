@@ -58,7 +58,7 @@ export function FactoryIdeasPageHeader({
           <Layers size={14} className='shrink-0 text-brand-purple/60' strokeWidth={2.25} />
           <span className='truncate'>Discover</span>
         </div>
-        <h1 className='truncate text-[16px] font-bold leading-snug text-brand-navy-ink sm:text-lg'>
+        <h1 className='truncate text-[16px] font-semibold leading-snug text-brand-navy-ink sm:text-lg'>
           {title}
         </h1>
       </div>
