@@ -78,7 +78,9 @@ export function PageHeader({
   );
 
   if (variant === 'minimal') {
-    if (withBackdrop) {
+    const useBackdrop = withBackdrop !== false;
+
+    if (useBackdrop) {
       return (
         <div className={cn('relative overflow-hidden', className)}>
           <FactoryIdeasHeaderBackdrop />
@@ -87,11 +89,7 @@ export function PageHeader({
       );
     }
 
-    return (
-      <div className={cn('border-b border-slate-200/70 pb-4', className)}>
-        {content}
-      </div>
-    );
+    return <div className={cn(className)}>{content}</div>;
   }
 
   return (

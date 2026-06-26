@@ -36,7 +36,8 @@ import { Button } from '@/components/ui/button';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Image } from '@/components/ui/image';
 import { parseWalletTransaction, type WalletTransactionView } from '@/utils/walletTransaction';
-import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import { factoryIdeasChromeGradientClass, factoryIdeasContentSurfaceClass } from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 type ProfileMenuItem = {
   icon: typeof User;
@@ -229,39 +230,14 @@ export function ProfileMobile() {
 
   if (!currentUser) {
     return (
-      <div className='flex min-h-[60vh] items-center justify-center bg-[var(--brand-page)]'>
+      <div className={`flex min-h-[60vh] items-center justify-center ${factoryIdeasContentSurfaceClass}`}>
         <p className='text-sm text-gray-400'>กำลังโหลด...</p>
       </div>
     );
   }
 
-  return (
-    <>
-      {/* ── Desktop header ── */}
-      <header className='sticky top-0 z-20 hidden bg-[var(--brand-page)] lg:block'>
-        <div className='px-8 py-4 2xl:px-10'>
-          <FactoryPageHeader
-            title='โปรไฟล์'
-            subtitle='บัญชี'
-            icon={User}
-            variant='minimal'
-          />
-        </div>
-      </header>
-
-      {/* ── Mobile shell + shared content padding ── */}
-      <div className='flex min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-20 lg:min-h-0 lg:pb-0'>
-        <div className='px-4 py-3 lg:hidden'>
-          <FactoryPageHeader
-            title='โปรไฟล์'
-            subtitle='บัญชี'
-            icon={User}
-            variant='minimal'
-          />
-        </div>
-
-        <div className='flex-1 space-y-3 px-4 pt-3 lg:space-y-4 lg:px-8 lg:py-6 2xl:px-10'>
-          <div className='space-y-3 lg:mx-auto lg:w-full lg:max-w-6xl lg:space-y-4'>
+  const profileContent = (
+    <div className='space-y-3 lg:space-y-4'>
         <div className='rounded-xl border border-gray-100 bg-white px-4 py-3'>
           <div className='flex items-center gap-3'>
             <div className='relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-gray-100 bg-[var(--brand-lavender)]'>
@@ -512,8 +488,41 @@ export function ProfileMobile() {
         <p className='pb-2 text-center text-[10px] text-gray-400'>
           ManuConnect v1.0.0 · สมาชิกตั้งแต่ {currentUser.memberSince}
         </p>
-          </div>
+    </div>
+  );
+
+  return (
+    <>
+      <div className={`flex min-h-[100dvh] flex-col pb-20 lg:hidden ${factoryIdeasContentSurfaceClass}`}>
+        <div className={factoryIdeasChromeGradientClass}>
+          <PageHeader
+            title='โปรไฟล์'
+            subtitle='บัญชี'
+            icon={User}
+            variant='minimal'
+            className='px-4 pb-3 pt-3'
+          />
         </div>
+
+        <main className={`flex-1 px-4 pt-3 ${factoryIdeasContentSurfaceClass}`}>
+          {profileContent}
+        </main>
+      </div>
+
+      <div className='hidden min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-8 lg:flex'>
+        <div className='sticky top-0 z-20'>
+          <PageHeader
+            title='โปรไฟล์'
+            subtitle='บัญชี'
+            icon={User}
+            variant='minimal'
+            className='border-b border-gray-100/80 px-8 py-4 2xl:px-10'
+          />
+        </div>
+
+        <main className='flex-1 px-8 py-6 2xl:px-10'>
+          <div className='mx-auto w-full max-w-6xl'>{profileContent}</div>
+        </main>
       </div>
 
       <AddressFormModal

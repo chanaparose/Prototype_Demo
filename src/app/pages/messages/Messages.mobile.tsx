@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ConversationRow } from '@/pages/messages/ConversationRow';
 import { MobileSearchField } from '@/components/shared/MobileSearchField';
-import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import { factoryIdeasChromeGradientClass, factoryIdeasContentSurfaceClass } from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 type MessagesMobileProps = {
   searchText: string;
@@ -56,17 +57,16 @@ export function MessagesMobile({
   }, [filtered, unreadOnly]);
 
   return (
-    <div className='md:hidden flex min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-20'>
-      <div className='border-b border-gray-100 bg-white'>
-        <div className='px-4 py-3'>
-          <FactoryPageHeader
-            title='ข้อความ'
-            subtitle='การสนทนา'
-            icon={MessageCircle}
-            variant='minimal'
-          />
-        </div>
-        <div className='flex items-center gap-2 px-4 pb-3'>
+    <div className={`md:hidden flex min-h-[100dvh] flex-col pb-20 ${factoryIdeasContentSurfaceClass}`}>
+      <div className={factoryIdeasChromeGradientClass}>
+        <PageHeader
+          title='ข้อความ'
+          subtitle='การสนทนา'
+          icon={MessageCircle}
+          variant='minimal'
+          className='px-4 pb-3 pt-3'
+        />
+        <div className='flex items-center gap-2 border-b border-slate-200 bg-white px-4 pb-3'>
           <MobileSearchField
             className='min-h-9 min-w-0 flex-1 py-1.5'
             value={searchText}
@@ -98,7 +98,7 @@ export function MessagesMobile({
         </div>
       </div>
 
-      <div className='flex min-h-0 flex-1 flex-col bg-[var(--brand-page)] px-4 pt-3'>
+      <div className={`flex min-h-0 flex-1 flex-col px-4 pt-3 ${factoryIdeasContentSurfaceClass}`}>
         {loading ? (
           <ListSkeleton />
         ) : error ? (

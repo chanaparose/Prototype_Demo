@@ -2,7 +2,8 @@ import React from 'react';
 import { FileText, Package, AlertTriangle } from 'lucide-react';
 import { useRfqAndOrdersState } from '@/components/features/rfq-and-orders/hooks/useRfqAndOrdersState';
 import { Button } from '@/components/ui/button';
-import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import { factoryIdeasChromeGradientClass, factoryIdeasContentSurfaceClass } from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { OrderPanel } from '@/components/features/rfq-and-orders/components/OrderPanel';
 import { RfqPanel } from '@/components/features/rfq-and-orders/components/RfqPanel';
 import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
@@ -130,37 +131,37 @@ export function RfqAndOrders() {
     <>
       {/* ── Desktop header ── */}
       <header className='sticky top-0 z-20 hidden lg:block'>
-        <div className='px-8 py-4 2xl:px-10'>
-          <FactoryPageHeader
-            title='คำขอราคา & คำสั่งซื้อ'
-            subtitle='คำขอและคำสั่งซื้อ'
-            icon={FileText}
-            action={{ label: 'สร้างคำขอราคา', to: '/create-rfq' }}
-            variant='minimal'
-          />
-        </div>
+        <PageHeader
+          title='คำขอราคา & คำสั่งซื้อ'
+          subtitle='คำขอและคำสั่งซื้อ'
+          icon={FileText}
+          action={{ label: 'สร้างคำขอราคา', to: '/create-rfq' }}
+          variant='minimal'
+          className='border-b border-gray-100/80 px-8 py-4 2xl:px-10'
+        />
       </header>
 
       {/* ── Mobile: title flush under layout logo + sticky tabs ── */}
-      <div className='flex min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-20 lg:hidden'>
-        <div className='px-4 py-3'>
-          <FactoryPageHeader
+      <div className={`flex min-h-[100dvh] flex-col pb-20 lg:hidden ${factoryIdeasContentSurfaceClass}`}>
+        <div className={factoryIdeasChromeGradientClass}>
+          <PageHeader
             title='คำขอราคา & คำสั่งซื้อ'
             subtitle='คำขอและคำสั่งซื้อ'
             icon={FileText}
             variant='minimal'
+            className='px-4 pb-3 pt-3'
           />
+
+          <div className='sticky top-14 z-20 bg-white shadow-none'>
+            <RfqOrdersTabBar
+              primaryTab={primaryTab}
+              setPrimaryTab={setPrimaryTab}
+              hasPendingPayment={hasPendingPayment}
+            />
+          </div>
         </div>
 
-        <div className='sticky top-14 z-20 border-b border-slate-200/70 bg-[var(--brand-page)]'>
-          <RfqOrdersTabBar
-            primaryTab={primaryTab}
-            setPrimaryTab={setPrimaryTab}
-            hasPendingPayment={hasPendingPayment}
-          />
-        </div>
-
-        <div className='flex-1 px-4 pt-3'>
+        <div className={`flex-1 px-4 pt-3 ${factoryIdeasContentSurfaceClass}`}>
           <TabSwipeContent activeKey={primaryTab} tabOrder={RFQ_ORDERS_TAB_ORDER}>
             {primaryTab === 'rfq' ? (
               <RfqPanel rfqs={rfqs} isMobile />

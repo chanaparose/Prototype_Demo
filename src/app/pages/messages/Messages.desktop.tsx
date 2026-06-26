@@ -7,7 +7,7 @@ import type { UiConversation } from '@/pages/messages/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { MobileSearchField } from '@/components/shared/MobileSearchField';
-import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 type MessagesDesktopProps = {
   searchText: string;
@@ -66,11 +66,13 @@ export function MessagesDesktop({
         <header className='shrink-0 border-b border-gray-100 bg-white px-4 pb-3 pt-5'>
           <div className='mb-3 flex items-start justify-between gap-3'>
             <div className='min-w-0 flex-1'>
-              <FactoryPageHeader
+              <PageHeader
                 title='ข้อความ'
                 subtitle='การสนทนา'
                 icon={MessageCircle}
                 variant='minimal'
+                withBackdrop={false}
+                className='pb-0'
               />
             </div>
             {!loading && !error ? (
