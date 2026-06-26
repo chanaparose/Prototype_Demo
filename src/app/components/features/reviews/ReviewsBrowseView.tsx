@@ -15,6 +15,8 @@ import { formatThaiDate } from '@/components/features/factory-profile/utils';
 import {
   filterReviews,
   maskReviewer,
+  REVIEW_BODY_TEXT_CLASS,
+  REVIEW_HEADING_TEXT_CLASS,
   type ReviewBrowseItem,
 } from '@/components/features/reviews/reviewBrowseUtils';
 import { Button } from '@/components/ui/button';
@@ -113,12 +115,17 @@ export function ReviewsBrowseView({
           >
             <ArrowLeft className='h-5 w-5 text-gray-700' />
           </Button>
-          <h1 className='flex-1 text-center text-base font-semibold text-gray-900'>คะแนน</h1>
+          <h1 className={cn('flex-1 text-center text-gray-900', REVIEW_HEADING_TEXT_CLASS)}>คะแนน</h1>
           <div className='h-9 w-9 shrink-0' />
         </div>
 
         <div className='flex border-b border-gray-100'>
-          <div className='relative flex-1 px-2 py-3 text-center text-sm font-semibold text-brand-orange'>
+          <div
+            className={cn(
+              'relative flex-1 px-2 py-3 text-center font-semibold text-brand-orange',
+              REVIEW_HEADING_TEXT_CLASS,
+            )}
+          >
             คะแนนสินค้า
             <span className='absolute bottom-0 left-1/2 h-0.5 w-16 -translate-x-1/2 rounded-full bg-brand-orange' />
           </div>
@@ -133,7 +140,8 @@ export function ReviewsBrowseView({
               setWithMedia(false);
             }}
             className={cn(
-              'shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium',
+              'shrink-0 rounded-full border px-3 py-1.5 font-medium',
+              REVIEW_BODY_TEXT_CLASS,
               filterAll && !withMedia
                 ? 'border-brand-orange text-brand-orange'
                 : 'border-gray-200 text-gray-600',
@@ -149,7 +157,8 @@ export function ReviewsBrowseView({
               setStarFilter(null);
             }}
             className={cn(
-              'shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium',
+              'shrink-0 rounded-full border px-3 py-1.5 font-medium',
+              REVIEW_BODY_TEXT_CLASS,
               withMedia ? 'border-brand-orange text-brand-orange' : 'border-gray-200 text-gray-600',
             )}
           >
@@ -159,7 +168,8 @@ export function ReviewsBrowseView({
             type='button'
             onClick={openStarSheet}
             className={cn(
-              'inline-flex shrink-0 items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium',
+              'inline-flex shrink-0 items-center gap-1 rounded-full border px-3 py-1.5 font-medium',
+              REVIEW_BODY_TEXT_CLASS,
               !filterAll && starFilter != null
                 ? 'border-brand-orange text-brand-orange'
                 : 'border-gray-200 text-gray-600',
@@ -179,7 +189,10 @@ export function ReviewsBrowseView({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder='ค้นหารีวิวจากผู้ซื้อคนอื่น'
-              className='w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-10 text-sm'
+              className={cn(
+                'w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-10',
+                REVIEW_BODY_TEXT_CLASS,
+              )}
             />
             <ImageIcon className='absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
           </div>
@@ -188,30 +201,41 @@ export function ReviewsBrowseView({
 
       <div className='px-4 pb-8'>
         {filteredReviews.length === 0 ? (
-          <p className='py-12 text-center text-sm text-gray-400'>ไม่พบรีวิวที่ตรงกับตัวกรอง</p>
+          <p className={cn('py-12 text-center text-gray-400', REVIEW_BODY_TEXT_CLASS)}>
+            ไม่พบรีวิวที่ตรงกับตัวกรอง
+          </p>
         ) : (
           <ul className='divide-y divide-gray-100'>
             {filteredReviews.map((review) => (
               <li key={review.id} className='py-4'>
                 <div className='flex items-start gap-3'>
-                  <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-500'>
+                  <div
+                    className={cn(
+                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 font-semibold text-gray-500',
+                      REVIEW_BODY_TEXT_CLASS,
+                    )}
+                  >
                     {review.reviewer.trim().charAt(0).toUpperCase() || 'ล'}
                   </div>
                   <div className='min-w-0 flex-1'>
                     <div className='flex flex-wrap items-center gap-x-2 gap-y-1'>
-                      <p className='text-sm font-semibold text-gray-900'>
+                      <p className={cn('text-gray-900', REVIEW_HEADING_TEXT_CLASS)}>
                         {maskReviewer(review.reviewer)}
                       </p>
                       <StarRow rating={Number(review.rating ?? 0)} />
                     </div>
                     {review.optionText ? (
-                      <p className='mt-1 text-xs text-gray-500'>
+                      <p className={cn('mt-1 text-gray-500', REVIEW_BODY_TEXT_CLASS)}>
                         ตัวเลือกสินค้า: {review.optionText}
                       </p>
                     ) : null}
-                    <p className='mt-2 text-sm leading-relaxed text-gray-700'>{review.comment}</p>
+                    <p className={cn('mt-2 leading-relaxed text-gray-700', REVIEW_BODY_TEXT_CLASS)}>
+                      {review.comment}
+                    </p>
                     {review.date ? (
-                      <p className='mt-1 text-[11px] text-gray-400'>{formatThaiDate(review.date)}</p>
+                      <p className={cn('mt-1 text-gray-400', REVIEW_BODY_TEXT_CLASS)}>
+                        {formatThaiDate(review.date)}
+                      </p>
                     ) : null}
                     {review.imageUrls && review.imageUrls.length > 0 ? (
                       <div className='mt-3'>
@@ -223,13 +247,15 @@ export function ReviewsBrowseView({
                     ) : null}
                     {review.factoryReply ? (
                       <div className='mt-3 rounded-lg border border-violet-100 bg-violet-50/60 px-3 py-2'>
-                        <p className='mb-0.5 text-[11px] font-semibold text-brand-purple'>
+                        <p className={cn('mb-0.5 text-brand-purple', REVIEW_HEADING_TEXT_CLASS)}>
                           การตอบกลับจากโรงงาน
                         </p>
-                        <p className='text-xs leading-relaxed text-slate-700'>{review.factoryReply}</p>
+                        <p className={cn('leading-relaxed text-slate-700', REVIEW_BODY_TEXT_CLASS)}>
+                          {review.factoryReply}
+                        </p>
                       </div>
                     ) : null}
-                    <p className='mt-2 inline-flex items-center gap-1 text-[11px] text-gray-400'>
+                    <p className={cn('mt-2 inline-flex items-center gap-1 text-gray-400', REVIEW_BODY_TEXT_CLASS)}>
                       <ThumbsUp className='h-3 w-3' />
                       มีประโยชน์ ({Number(review.helpfulCount ?? 0)})
                     </p>

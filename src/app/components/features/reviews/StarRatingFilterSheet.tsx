@@ -2,7 +2,7 @@ import React from 'react';
 import { Star } from 'lucide-react';
 import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
-import { computeBreakdown, type ReviewBrowseItem, type ReviewRatingBreakdown } from '@/components/features/reviews/reviewBrowseUtils';
+import { computeBreakdown, REVIEW_BODY_TEXT_CLASS, type ReviewBrowseItem, type ReviewRatingBreakdown } from '@/components/features/reviews/reviewBrowseUtils';
 
 type StarRatingFilterSheetProps = {
   open: boolean;
@@ -64,7 +64,7 @@ export function StarRatingFilterSheet({
                       <Star key={i} className='h-3.5 w-3.5 fill-amber-400 text-amber-400' />
                     ))}
                   </span>
-                  <span className='shrink-0 text-sm font-medium tabular-nums text-gray-600'>
+                  <span className={cn('shrink-0 font-medium tabular-nums text-gray-600', REVIEW_BODY_TEXT_CLASS)}>
                     ({count})
                   </span>
                 </span>
@@ -80,7 +80,7 @@ export function StarRatingFilterSheet({
               onViewAll();
               onOpenChange(false);
             }}
-            className='rounded-lg border border-brand-orange py-3 text-sm font-semibold text-brand-orange'
+            className={cn('rounded-lg border border-brand-orange py-3 font-semibold text-brand-orange', REVIEW_BODY_TEXT_CLASS)}
           >
             ดูทั้งหมด
           </Button>
@@ -91,7 +91,7 @@ export function StarRatingFilterSheet({
               onConfirm();
               onOpenChange(false);
             }}
-            className='rounded-lg bg-brand-orange py-3 text-sm font-semibold text-white'
+            className={cn('rounded-lg bg-brand-orange py-3 font-semibold text-white', REVIEW_BODY_TEXT_CLASS)}
           >
             ตกลง
           </Button>

@@ -3,9 +3,14 @@ import { ChevronRight, Search, Star, ThumbsUp } from 'lucide-react';
 import { openImageLightbox } from '@/stores/useLightboxStore';
 import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
 import { formatThaiDate } from '@/components/features/factory-profile/utils';
-import type { ReviewBrowseItem } from '@/components/features/reviews/reviewBrowseUtils';
+import {
+  REVIEW_BODY_TEXT_CLASS,
+  REVIEW_HEADING_TEXT_CLASS,
+  type ReviewBrowseItem,
+} from '@/components/features/reviews/reviewBrowseUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { cn } from '@lib/utils';
 
 type ReviewPreviewSectionProps = {
   reviews: ReviewBrowseItem[];
@@ -26,9 +31,13 @@ export function ReviewPreviewSection({
     <div className={className}>
       <div className='rounded-lg border border-gray-100 bg-white p-3 md:p-3.5'>
         <div className='mb-2 flex items-center justify-between gap-2'>
-          <p className='inline-flex items-center gap-1 text-[13px] font-bold text-[var(--brand-navy)] md:text-sm'>
-            <Star size={13} className='fill-amber-400 text-amber-400 md:hidden' strokeWidth={2.25} />
-            <Star size={14} className='hidden fill-amber-400 text-amber-400 md:block' strokeWidth={2.25} />
+          <p
+            className={cn(
+              'inline-flex items-center gap-1 font-bold text-[var(--brand-navy)]',
+              REVIEW_HEADING_TEXT_CLASS,
+            )}
+          >
+            <Star size={14} className='fill-amber-400 text-amber-400' strokeWidth={2.25} />
             คะแนนสินค้า ({reviews.length})
           </p>
           {onViewAll ? (
@@ -36,7 +45,10 @@ export function ReviewPreviewSection({
               variant='unstyled'
               type='button'
               onClick={onViewAll}
-              className='inline-flex shrink-0 items-center gap-0.5 text-[12px] font-medium text-brand-purple transition-colors hover:underline'
+              className={cn(
+                'inline-flex shrink-0 items-center gap-0.5 font-medium text-brand-purple transition-colors hover:underline',
+                REVIEW_BODY_TEXT_CLASS,
+              )}
             >
               ดูทั้งหมด <ChevronRight size={13} strokeWidth={2.25} />
             </Button>
@@ -53,32 +65,55 @@ export function ReviewPreviewSection({
             type='text'
             disabled
             placeholder='ค้นหารีวิวจากผู้ซื้อคนอื่น'
-            className='w-full rounded-lg border border-gray-100 bg-slate-50/80 py-2 pl-8 pr-3 text-[12px] text-gray-500 placeholder:text-gray-400'
+            className={cn(
+              'w-full rounded-lg border border-gray-100 bg-slate-50/80 py-2 pl-8 pr-3 text-gray-500 placeholder:text-gray-400',
+              REVIEW_BODY_TEXT_CLASS,
+            )}
           />
         </div>
 
         <div className='space-y-2'>
           {reviews.length === 0 ? (
-            <p className='rounded-lg border border-dashed border-gray-100 bg-slate-50/80 py-6 text-center text-[12px] text-gray-500'>
+            <p
+              className={cn(
+                'rounded-lg border border-dashed border-gray-100 bg-slate-50/80 py-6 text-center text-gray-500',
+                REVIEW_BODY_TEXT_CLASS,
+              )}
+            >
               ยังไม่มีรีวิว
             </p>
           ) : (
             reviews.slice(0, previewLimit).map((review) => (
               <div key={review.id} className='rounded-lg border border-gray-100 bg-slate-50/80 p-2.5'>
                 <div className='mb-0.5 flex items-center justify-between gap-2'>
-                  <p className='truncate text-xs font-medium text-gray-700'>{review.reviewer}</p>
-                  <p className='inline-flex shrink-0 items-center gap-0.5 text-[10px] text-gray-500'>
-                    <ThumbsUp size={10} strokeWidth={2.25} />
+                  <p className={cn('truncate font-medium text-gray-700', REVIEW_HEADING_TEXT_CLASS)}>
+                    {review.reviewer}
+                  </p>
+                  <p
+                    className={cn(
+                      'inline-flex shrink-0 items-center gap-0.5 text-gray-500',
+                      REVIEW_BODY_TEXT_CLASS,
+                    )}
+                  >
+                    <ThumbsUp size={12} strokeWidth={2.25} />
                     มีประโยชน์ ({Number(review.helpfulCount ?? 0)})
                   </p>
                 </div>
-                <p className='mb-0.5 text-[10px] font-semibold text-amber-600'>★ {review.rating}</p>
+                <p className={cn('mb-0.5 font-semibold text-amber-600', REVIEW_BODY_TEXT_CLASS)}>
+                  ★ {review.rating}
+                </p>
                 {review.optionText ? (
-                  <p className='mb-0.5 text-[10px] text-gray-500'>ตัวเลือกสินค้า: {review.optionText}</p>
+                  <p className={cn('mb-0.5 text-gray-500', REVIEW_BODY_TEXT_CLASS)}>
+                    ตัวเลือกสินค้า: {review.optionText}
+                  </p>
                 ) : null}
-                <p className='text-[10px] leading-relaxed text-gray-600'>{review.comment}</p>
+                <p className={cn('leading-relaxed text-gray-600', REVIEW_BODY_TEXT_CLASS)}>
+                  {review.comment}
+                </p>
                 {review.date ? (
-                  <p className='mt-1 text-[9px] text-gray-400'>{formatThaiDate(review.date)}</p>
+                  <p className={cn('mt-1 text-gray-400', REVIEW_BODY_TEXT_CLASS)}>
+                    {formatThaiDate(review.date)}
+                  </p>
                 ) : null}
                 {review.imageUrls && review.imageUrls.length > 0 ? (
                   <div className='mt-1.5'>
@@ -90,10 +125,12 @@ export function ReviewPreviewSection({
                 ) : null}
                 {review.factoryReply ? (
                   <div className='mt-2 rounded-lg border border-brand-purple/15 bg-brand-purple/[0.04] px-2.5 py-2'>
-                    <p className='mb-0.5 text-[9px] font-semibold text-brand-purple'>
+                    <p className={cn('mb-0.5 text-brand-purple', REVIEW_HEADING_TEXT_CLASS)}>
                       การตอบกลับจากโรงงาน
                     </p>
-                    <p className='text-[10px] leading-relaxed text-gray-600'>{review.factoryReply}</p>
+                    <p className={cn('leading-relaxed text-gray-600', REVIEW_BODY_TEXT_CLASS)}>
+                      {review.factoryReply}
+                    </p>
                   </div>
                 ) : null}
               </div>
@@ -103,7 +140,7 @@ export function ReviewPreviewSection({
 
         {footerNote ? (
           <div className='mt-3 border-t border-gray-100 pt-2.5'>
-            <p className='text-[10px] leading-relaxed text-gray-500'>{footerNote}</p>
+            <p className={cn('leading-relaxed text-gray-500', REVIEW_BODY_TEXT_CLASS)}>{footerNote}</p>
           </div>
         ) : null}
       </div>

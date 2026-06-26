@@ -3,9 +3,11 @@ import { toast } from 'sonner';
 import { ImagePlus, X } from 'lucide-react';
 import { mediaApi } from '@/services/api/factoryApi';
 import { normalizeReviewImageUrls, REVIEW_IMAGE_MAX } from '@/utils/reviewImageUrls';
+import { REVIEW_BODY_TEXT_CLASS } from '@/components/features/reviews/reviewBrowseUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
+import { cn } from '@lib/utils';
 
 type Props = {
   urls: string[];
@@ -113,7 +115,10 @@ export function ReviewImageAttachments({
               type='button'
               disabled={uploading}
               onClick={() => inputRef.current?.click()}
-              className='w-16 h-16 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 text-[10px] gap-0.5 disabled:opacity-50'
+              className={cn(
+                'flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-lg border border-dashed border-gray-300 text-gray-400 disabled:opacity-50',
+                REVIEW_BODY_TEXT_CLASS,
+              )}
             >
               <ImagePlus size={18} />
               {uploading ? '…' : 'เพิ่ม'}
@@ -122,7 +127,9 @@ export function ReviewImageAttachments({
         ) : null}
       </div>
       {editable ? (
-        <p className='text-[10px] text-gray-400'>แนบรูปได้ไม่เกิน {REVIEW_IMAGE_MAX} รูป</p>
+        <p className={cn('text-gray-400', REVIEW_BODY_TEXT_CLASS)}>
+          แนบรูปได้ไม่เกิน {REVIEW_IMAGE_MAX} รูป
+        </p>
       ) : null}
     </div>
   );

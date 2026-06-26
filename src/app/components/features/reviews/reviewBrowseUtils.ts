@@ -1,3 +1,9 @@
+/** ข้อความรีวิวทั่วไป */
+export const REVIEW_BODY_TEXT_CLASS = 'text-[12px]';
+
+/** ชื่อผู้รีวิว / หัวข้อ section */
+export const REVIEW_HEADING_TEXT_CLASS = 'text-[14px] font-semibold';
+
 export type ReviewBrowseItem = {
   id: string;
   reviewer: string;
