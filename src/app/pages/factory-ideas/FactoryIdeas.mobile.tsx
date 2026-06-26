@@ -24,6 +24,8 @@ import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasP
 import {
   factoryIdeasContentTypeBadge as contentTypeBadge,
   factoryIdeasContentTypeLabel as contentTypeLabel,
+  factoryIdeasChromeGradientClass,
+  factoryIdeasContentSurfaceClass,
   factoryIdeasListExcerpt,
   factoryIdeasSecondarySearchPlaceholder,
   factoryIdeasToolbarCardClass,
@@ -100,29 +102,30 @@ export function FactoryIdeasMobile() {
   const visibleTabs = factoryIdeasVisibleContentTypes.filter((t) => visibleTabIds.has(t.id));
 
   return (
-    <div className='min-h-[100dvh] bg-[var(--brand-page)] pb-24'>
-      <div className='relative overflow-hidden px-4 pb-2 pt-3'>
-        <FactoryIdeasHeaderBackdrop />
-        <div className='relative z-10'>
-          <FactoryIdeasPageHeader
-            title={hubName ? `แนะนำโรงงาน · ${hubName}` : 'แนะนำโรงงาน'}
-            count={`${totalCount} รายการ`}
-            hubScope={hubScope}
-            showBack={fromHub}
-          />
+    <div className={`min-h-[100dvh] pb-24 ${factoryIdeasContentSurfaceClass}`}>
+      <div className={factoryIdeasChromeGradientClass}>
+        <div className='relative overflow-hidden px-4 pb-1 pt-3'>
+          <FactoryIdeasHeaderBackdrop />
+          <div className='relative z-10'>
+            <FactoryIdeasPageHeader
+              title={hubName ? `แนะนำโรงงาน · ${hubName}` : 'แนะนำโรงงาน'}
+              count={`${totalCount} รายการ`}
+              hubScope={hubScope}
+              showBack={fromHub}
+            />
+          </div>
         </div>
-      </div>
 
-      <div className='sticky top-14 z-20 overflow-visible border-b border-gray-100/80 bg-[var(--brand-page)]/95 backdrop-blur-sm'>
-        <FactoryIdeasTypeTabs
-          tabs={visibleTabs}
-          activeType={selectedType}
-          onTypeChange={setSelectedType}
-          className='px-2'
-        />
+        <div className='sticky top-14 z-20 overflow-visible bg-gradient-to-b from-transparent via-white/80 to-white backdrop-blur-md'>
+          <FactoryIdeasTypeTabs
+            variant='segmented'
+            tabs={visibleTabs}
+            activeType={selectedType}
+            onTypeChange={setSelectedType}
+          />
 
-        <div className='px-4 pt-1.5 pb-2'>
-          <div className={factoryIdeasToolbarCardClass}>
+          <div className='px-4 pt-2 pb-2'>
+            <div className={factoryIdeasToolbarCardClass}>
             <div className='flex items-center gap-1.5'>
               <FactoryIdeasCategoryDropdown
                 variant='mobile'
@@ -179,11 +182,14 @@ export function FactoryIdeasMobile() {
                 className='w-[3.25rem]'
               />
             </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className={`px-4 pt-4 transition-opacity duration-200 ${showcasesFetching ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div
+        className={`px-4 pt-3 transition-opacity duration-200 ${factoryIdeasContentSurfaceClass} ${showcasesFetching ? 'pointer-events-none opacity-50' : ''}`}
+      >
         <TabSwipeContent activeKey={selectedType} tabOrder={factoryIdeasTabOrder}>
         {showcasesLoading || factoriesLoading ? (
           isFactoryTab ? (

@@ -17,6 +17,17 @@ export const factoryIdeasToolbarTrailingWidthClass = 'w-[3.875rem]';
 /** Unified mobile filter toolbar — flat on sticky bar (no outer card frame). */
 export const factoryIdeasToolbarCardClass = 'overflow-visible flex flex-col gap-1.5';
 
+/** Header + tabs chrome — tinted top fading into white content. */
+export const factoryIdeasChromeGradientClass =
+  'bg-gradient-to-b from-brand-purple/[0.09] via-[var(--brand-page)] via-[42%] to-white';
+
+/** Main list surface below chrome. */
+export const factoryIdeasContentSurfaceClass = 'bg-white';
+
+/** Type tabs on mobile — continues header fade into white. */
+export const factoryIdeasTypeTabsChromeClass =
+  'border-b border-slate-200/50 bg-gradient-to-b from-transparent via-white/75 to-white';
+
 export const factoryIdeasFilterButtonSizeClass =
   'h-8 px-2.5 text-[12px] font-medium';
 

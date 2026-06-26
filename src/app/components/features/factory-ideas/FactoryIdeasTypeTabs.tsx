@@ -1,5 +1,8 @@
 import { cn } from '@lib/utils';
-import type { FactoryIdeasContentType } from '@/components/features/factory-ideas/factoryIdeasTheme';
+import {
+  factoryIdeasTypeTabsChromeClass,
+  type FactoryIdeasContentType,
+} from '@/components/features/factory-ideas/factoryIdeasTheme';
 
 type FactoryIdeasTypeTab = {
   id: FactoryIdeasContentType;
@@ -10,6 +13,7 @@ type FactoryIdeasTypeTabsProps = {
   tabs: FactoryIdeasTypeTab[];
   activeType: FactoryIdeasContentType;
   onTypeChange: (type: FactoryIdeasContentType) => void;
+  variant?: 'underline' | 'segmented';
   className?: string;
 };
 
@@ -17,8 +21,52 @@ export function FactoryIdeasTypeTabs({
   tabs,
   activeType,
   onTypeChange,
+  variant = 'underline',
   className,
 }: FactoryIdeasTypeTabsProps) {
+  if (variant === 'segmented') {
+    return (
+      <div className={cn('px-4', className)}>
+        <div
+          role='tablist'
+          aria-label='ประเภทรายการ'
+          className={cn(
+            'flex min-w-0 items-stretch overflow-x-auto scrollbar-hide',
+            factoryIdeasTypeTabsChromeClass,
+          )}
+        >
+          {tabs.map((type) => {
+            const active = activeType === type.id;
+            return (
+              <button
+                key={type.id}
+                type='button'
+                role='tab'
+                aria-selected={active}
+                data-tour={`tab-${type.id}`}
+                onClick={() => onTypeChange(type.id)}
+                className={cn(
+                  'relative min-w-0 flex-1 shrink-0 whitespace-nowrap px-3 pb-3 pt-2.5 text-[14px] transition-colors',
+                  active
+                    ? 'font-semibold text-brand-violet-deep'
+                    : 'font-normal text-slate-400 hover:text-brand-violet-deep/80',
+                )}
+              >
+                {type.label}
+                {active ? (
+                  <span
+                    className='absolute bottom-0 left-1/2 h-[3px] w-[62%] max-w-[3.25rem] -translate-x-1/2 rounded-full bg-brand-violet-deep'
+                    aria-hidden
+                  />
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       role='tablist'

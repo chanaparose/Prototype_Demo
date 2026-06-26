@@ -20,7 +20,8 @@ export function FactoryIdeasHeaderBackdrop({ className }: { className?: string }
       className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}
       aria-hidden
     >
-      <div className='absolute inset-0 bg-gradient-to-br from-brand-purple/[0.07] via-[var(--brand-page)] to-brand-orange/[0.06]' />
+      <div className='absolute inset-0 bg-gradient-to-br from-brand-purple/[0.11] via-[var(--brand-page)] to-brand-orange/[0.08]' />
+      <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-white/90' />
       <div className='absolute -right-16 -top-16 h-40 w-40 rounded-full bg-brand-orange/[0.09] blur-3xl' />
       <div className='absolute -left-12 top-6 h-36 w-36 rounded-full bg-brand-purple/[0.07] blur-3xl' />
     </div>
