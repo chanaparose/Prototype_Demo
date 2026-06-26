@@ -124,11 +124,7 @@ export function ShowcaseDetailMobileScrollHeader({
                     : { color: 'var(--brand-magenta)' }
                 }
               />
-              {likeBadge ? (
-                <span className='absolute -right-0.5 top-1 min-w-[18px] rounded-full bg-[var(--status-danger)] px-1 py-px text-center text-[9px] font-bold leading-none text-white'>
-                  {likeBadge}
-                </span>
-              ) : null}
+               
             </Button>
           ) : null}
 
