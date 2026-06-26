@@ -149,6 +149,7 @@ export function RfqAndOrders() {
             subtitle='คำขอและคำสั่งซื้อ'
             icon={FileText}
             variant='minimal'
+            withBackdrop
             className='px-4 pb-3 pt-3'
           />
 

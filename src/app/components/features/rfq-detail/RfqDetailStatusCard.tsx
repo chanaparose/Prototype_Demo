@@ -30,35 +30,43 @@ export function RfqDetailStatusCard({
   footer,
 }: RfqDetailStatusCardProps) {
   return (
-    <div className='rounded-lg p-4 border border-violet-200 bg-violet-50/60'>
-      <div className='flex items-center justify-between mb-3'>
-        <div className='flex items-center gap-2'>
-          <div
-            className='w-10 h-10 rounded-xl flex items-center justify-center text-lg border border-violet-200'
-            style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F3EEFF 100%)' }}
-          >
-            <CategoryIcon value={rfq.categoryIcon} className='text-violet-600' />
+    <div className='rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm'>
+      <div className='mb-3 flex items-start justify-between gap-2'>
+        <div className='flex min-w-0 items-center gap-2.5'>
+          <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-[var(--brand-page)]/50 text-lg'>
+            <CategoryIcon value={rfq.categoryIcon} className='text-brand-violet-deep' />
           </div>
-          <div>
-            <p className='text-[10px] text-slate-500'>{rfq.category}</p>
-            <p className='text-sm' style={{ color: 'var(--brand-navy)', fontWeight: 700 }}>
-              {rfq.projectName}
-            </p>
+          <div className='min-w-0'>
+            <p className='truncate text-[10px] text-slate-500'>{rfq.category}</p>
+            <p className='truncate text-[14px] font-bold text-brand-navy-ink'>{rfq.projectName}</p>
           </div>
         </div>
         <span
-          className='px-2.5 py-1 rounded-full text-[10px] shrink-0 border border-violet-200'
-          style={{ ...statusBadgeStyle, fontWeight: 700 }}
+          className='shrink-0 rounded-full border border-slate-200/80 px-2.5 py-1 text-[10px] font-bold'
+          style={statusBadgeStyle}
         >
           {statusLabel}
         </span>
       </div>
-      <div className='flex items-center gap-3 text-xs text-slate-600'>
-        <span className='font-semibold text-slate-700'>{formatCurrency(rfq.budget)}</span>
-        <span className='text-violet-300'>•</span>
-        <span className='font-semibold text-slate-700'>{formatCompactNumber(rfq.quantity)} {rfq.unitName || 'ชิ้น'}</span>
+
+      <div className='grid grid-cols-2 gap-3 border-t border-slate-100 pt-3'>
+        <div>
+          <p className={RFQ_STAT_LABEL_CLASS}>งบประมาณ</p>
+          <p className={RFQ_STAT_VALUE_CLASS}>{formatCurrency(rfq.budget)}</p>
+        </div>
+        <div>
+          <p className={RFQ_STAT_LABEL_CLASS}>จำนวน</p>
+          <p className={RFQ_STAT_VALUE_CLASS}>
+            {formatCompactNumber(rfq.quantity)} {rfq.unitName || 'ชิ้น'}
+          </p>
+        </div>
       </div>
-      {footer ? <div className='mt-3 pt-3 border-t border-violet-100'>{footer}</div> : null}
+
+      {footer ? <div className='mt-3 border-t border-slate-100 pt-3'>{footer}</div> : null}
     </div>
   );
 }
+
+const RFQ_STAT_LABEL_CLASS =
+  'text-[10px] font-medium uppercase tracking-wide text-slate-400';
+const RFQ_STAT_VALUE_CLASS = 'mt-0.5 text-[13px] font-semibold text-brand-navy-ink';

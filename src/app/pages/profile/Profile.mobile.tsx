@@ -500,6 +500,7 @@ export function ProfileMobile() {
             subtitle='บัญชี'
             icon={User}
             variant='minimal'
+            withBackdrop
             className='px-4 pb-3 pt-3'
           />
         </div>

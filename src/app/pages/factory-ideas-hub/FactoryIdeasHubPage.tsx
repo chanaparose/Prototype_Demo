@@ -82,6 +82,7 @@ export function FactoryIdeasHubPage() {
             subtitle='Discover'
             icon={Layers}
             variant='minimal'
+            withBackdrop
             className='px-4 pb-3 pt-3'
           />
 
