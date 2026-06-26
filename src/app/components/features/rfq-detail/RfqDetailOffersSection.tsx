@@ -800,7 +800,7 @@ export function RfqDetailOffersSection({
   const isClosed = rfqStatus === 'closed';
 
   return (
-    <div className='bg-white rounded-lg border border-gray-200 p-8 text-center'>
+    <div className='bg-white rounded-lg border border-gray-200 p-8 text-center mt-3'>
       <div
         className='w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-3'
         style={{ background: isClosed ? 'var(--neutral-slate-muted)' : 'var(--neutral-muted)' }}
