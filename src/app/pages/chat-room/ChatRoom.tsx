@@ -595,16 +595,9 @@ function ChatRoomBody({
                     compact={isFullMobile}
                   />
                 ) : (
-                  <div className='flex items-center gap-2'>
-                    <ImageWithFallback
-                      src={conv.factoryAvatar}
-                      alt={conv.factoryName}
-                      className='h-7 w-7 shrink-0 rounded-lg object-cover bg-gray-100 lg:h-8 lg:w-8 lg:rounded-xl'
-                    />
-                    <p className='truncate text-[16px] font-semibold leading-snug text-brand-navy-ink sm:text-lg'>
-                      {conv.factoryName || 'การสนทนา'}
-                    </p>
-                  </div>
+                  <p className='truncate text-[16px] font-semibold leading-snug text-brand-navy-ink sm:text-lg'>
+                    {conv.factoryName || 'การสนทนา'}
+                  </p>
                 )}
               </div>
             </div>
