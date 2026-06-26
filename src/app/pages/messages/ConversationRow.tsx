@@ -10,7 +10,7 @@ type ConversationRowProps = {
   conv: UiConversation;
   onClick: () => void;
   isActive?: boolean;
-  layout?: 'card' | 'panel';
+  layout?: 'card' | 'panel' | 'list';
 };
 
 export function ConversationRow({
@@ -28,23 +28,29 @@ export function ConversationRow({
       ? '🖼 รูปภาพ'
       : conv.lastMessage?.trim() || conv.rfqName || '—';
 
+  const isList = layout === 'list';
+
   return (
     <Button
       variant='unstyled'
       type='button'
       onClick={onClick}
       className={cn(
-        'flex w-full min-h-[58px] items-center gap-3 px-3.5 py-2.5 text-left transition-colors',
-        layout === 'panel' && isActive
-          ? 'bg-white shadow-[inset_3px_0_0_0_var(--brand-purple)]'
-          : layout === 'panel' && !isActive
-            ? 'hover:bg-white/70'
-            : isActive
-              ? 'bg-[var(--brand-page)] shadow-[inset_3px_0_0_0_var(--brand-purple)]'
-              : hasUnread
-                ? 'bg-[var(--brand-page)]/35 hover:bg-[var(--brand-page)]/55'
-                : 'hover:bg-gray-50/80',
-        layout === 'panel' && hasUnread && !isActive && 'bg-[var(--brand-page)]/50',
+        'flex w-full items-center gap-3 text-left transition-colors',
+        isList
+          ? 'min-h-[68px] px-4 py-3 active:bg-black/[0.04] hover:bg-black/[0.02]'
+          : 'min-h-[58px] px-3.5 py-2.5',
+        !isList &&
+          (layout === 'panel' && isActive
+            ? 'bg-white shadow-[inset_3px_0_0_0_var(--brand-purple)]'
+            : layout === 'panel' && !isActive
+              ? 'hover:bg-white/70'
+              : isActive
+                ? 'bg-[var(--brand-page)] shadow-[inset_3px_0_0_0_var(--brand-purple)]'
+                : hasUnread
+                  ? 'bg-[var(--brand-page)]/35 hover:bg-[var(--brand-page)]/55'
+                  : 'hover:bg-gray-50/80'),
+        !isList && layout === 'panel' && hasUnread && !isActive && 'bg-[var(--brand-page)]/50',
       )}
     >
       <Avatar
@@ -52,7 +58,10 @@ export function ConversationRow({
         alt={conv.view.title}
         fallbackSrc={FACTORY_FALLBACK_AVATAR}
         fallback={conv.view.title.slice(0, 1)}
-        className='h-10 w-10 shrink-0 rounded-full'
+        className={cn(
+          'shrink-0 rounded-full',
+          isList ? 'h-12 w-12' : 'h-10 w-10',
+        )}
         imageClassName='object-cover'
       />
 
@@ -61,7 +70,8 @@ export function ConversationRow({
           <div className='flex min-w-0 items-center gap-1'>
             <p
               className={cn(
-                'truncate text-[13px] leading-tight text-[var(--brand-navy)]',
+                'truncate leading-tight text-[var(--brand-navy)]',
+                isList ? 'text-[14px]' : 'text-[13px]',
                 hasUnread || isActive ? 'font-bold' : 'font-semibold',
               )}
             >
@@ -74,7 +84,8 @@ export function ConversationRow({
           {time ? (
             <span
               className={cn(
-                'shrink-0 text-[11px] tabular-nums leading-none',
+                'shrink-0 tabular-nums leading-none',
+                isList ? 'text-[11px]' : 'text-[11px]',
                 hasUnread ? 'font-semibold text-[var(--brand-purple)]' : 'text-gray-400',
               )}
             >
@@ -86,19 +97,25 @@ export function ConversationRow({
         <div className='mt-0.5 flex items-center gap-2'>
           <p
             className={cn(
-              'min-w-0 flex-1 truncate text-[12px] leading-tight',
+              'min-w-0 flex-1 truncate leading-tight',
+              isList ? 'text-[13px]' : 'text-[12px]',
               conv.hasQuote
                 ? 'font-medium text-[var(--brand-orange-deep)]'
                 : hasUnread
-                  ? 'font-medium text-gray-600'
-                  : 'text-gray-400',
+                  ? 'font-medium text-gray-700'
+                  : 'text-gray-500',
             )}
           >
             {preview}
           </p>
           {hasUnread ? (
             <span
-              className='flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full bg-[var(--brand-purple)] px-1 text-[10px] font-bold leading-none text-white'
+              className={cn(
+                'flex shrink-0 items-center justify-center rounded-full bg-[var(--brand-purple)] font-bold leading-none text-white',
+                isList
+                  ? 'h-5 min-w-[20px] px-1.5 text-[11px]'
+                  : 'h-[18px] min-w-[18px] px-1 text-[10px]',
+              )}
               aria-label={`${conv.unread} ข้อความใหม่`}
             >
               {conv.unread > 99 ? '99+' : conv.unread}

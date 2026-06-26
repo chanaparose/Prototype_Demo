@@ -22,16 +22,16 @@ type MessagesMobileProps = {
 
 function ListSkeleton() {
   return (
-    <div className='overflow-hidden rounded-xl border border-gray-200 bg-white divide-y divide-gray-100'>
+    <div className='-mx-4 divide-y divide-gray-100 border-y border-gray-100 bg-white'>
       {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-        <div key={i} className='flex animate-pulse items-center gap-3 px-3.5 py-2.5'>
-          <div className='h-10 w-10 shrink-0 rounded-full bg-[var(--brand-lavender)]' />
-          <div className='min-w-0 flex-1 space-y-1.5'>
+        <div key={i} className='flex animate-pulse items-center gap-3 px-4 py-3'>
+          <div className='h-12 w-12 shrink-0 rounded-full bg-gray-100' />
+          <div className='min-w-0 flex-1 space-y-2'>
             <div className='flex justify-between gap-2'>
-              <div className='h-3 w-28 rounded-full bg-[var(--brand-lavender-muted)]' />
-              <div className='h-2.5 w-8 rounded-full bg-[var(--brand-lavender)]' />
+              <div className='h-3.5 w-28 rounded-full bg-gray-100' />
+              <div className='h-3 w-10 rounded-full bg-gray-100' />
             </div>
-            <div className='h-2.5 w-[75%] rounded-full bg-[var(--brand-lavender)]' />
+            <div className='h-3 w-[70%] rounded-full bg-gray-100' />
           </div>
         </div>
       ))}
@@ -66,7 +66,7 @@ export function MessagesMobile({
           variant='minimal'
           className='px-4 pb-3 pt-3'
         />
-        <div className='flex items-center gap-2 border-b border-slate-200 bg-white px-4 pb-3'>
+        <div className='flex items-center gap-2 border-slate-200 bg-white px-4 pb-3'>
           <MobileSearchField
             className='min-h-9 min-w-0 flex-1 py-1.5'
             value={searchText}
@@ -117,11 +117,12 @@ export function MessagesMobile({
         ) : visibleConversations.length === 0 ? (
           <MobileEmptyState unreadOnly={unreadOnly} />
         ) : (
-          <div className='overflow-hidden rounded-xl border border-gray-200 bg-white shadow-none divide-y divide-gray-100'>
+          <div className='-mx-4 divide-y divide-gray-100 border-y border-gray-100 bg-white'>
             {visibleConversations.map((conv) => (
               <ConversationRow
                 key={conv.id}
                 conv={conv}
+                layout='list'
                 onClick={() => navigate(`/chat-room/${conv.id}`)}
               />
             ))}

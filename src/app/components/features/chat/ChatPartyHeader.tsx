@@ -4,7 +4,7 @@ import { cn } from '@lib/utils';
 import type { CounterpartyView } from '@/utils/counterparty';
 import { FACTORY_FALLBACK_AVATAR } from '@/utils/counterparty';
 import { Button } from '@/components/ui/button';
-
+import { Avatar } from '@/components/ui/avatar';
 
 interface Props {
   view: CounterpartyView;
@@ -27,26 +27,37 @@ export function ChatPartyHeader({
   trailing,
   onClick,
 }: Props) {
-  const size = compact ? 32 : density === 'header' ? 40 : 44;
-  const frameClass = compact ? 'h-8 w-8' : density === 'header' ? 'h-10 w-10' : 'h-11 w-11';
+  const isHeader = density === 'header';
+  const size = compact ? 36 : isHeader ? 40 : 44;
+  const frameClass = compact ? 'h-9 w-9' : isHeader ? 'h-10 w-10' : 'h-11 w-11';
+
   return (
     <Button
       variant='unstyled'
       type='button'
       onClick={onClick}
-      className={cn('flex w-full items-center text-left', compact ? 'gap-2' : 'gap-3')}
+      className={cn('flex w-full min-w-0 items-center text-left', compact ? 'gap-2.5' : 'gap-3')}
       aria-label='ดูข้อมูลการสนทนา'
     >
-       
-      <div className='flex-1 min-w-0'>
+      {isHeader ? (
+        <Avatar
+          src={view.avatarUrl}
+          alt={view.title}
+          fallbackSrc={FACTORY_FALLBACK_AVATAR}
+          fallback={view.title.slice(0, 1)}
+          className={cn(frameClass, 'shrink-0 rounded-full')}
+          imageClassName='object-cover'
+          style={{ width: size, height: size }}
+        />
+      ) : null}
+
+      <div className='min-w-0 flex-1'>
         <div className='flex items-center gap-1'>
           <p
             className={cn(
               'truncate text-gray-900',
-              density === 'header'
-                ? compact
-                  ? 'text-[16px] font-semibold leading-snug text-brand-navy-ink'
-                  : 'text-sm font-semibold text-brand-navy-ink sm:text-base'
+              isHeader
+                ? 'text-[14px] font-semibold leading-tight'
                 : compact
                   ? 'text-[13px] font-semibold'
                   : 'text-sm font-semibold',
@@ -54,17 +65,20 @@ export function ChatPartyHeader({
           >
             {view.title}
           </p>
-          {view.verified ? <BadgeCheck size={14} className='text-brand-purple' /> : null}
+          {view.verified ? (
+            <BadgeCheck size={isHeader ? 13 : 14} className='shrink-0 text-brand-purple' />
+          ) : null}
         </div>
         {previewLine ? (
           <p
-            className={`truncate text-xs leading-snug ${
+            className={cn(
+              'truncate text-[12px] leading-snug',
               previewEmphasis === 'quote'
                 ? 'font-medium text-[var(--brand-orange-deep)]'
                 : previewEmphasis === 'unread'
                   ? 'font-medium text-[var(--neutral-text)]'
-                  : 'text-gray-500'
-            }`}
+                  : 'text-gray-500',
+            )}
           >
             {previewLine}
           </p>
