@@ -40,6 +40,7 @@ type OrderSummaryCardProps = {
   relatedFactory?: FactoryInfo | null;
   /** API-driven label (e.g. หมดกำหนดชำระ for PE) — never show raw codes like PP/PE */
   statusLabelTh?: string;
+  orderId?: string;
 };
 
 export function OrderSummaryCard({
@@ -47,6 +48,7 @@ export function OrderSummaryCard({
   rfqSummary,
   relatedFactory,
   statusLabelTh,
+  orderId,
 }: OrderSummaryCardProps) {
   const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending_payment;
   const badgeLabel = statusLabelTh?.trim() || cfg.label;
@@ -68,6 +70,13 @@ export function OrderSummaryCard({
     >
       <div className='absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20 bg-white' />
       <div className='relative z-10'>
+        {orderId ? (
+          <p className='mb-4 truncate text-[13px] font-semibold leading-tight text-white/90'>
+            <span className='text-white/75'>คำสั่งซื้อ</span>
+            <span className='mx-1 font-normal text-white/40'>·</span>
+            <span className='font-semibold text-white'>OD-{orderId}</span>
+          </p>
+        ) : null}
         <div className='mb-3 flex items-start justify-between gap-3 lg:mb-4'>
           <div className='flex min-w-0 flex-1 items-center gap-3'>
             {relatedFactory?.image && (

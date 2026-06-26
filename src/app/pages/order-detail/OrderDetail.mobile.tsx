@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
-  ChevronLeft,
+  ArrowLeft,
   MessageCircle,
   Star,
   X,
@@ -32,6 +32,41 @@ import { useRfqDetailQuery } from '@/domain/rfq/queries/useRfqDetailQuery';
 import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
 import { AppDialog } from '@/components/ui/app-dialog';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  factoryIdeasChromeGradientClass,
+  factoryIdeasContentSurfaceClass,
+} from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
+import {
+  RFQ_DETAIL_BACK_BUTTON_CLASS,
+  RFQ_DETAIL_SUB_HEADER_ROW_CLASS,
+} from '@/components/features/rfq-detail/rfqDetailTheme';
+
+function OrderDetailSubHeader({
+  onBack,
+  onChat,
+}: {
+  onBack: () => void;
+  onChat: () => void;
+}) {
+  return (
+    <div className={`${RFQ_DETAIL_SUB_HEADER_ROW_CLASS} justify-between`}>
+      <Button variant='unstyled' type='button' onClick={onBack} className={RFQ_DETAIL_BACK_BUTTON_CLASS}>
+        <ArrowLeft size={15} strokeWidth={2.25} aria-hidden />
+        กลับ
+      </Button>
+      <Button
+        variant='unstyled'
+        type='button'
+        onClick={onChat}
+        aria-label='แชทกับโรงงาน'
+        className='-mr-1 inline-flex h-6 shrink-0 items-center justify-center rounded-md px-1 text-slate-500 transition-colors hover:text-brand-purple active:opacity-70'
+      >
+        <MessageCircle size={15} strokeWidth={2.25} aria-hidden />
+      </Button>
+    </div>
+  );
+}
 
 function OrderDetailMobileBody() {
   const navigate = useNavigate();
@@ -240,69 +275,71 @@ function OrderDetailMobileBody() {
     }
   };
 
+  const goBack = useCallback(() => navigate('/orders'), [navigate]);
+
   return (
-    <div className='min-h-screen bg-white'>
-      <div className='fixed inset-x-0 top-0 z-[99999] flex items-center justify-between h-12 px-4 border-b border-gray-200 bg-white/95 backdrop-blur-sm lg:hidden'>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => navigate(-1)}
-          className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
-        >
-          <ChevronLeft size={18} />
-          กลับ
-        </Button>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => openOrderChat()}
-          className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
-        >
-          <MessageCircle size={18} style={{ color: 'var(--brand-purple)' }} />
-        </Button>
-      </div>
+    <div className={`flex min-h-[100dvh] flex-col pb-32 ${factoryIdeasContentSurfaceClass}`}>
+      <div className={factoryIdeasChromeGradientClass}>
+        <div className='relative px-4 pb-3 pt-2 lg:px-6 2xl:px-8'>
+          <FactoryIdeasHeaderBackdrop />
+          <div className='relative z-10 space-y-3'>
+            <OrderDetailSubHeader onBack={goBack} onChat={openOrderChat} />
+            <OrderSummaryCard
+              order={order}
+              orderId={order.id}
+              rfqSummary={rfqSummary}
+              relatedFactory={relatedFactory}
+              statusLabelTh={statusLabelTh}
+            />
+          </div>
+        </div>
 
-      <div className='hidden lg:flex sticky top-0 z-10 items-center justify-between h-12 px-4 border-b border-gray-200 bg-white lg:px-6 2xl:px-8'>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => navigate(-1)}
-          className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
-        >
-          <ChevronLeft size={18} />
-          กลับ
-        </Button>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => openOrderChat()}
-          className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
-        >
-          <MessageCircle size={18} style={{ color: 'var(--brand-purple)' }} />
-        </Button>
-      </div>
-
-      <div className='flex-1 flex flex-col min-h-0'>
-        {receiveForbidden ? (
-          <div className='px-4 pt-2'>
+        <div className='sticky top-14 z-20 overflow-visible bg-white shadow-none'>
+          <div data-tour='order-tabs' className='flex border-b border-gray-100 bg-white'>
             <Button
               variant='unstyled'
               type='button'
-              onClick={() => navigate(-1)}
+              onClick={() => setActiveSection('overview')}
+              className={`flex-1 py-3 border-b-2 transition-colors ${
+                activeSection === 'overview'
+                  ? 'border-brand-purple text-brand-purple'
+                  : 'border-transparent text-gray-400'
+              }`}
+              style={{ fontSize: 14 }}
+            >
+              ภาพรวม
+            </Button>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => setActiveSection('production')}
+              className={`flex-1 py-3 border-b-2 transition-colors ${
+                activeSection === 'production'
+                  ? 'border-brand-purple text-brand-purple'
+                  : 'border-transparent text-gray-400'
+              }`}
+              style={{ fontSize: 14 }}
+            >
+              การผลิต
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className='flex min-h-0 flex-1 flex-col'>
+        {receiveForbidden ? (
+          <div className='px-4 pt-2 lg:px-6 2xl:px-8'>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={goBack}
               className='w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700'
             >
               กลับไปรายการคำสั่งซื้อ
             </Button>
           </div>
         ) : null}
-        <div className='flex-1 overflow-y-auto px-4 pb-4 pt-14 lg:px-6 lg:pb-6 lg:pt-5 2xl:px-8 space-y-4'>
-          <OrderSummaryCard
-            order={order}
-            rfqSummary={rfqSummary}
-            relatedFactory={relatedFactory}
-            statusLabelTh={statusLabelTh}
-          />
-
+        <div className='flex-1 space-y-4 overflow-y-auto px-4 pb-4 pt-3 lg:px-6 lg:pb-6 2xl:px-8'>
           {/* WS — รอแนบสลิป */}
           {uiMode.lockReason === 'WAITING_SLIP' && uiMode.showActionBanner ? (
             <OrderActionBanner
@@ -405,38 +442,6 @@ function OrderDetailMobileBody() {
               </Button>
             </div>
           ) : null}
-
-          <div
-            data-tour='order-tabs'
-            className='flex border-b border-gray-100 bg-white -mx-4 px-0 lg:-mx-6 lg:px-6 2xl:-mx-8 2xl:px-8'
-          >
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => setActiveSection('overview')}
-              className={`flex-1 py-3 border-b-2 transition-colors ${
-                activeSection === 'overview'
-                  ? 'border-brand-purple text-brand-purple'
-                  : 'border-transparent text-gray-400'
-              }`}
-              style={{ fontSize: 14 }}
-            >
-              ภาพรวม
-            </Button>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => setActiveSection('production')}
-              className={`flex-1 py-3 border-b-2 transition-colors ${
-                activeSection === 'production'
-                  ? 'border-brand-purple text-brand-purple'
-                  : 'border-transparent text-gray-400'
-              }`}
-              style={{ fontSize: 14 }}
-            >
-              การผลิต
-            </Button>
-          </div>
 
           {activeSection === 'overview' && (
             <div data-tour='order-overview'>

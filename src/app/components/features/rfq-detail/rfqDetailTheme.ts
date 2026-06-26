@@ -8,7 +8,7 @@ export const RFQ_DETAIL_EYEBROW_CLASS =
   'text-[10px] font-semibold uppercase tracking-wider text-brand-violet-deep/55';
 
 export const RFQ_DETAIL_SUB_HEADER_ROW_CLASS =
-  'mb-1 flex min-w-0 items-center gap-1.5';
+  'mt-2 mb-2 flex min-w-0 items-center gap-1.5';
 
 export const RFQ_DETAIL_BACK_BUTTON_CLASS =
   '-ml-1 inline-flex h-6 shrink-0 items-center gap-1 rounded-md px-1 text-[12px] font-medium text-slate-500 transition-colors hover:text-brand-purple active:opacity-70';
