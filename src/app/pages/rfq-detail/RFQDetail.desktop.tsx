@@ -274,6 +274,7 @@ export function RFQDetailDesktop() {
               <div className='p-4'>
                 <RfqDetailStatusCard
                   rfq={rfq}
+                  rfqId={id}
                   isHistoryView={isHistoryView}
                   statusBadgeStyle={statusBadgeStyle}
                   statusLabel={statusLabel}

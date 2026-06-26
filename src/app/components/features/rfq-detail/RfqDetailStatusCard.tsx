@@ -1,6 +1,12 @@
 import React from 'react';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { CategoryIcon } from '@/components/ui/category-icon';
+import {
+  RFQ_DETAIL_CARD_EYEBROW_CLASS,
+  RFQ_DETAIL_CARD_EYEBROW_DOT_CLASS,
+  RFQ_DETAIL_CARD_EYEBROW_ID_CLASS,
+  RFQ_DETAIL_CARD_EYEBROW_LABEL_CLASS,
+} from '@/components/features/rfq-detail/rfqDetailTheme';
 
 export type RfqForStatusCard = {
   category: string;
@@ -16,6 +22,7 @@ export type RfqForStatusCard = {
 
 type RfqDetailStatusCardProps = {
   rfq: RfqForStatusCard;
+  rfqId?: string;
   isHistoryView: boolean;
   statusBadgeStyle: { background: string; color: string };
   statusLabel: string;
@@ -24,6 +31,7 @@ type RfqDetailStatusCardProps = {
 
 export function RfqDetailStatusCard({
   rfq,
+  rfqId,
   isHistoryView: _isHistoryView,
   statusBadgeStyle,
   statusLabel,
@@ -31,6 +39,13 @@ export function RfqDetailStatusCard({
 }: RfqDetailStatusCardProps) {
   return (
     <div className='rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm'>
+      {rfqId ? (
+        <p className={RFQ_DETAIL_CARD_EYEBROW_CLASS}>
+          <span className={RFQ_DETAIL_CARD_EYEBROW_LABEL_CLASS}>คำขอราคา</span>
+          <span className={RFQ_DETAIL_CARD_EYEBROW_DOT_CLASS}>·</span>
+          <span className={RFQ_DETAIL_CARD_EYEBROW_ID_CLASS}>RFQ-{rfqId}</span>
+        </p>
+      ) : null}
       <div className='mb-3 flex items-start justify-between gap-2'>
         <div className='flex min-w-0 items-center gap-2.5'>
           <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-[var(--brand-page)]/50 text-lg'>

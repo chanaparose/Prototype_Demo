@@ -6,7 +6,7 @@ import { rfqsApi } from '@/services/api/rfqApi';
 import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';
 import type { OfferItem } from '@/components/features/rfq-detail/RfqDetailOffersSection';
-import { ChevronLeft, ClipboardList, GitCompare } from 'lucide-react';
+import { ArrowLeft, ClipboardList, GitCompare } from 'lucide-react';
 import { useRfqDetail } from '@/components/features/rfq/hooks/useRfqDetail';
 import { RfqDetailStatusCard } from '@/components/features/rfq-detail/RfqDetailStatusCard';
 import { RfqDetailSpecs } from '@/components/features/rfq-detail/RfqDetailSpecs';
@@ -17,7 +17,16 @@ import {
   factoryIdeasContentSurfaceClass,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
-import { RFQ_DETAIL_EYEBROW_CLASS } from '@/components/features/rfq-detail/rfqDetailTheme';
+import {
+  RFQ_DETAIL_BACK_BUTTON_CLASS,
+  RFQ_DETAIL_SUB_HEADER_ROW_CLASS,
+  RFQ_DETAIL_TAB_ACTIVE_CLASS,
+  RFQ_DETAIL_TAB_ICON_ACTIVE_CLASS,
+  RFQ_DETAIL_TAB_ICON_IDLE_CLASS,
+  RFQ_DETAIL_TAB_IDLE_CLASS,
+  RFQ_DETAIL_TAB_INDICATOR_CLASS,
+  RFQ_DETAIL_TAB_LIST_CLASS,
+} from '@/components/features/rfq-detail/rfqDetailTheme';
 import { CLOSEABLE_STATUSES, HISTORY_STATUSES, STATUS_LABEL } from '@/domain/rfq/constants';
 import { Button } from '@/components/ui/button';
 
@@ -46,7 +55,7 @@ function RfqDetailTabBar({
     <div
       role='tablist'
       aria-label='รายละเอียดคำขอราคา'
-      className='grid grid-cols-2 border-b border-slate-200'
+      className={RFQ_DETAIL_TAB_LIST_CLASS}
     >
       {DETAIL_TABS.map((tab) => {
         const active = activeTab === tab.id;
@@ -62,13 +71,13 @@ function RfqDetailTabBar({
             onClick={() => onChange(tab.id)}
             {...(tab.dataTour ? { 'data-tour': tab.dataTour } : {})}
             className={`relative flex min-w-0 items-center justify-center gap-1.5 px-3 py-3 text-center transition-colors ${
-              active ? 'text-brand-violet-deep' : 'text-slate-500 hover:text-brand-violet-deep'
+              active ? RFQ_DETAIL_TAB_ACTIVE_CLASS : RFQ_DETAIL_TAB_IDLE_CLASS
             }`}
           >
             <Icon
               size={15}
               strokeWidth={2.1}
-              className={`shrink-0 ${active ? 'text-brand-violet-deep' : 'text-slate-400'}`}
+              className={`shrink-0 ${active ? RFQ_DETAIL_TAB_ICON_ACTIVE_CLASS : RFQ_DETAIL_TAB_ICON_IDLE_CLASS}`}
               aria-hidden
             />
             <span
@@ -79,9 +88,7 @@ function RfqDetailTabBar({
               {tab.label}
               {countLabel}
             </span>
-            {active ? (
-              <span className='absolute inset-x-4 bottom-[-1px] h-0.5 rounded-full bg-brand-violet-deep' />
-            ) : null}
+            {active ? <span className={RFQ_DETAIL_TAB_INDICATOR_CLASS} /> : null}
           </button>
         );
       })}
@@ -95,11 +102,19 @@ function RfqDetailBackRow({ onBack }: { onBack: () => void }) {
       variant='unstyled'
       type='button'
       onClick={onBack}
-      className='inline-flex shrink-0 items-center gap-0.5 text-[13px] text-slate-600 active:opacity-70'
+      className={RFQ_DETAIL_BACK_BUTTON_CLASS}
     >
-      <ChevronLeft size={18} />
+      <ArrowLeft size={15} strokeWidth={2.25} aria-hidden />
       กลับ
     </Button>
+  );
+}
+
+function RfqDetailSubHeader({ onBack }: { onBack: () => void }) {
+  return (
+    <div className={RFQ_DETAIL_SUB_HEADER_ROW_CLASS}>
+      <RfqDetailBackRow onBack={onBack} />
+    </div>
   );
 }
 
@@ -179,7 +194,7 @@ export function RFQDetailMobile() {
           <div className='relative px-4 pb-3 pt-2'>
             <FactoryIdeasHeaderBackdrop />
             <div className='relative z-10'>
-              <RfqDetailBackRow onBack={goBack} />
+              <RfqDetailSubHeader onBack={goBack} />
             </div>
           </div>
         </div>
@@ -198,7 +213,7 @@ export function RFQDetailMobile() {
           <div className='relative px-4 pb-3 pt-2'>
             <FactoryIdeasHeaderBackdrop />
             <div className='relative z-10'>
-              <RfqDetailBackRow onBack={goBack} />
+              <RfqDetailSubHeader onBack={goBack} />
             </div>
           </div>
         </div>
@@ -269,45 +284,43 @@ export function RFQDetailMobile() {
       <div className={factoryIdeasChromeGradientClass}>
         <div className='relative px-4 pb-3 pt-2'>
           <FactoryIdeasHeaderBackdrop />
-          <div className='relative z-10'>
-            <RfqDetailBackRow onBack={goBack} />
-            <p className={`mt-2 ${RFQ_DETAIL_EYEBROW_CLASS}`}>คำขอราคา · RFQ-{id}</p>
-            <div className='mt-2'>
-              <RfqDetailStatusCard
-                rfq={rfq}
-                isHistoryView={isHistoryView}
-                statusBadgeStyle={statusBadgeStyle}
-                statusLabel={statusLabel}
-                footer={
-                  canClose ? (
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      disabled={closing}
-                      onClick={async () => {
-                        const ok = window.confirm(
-                          'ปิดรับคำขอราคานี้? โรงงานจะไม่สามารถส่งใบเสนอราคาใหม่ได้ แต่คำสั่งซื้อที่ยืนยันแล้วยังคงดำเนินต่อไป',
-                        );
-                        if (!ok) return;
-                        setClosing(true);
-                        try {
-                          await rfqsApi.close(rfq.id);
-                          toast.success('ปิดรับคำขอราคาเรียบร้อย');
-                          await refetch();
-                        } catch (err) {
-                          toast.error(err instanceof Error ? err.message : 'ไม่สามารถปิดคำขอได้');
-                        } finally {
-                          setClosing(false);
-                        }
-                      }}
-                      className='w-full rounded-xl border border-brand-purple/30 bg-brand-lavender-chip/40 py-2 text-[13px] font-semibold text-brand-violet-deep disabled:opacity-60'
-                    >
-                      {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
-                    </Button>
-                  ) : undefined
-                }
-              />
-            </div>
+          <div className='relative z-10 space-y-3'>
+            <RfqDetailSubHeader onBack={goBack} />
+            <RfqDetailStatusCard
+              rfq={rfq}
+              rfqId={id}
+              isHistoryView={isHistoryView}
+              statusBadgeStyle={statusBadgeStyle}
+              statusLabel={statusLabel}
+              footer={
+                canClose ? (
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    disabled={closing}
+                    onClick={async () => {
+                      const ok = window.confirm(
+                        'ปิดรับคำขอราคานี้? โรงงานจะไม่สามารถส่งใบเสนอราคาใหม่ได้ แต่คำสั่งซื้อที่ยืนยันแล้วยังคงดำเนินต่อไป',
+                      );
+                      if (!ok) return;
+                      setClosing(true);
+                      try {
+                        await rfqsApi.close(rfq.id);
+                        toast.success('ปิดรับคำขอราคาเรียบร้อย');
+                        await refetch();
+                      } catch (err) {
+                        toast.error(err instanceof Error ? err.message : 'ไม่สามารถปิดคำขอได้');
+                      } finally {
+                        setClosing(false);
+                      }
+                    }}
+                    className='w-full rounded-xl border border-brand-purple/30 bg-brand-lavender-chip/40 py-2 text-[13px] font-semibold text-brand-violet-deep disabled:opacity-60'
+                  >
+                    {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
+                  </Button>
+                ) : undefined
+              }
+            />
           </div>
         </div>
 

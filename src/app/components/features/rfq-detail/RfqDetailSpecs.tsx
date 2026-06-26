@@ -2,6 +2,12 @@ import React from 'react';
 import { openImageLightbox } from '@/stores/useLightboxStore';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
+import {
+  RFQ_DETAIL_SPEC_DIVIDER_CLASS,
+  RFQ_DETAIL_SPEC_LABEL_CLASS,
+  RFQ_DETAIL_SPEC_NOTE_TEXT_CLASS,
+  RFQ_DETAIL_SPEC_VALUE_CLASS,
+} from '@/components/features/rfq-detail/rfqDetailTheme';
 
 export type RfqForSpecs = {
   category: string;
@@ -70,24 +76,30 @@ export function RfqDetailSpecs({ rfq, bare = false }: RfqDetailSpecsProps) {
     { label: 'วันที่สร้าง', value: rfq.createdAt },
   ];
 
+  const labelClass = bare ? RFQ_DETAIL_SPEC_LABEL_CLASS : 'text-xs text-gray-500';
+  const valueClass = bare
+    ? RFQ_DETAIL_SPEC_VALUE_CLASS
+    : 'text-xs text-right';
+  const valueStyle = bare ? undefined : { fontWeight: 500, color: 'var(--brand-navy)' };
+  const sectionDividerClass = bare
+    ? `border-t ${RFQ_DETAIL_SPEC_DIVIDER_CLASS}`
+    : 'border-t border-gray-100';
+
   const content = (
     <div className={bare ? 'px-4 py-4' : 'px-4 pb-4 border-t border-gray-50'}>
       <div className={`space-y-2.5 ${bare ? '' : 'mt-3'}`}>
         {rows.map((item) => (
           <div key={item.label} className='flex justify-between gap-4'>
-            <span className='text-xs text-gray-500'>{item.label}</span>
-            <span
-              className='text-xs text-right'
-              style={{ fontWeight: 500, color: 'var(--brand-navy)' }}
-            >
+            <span className={labelClass}>{item.label}</span>
+            <span className={valueClass} style={valueStyle}>
               {item.value}
             </span>
           </div>
         ))}
       </div>
       {imageUrls.length > 0 && (
-        <div className='mt-3 pt-3 border-t border-gray-100'>
-          <p className='text-xs text-gray-500 mb-2'>รูปอ้างอิง / แนบมากับ RFQ</p>
+        <div className={`mt-3 pt-3 ${sectionDividerClass}`}>
+          <p className={`${labelClass} mb-2`}>รูปอ้างอิง / แนบมากับ RFQ</p>
           <div className='grid grid-cols-2 sm:grid-cols-3 gap-2'>
             {imageUrls.map((url, idx) => (
               <button
@@ -104,21 +116,29 @@ export function RfqDetailSpecs({ rfq, bare = false }: RfqDetailSpecsProps) {
         </div>
       )}
       {rfq.description && (
-        <div className='mt-3 pt-3 border-t border-gray-100'>
-          <p className='text-xs text-gray-500 mb-1.5'>รายละเอียด</p>
-          <div className='rounded-xl border border-violet-100 bg-violet-50/80 px-3 py-2.5'>
-            <p className='text-xs leading-relaxed text-violet-950'>{rfq.description}</p>
-          </div>
+        <div className={`mt-3 pt-3 ${sectionDividerClass}`}>
+          <p className={`${labelClass} mb-1.5`}>รายละเอียด</p>
+          {bare ? (
+            <p className={RFQ_DETAIL_SPEC_NOTE_TEXT_CLASS}>{rfq.description}</p>
+          ) : (
+            <div className='rounded-xl border border-violet-100 bg-violet-50/80 px-3 py-2.5'>
+              <p className='text-xs leading-relaxed text-violet-950'>{rfq.description}</p>
+            </div>
+          )}
         </div>
       )}
       {Array.isArray(rfq.certificationsRequired) && rfq.certificationsRequired.length > 0 && (
-        <div className='mt-3 pt-3 border-t border-gray-100'>
-          <p className='text-xs text-gray-500 mb-2'>Certifications required</p>
+        <div className={`mt-3 pt-3 ${sectionDividerClass}`}>
+          <p className={`${labelClass} mb-2`}>Certifications required</p>
           <div className='flex flex-wrap gap-1.5'>
             {rfq.certificationsRequired.map((c) => (
               <span
                 key={c}
-                className='text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-700 border border-violet-100'
+                className={
+                  bare
+                    ? 'text-[11px] text-brand-violet-deep'
+                    : 'text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-700 border border-violet-100'
+                }
               >
                 {c}
               </span>
