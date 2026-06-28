@@ -9,36 +9,44 @@ import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';
 import type { OfferItem } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import { CLOSEABLE_STATUSES, HISTORY_STATUSES, STATUS_LABEL } from '@/domain/rfq/constants';
-import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
 import { RfqDetailOffersSection } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import { RfqDetailSpecs } from '@/components/features/rfq-detail/RfqDetailSpecs';
 import { RfqDetailStatusCard } from '@/components/features/rfq-detail/RfqDetailStatusCard';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
-import { appColors } from '@/styles/colors';
+import {
+  factoryIdeasChromeGradientClass,
+} from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
+import {
+  RFQ_DETAIL_BACK_BUTTON_CLASS,
+  RFQ_DETAIL_EYEBROW_CLASS,
+  rfqDetailContentSurfaceClass,
+} from '@/components/features/rfq-detail/rfqDetailTheme';
 
-const COLORS = {
-  purple: appColors.brand.mauve,
-  purpleLight: appColors.brand.mauveLight,
-  orange: appColors.brand.orangeDeep,
-  blue: appColors.brand.navy,
-  white: appColors.neutral.white,
-  gray: appColors.neutral.warmSurface,
-  lightPurpleBg: appColors.brand.page,
-};
+function RfqDetailBackRow({ onBack }: { onBack: () => void }) {
+  return (
+    <Button variant='unstyled' type='button' onClick={onBack} className={RFQ_DETAIL_BACK_BUTTON_CLASS}>
+      <ArrowLeft size={15} strokeWidth={2.25} aria-hidden />
+      กลับ
+    </Button>
+  );
+}
+
 export function RFQDetailDesktop() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { rfq, relatedOrder, quoteOrderMap, quoteHistories, loading, error, refetch } =
-    useRfqDetail(id);
+  const { rfq, relatedOrder, quoteHistories, loading, error, refetch } = useRfqDetail(id);
 
   const [specsOpen, setSpecsOpen] = React.useState(false);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
   const [closing, setClosing] = React.useState(false);
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
+
+  const goBack = useCallback(() => navigate('/orders'), [navigate]);
 
   React.useEffect(() => {
     if (!rfq?.offers?.length) return;
@@ -72,42 +80,24 @@ export function RFQDetailDesktop() {
     [user, navigate, id, rfq?.projectName],
   );
 
-  const sharedHeader = (
-    <div className='flex items-center gap-3 mb-2'>
-      <Button
-        variant='unstyled'
-        type='button'
-        onClick={() => navigate('/orders')}
-        className='w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-gray-200 hover:border-gray-300 transition-colors'
-        style={{ backgroundColor: COLORS.white }}
-      >
-        <ArrowLeft size={18} style={{ color: COLORS.blue }} />
-      </Button>
-      <div className='min-w-0'>
-        <p className='text-xs uppercase tracking-wider font-semibold' style={{ color: COLORS.orange }}>
-          RFQ Detail
-        </p>
+  const chromeHeader = (
+    <div className={factoryIdeasChromeGradientClass}>
+      <div className='relative overflow-hidden border-b border-gray-100/80'>
+        <FactoryIdeasHeaderBackdrop />
+        <div className='relative z-10 mx-auto max-w-6xl px-8 py-4 2xl:px-10'>
+          <RfqDetailBackRow onBack={goBack} />
+        </div>
       </div>
     </div>
   );
 
   if (loading) {
     return (
-      <div
-        className='hidden lg:block min-h-[60vh]'
-        style={{ backgroundColor: COLORS.lightPurpleBg }}
-      >
-        <div className='max-w-6xl mx-auto px-8 py-7'>
-          {sharedHeader}
-          <div className='flex flex-col items-center gap-4 text-center py-20'>
-            <div
-              className='w-10 h-10 rounded-full border-[3px] animate-spin'
-              style={{ borderColor: COLORS.purple, borderTopColor: 'transparent' }}
-            />
-            <p className='text-sm font-semibold' style={{ color: COLORS.blue }}>
-              กำลังโหลด RFQ...
-            </p>
-          </div>
+      <div className={`hidden min-h-[60vh] lg:block ${rfqDetailContentSurfaceClass}`}>
+        {chromeHeader}
+        <div className='mx-auto flex max-w-6xl flex-col items-center gap-4 px-8 py-20 text-center 2xl:px-10'>
+          <div className='h-10 w-10 animate-spin rounded-full border-[3px] border-brand-violet-deep border-t-transparent' />
+          <p className='text-sm font-semibold text-brand-navy-ink'>กำลังโหลดคำขอราคา...</p>
         </div>
       </div>
     );
@@ -115,43 +105,36 @@ export function RFQDetailDesktop() {
 
   if (!rfq) {
     return (
-      <div
-        className='hidden lg:block min-h-[60vh]'
-        style={{ backgroundColor: COLORS.lightPurpleBg }}
-      >
-        <div className='max-w-6xl mx-auto px-8 py-7'>
-          {sharedHeader}
-          <div className='flex flex-col items-center gap-4 text-center py-20'>
-            {error ? (
-              <>
-                <p className='text-sm font-semibold text-red-600 mb-2'>{error}</p>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  className='text-sm font-semibold underline'
-                  style={{ color: COLORS.purple }}
-                  onClick={() => refetch()}
-                >
-                  ลองใหม่
-                </Button>
-              </>
-            ) : (
-              <>
-                <p className='text-sm font-semibold' style={{ color: COLORS.blue }}>
-                  ไม่พบคำขอนี้ หรือคุณไม่มีสิทธิ์ดู
-                </p>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  className='text-sm font-semibold underline'
-                  style={{ color: COLORS.purple }}
-                  onClick={() => navigate('/orders')}
-                >
-                  กลับไป คำขอราคา & คำสั่งซื้อ
-                </Button>
-              </>
-            )}
-          </div>
+      <div className={`hidden min-h-[60vh] lg:block ${rfqDetailContentSurfaceClass}`}>
+        {chromeHeader}
+        <div className='mx-auto flex max-w-6xl flex-col items-center gap-4 px-8 py-20 text-center 2xl:px-10'>
+          {error ? (
+            <>
+              <p className='mb-2 text-sm font-semibold text-red-600'>{error}</p>
+              <Button
+                variant='unstyled'
+                type='button'
+                className='text-sm font-semibold text-brand-violet-deep underline'
+                onClick={() => refetch()}
+              >
+                ลองใหม่
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className='text-sm font-semibold text-brand-navy-ink'>
+                ไม่พบคำขอนี้ หรือคุณไม่มีสิทธิ์ดู
+              </p>
+              <Button
+                variant='unstyled'
+                type='button'
+                className='text-sm font-semibold text-brand-violet-deep underline'
+                onClick={goBack}
+              >
+                กลับไป คำขอราคา & คำสั่งซื้อ
+              </Button>
+            </>
+          )}
         </div>
       </div>
     );
@@ -172,7 +155,7 @@ export function RFQDetailDesktop() {
       ? rfq.status === 'completed'
         ? { background: '#E8F7EE', color: '#0F9F6E' }
         : { background: 'var(--neutral-slate-muted)', color: 'var(--neutral-slate-subtle)' }
-      : { background: COLORS.lightPurpleBg, color: COLORS.purple };
+      : { background: 'var(--brand-lavender-chip)', color: 'var(--brand-violet-deep)' };
 
   const statusLabel = isClosedRequest
     ? rfq.status === 'completed'
@@ -186,88 +169,69 @@ export function RFQDetailDesktop() {
   const canClose = CLOSEABLE_STATUSES.has(rfq.status);
 
   return (
-    <div className='hidden lg:block' style={{ backgroundColor: COLORS.lightPurpleBg }}>
-      <div className='max-w-6xl mx-auto px-8 py-7'>
-        <div className='flex items-start justify-between gap-6 mb-6'>
-          <div className='min-w-0'>
-            <div className='flex items-center gap-3 mb-2'>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => navigate('/orders')}
-                className='w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-gray-200 hover:border-gray-300 transition-colors'
-                style={{ backgroundColor: COLORS.white }}
-              >
-                <ArrowLeft size={18} style={{ color: COLORS.blue }} />
-              </Button>
+    <div className={`hidden lg:block ${rfqDetailContentSurfaceClass}`}>
+      <div className={factoryIdeasChromeGradientClass}>
+        <div className='relative overflow-hidden border-b border-gray-100/80'>
+          <FactoryIdeasHeaderBackdrop />
+          <div className='relative z-10 mx-auto max-w-6xl px-8 py-4 2xl:px-10'>
+            <div className='mb-4 flex items-start justify-between gap-6'>
               <div className='min-w-0'>
-                <p
-                  className='text-xs uppercase tracking-wider font-semibold'
-                  style={{ color: COLORS.orange }}
-                >
-                  RFQ Detail
-                </p>
-                <h1 className='text-2xl font-bold truncate' style={{ color: COLORS.blue }}>
-                  {rfq.projectName}
-                </h1>
+                <RfqDetailBackRow onBack={goBack} />
+                <p className={`${RFQ_DETAIL_EYEBROW_CLASS} mt-2`}>คำขอราคา</p>
+                <h1 className='truncate text-2xl font-bold text-brand-navy-ink'>{rfq.projectName}</h1>
+                <div className='mt-2 flex flex-wrap items-center gap-2 text-sm text-brand-navy-ink/80'>
+                  <span
+                    className='rounded-full px-2.5 py-1 text-xs font-bold'
+                    style={statusBadgeStyle}
+                  >
+                    {statusLabel}
+                  </span>
+                  <span className='text-slate-300'>•</span>
+                  <span>หมวด: {rfq.category}</span>
+                  <span className='text-slate-300'>•</span>
+                  <span>งบ: {formatCurrency(rfq.budget)}</span>
+                </div>
+              </div>
+              <div className='flex shrink-0 items-center gap-2'>
+                {canClose ? (
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    disabled={closing}
+                    onClick={async () => {
+                      const ok = window.confirm(
+                        'ปิดรับคำขอราคานี้? โรงงานจะไม่สามารถส่งใบเสนอราคาใหม่ได้ แต่คำสั่งซื้อที่ยืนยันแล้วยังคงดำเนินต่อไป',
+                      );
+                      if (!ok) return;
+                      setClosing(true);
+                      try {
+                        await rfqsApi.close(rfq.id);
+                        toast.success('ปิดรับคำขอราคาเรียบร้อย');
+                        await refetch();
+                      } catch (err) {
+                        toast.error(err instanceof Error ? err.message : 'ไม่สามารถปิดคำขอได้');
+                      } finally {
+                        setClosing(false);
+                      }
+                    }}
+                    className='rounded-xl border border-brand-purple/30 bg-brand-lavender-chip/40 px-4 py-2 text-sm font-semibold text-brand-violet-deep disabled:opacity-60'
+                  >
+                    {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
+                  </Button>
+                ) : null}
               </div>
             </div>
-            <div
-              className='flex items-center gap-2 text-sm ml-[52px]'
-              style={{ color: COLORS.blue }}
-            >
-              <span className='px-2.5 py-1 rounded-full text-xs font-bold' style={statusBadgeStyle}>
-                {statusLabel}
-              </span>
-              <span className='text-gray-300'>•</span>
-              <span>หมวด: {rfq.category}</span>
-              <span className='text-gray-300'>•</span>
-              <span>งบ: {formatCurrency(rfq.budget)}</span>
-            </div>
-          </div>
-          <div className='flex items-center gap-2 shrink-0'>
-            {canClose ? (
-              <Button
-                variant='unstyled'
-                type='button'
-                disabled={closing}
-                onClick={async () => {
-                  const ok = window.confirm(
-                    'ปิดรับคำขอราคานี้? โรงงานจะไม่สามารถส่งใบเสนอราคาใหม่ได้ แต่คำสั่งซื้อที่ยืนยันแล้วยังคงดำเนินต่อไป',
-                  );
-                  if (!ok) return;
-                  setClosing(true);
-                  try {
-                    await rfqsApi.close(rfq.id);
-                    toast.success('ปิดรับคำขอราคาเรียบร้อย');
-                    await refetch();
-                  } catch (err) {
-                    toast.error(err instanceof Error ? err.message : 'ไม่สามารถปิดคำขอได้');
-                  } finally {
-                    setClosing(false);
-                  }
-                }}
-                className='px-4 py-2 rounded-xl border text-sm font-semibold disabled:opacity-60'
-                style={{
-                  borderColor: COLORS.purple,
-                  color: COLORS.purple,
-                  backgroundColor: 'var(--brand-page)',
-                }}
-              >
-                {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
-              </Button>
-            ) : null}
           </div>
         </div>
+      </div>
 
-        <div className='grid grid-cols-[1fr_360px] gap-6 items-start'>
+      <div className='mx-auto max-w-6xl px-8 py-6 2xl:px-10'>
+        <div className='grid grid-cols-[1fr_360px] items-start gap-6'>
           <div className='space-y-4'>
-            <div className='bg-white rounded-lg border border-gray-200'>
-              <div className='px-5 py-4 border-b border-gray-100'>
-                <p className='text-sm font-bold' style={{ color: COLORS.blue }}>
-                  สรุปสถานะ
-                </p>
-                <p className='text-xs text-gray-500 mt-1'>
+            <div className='overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm'>
+              <div className='border-b border-slate-100 px-5 py-4'>
+                <p className='text-sm font-bold text-brand-navy-ink'>สรุปสถานะ</p>
+                <p className='mt-1 text-xs text-slate-500'>
                   ดูความคืบหน้าและข้อเสนอจากโรงงานในที่เดียว
                 </p>
               </div>
@@ -282,13 +246,11 @@ export function RFQDetailDesktop() {
               </div>
             </div>
 
-            <div className='bg-white rounded-lg border border-gray-200'>
-              <div className='px-5 py-4 border-b border-gray-100 flex items-center justify-between'>
+            <div className='overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm'>
+              <div className='flex items-center justify-between border-b border-slate-100 px-5 py-4'>
                 <div>
-                  <p className='text-sm font-bold' style={{ color: COLORS.blue }}>
-                    ใบเสนอราคา
-                  </p>
-                  <p className='text-xs text-gray-500 mt-1'>
+                  <p className='text-sm font-bold text-brand-navy-ink'>ใบเสนอราคา</p>
+                  <p className='mt-1 text-xs text-slate-500'>
                     เลือกข้อเสนอเพื่อเปรียบเทียบราคาและ lead time
                   </p>
                 </div>
@@ -313,20 +275,17 @@ export function RFQDetailDesktop() {
             </div>
           </div>
 
-          <div className='space-y-4 sticky top-6'>
-            <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-              <div className='px-5 py-4 border-b border-gray-100 flex items-center justify-between'>
+          <div className='sticky top-6 space-y-4'>
+            <div className='overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm'>
+              <div className='flex items-center justify-between border-b border-slate-100 px-5 py-4'>
                 <div>
-                  <p className='text-sm font-bold' style={{ color: COLORS.blue }}>
-                    สเปกงาน
-                  </p>
-                  <p className='text-xs text-gray-500 mt-1'>เปิด/ปิดเพื่อดูรายละเอียดสเปก</p>
+                  <p className='text-sm font-bold text-brand-navy-ink'>สเปกงาน</p>
+                  <p className='mt-1 text-xs text-slate-500'>เปิด/ปิดเพื่อดูรายละเอียดสเปก</p>
                 </div>
                 <Button
                   variant='unstyled'
                   type='button'
-                  className='px-3 py-1.5 rounded-xl text-xs font-semibold border border-gray-100 hover:bg-gray-100'
-                  style={{ backgroundColor: COLORS.lightPurpleBg, color: COLORS.blue }}
+                  className='rounded-xl border border-brand-purple/20 bg-brand-lavender-chip/40 px-3 py-1.5 text-xs font-semibold text-brand-violet-deep hover:bg-brand-lavender-chip/60'
                   onClick={() => setSpecsOpen((v) => !v)}
                 >
                   {specsOpen ? 'ซ่อน' : 'แสดง'}
@@ -339,30 +298,24 @@ export function RFQDetailDesktop() {
               ) : null}
             </div>
 
-            <div
-              className='rounded-lg p-5 text-white relative overflow-hidden'
-              style={{
-                background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)',
-              }}
-            >
+            <div className='relative overflow-hidden rounded-xl border border-brand-purple/15 bg-gradient-to-br from-brand-purple/[0.12] via-[var(--brand-page)] to-brand-orange/[0.08] p-5'>
               <div
-                className='absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-40 blur-2xl mix-blend-screen'
-                style={{ backgroundColor: 'var(--brand-orange-hot)' }}
+                className='pointer-events-none absolute -right-6 -top-6 h-32 w-32 rounded-full bg-brand-orange/[0.12] blur-2xl'
+                aria-hidden
               />
               <div
-                className='absolute -left-4 -bottom-4 w-20 h-20 rounded-full opacity-30 blur-xl mix-blend-screen'
-                style={{ backgroundColor: 'var(--brand-purple)' }}
+                className='pointer-events-none absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-brand-purple/[0.1] blur-xl'
+                aria-hidden
               />
               <div className='relative z-10'>
-                <p className='text-sm font-bold'>ต้องการ RFQ ใหม่?</p>
-                <p className='text-xs mt-1' style={{ color: '#EBD3FF' }}>
+                <p className='text-sm font-bold text-brand-navy-ink'>ต้องการ RFQ ใหม่?</p>
+                <p className='mt-1 text-xs text-slate-500'>
                   สร้างคำขอใหม่เพื่อรับใบเสนอราคาจากโรงงานได้ทันที
                 </p>
                 <Button
                   variant='unstyled'
                   type='button'
-                  className='mt-4 w-full py-3 rounded-xl bg-white/95 text-sm font-bold'
-                  style={{ color: COLORS.purple }}
+                  className='mt-4 w-full rounded-xl bg-brand-purple py-3 text-sm font-bold text-white transition-colors hover:bg-brand-violet-deep'
                   onClick={() => navigate('/create-rfq')}
                 >
                   + สร้างคำขอราคา
