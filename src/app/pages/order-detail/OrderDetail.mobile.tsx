@@ -267,7 +267,10 @@ function OrderDetailMobileBody() {
     }
   };
 
-  const goBack = useCallback(() => navigate('/orders'), [navigate]);
+  const goBack = useCallback(() => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate('/orders');
+  }, [navigate]);
 
   return (
     <div className={`flex min-h-[100dvh] flex-col pb-32 ${factoryIdeasContentSurfaceClass}`}>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/stores/useAuthStore';
 import { type Rfq, type Order } from '@/stores/types';
@@ -22,12 +23,21 @@ type InitialState = {
 export function useRfqAndOrdersState(initial?: InitialState) {
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [primaryTab, setPrimaryTab] = React.useState<PrimaryTab>(initial?.primaryTab ?? 'rfq');
+  const tabFromUrl = searchParams.get('tab') as PrimaryTab | null;
+  const primaryTab: PrimaryTab =
+    tabFromUrl === 'orders' || tabFromUrl === 'rfq' ? tabFromUrl : (initial?.primaryTab ?? 'rfq');
+
+  const setPrimaryTab = (tab: PrimaryTab) => {
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set('tab', tab);
+      return p;
+    }, { replace: true });
+  };
   const [rfqFilter, setRfqFilter] = React.useState<RfqFilterId>(initial?.rfqFilter ?? 'pending');
-  const [orderFilter, setOrderFilter] = React.useState<OrderFilterId>(
-    initial?.orderFilter ?? 'pending_payment',
-  );
+  const [orderFilter, setOrderFilter] = React.useState<OrderFilterId>(initial?.orderFilter ?? 'pending_payment');
 
   const rfqListQuery = useRfqListQuery();
   const result = rfqListQuery.data ?? { rfqs: [], orders: [] };
