@@ -2,7 +2,11 @@ import React from 'react';
 import { FileText, Package, AlertTriangle } from 'lucide-react';
 import { useRfqAndOrdersState } from '@/components/features/rfq-and-orders/hooks/useRfqAndOrdersState';
 import { Button } from '@/components/ui/button';
-import { factoryIdeasChromeGradientClass, factoryIdeasContentSurfaceClass } from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
+import {
+  factoryIdeasChromeGradientClass,
+  factoryIdeasContentSurfaceClass,
+} from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { OrderPanel } from '@/components/features/rfq-and-orders/components/OrderPanel';
 import { RfqPanel } from '@/components/features/rfq-and-orders/components/RfqPanel';
@@ -131,14 +135,20 @@ export function RfqAndOrders() {
     <>
       {/* ── Desktop header ── */}
       <header className='sticky top-0 z-20 hidden lg:block'>
-        <PageHeader
-          title='คำขอราคา & คำสั่งซื้อ'
-          subtitle='คำขอและคำสั่งซื้อ'
-          icon={FileText}
-          action={{ label: 'สร้างคำขอราคา', to: '/create-rfq' }}
-          variant='minimal'
-          className='border-b border-gray-100/80 px-8 py-4 2xl:px-10'
-        />
+        <div className='relative overflow-hidden border-b border-gray-100/80'>
+          <FactoryIdeasHeaderBackdrop />
+          <div className='relative z-10'>
+            <PageHeader
+              title='คำขอราคา & คำสั่งซื้อ'
+              subtitle='คำขอและคำสั่งซื้อ'
+              icon={FileText}
+              action={{ label: 'สร้างคำขอราคา', to: '/create-rfq' }}
+              variant='minimal'
+              withBackdrop={false}
+              className='px-8 py-4 2xl:px-10'
+            />
+          </div>
+        </div>
       </header>
 
       {/* ── Mobile: title flush under layout logo + sticky tabs ── */}
