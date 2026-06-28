@@ -37,7 +37,20 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     }, { replace: true });
   };
   const [rfqFilter, setRfqFilter] = React.useState<RfqFilterId>(initial?.rfqFilter ?? 'pending');
-  const [orderFilter, setOrderFilter] = React.useState<OrderFilterId>(initial?.orderFilter ?? 'pending_payment');
+
+  const ORDER_FILTER_VALUES: OrderFilterId[] = ['pending_payment', 'in_production', 'shipped', 'completed', 'cancelled_expired'];
+  const orderFilterFromUrl = searchParams.get('order_filter') as OrderFilterId | null;
+  const orderFilter: OrderFilterId = ORDER_FILTER_VALUES.includes(orderFilterFromUrl as OrderFilterId)
+    ? (orderFilterFromUrl as OrderFilterId)
+    : (initial?.orderFilter ?? 'pending_payment');
+
+  const setOrderFilter = (filter: OrderFilterId) => {
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set('order_filter', filter);
+      return p;
+    }, { replace: true });
+  };
 
   const rfqListQuery = useRfqListQuery();
   const result = rfqListQuery.data ?? { rfqs: [], orders: [] };
