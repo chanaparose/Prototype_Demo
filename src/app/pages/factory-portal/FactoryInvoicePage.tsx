@@ -6,6 +6,7 @@ import {
   Loader2,
   AlertTriangle,
   CheckCircle,
+  Copy,
   Clock,
   X,
   Image,
@@ -15,6 +16,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { factoryInvoiceApi } from '@/services/api/factoryApi';
+import { adminTConfigApi } from '@/services/api/adminApi';
 import type {
   ICommissionInvoiceResponse,
   ICommissionInvoiceItemResponse,
@@ -76,6 +78,68 @@ type InvoicePreviewProps = {
   items: ICommissionInvoiceItemResponse[];
   onClose: () => void;
 };
+
+function PaymentInfoBox() {
+  const [info, setInfo] = React.useState<{ bank_name?: string; bank_account_no?: string; account_holder?: string; promptpay?: string } | null>(null);
+
+  React.useEffect(() => {
+    adminTConfigApi.getAll().then((res) => {
+      const c = (res as { configs?: Record<string, string> }).configs ?? {};
+      setInfo({
+        bank_name: c.tryly_bank_name,
+        bank_account_no: c.tryly_bank_account_no,
+        account_holder: c.tryly_account_holder,
+        promptpay: c.tryly_promptpay,
+      });
+    }).catch(() => {});
+  }, []);
+
+  if (!info?.bank_account_no) return null;
+
+  return (
+    <div className='mt-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-4'>
+      <p className='mb-3 text-[11px] font-bold uppercase tracking-wider text-blue-600'>ข้อมูลสำหรับโอนชำระ</p>
+      <div className='space-y-2'>
+        {info.bank_name && (
+          <div className='flex items-center justify-between'>
+            <span className='text-[12px] text-slate-500'>ธนาคาร</span>
+            <span className='text-[13px] font-semibold text-slate-800'>{info.bank_name}</span>
+          </div>
+        )}
+        <div className='flex items-center justify-between gap-2'>
+          <span className='text-[12px] text-slate-500'>เลขบัญชี</span>
+          <button
+            type='button'
+            onClick={() => { void navigator.clipboard.writeText(info.bank_account_no!); toast.success('คัดลอกเลขบัญชีแล้ว'); }}
+            className='flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1 text-[14px] font-bold text-blue-700 shadow-sm ring-1 ring-blue-200 transition hover:bg-blue-100 active:scale-95'
+          >
+            {info.bank_account_no}
+            <Copy size={13} className='shrink-0 text-blue-400' />
+          </button>
+        </div>
+        {info.account_holder && (
+          <div className='flex items-center justify-between'>
+            <span className='text-[12px] text-slate-500'>ชื่อบัญชี</span>
+            <span className='text-[13px] font-semibold text-slate-800'>{info.account_holder}</span>
+          </div>
+        )}
+        {info.promptpay && (
+          <div className='flex items-center justify-between gap-2'>
+            <span className='text-[12px] text-slate-500'>PromptPay</span>
+            <button
+              type='button'
+              onClick={() => { void navigator.clipboard.writeText(info.promptpay!); toast.success('คัดลอก PromptPay แล้ว'); }}
+              className='flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1 text-[13px] font-bold text-blue-700 shadow-sm ring-1 ring-blue-200 transition hover:bg-blue-100 active:scale-95'
+            >
+              {info.promptpay}
+              <Copy size={13} className='shrink-0 text-blue-400' />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function InvoicePreview({ invoice, items, onClose }: InvoicePreviewProps) {
   const printRef = useRef<HTMLDivElement>(null);
@@ -289,8 +353,11 @@ function InvoicePreview({ invoice, items, onClose }: InvoicePreviewProps) {
               </div>
             </div>
 
+            {/* Payment info */}
+            <PaymentInfoBox />
+
             {/* Footer note */}
-            <p className='mt-8 border-t border-slate-100 pt-4 text-center text-[10px] text-slate-400'>
+            <p className='mt-6 border-t border-slate-100 pt-4 text-center text-[10px] text-slate-400'>
               กรุณาชำระภายในกำหนดและแนบสลิปการโอนผ่านระบบ Tryly • invoice นี้ออกโดยระบบอัตโนมัติ
             </p>
           </div>
