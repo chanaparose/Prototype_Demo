@@ -224,21 +224,37 @@ export function FactoryIdeasDesktop() {
     getDetailPath,
     hubScope,
     hubName,
+    hubId,
     visibleTabIds,
   } = useFactoryIdeasPageState({ layout: 'desktop' });
   const visibleTypes = CONTENT_TYPES.filter((type) => visibleTabIds.has(type.id));
 
+  const [, setSearchParams] = useSearchParams();
+  const handleHubChange = (newHubId: number, scope: 'PD' | 'MT' | undefined) => {
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set('hub_id', String(newHubId));
+      if (scope) p.set('hub_scope', scope);
+      else p.delete('hub_scope');
+      p.delete('category_id');
+      p.delete('sub_category_id');
+      return p;
+    });
+  };
+
   return (
     <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-page)] lg:block'>
       <div className='sticky top-0 z-10'>
-        <div className='relative overflow-hidden border-b border-gray-100/80'>
+        <div className='relative border-b border-gray-100/80'>
           <FactoryIdeasHeaderBackdrop />
           <div className='relative z-10 px-8 py-4 2xl:px-10'>
             <FactoryIdeasPageHeader
-              title={hubName ? `แนะนำโรงงาน · ${hubName}` : 'แนะนำโรงงาน'}
+              title={hubName || 'แนะนำโรงงาน'}
               count={`${totalCount} รายการ`}
               hubScope={hubScope}
               showBack={fromHub}
+              currentHubId={hubId}
+              onHubChange={handleHubChange}
             />
 
             <div className='mt-3 flex w-full items-center gap-2'>
