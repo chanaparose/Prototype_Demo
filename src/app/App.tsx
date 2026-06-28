@@ -4,6 +4,9 @@ import { Toaster } from 'sonner';
 import { router } from '@/routes';
 import { DataStoreInitializer } from '@/components/DataStoreInitializer';
 import { queryClient } from '@/lib/queryClient';
+import { installDevTrylyHelpers } from '@/lib/devTryly';
+
+installDevTrylyHelpers();
 
 export default function App() {
   return (

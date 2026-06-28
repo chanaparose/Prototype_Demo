@@ -4,11 +4,8 @@ import {
   CheckCircle,
   Star,
   Clock,
-  Award,
-  MessageCircle,
   XCircle,
   AlertCircle,
-  ChevronDown,
   History,
   GitCompare,
   ExternalLink,
@@ -16,13 +13,9 @@ import {
 } from 'lucide-react';
 import { ordersApi } from '@/services/api/ordersApi';
 import type { Quotation } from '@/components/features/rfq-detail/QuotationBOQCard';
-import {
-  QuotationBOQDetailsPanel,
-} from '@/components/features/rfq-detail/QuotationBOQCard';
-import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
+import { RfqOfferDetailSheet } from '@/components/features/rfq-detail/RfqOfferDetailSheet';
 import { RfqOffersCompareTable } from '@/components/features/rfq-detail/RfqOffersCompareTable';
-import { computeOfferMetrics } from '@/components/features/rfq-detail/rfqOfferMetrics';
-import { Button } from '@/components/ui/button';
+import { RfqOffersMobileCompareList } from '@/components/features/rfq-detail/RfqOffersMobileCompareList';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 
 export type OfferItem = {
@@ -74,10 +67,6 @@ type RfqDetailOffersSectionProps = {
   >;
 };
 
-function formatTHB(n: number): string {
-  return formatCurrency(n);
-}
-
 export function RfqDetailOffersSection({
   rfqStatus,
   offers,
@@ -95,7 +84,7 @@ export function RfqDetailOffersSection({
     rfqStatus === 'completed' || rfqStatus === 'cancelled' || rfqStatus === 'expired' || rfqStatus === 'closed';
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [flowError, setFlowError] = useState<string | null>(null);
-  const [expandedBoqOfferId, setExpandedBoqOfferId] = useState<string | null>(null);
+  const [detailSheetOfferId, setDetailSheetOfferId] = useState<string | null>(null);
   /** orderId ล่าสุดที่เพิ่ง accept สำเร็จ — แสดง toast 5 วินาที */
   const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
 
@@ -117,6 +106,8 @@ export function RfqDetailOffersSection({
           ? String(created.order_id)
           : undefined;
       if (orderId) setSuccessOrderId(orderId);
+      setDetailSheetOfferId(null);
+      onSelectOffer(null);
       onOfferFlowComplete?.({ quoteId: offerId, orderId });
     } catch (err) {
       setFlowError(err instanceof Error ? err.message : 'ไม่สามารถยอมรับข้อเสนอได้');
@@ -393,347 +384,34 @@ export function RfqDetailOffersSection({
             />
           </div>
 
-          <div className='grid grid-cols-1 gap-3 lg:hidden'>
-            {offers.map((offer) => {
-              const {
-                boq,
-                isAccepted,
-                isRejected,
-                isExpired,
-                shippingCost,
-                packagingCost,
-                toolingMoldCost,
-                discountAmount,
-                subtotal,
-                vatRate,
-                vatAmount,
-                grandTotal,
-              } = computeOfferMetrics(offer, rfqQuantity, rfqUnitName);
-              const qd = (offer.quotationDetail ?? {}) as Partial<Quotation> &
-                Record<string, unknown>;
-              const boqOpen = expandedBoqOfferId === offer.id || selectedOfferId === offer.id;
-              return (
-                <div
-                  key={offer.id}
-                  data-tour='offer-card'
-                  data-factory-id={offer.factoryId}
-                  role='button'
-                  tabIndex={0}
-                  aria-expanded={boqOpen}
-                  onClick={() => {
-                    if (boqOpen) {
-                      setExpandedBoqOfferId(null);
-                      onSelectOffer(null);
-                    } else {
-                      setExpandedBoqOfferId(offer.id);
-                      onSelectOffer(offer.id);
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      if (boqOpen) {
-                        setExpandedBoqOfferId(null);
-                        onSelectOffer(null);
-                      } else {
-                        setExpandedBoqOfferId(offer.id);
-                        onSelectOffer(offer.id);
-                      }
-                    }
-                  }}
-                  className='bg-white rounded-lg p-4 border-2 cursor-pointer transition-all'
-                  style={{
-                    borderColor: offer.recommended
-                      ? 'var(--brand-mauve)'
-                      : selectedOfferId === offer.id
-                        ? '#9D77B2'
-                        : 'transparent',
-                  }}
-                >
-                  <div className='flex items-start justify-between mb-3'>
-                    <Link
-                      to={`/factories/${offer.factoryId}`}
-                      className='flex items-center gap-2 min-w-0 flex-1 rounded-xl transition-colors hover:bg-violet-50 -mx-1 px-1 py-0.5'
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div
-                        className='w-9 h-9 rounded-xl flex items-center justify-center text-sm shrink-0'
-                        style={{ background: 'var(--brand-page)' }}
-                      >
-                        <Factory size={17} className='text-brand-mauve' />
-                      </div>
-                      <div className='min-w-0'>
-                        <div className='flex items-center gap-1.5'>
-                          <p className='text-sm text-violet-700 hover:underline truncate' style={{ fontWeight: 600 }}>
-                            {offer.factoryName}
-                          </p>
-                          {offer.verified && (
-                            <CheckCircle size={13} style={{ color: 'var(--brand-mauve)' }} />
-                          )}
-                        </div>
-                        {/* factory counter-proposal badge */}
-                        {qd.factory_qty != null && qd.factory_qty > 0 && (
-                          <div className='mt-0.5 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700'>
-                            📦 โรงงานเสนอ {Number(qd.factory_qty).toLocaleString()} {qd.factory_unit_name || rfqUnitName || 'หน่วย'}
-                          </div>
-                        )}
-                        <div className='flex items-center gap-1'>
-                          <Star size={10} className='text-yellow-400 fill-yellow-400' />
-                          <span className='text-[10px] text-gray-500'>{offer.rating}</span>
-                          <span className='text-[10px] text-gray-400'>
-                            ({offer.completedOrders} งาน)
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                    <div className='flex shrink-0 items-center gap-1.5'>
-                      {offer.recommended && (
-                        <span
-                          className='flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px]'
-                          style={{
-                            background: 'var(--brand-page)',
-                            color: 'var(--brand-mauve)',
-                            fontWeight: 600,
-                          }}
-                        >
-                          <Award size={10} /> แนะนำ
-                        </span>
-                      )}
-                      <ChevronDown
-                        size={20}
-                        className={`text-gray-400 transition-transform duration-300 ${boqOpen ? 'rotate-180' : ''}`}
-                        aria-hidden
-                      />
-                    </div>
-                  </div>
-                  <div className={`grid gap-2 mb-2 ${boqOpen ? 'grid-cols-2' : 'grid-cols-2'}`}>
-                    <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
-                      <p
-                        className='text-sm text-brand-navy'
-                        style={{ fontWeight: 700, color: 'var(--brand-mauve)' }}
-                      >
-                        {formatTHB(boq.price_per_piece)}
-                      </p>
-                      <p className='text-[9px] text-gray-500'>ราคาต่อ{qd.factory_unit_name || rfqUnitName || 'หน่วย'}</p>
-                    </div>
-                    <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
-                      <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
-                        {boq.lead_time_days}
-                      </p>
-                      <p className='text-[9px] text-gray-500'>Lead time (วัน)</p>
-                    </div>
-                    <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
-                      <p
-                        className='text-sm text-brand-navy'
-                        style={{ fontWeight: 700, color: 'var(--brand-mauve)' }}
-                      >
-                        {formatTHB(grandTotal)}
-                      </p>
-                      <p className='text-[9px] text-gray-500'>ราคารวมเสนอ</p>
-                    </div>
-                    <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
-                      <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
-                        {formatCompactNumber(boq.moq)}
-                      </p>
-                      <p className='text-[9px] text-gray-500'>
-                        จำนวน ({qd.factory_unit_name || rfqUnitName || 'หน่วย'})
-                      </p>
-                    </div>
-                  </div>
-                  <div className='rounded-xl border border-gray-100 bg-gray-50/40 px-3 py-2 mb-3'>
-                    <div className='flex items-center justify-between text-[11px] text-gray-600'>
-                      <span>ค่าสินค้ารวม</span>
-                      <span className='font-semibold text-brand-navy'>{formatTHB(subtotal)}</span>
-                    </div>
-                    {shippingCost > 0 ? (
-                      <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
-                        <span>ค่าขนส่ง</span>
-                        <span className='font-semibold text-brand-navy'>
-                          {formatTHB(shippingCost)}
-                        </span>
-                      </div>
-                    ) : null}
-                    {packagingCost > 0 ? (
-                      <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
-                        <span>ค่าบรรจุภัณฑ์</span>
-                        <span className='font-semibold text-brand-navy'>
-                          {formatTHB(packagingCost)}
-                        </span>
-                      </div>
-                    ) : null}
-                    {toolingMoldCost > 0 ? (
-                      <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
-                        <span>ค่าแม่พิมพ์</span>
-                        <span className='font-semibold text-brand-navy'>
-                          {formatTHB(toolingMoldCost)}
-                        </span>
-                      </div>
-                    ) : null}
-                    {discountAmount > 0 ? (
-                      <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
-                        <span>ส่วนลด</span>
-                        <span className='font-semibold text-emerald-700'>
-                          -{formatTHB(discountAmount)}
-                        </span>
-                      </div>
-                    ) : null}
-                    <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
-                      <span>VAT {vatRate > 0 ? `${vatRate}%` : ''}</span>
-                      <span className='font-semibold text-brand-navy'>{formatTHB(vatAmount)}</span>
-                    </div>
-                    <div className='border-t border-gray-200 mt-2 pt-2 flex items-center justify-between text-[12px]'>
-                      <span className='font-semibold text-brand-navy'>รวมทั้งหมด</span>
-                      <span className='font-bold text-brand-mauve'>{formatTHB(grandTotal)}</span>
-                    </div>
-                  </div>
-                  {offer.factoryHighlight ? (
-                    <div className='rounded-lg border border-violet-100 bg-violet-50/70 px-2.5 py-2 mb-2'>
-                      <p className='text-[10px] font-semibold text-violet-700 mb-0.5'>
-                        จุดเด่นจากโรงงาน
-                      </p>
-                      <p className='text-[11px] text-violet-900 leading-relaxed'>
-                        {offer.factoryHighlight}
-                      </p>
-                    </div>
-                  ) : null}
-                  <p className='text-[10px] text-gray-500 mb-3'>
-                    {boq.valid_until ? `ใบเสนอราคาถึง ${boq.valid_until}` : offer.aiReason}
-                  </p>
-                  {isAccepted && (
-                    <div className='flex items-center justify-between mb-2'>
-                      <span className='inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700'>
-                        <CheckCircle size={11} className='shrink-0' />
-                        ยอมรับข้อเสนอแล้ว
-                      </span>
-                      {offer.orderId && (
-                        <Link
-                          to={`/orders/${offer.orderId}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className='flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 hover:underline shrink-0'
-                        >
-                          ดูคำสั่งซื้อ <ExternalLink size={10} />
-                        </Link>
-                      )}
-                    </div>
-                  )}
-                  {isRejected && (
-                    <p className='text-[10px] font-semibold mb-2 text-slate-500'>
-                      ไม่ได้รับการเลือก
-                    </p>
-                  )}
-                  {isExpired && (
-                    <p className='text-[10px] font-semibold mb-2 text-orange-500'>
-                      ⏰ ใบเสนอราคาหมดอายุแล้ว
-                    </p>
-                  )}
-                  <p className='text-[10px] text-gray-400 mb-2'>แตะการ์ดเพื่อดูรายละเอียด BOQ</p>
-                  <div
-                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${boqOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className='overflow-hidden min-h-0'>
-                      <QuotationBOQDetailsPanel
-                        quotation={boq}
-                        className='-mx-4 border-gray-100 px-4 pb-3 pt-2'
-                      />
-                    </div>
-                  </div>
-                  <div onClick={(e) => e.stopPropagation()} className='mb-3'>
-                    <QuotationHistoryPanel
-                      quotationId={offer.id}
-                      preloadedHistory={quoteHistories?.[offer.id]}
-                    />
-                  </div>
-                  <div className='flex gap-2'>
-                    {onChatWithOffer ? (
-                      <Button
-                        variant='unstyled'
-                        type='button'
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onChatWithOffer(offer);
-                        }}
-                        className='flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs border'
-                        style={{
-                          borderColor: 'var(--brand-mauve)',
-                          color: 'var(--brand-mauve)',
-                          fontWeight: 600,
-                        }}
-                      >
-                        <MessageCircle size={14} /> แชท
-                      </Button>
-                    ) : null}
-                    {isAccepted ? (
-                      /* AC: แสดง link ไป order แทนปุ่ม */
-                      offer.orderId ? (
-                        <Link
-                          to={`/orders/${offer.orderId}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className='flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold text-emerald-700 border-2 border-emerald-200 bg-emerald-50'
-                        >
-                          <ExternalLink size={13} />
-                          ดูคำสั่งซื้อ
-                        </Link>
-                      ) : (
-                        <Button
-                          variant='unstyled'
-                          type='button'
-                          disabled
-                          className='flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-60'
-                          style={{ background: 'var(--status-success)', fontWeight: 600 }}
-                        >
-                          ยอมรับแล้ว ✓
-                        </Button>
-                      )
-                    ) : isExpired ? (
-                      <Button
-                        variant='unstyled'
-                        type='button'
-                        disabled
-                        className='flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-70'
-                        style={{ background: '#EA580C', fontWeight: 600 }}
-                      >
-                        ใบเสนอราคาหมดอายุ
-                      </Button>
-                    ) : isRequestClosed ? (
-                      <Button
-                        variant='unstyled'
-                        type='button'
-                        disabled
-                        className='flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-70'
-                        style={{ background: '#94A3B8', fontWeight: 600 }}
-                      >
-                        {rfqStatus === 'cancelled'
-                          ? 'ยกเลิกคำขอแล้ว'
-                          : rfqStatus === 'expired'
-                            ? 'หมดอายุ'
-                            : rfqStatus === 'closed'
-                              ? 'ปิดรับคำขอแล้ว'
-                              : 'ปิดคำขอแล้ว'}
-                      </Button>
-                    ) : (
-                      <Button
-                        variant='unstyled'
-                        type='button'
-                        onClick={(e) => handleAcceptOffer(offer.id, e)}
-                        disabled={!!acceptingId || isRejected}
-                        className='flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-60'
-                        style={{
-                          background: isRejected ? '#94A3B8' : 'var(--brand-mauve)',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {acceptingId === offer.id
-                          ? 'กำลังส่ง...'
-                          : isRejected
-                            ? 'ไม่ได้รับการเลือก'
-                            : 'ยอมรับข้อเสนอ'}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+          <div className='lg:hidden'>
+            <RfqOffersMobileCompareList
+              offers={offers}
+              rfqQuantity={rfqQuantity}
+              rfqUnitName={rfqUnitName}
+              onRowPress={(offer) => {
+                setDetailSheetOfferId(offer.id);
+                onSelectOffer(offer.id);
+              }}
+            />
+            <RfqOfferDetailSheet
+              offer={offers.find((o) => o.id === detailSheetOfferId) ?? null}
+              open={detailSheetOfferId != null}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setDetailSheetOfferId(null);
+                  onSelectOffer(null);
+                }
+              }}
+              rfqQuantity={rfqQuantity}
+              rfqUnitName={rfqUnitName}
+              rfqStatus={rfqStatus}
+              isRequestClosed={isRequestClosed}
+              acceptingId={acceptingId}
+              onChatWithOffer={onChatWithOffer}
+              onAcceptOffer={handleAcceptOffer}
+              quoteHistories={quoteHistories}
+            />
           </div>
         </div>
       </>

@@ -163,24 +163,7 @@ export function QuotationBOQDetailsPanel({
         </div>
       ) : null}
 
-      {hasImages ? (
-        <div className='flex items-center gap-1.5'>
-          <Package size={11} className='shrink-0 text-brand-mauve' aria-hidden />
-          <div className='flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5'>
-            {q.image_urls!.slice(0, 5).map((url, idx) => (
-              <button
-                key={`${url}-${idx}`}
-                type='button'
-                onClick={() => openImageLightbox(url)}
-                className='block h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50 focus:outline-none active:opacity-80'
-                aria-label='ดูรูปขนาดใหญ่'
-              >
-                <ImageWithFallback src={url} alt='' className='h-full w-full object-cover' />
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
+       
     </div>
   );
 }
