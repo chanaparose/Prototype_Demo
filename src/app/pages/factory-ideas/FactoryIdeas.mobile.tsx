@@ -8,8 +8,9 @@ import {
   Star,
 } from 'lucide-react';
 import { useSearchParams } from 'react-router';
-import { isFromFactoryIdeasHub } from '@/components/features/factory-ideas/factoryIdeasHubNav';
+import { isFromFactoryIdeasHub, applyFactoryIdeasScopeChange } from '@/components/features/factory-ideas/factoryIdeasHubNav';
 import { FactoryIdeasPageHeader, FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
+import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
 import { FactoryIdeasTypeTabs } from '@/components/features/factory-ideas/FactoryIdeasTypeTabs';
 import {
   ShowcaseGridCardSkeleton,
@@ -46,8 +47,9 @@ import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
 
 export function FactoryIdeasMobile() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const fromHub = isFromFactoryIdeasHub(searchParams);
+  const { data: allHubs = [] } = useLbiHubsQuery();
   const {
     data,
     isLiked,
@@ -100,8 +102,6 @@ export function FactoryIdeasMobile() {
     hubId,
   } = useFactoryIdeasPageState({ layout: 'mobile' });
 
-  const [, setSearchParams] = useSearchParams();
-
   const handleHubChange = (newHubId: number, scope: 'PD' | 'MT' | undefined) => {
     setSearchParams((prev) => {
       const p = new URLSearchParams(prev);
@@ -110,6 +110,14 @@ export function FactoryIdeasMobile() {
       else p.delete('hub_scope');
       p.delete('category_id');
       p.delete('sub_category_id');
+      return p;
+    });
+  };
+
+  const handleScopeChange = (scope: 'PD' | 'MT') => {
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      applyFactoryIdeasScopeChange(p, scope, allHubs);
       return p;
     });
   };
@@ -129,6 +137,7 @@ export function FactoryIdeasMobile() {
               showBack={fromHub}
               currentHubId={hubId}
               onHubChange={handleHubChange}
+              onScopeChange={handleScopeChange}
             />
           </div>
         </div>

@@ -4,17 +4,21 @@ import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
 import { getFactoryIdeasHubPath } from '@/components/features/factory-ideas/factoryIdeasHubNav';
 import { factoryBadgeClass } from '@/pages/factory-portal/factoryUi';
+import { HUB_SCOPE_LABELS, type HubScope } from '@/components/features/hub/hubRowShared';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
+const HUB_SCOPES: HubScope[] = ['PD', 'MT'];
+
 type FactoryIdeasPageHeaderProps = {
   title: string;
   count: string;
-  hubScope?: 'PD' | 'MT';
+  hubScope?: HubScope;
   showBack?: boolean;
   currentHubId?: number;
-  onHubChange?: (hubId: number, scope: 'PD' | 'MT' | undefined) => void;
+  onHubChange?: (hubId: number, scope: HubScope | undefined) => void;
+  onScopeChange?: (scope: HubScope) => void;
   className?: string;
 };
 
@@ -40,35 +44,64 @@ export function FactoryIdeasPageHeader({
   showBack = false,
   currentHubId,
   onHubChange,
+  onScopeChange,
   className,
 }: FactoryIdeasPageHeaderProps) {
   const navigate = useNavigate();
   const { data: allHubs = [] } = useLbiHubsQuery();
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [hubOpen, setHubOpen] = useState(false);
+  const [scopeOpen, setScopeOpen] = useState(false);
+  const hubDropdownRef = useRef<HTMLDivElement>(null);
+  const hubTriggerRef = useRef<HTMLButtonElement>(null);
+  const scopeDropdownRef = useRef<HTMLDivElement>(null);
+  const scopeTriggerRef = useRef<HTMLButtonElement>(null);
+  const [hubDropdownPos, setHubDropdownPos] = useState<{ top: number; left: number }>({
+    top: 0,
+    left: 0,
+  });
+  const [scopeDropdownPos, setScopeDropdownPos] = useState<{ top: number; left: number }>({
+    top: 0,
+    left: 0,
+  });
+
+  const activeScope: HubScope = hubScope ?? 'PD';
+  const activeScopeLabel = HUB_SCOPE_LABELS[activeScope] ?? activeScope;
 
   useEffect(() => {
-    if (!open) return;
+    if (!hubOpen && !scopeOpen) return;
     const handler = (e: MouseEvent) => {
-      if (!dropdownRef.current?.contains(e.target as Node) && !triggerRef.current?.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const target = e.target as Node;
+      const insideHub =
+        hubDropdownRef.current?.contains(target) || hubTriggerRef.current?.contains(target);
+      const insideScope =
+        scopeDropdownRef.current?.contains(target) || scopeTriggerRef.current?.contains(target);
+      if (!insideHub) setHubOpen(false);
+      if (!insideScope) setScopeOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
+  }, [hubOpen, scopeOpen]);
 
-  const handleToggle = () => {
-    if (!open) {
-      const rect = triggerRef.current?.getBoundingClientRect();
-      if (rect) setDropdownPos({ top: rect.bottom + 6, left: rect.left });
+  const handleHubToggle = () => {
+    setScopeOpen(false);
+    if (!hubOpen) {
+      const rect = hubTriggerRef.current?.getBoundingClientRect();
+      if (rect) setHubDropdownPos({ top: rect.bottom + 6, left: rect.left });
     }
-    setOpen((v) => !v);
+    setHubOpen((v) => !v);
   };
 
-  const canSwitch = !!(onHubChange && allHubs.length > 0);
+  const handleScopeToggle = () => {
+    setHubOpen(false);
+    if (!scopeOpen) {
+      const rect = scopeTriggerRef.current?.getBoundingClientRect();
+      if (rect) setScopeDropdownPos({ top: rect.bottom + 6, left: rect.left });
+    }
+    setScopeOpen((v) => !v);
+  };
+
+  const canSwitchHub = !!(onHubChange && allHubs.length > 0);
+  const canSwitchScope = !!onScopeChange;
 
   return (
     <div className={cn('flex items-start justify-between gap-3', className)}>
@@ -79,7 +112,7 @@ export function FactoryIdeasPageHeader({
               <Button
                 variant='unstyled'
                 type='button'
-                onClick={() => navigate(getFactoryIdeasHubPath(hubScope))}
+                onClick={() => navigate(getFactoryIdeasHubPath(activeScope))}
                 className='-ml-1 inline-flex h-6 shrink-0 items-center gap-1 rounded-md px-1 text-[12px] font-medium text-slate-500 transition-colors hover:text-brand-purple'
               >
                 <ArrowLeft size={15} strokeWidth={2.25} aria-hidden />
@@ -89,15 +122,75 @@ export function FactoryIdeasPageHeader({
             </>
           ) : null}
           <Layers size={14} className='shrink-0 text-brand-purple/60' strokeWidth={2.25} />
-          <span className='truncate'>Discover</span>
+          {canSwitchScope ? (
+            <div className='relative min-w-0'>
+              <button
+                ref={scopeTriggerRef}
+                type='button'
+                onClick={handleScopeToggle}
+                aria-haspopup='listbox'
+                aria-expanded={scopeOpen}
+                className='inline-flex max-w-full items-center gap-0.5 rounded-md px-0.5 text-[11px] font-medium text-slate-500 transition-colors hover:text-brand-purple'
+              >
+                <span className='truncate'>{activeScopeLabel}</span>
+                <ChevronDown
+                  size={12}
+                  strokeWidth={2.25}
+                  className={cn('shrink-0 transition-transform', scopeOpen && 'rotate-180')}
+                  aria-hidden
+                />
+              </button>
+
+              {scopeOpen
+                ? createPortal(
+                    <div
+                      ref={scopeDropdownRef}
+                      role='listbox'
+                      aria-label='เลือกประเภทหมวดหมู่'
+                      className='fixed z-[9999] w-44 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg'
+                      style={{ top: scopeDropdownPos.top, left: scopeDropdownPos.left }}
+                    >
+                      {HUB_SCOPES.map((scope) => (
+                        <button
+                          key={scope}
+                          type='button'
+                          role='option'
+                          aria-selected={scope === activeScope}
+                          onClick={() => {
+                            onScopeChange(scope);
+                            setScopeOpen(false);
+                          }}
+                          className={cn(
+                            'flex w-full items-center gap-2 px-3.5 py-2.5 text-left text-[13px] transition-colors hover:bg-brand-lavender-chip',
+                            scope === activeScope
+                              ? 'font-semibold text-brand-purple'
+                              : 'font-medium text-slate-700',
+                          )}
+                        >
+                          {scope === activeScope ? (
+                            <span className='h-1.5 w-1.5 shrink-0 rounded-full bg-brand-purple' />
+                          ) : (
+                            <span className='h-1.5 w-1.5 shrink-0' aria-hidden />
+                          )}
+                          <span>{HUB_SCOPE_LABELS[scope] ?? scope}</span>
+                        </button>
+                      ))}
+                    </div>,
+                    document.body,
+                  )
+                : null}
+            </div>
+          ) : (
+            <span className='truncate'>{activeScopeLabel}</span>
+          )}
         </div>
 
-        {canSwitch ? (
+        {canSwitchHub ? (
           <div className='relative'>
             <button
-              ref={triggerRef}
+              ref={hubTriggerRef}
               type='button'
-              onClick={handleToggle}
+              onClick={handleHubToggle}
               className='flex items-center gap-1 text-left'
             >
               <h1 className='truncate text-[16px] font-semibold leading-snug text-brand-navy-ink sm:text-lg'>
@@ -108,24 +201,26 @@ export function FactoryIdeasPageHeader({
                 strokeWidth={2.25}
                 className={cn(
                   'shrink-0 text-brand-purple transition-transform',
-                  open && 'rotate-180',
+                  hubOpen && 'rotate-180',
                 )}
               />
             </button>
 
-            {open ? createPortal(
+            {hubOpen ? createPortal(
               <div
-                ref={dropdownRef}
+                ref={hubDropdownRef}
                 className='fixed z-[9999] w-52 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg'
-                style={{ top: dropdownPos.top, left: dropdownPos.left }}
+                style={{ top: hubDropdownPos.top, left: hubDropdownPos.left }}
               >
-                {allHubs.map((hub) => (
+                {allHubs
+                  .filter((hub) => hub.scope === activeScope)
+                  .map((hub) => (
                   <button
                     key={hub.hub_id}
                     type='button'
                     onClick={() => {
-                      onHubChange(hub.hub_id, hub.scope as 'PD' | 'MT' | undefined);
-                      setOpen(false);
+                      onHubChange?.(hub.hub_id, hub.scope as HubScope | undefined);
+                      setHubOpen(false);
                     }}
                     className={cn(
                       'flex w-full items-center gap-2 px-3.5 py-2.5 text-left text-[13px] transition-colors hover:bg-brand-lavender-chip',

@@ -11,8 +11,9 @@ import {
   Star,
 } from 'lucide-react';
 import { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
-import { isFromFactoryIdeasHub } from '@/components/features/factory-ideas/factoryIdeasHubNav';
+import { isFromFactoryIdeasHub, applyFactoryIdeasScopeChange } from '@/components/features/factory-ideas/factoryIdeasHubNav';
 import { FactoryIdeasPageHeader, FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
+import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
 import { FactoryIdeasTypeTabs } from '@/components/features/factory-ideas/FactoryIdeasTypeTabs';
 import { IdeaArticleCard } from '@/components/features/factory-ideas/IdeaArticleCard';
 import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasPageState';
@@ -179,8 +180,9 @@ function DesktopShowcaseList({
 
 export function FactoryIdeasDesktop() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const fromHub = isFromFactoryIdeasHub(searchParams);
+  const { data: allHubs = [] } = useLbiHubsQuery();
   const {
     data,
     isLiked,
@@ -229,7 +231,6 @@ export function FactoryIdeasDesktop() {
   } = useFactoryIdeasPageState({ layout: 'desktop' });
   const visibleTypes = CONTENT_TYPES.filter((type) => visibleTabIds.has(type.id));
 
-  const [, setSearchParams] = useSearchParams();
   const handleHubChange = (newHubId: number, scope: 'PD' | 'MT' | undefined) => {
     setSearchParams((prev) => {
       const p = new URLSearchParams(prev);
@@ -238,6 +239,14 @@ export function FactoryIdeasDesktop() {
       else p.delete('hub_scope');
       p.delete('category_id');
       p.delete('sub_category_id');
+      return p;
+    });
+  };
+
+  const handleScopeChange = (scope: 'PD' | 'MT') => {
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      applyFactoryIdeasScopeChange(p, scope, allHubs);
       return p;
     });
   };
@@ -255,6 +264,7 @@ export function FactoryIdeasDesktop() {
               showBack={fromHub}
               currentHubId={hubId}
               onHubChange={handleHubChange}
+              onScopeChange={handleScopeChange}
             />
 
             <div className='mt-3 flex w-full items-center gap-2'>
