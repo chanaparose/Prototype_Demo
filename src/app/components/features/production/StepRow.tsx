@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, XCircle, AlertCircle, MessageCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, MessageCircle, ChevronDown } from 'lucide-react';
 import type { MergedProductionStep } from '@/components/features/production/types';
 import {
   STEP_VISUAL,
@@ -143,14 +143,21 @@ export function StepRow({
   ) : null;
 
   const timestamp = update.last_updated_at;
+  const hasExpandableContent = Boolean(
+    template.description?.trim() ||
+      update.description?.trim() ||
+      (st === 'RJ' && update.rejected_reason?.trim()) ||
+      (update.image_urls?.length ?? 0) > 0 ||
+      (isCustomer && canReject && onContactFactory) ||
+      (isCustomer && derivedState === 'blocked' && onContactFactory),
+  );
+  const canExpand = derivedState !== 'upcoming' && hasExpandableContent;
   const titleClass =
     isActive || derivedState === 'blocked' || derivedState === 'rejected'
       ? 'text-sm font-bold text-brand-navy-ink'
       : isCompleted
         ? 'text-sm font-medium text-slate-500'
         : 'text-sm font-medium text-slate-400';
-
-  const canExpand = derivedState !== 'upcoming';
 
   return (
     <div
@@ -179,7 +186,15 @@ export function StepRow({
         <div
           role={canExpand ? 'button' : undefined}
           tabIndex={canExpand ? 0 : undefined}
-          className={`text-left ${canExpand ? 'cursor-pointer' : ''}`}
+          aria-expanded={canExpand ? expanded : undefined}
+          aria-label={
+            canExpand
+              ? expanded
+                ? `ย่อรายละเอียด ${template.step_name_th}`
+                : `ดูรายละเอียด ${template.step_name_th}`
+              : undefined
+          }
+          className={`text-left ${canExpand ? 'cursor-pointer rounded-lg -mx-1 px-1 py-0.5 active:bg-slate-50' : ''}`}
           onClick={canExpand ? onToggleExpand : undefined}
           onKeyDown={
             canExpand
@@ -215,12 +230,27 @@ export function StepRow({
                 </p>
               ) : null}
             </div>
-            {isFactory ? (
-              <div className='shrink-0' onClick={(e) => e.stopPropagation()}>
-                {ctaFactory}
-              </div>
-            ) : null}
+            <div className='flex shrink-0 items-center gap-1.5'>
+              {isFactory && ctaFactory ? (
+                <div onClick={(e) => e.stopPropagation()}>{ctaFactory}</div>
+              ) : null}
+              {canExpand ? (
+                <span className='pointer-events-none inline-flex items-center gap-0.5 pt-0.5 text-[10px] font-medium text-brand-violet-deep/80'>
+                  <span className='sr-only sm:not-sr-only sm:inline'>
+                    {expanded ? 'ย่อ' : 'ดูรายละเอียด'}
+                  </span>
+                  <ChevronDown
+                    size={14}
+                    className={`shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+                    aria-hidden
+                  />
+                </span>
+              ) : null}
+            </div>
           </div>
+          {canExpand && !expanded ? (
+            <p className='mt-1 text-[10px] text-brand-violet-deep/65'>แตะเพื่อดูรายละเอียด</p>
+          ) : null}
         </div>
 
         {expanded ? (

@@ -23,6 +23,10 @@ function formatRelativeTh(iso: string | null | undefined): string {
   return `${day} วันที่แล้ว`;
 }
 
+function segmentDone(state: StepDerivedState): boolean {
+  return state === 'completed';
+}
+
 function stepDotClass(state: StepDerivedState): string {
   switch (state) {
     case 'active':
@@ -53,10 +57,6 @@ function stepLabelClass(state: StepDerivedState): string {
     default:
       return 'font-normal text-slate-400';
   }
-}
-
-function segmentClass(leftStepDone: boolean): string {
-  return leftStepDone ? 'bg-brand-purple/30' : 'bg-slate-200';
 }
 
 type Props = {
@@ -149,32 +149,40 @@ export function OrderDetailStatusHero({
 
       {merged.length > 0 ? (
         <div className='border-t border-brand-purple/8 pt-3' aria-label='ความคืบหน้าการผลิต'>
-          <div className='flex w-full items-start'>
+          <div className='flex w-full'>
             {merged.map((m, i) => {
               const state = derived[i];
               const isFirst = i === 0;
               const isLast = i === merged.length - 1;
-              const stepDone = state === 'completed';
-              const prevDone = i > 0 && derived[i - 1] === 'completed';
               const label = m.template.step_name_th;
+              const leftDone = i > 0 && segmentDone(derived[i - 1]);
+              const rightDone = !isLast && segmentDone(state);
 
               return (
                 <div
                   key={m.template.step_code || String(m.template.step_id)}
                   className='flex min-w-0 flex-1 flex-col items-center'
                 >
-                  <div className='flex w-full items-center'>
+                  <div className='relative flex h-7 w-full items-center justify-center'>
+                    {!isFirst ? (
+                      <span
+                        className={`absolute left-0 right-1/2 top-1/2 h-0.5 -translate-y-1/2 ${
+                          leftDone ? 'bg-brand-purple/35' : 'bg-slate-200'
+                        }`}
+                        aria-hidden
+                      />
+                    ) : null}
+                    {!isLast ? (
+                      <span
+                        className={`absolute left-1/2 right-0 top-1/2 h-0.5 -translate-y-1/2 ${
+                          rightDone ? 'bg-brand-purple/35' : 'bg-slate-200'
+                        }`}
+                        aria-hidden
+                      />
+                    ) : null}
                     <span
-                      className={`h-0.5 flex-1 ${isFirst ? 'invisible' : segmentClass(prevDone)}`}
-                      aria-hidden
-                    />
-                    <span
-                      className={`relative shrink-0 rounded-full transition-all ${stepDotClass(state)}`}
+                      className={`relative z-10 shrink-0 rounded-full transition-all ${stepDotClass(state)}`}
                       title={label}
-                    />
-                    <span
-                      className={`h-0.5 flex-1 ${isLast ? 'invisible' : segmentClass(stepDone)}`}
-                      aria-hidden
                     />
                   </div>
                   <p

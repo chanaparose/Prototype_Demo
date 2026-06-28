@@ -53,15 +53,7 @@ function OrderDetailSubHeader({
         <ArrowLeft size={15} strokeWidth={2.25} aria-hidden />
         กลับ
       </Button>
-      <Button
-        variant='unstyled'
-        type='button'
-        onClick={onChat}
-        aria-label='แชทกับโรงงาน'
-        className='-mr-1 inline-flex h-6 shrink-0 items-center justify-center rounded-md px-1 text-slate-500 transition-colors hover:text-brand-purple active:opacity-70'
-      >
-        <MessageCircle size={15} strokeWidth={2.25} aria-hidden />
-      </Button>
+       
     </div>
   );
 }
