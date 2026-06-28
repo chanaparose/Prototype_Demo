@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { httpClient } from '@/services/api/httpClient';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertTriangle, CheckCircle, CheckSquare, Lock, Loader2, Pencil, Percent, Plus, Save, Square, Trash2, X } from 'lucide-react';
@@ -45,13 +46,14 @@ function canEdit(role: string, minRole: 'AM' | 'AD' | 'SA'): boolean {
   return (RANK[role] ?? 0) >= RANK[minRole];
 }
 
-type TabKey = 'general' | 'commission' | 'configpackages' | 'verification';
+type TabKey = 'general' | 'commission' | 'configpackages' | 'verification' | 'cronjob';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'general', label: 'ทั่วไป' },
   { key: 'commission', label: 'ค่าคอม & VAT' },
   { key: 'configpackages', label: 'Config Packages' },
   { key: 'verification', label: 'การยืนยันโรงงาน' },
+  { key: 'cronjob', label: 'Cronjob' },
 ];
 
 interface VerificationRequirement {
@@ -969,7 +971,213 @@ export function AdminConfigPage() {
               </div>
             </div>
           ) : null}
+
+          {!loading && activeTab === 'cronjob' ? (
+            <CronjobTab isSA={isSA} />
+          ) : null}
         </div>
+      </div>
+    </div>
+  );
+}
+
+type CronJob = {
+  job_key: string;
+  schedule_type: string;
+  schedule_value: string;
+  hour: number;
+  enabled: boolean;
+  description?: string;
+  last_run_at?: string;
+};
+
+function CronjobTab({ isSA }: { isSA: boolean }) {
+  const [jobs, setJobs] = React.useState<CronJob[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [editing, setEditing] = React.useState<CronJob | null>(null);
+  const [saving, setSaving] = React.useState(false);
+  const [saved, setSaved] = React.useState(false);
+
+  useEffect(() => {
+    httpClient.get<{ jobs: CronJob[] }>('/admin/cronjobs')
+      .then((d) => setJobs((d as { jobs: CronJob[] }).jobs ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    if (!editing) return;
+    setSaving(true);
+    try {
+      const updated = await httpClient.patch<CronJob>(`/admin/cronjobs/${editing.job_key}`, {
+        schedule_type: editing.schedule_type,
+        schedule_value: editing.schedule_value,
+        hour: editing.hour,
+        enabled: editing.enabled,
+      });
+      setJobs((prev) => prev.map((j) => (j.job_key === updated.job_key ? updated : j)));
+      setEditing(null);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const SCHEDULE_TYPES = [
+    { value: 'day_of_month', label: 'ทุกวันที่ X ของเดือน' },
+    { value: 'day_of_week', label: 'ทุกวัน X ของสัปดาห์' },
+    { value: 'daily', label: 'ทุกวัน' },
+  ];
+  const WEEKDAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  const WEEKDAY_LABELS: Record<string, string> = { MON: 'จันทร์', TUE: 'อังคาร', WED: 'พุธ', THU: 'พฤหัส', FRI: 'ศุกร์', SAT: 'เสาร์', SUN: 'อาทิตย์' };
+
+  const scheduleLabel = (j: CronJob) => {
+    if (j.schedule_type === 'daily') return `ทุกวัน เวลา ${j.hour}:00`;
+    if (j.schedule_type === 'day_of_week') return `ทุกวัน${WEEKDAY_LABELS[j.schedule_value] ?? j.schedule_value} เวลา ${j.hour}:00`;
+    return `ทุกวันที่ ${j.schedule_value} ของเดือน เวลา ${j.hour}:00`;
+  };
+
+  if (loading) return <div className='py-8 text-center text-sm text-slate-400'>กำลังโหลด...</div>;
+
+  return (
+    <div className='space-y-4'>
+      <div>
+        <h4 className='text-sm font-bold text-slate-900 mb-1'>ตั้งค่า Cronjob</h4>
+        <p className='text-xs text-slate-400 mb-5'>กำหนดเวลารันงานอัตโนมัติ เฉพาะ Super Admin เท่านั้น</p>
+      </div>
+
+      {saved && (
+        <div className='flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-2.5 text-xs text-emerald-700'>
+          <CheckCircle size={14} /> บันทึกสำเร็จ
+        </div>
+      )}
+
+      <div className='space-y-3'>
+        {jobs.map((j) => (
+          <div key={j.job_key} className='rounded-xl border border-slate-200 bg-white p-4'>
+            <div className='flex items-start justify-between gap-3'>
+              <div className='min-w-0 flex-1'>
+                <div className='flex items-center gap-2 mb-1'>
+                  <span className='text-sm font-semibold text-slate-900'>{j.job_key}</span>
+                  <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${j.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                    {j.enabled ? 'เปิด' : 'ปิด'}
+                  </span>
+                </div>
+                {j.description && <p className='text-xs text-slate-500 mb-1'>{j.description}</p>}
+                <p className='text-xs text-brand-purple font-medium'>{scheduleLabel(j)}</p>
+                {j.last_run_at && (
+                  <p className='text-[10px] text-slate-400 mt-1'>รันล่าสุด: {new Date(j.last_run_at).toLocaleString('th-TH')}</p>
+                )}
+              </div>
+              {isSA && (
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={() => setEditing({ ...j })}
+                  className='shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50'
+                >
+                  <Pencil size={13} className='mr-1 inline' />
+                  แก้ไข
+                </Button>
+              )}
+            </div>
+
+            {editing?.job_key === j.job_key && (
+              <div className='mt-4 border-t border-slate-100 pt-4 space-y-3'>
+                <div className='grid grid-cols-2 gap-3'>
+                  <div>
+                    <Label className='text-xs font-semibold text-slate-700 mb-1.5 block'>ประเภท</Label>
+                    <select
+                      value={editing.schedule_type}
+                      onChange={(e) => setEditing({ ...editing, schedule_type: e.target.value, schedule_value: e.target.value === 'day_of_week' ? 'MON' : '1' })}
+                      className='w-full rounded-lg border border-slate-200 px-3 py-2 text-sm'
+                    >
+                      {SCHEDULE_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <Label className='text-xs font-semibold text-slate-700 mb-1.5 block'>เวลา (ชั่วโมง)</Label>
+                    <select
+                      value={editing.hour}
+                      onChange={(e) => setEditing({ ...editing, hour: Number(e.target.value) })}
+                      className='w-full rounded-lg border border-slate-200 px-3 py-2 text-sm'
+                    >
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {editing.schedule_type === 'day_of_month' && (
+                  <div>
+                    <Label className='text-xs font-semibold text-slate-700 mb-1.5 block'>วันที่ของเดือน (1–28)</Label>
+                    <Input
+                      type='number'
+                      min={1}
+                      max={28}
+                      value={editing.schedule_value}
+                      onChange={(e) => setEditing({ ...editing, schedule_value: e.target.value })}
+                      className='w-full'
+                    />
+                  </div>
+                )}
+
+                {editing.schedule_type === 'day_of_week' && (
+                  <div>
+                    <Label className='text-xs font-semibold text-slate-700 mb-1.5 block'>วันของสัปดาห์</Label>
+                    <div className='flex flex-wrap gap-2'>
+                      {WEEKDAYS.map((wd) => (
+                        <button
+                          key={wd}
+                          type='button'
+                          onClick={() => setEditing({ ...editing, schedule_value: wd })}
+                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold border transition-colors ${editing.schedule_value === wd ? 'bg-brand-purple text-white border-brand-purple' : 'border-slate-200 text-slate-600 hover:border-brand-purple/40'}`}
+                        >
+                          {WEEKDAY_LABELS[wd]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className='flex items-center gap-2'>
+                  <button
+                    type='button'
+                    onClick={() => setEditing({ ...editing, enabled: !editing.enabled })}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${editing.enabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${editing.enabled ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </button>
+                  <span className='text-xs text-slate-600'>{editing.enabled ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}</span>
+                </div>
+
+                <div className='flex gap-2 pt-1'>
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={() => void handleSave()}
+                    disabled={saving}
+                    className='flex items-center gap-1.5 rounded-lg bg-brand-purple px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 hover:bg-brand-violet-deep'
+                  >
+                    {saving ? <Loader2 size={13} className='animate-spin' /> : <Save size={13} />}
+                    บันทึก
+                  </Button>
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={() => setEditing(null)}
+                    className='rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50'
+                  >
+                    ยกเลิก
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
