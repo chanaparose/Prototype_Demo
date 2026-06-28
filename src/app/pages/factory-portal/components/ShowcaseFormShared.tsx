@@ -74,8 +74,8 @@ export function ShowcaseImageManager({
   const pick = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     event.target.value = '';
-    if (file && file.type !== 'image/jpeg') {
-      toast.error('รองรับเฉพาะไฟล์ .jpg/.jpeg เท่านั้น');
+    if (file && !file.type.startsWith('image/')) {
+      toast.error('รองรับเฉพาะไฟล์รูปภาพเท่านั้น');
       return;
     }
     onPickImage(file);
@@ -109,7 +109,7 @@ export function ShowcaseImageManager({
             <span className='text-xs opacity-70'>JPG เท่านั้น · สูงสุด 5 รูป</span>
             <Input
               type='file'
-              accept='image/jpeg,.jpg,.jpeg'
+              accept='image/*'
               className='hidden'
               disabled={uploading}
               onChange={pick}
@@ -143,7 +143,7 @@ export function ShowcaseImageManager({
               <span className='text-[9px] mt-0.5'>เพิ่ม</span>
               <Input
                 type='file'
-                accept='image/jpeg,.jpg,.jpeg'
+                accept='image/*'
                 className='hidden'
                 disabled={uploading}
                 onChange={pick}

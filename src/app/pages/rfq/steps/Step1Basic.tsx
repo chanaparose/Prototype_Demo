@@ -79,8 +79,8 @@ export function Step1Basic({
 
   const uploadOne = async (f: File) => {
     if (draft.reference_images.length >= 5) return;
-    if (f.type !== 'image/jpeg') {
-      toast.error('รองรับเฉพาะไฟล์ .jpg/.jpeg เท่านั้น');
+    if (!f.type.startsWith('image/')) {
+      toast.error('รองรับเฉพาะไฟล์รูปภาพเท่านั้น');
       return;
     }
     setUploading(true);
@@ -150,7 +150,7 @@ export function Step1Basic({
         <Input
           ref={fileInputRef}
           type='file'
-          accept='image/jpeg,.jpg,.jpeg'
+          accept='image/*'
           className='hidden'
           onChange={(e) => {
             const f = e.target.files?.[0];

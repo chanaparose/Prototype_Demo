@@ -72,8 +72,8 @@ export function DepositPaymentModal({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    if (f.type !== 'image/jpeg') {
-      toast.error('รองรับเฉพาะไฟล์ .jpg/.jpeg เท่านั้น');
+    if (!f.type.startsWith('image/')) {
+      toast.error('รองรับเฉพาะไฟล์รูปภาพเท่านั้น');
       return;
     }
     if (f.size > 5 * 1024 * 1024) {
@@ -230,7 +230,7 @@ export function DepositPaymentModal({
           <input
             ref={fileRef}
             type='file'
-            accept='image/jpeg,.jpg,.jpeg'
+            accept='image/*'
             onChange={handleFileChange}
             className='hidden'
           />

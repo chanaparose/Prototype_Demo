@@ -31,9 +31,9 @@ export function ReviewImageAttachments({
 
   const addFiles = async (files: FileList | null) => {
     if (!files || !onChange) return;
-    const list = Array.from(files).filter((f) => f.type === 'image/jpeg');
+    const list = Array.from(files).filter((f) => f.type.startsWith('image/'));
     if (list.length === 0) {
-      if (Array.from(files).length > 0) toast.error('รองรับเฉพาะไฟล์ .jpg/.jpeg เท่านั้น');
+      if (Array.from(files).length > 0) toast.error('รองรับเฉพาะไฟล์รูปภาพเท่านั้น');
       return;
     }
     setUploading(true);
@@ -102,7 +102,7 @@ export function ReviewImageAttachments({
             <Input
               ref={inputRef}
               type='file'
-              accept='image/jpeg,.jpg,.jpeg'
+              accept='image/*'
               multiple
               className='hidden'
               onChange={(e) => {

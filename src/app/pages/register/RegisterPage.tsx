@@ -1383,7 +1383,7 @@ function FactoryTab() {
             </Label>
             <input
               type='file'
-              accept='image/jpeg,.jpg,.jpeg'
+              accept='image/*'
               className='w-full cursor-pointer text-xs text-[var(--neutral-subtle)] file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--brand-lavender)] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--brand-purple)] hover:file:bg-[var(--brand-lavender-muted)]'
               onChange={(e) => {
                 const f = e.target.files?.[0] ?? null;

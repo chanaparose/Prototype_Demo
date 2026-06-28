@@ -41,7 +41,7 @@ type Props = {
   ) => Promise<void>;
 };
 
-const ALLOWED_TYPES = ['image/jpeg', 'application/pdf'];
+const isAllowedFile = (f: File) => f.type.startsWith('image/') || f.type === 'application/pdf';
 const isPdfUrl = (url: string) => /\.pdf($|\?)/i.test(url) || url.includes('%2F') && /pdf/i.test(url);
 
 export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: Props) {
@@ -82,8 +82,8 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
     if (!files?.length) return;
     // validate MIME ก่อน upload
     for (let i = 0; i < files.length; i++) {
-      if (!ALLOWED_TYPES.includes(files[i].type)) {
-        setErr('รองรับเฉพาะไฟล์ .jpg/.jpeg หรือ .pdf เท่านั้น');
+      if (!isAllowedFile(files[i])) {
+        setErr('รองรับเฉพาะไฟล์รูปภาพหรือ .pdf เท่านั้น');
         return;
       }
     }
@@ -341,7 +341,7 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
                     </span>
                     <Input
                       type='file'
-                      accept='image/jpeg,.jpg,.jpeg,application/pdf,.pdf'
+                      accept='image/*,application/pdf,.pdf'
                       multiple
                       className='hidden'
                       capture={isMobile ? 'environment' : undefined}

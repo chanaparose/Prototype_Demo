@@ -551,7 +551,7 @@ export function FactoryInvoicePage() {
       <input
         ref={fileRef}
         type='file'
-        accept='image/jpeg,.jpg,.jpeg'
+        accept='image/*'
         onChange={handleFileChange}
         className='hidden'
       />
