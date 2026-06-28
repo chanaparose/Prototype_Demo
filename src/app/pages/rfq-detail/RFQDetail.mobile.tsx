@@ -6,7 +6,8 @@ import { rfqsApi } from '@/services/api/rfqApi';
 import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';
 import type { OfferItem } from '@/components/features/rfq-detail/RfqDetailOffersSection';
-import { ArrowLeft, ClipboardList, GitCompare } from 'lucide-react';
+import { RfqDetailTabBar, type RfqDetailTab } from '@/components/features/rfq-detail/RfqDetailTabBar';
+import { ArrowLeft } from 'lucide-react';
 import { useRfqDetail } from '@/components/features/rfq/hooks/useRfqDetail';
 import { RfqDetailStatusCard } from '@/components/features/rfq-detail/RfqDetailStatusCard';
 import { RfqDetailSpecs } from '@/components/features/rfq-detail/RfqDetailSpecs';
@@ -20,81 +21,9 @@ import { FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/
 import {
   RFQ_DETAIL_BACK_BUTTON_CLASS,
   RFQ_DETAIL_SUB_HEADER_ROW_CLASS,
-  RFQ_DETAIL_TAB_ACTIVE_CLASS,
-  RFQ_DETAIL_TAB_ICON_ACTIVE_CLASS,
-  RFQ_DETAIL_TAB_ICON_IDLE_CLASS,
-  RFQ_DETAIL_TAB_IDLE_CLASS,
-  RFQ_DETAIL_TAB_INDICATOR_CLASS,
-  RFQ_DETAIL_TAB_LIST_CLASS,
 } from '@/components/features/rfq-detail/rfqDetailTheme';
 import { CLOSEABLE_STATUSES, HISTORY_STATUSES, STATUS_LABEL } from '@/domain/rfq/constants';
 import { Button } from '@/components/ui/button';
-
-type DetailTab = 'specs' | 'offers';
-
-const DETAIL_TABS: {
-  id: DetailTab;
-  label: string;
-  icon: typeof ClipboardList;
-  dataTour?: string;
-}[] = [
-  { id: 'specs', label: 'สเปกโครงการ', icon: ClipboardList },
-  { id: 'offers', label: 'ใบเสนอราคา', icon: GitCompare, dataTour: 'tab-offers' },
-];
-
-function RfqDetailTabBar({
-  activeTab,
-  offerCount,
-  onChange,
-}: {
-  activeTab: DetailTab;
-  offerCount: number;
-  onChange: (tab: DetailTab) => void;
-}) {
-  return (
-    <div
-      role='tablist'
-      aria-label='รายละเอียดคำขอราคา'
-      className={RFQ_DETAIL_TAB_LIST_CLASS}
-    >
-      {DETAIL_TABS.map((tab) => {
-        const active = activeTab === tab.id;
-        const Icon = tab.icon;
-        const countLabel =
-          tab.id === 'offers' && offerCount > 0 ? ` (${offerCount})` : '';
-        return (
-          <button
-            key={tab.id}
-            type='button'
-            role='tab'
-            aria-selected={active}
-            onClick={() => onChange(tab.id)}
-            {...(tab.dataTour ? { 'data-tour': tab.dataTour } : {})}
-            className={`relative flex min-w-0 items-center justify-center gap-1.5 px-3 py-3 text-center transition-colors ${
-              active ? RFQ_DETAIL_TAB_ACTIVE_CLASS : RFQ_DETAIL_TAB_IDLE_CLASS
-            }`}
-          >
-            <Icon
-              size={15}
-              strokeWidth={2.1}
-              className={`shrink-0 ${active ? RFQ_DETAIL_TAB_ICON_ACTIVE_CLASS : RFQ_DETAIL_TAB_ICON_IDLE_CLASS}`}
-              aria-hidden
-            />
-            <span
-              className={`truncate text-[12px] font-semibold leading-tight ${
-                active ? 'text-brand-violet-deep' : 'text-slate-500'
-              }`}
-            >
-              {tab.label}
-              {countLabel}
-            </span>
-            {active ? <span className={RFQ_DETAIL_TAB_INDICATOR_CLASS} /> : null}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 function RfqDetailBackRow({ onBack }: { onBack: () => void }) {
   return (
@@ -134,7 +63,7 @@ export function RFQDetailMobile() {
   } = useRfqDetail(id);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
-  const [activeTab, setActiveTab] = useState<DetailTab>('specs');
+  const [activeTab, setActiveTab] = useState<RfqDetailTab>('specs');
   const userChangedTabRef = useRef(false);
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();

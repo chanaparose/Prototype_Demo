@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -9,18 +9,16 @@ import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';
 import type { OfferItem } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import { CLOSEABLE_STATUSES, HISTORY_STATUSES, STATUS_LABEL } from '@/domain/rfq/constants';
+import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
 import { RfqDetailOffersSection } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import { RfqDetailSpecs } from '@/components/features/rfq-detail/RfqDetailSpecs';
 import { RfqDetailStatusCard } from '@/components/features/rfq-detail/RfqDetailStatusCard';
-import { formatCurrency } from '@/utils/formatting/formatCurrency';
+import { RfqDetailTabBar, type RfqDetailTab } from '@/components/features/rfq-detail/RfqDetailTabBar';
 import { Button } from '@/components/ui/button';
-import {
-  factoryIdeasChromeGradientClass,
-} from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { factoryIdeasChromeGradientClass } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
 import {
   RFQ_DETAIL_BACK_BUTTON_CLASS,
-  RFQ_DETAIL_EYEBROW_CLASS,
   rfqDetailContentSurfaceClass,
 } from '@/components/features/rfq-detail/rfqDetailTheme';
 
@@ -40,13 +38,28 @@ export function RFQDetailDesktop() {
   const { user } = useAuth();
   const { rfq, relatedOrder, quoteHistories, loading, error, refetch } = useRfqDetail(id);
 
-  const [specsOpen, setSpecsOpen] = React.useState(false);
+  const [activeTab, setActiveTab] = React.useState<RfqDetailTab>('specs');
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
   const [closing, setClosing] = React.useState(false);
+  const userChangedTabRef = useRef(false);
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
 
   const goBack = useCallback(() => navigate('/orders'), [navigate]);
+
+  React.useEffect(() => {
+    if (requestedQuoteId || requestedFactoryId) {
+      setActiveTab('offers');
+    }
+  }, [requestedQuoteId, requestedFactoryId]);
+
+  React.useEffect(() => {
+    if (!rfq) return;
+    if (requestedQuoteId || requestedFactoryId) return;
+    if (userChangedTabRef.current) return;
+    const hasOffers = (rfq.offers?.length ?? 0) > 0 || (rfq.offerCount ?? 0) > 0;
+    setActiveTab(hasOffers ? 'offers' : 'specs');
+  }, [rfq, requestedQuoteId, requestedFactoryId]);
 
   React.useEffect(() => {
     if (!rfq?.offers?.length) return;
@@ -167,93 +180,92 @@ export function RFQDetailDesktop() {
       ? (STATUS_LABEL[rfq.status] ?? rfq.status)
       : `${rfq.offerCount} ใบเสนอราคา`;
   const canClose = CLOSEABLE_STATUSES.has(rfq.status);
+  const offerCount = rfq.offers?.length ?? 0;
+
+  const closeRfqButton = canClose ? (
+    <Button
+      variant='unstyled'
+      type='button'
+      disabled={closing}
+      onClick={async () => {
+        const ok = window.confirm(
+          'ปิดรับคำขอราคานี้? โรงงานจะไม่สามารถส่งใบเสนอราคาใหม่ได้ แต่คำสั่งซื้อที่ยืนยันแล้วยังคงดำเนินต่อไป',
+        );
+        if (!ok) return;
+        setClosing(true);
+        try {
+          await rfqsApi.close(rfq.id);
+          toast.success('ปิดรับคำขอราคาเรียบร้อย');
+          await refetch();
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : 'ไม่สามารถปิดคำขอได้');
+        } finally {
+          setClosing(false);
+        }
+      }}
+      className='rounded-xl border border-brand-purple/30 bg-brand-lavender-chip/40 px-4 py-2 text-sm font-semibold text-brand-violet-deep disabled:opacity-60'
+    >
+      {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
+    </Button>
+  ) : null;
 
   return (
     <div className={`hidden lg:block ${rfqDetailContentSurfaceClass}`}>
       <div className={factoryIdeasChromeGradientClass}>
         <div className='relative overflow-hidden border-b border-gray-100/80'>
           <FactoryIdeasHeaderBackdrop />
-          <div className='relative z-10 mx-auto max-w-6xl px-8 py-4 2xl:px-10'>
-            <div className='mb-4 flex items-start justify-between gap-6'>
-              <div className='min-w-0'>
-                <RfqDetailBackRow onBack={goBack} />
-                <p className={`${RFQ_DETAIL_EYEBROW_CLASS} mt-2`}>คำขอราคา</p>
-                <h1 className='truncate text-2xl font-bold text-brand-navy-ink'>{rfq.projectName}</h1>
-                <div className='mt-2 flex flex-wrap items-center gap-2 text-sm text-brand-navy-ink/80'>
-                  <span
-                    className='rounded-full px-2.5 py-1 text-xs font-bold'
-                    style={statusBadgeStyle}
-                  >
-                    {statusLabel}
-                  </span>
-                  <span className='text-slate-300'>•</span>
-                  <span>หมวด: {rfq.category}</span>
-                  <span className='text-slate-300'>•</span>
-                  <span>งบ: {formatCurrency(rfq.budget)}</span>
-                </div>
-              </div>
+          <div className='relative z-10 mx-auto max-w-6xl space-y-3 px-8 py-4 2xl:px-10'>
+            <div className='flex items-start justify-between gap-4'>
+              <RfqDetailBackRow onBack={goBack} />
               <div className='flex shrink-0 items-center gap-2'>
-                {canClose ? (
-                  <Button
-                    variant='unstyled'
-                    type='button'
-                    disabled={closing}
-                    onClick={async () => {
-                      const ok = window.confirm(
-                        'ปิดรับคำขอราคานี้? โรงงานจะไม่สามารถส่งใบเสนอราคาใหม่ได้ แต่คำสั่งซื้อที่ยืนยันแล้วยังคงดำเนินต่อไป',
-                      );
-                      if (!ok) return;
-                      setClosing(true);
-                      try {
-                        await rfqsApi.close(rfq.id);
-                        toast.success('ปิดรับคำขอราคาเรียบร้อย');
-                        await refetch();
-                      } catch (err) {
-                        toast.error(err instanceof Error ? err.message : 'ไม่สามารถปิดคำขอได้');
-                      } finally {
-                        setClosing(false);
-                      }
-                    }}
-                    className='rounded-xl border border-brand-purple/30 bg-brand-lavender-chip/40 px-4 py-2 text-sm font-semibold text-brand-violet-deep disabled:opacity-60'
-                  >
-                    {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
-                  </Button>
-                ) : null}
+                {closeRfqButton}
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  className='rounded-xl bg-brand-purple px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-violet-deep'
+                  onClick={() => navigate('/create-rfq')}
+                >
+                  + สร้างคำขอราคา
+                </Button>
               </div>
             </div>
+            <RfqDetailStatusCard
+              rfq={rfq}
+              rfqId={id}
+              isHistoryView={isHistoryView}
+              statusBadgeStyle={statusBadgeStyle}
+              statusLabel={statusLabel}
+            />
+          </div>
+        </div>
+
+        <div className='sticky top-0 z-20 overflow-visible bg-white shadow-none'>
+          <div className='mx-auto max-w-6xl px-8 2xl:px-10'>
+            <RfqDetailTabBar
+              activeTab={activeTab}
+              offerCount={offerCount}
+              onChange={(tab) => {
+                userChangedTabRef.current = true;
+                setActiveTab(tab);
+              }}
+            />
           </div>
         </div>
       </div>
 
       <div className='mx-auto max-w-6xl px-8 py-6 2xl:px-10'>
-        <div className='grid grid-cols-[1fr_360px] items-start gap-6'>
+        {activeTab === 'specs' ? (
+          <div className='overflow-hidden rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm'>
+            <RfqDetailSpecs rfq={rfq} bare />
+          </div>
+        ) : (
           <div className='space-y-4'>
             <div className='overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm'>
               <div className='border-b border-slate-100 px-5 py-4'>
-                <p className='text-sm font-bold text-brand-navy-ink'>สรุปสถานะ</p>
+                <p className='text-sm font-bold text-brand-navy-ink'>ใบเสนอราคา</p>
                 <p className='mt-1 text-xs text-slate-500'>
-                  ดูความคืบหน้าและข้อเสนอจากโรงงานในที่เดียว
+                  เลือกข้อเสนอเพื่อเปรียบเทียบราคาและ lead time
                 </p>
-              </div>
-              <div className='p-4'>
-                <RfqDetailStatusCard
-                  rfq={rfq}
-                  rfqId={id}
-                  isHistoryView={isHistoryView}
-                  statusBadgeStyle={statusBadgeStyle}
-                  statusLabel={statusLabel}
-                />
-              </div>
-            </div>
-
-            <div className='overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm'>
-              <div className='flex items-center justify-between border-b border-slate-100 px-5 py-4'>
-                <div>
-                  <p className='text-sm font-bold text-brand-navy-ink'>ใบเสนอราคา</p>
-                  <p className='mt-1 text-xs text-slate-500'>
-                    เลือกข้อเสนอเพื่อเปรียบเทียบราคาและ lead time
-                  </p>
-                </div>
               </div>
               <div className='p-4'>
                 <RfqDetailOffersSection
@@ -273,57 +285,14 @@ export function RFQDetailDesktop() {
                 />
               </div>
             </div>
-          </div>
-
-          <div className='sticky top-6 space-y-4'>
-            <div className='overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm'>
-              <div className='flex items-center justify-between border-b border-slate-100 px-5 py-4'>
-                <div>
-                  <p className='text-sm font-bold text-brand-navy-ink'>สเปกงาน</p>
-                  <p className='mt-1 text-xs text-slate-500'>เปิด/ปิดเพื่อดูรายละเอียดสเปก</p>
-                </div>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  className='rounded-xl border border-brand-purple/20 bg-brand-lavender-chip/40 px-3 py-1.5 text-xs font-semibold text-brand-violet-deep hover:bg-brand-lavender-chip/60'
-                  onClick={() => setSpecsOpen((v) => !v)}
-                >
-                  {specsOpen ? 'ซ่อน' : 'แสดง'}
-                </Button>
-              </div>
-              {specsOpen ? (
-                <div className='p-4 pt-0'>
-                  <RfqDetailSpecs rfq={rfq} bare />
-                </div>
-              ) : null}
-            </div>
-
-            <div className='relative overflow-hidden rounded-xl border border-brand-purple/15 bg-gradient-to-br from-brand-purple/[0.12] via-[var(--brand-page)] to-brand-orange/[0.08] p-5'>
-              <div
-                className='pointer-events-none absolute -right-6 -top-6 h-32 w-32 rounded-full bg-brand-orange/[0.12] blur-2xl'
-                aria-hidden
+            {selectedOffer ? (
+              <QuotationHistoryPanel
+                quotationId={selectedOffer}
+                preloadedHistory={quoteHistories?.[selectedOffer]}
               />
-              <div
-                className='pointer-events-none absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-brand-purple/[0.1] blur-xl'
-                aria-hidden
-              />
-              <div className='relative z-10'>
-                <p className='text-sm font-bold text-brand-navy-ink'>ต้องการ RFQ ใหม่?</p>
-                <p className='mt-1 text-xs text-slate-500'>
-                  สร้างคำขอใหม่เพื่อรับใบเสนอราคาจากโรงงานได้ทันที
-                </p>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  className='mt-4 w-full rounded-xl bg-brand-purple py-3 text-sm font-bold text-white transition-colors hover:bg-brand-violet-deep'
-                  onClick={() => navigate('/create-rfq')}
-                >
-                  + สร้างคำขอราคา
-                </Button>
-              </div>
-            </div>
+            ) : null}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

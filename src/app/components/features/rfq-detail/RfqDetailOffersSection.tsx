@@ -4,7 +4,6 @@ import {
   CheckCircle,
   Star,
   Clock,
-  Zap,
   Award,
   MessageCircle,
   XCircle,
@@ -19,9 +18,10 @@ import { ordersApi } from '@/services/api/ordersApi';
 import type { Quotation } from '@/components/features/rfq-detail/QuotationBOQCard';
 import {
   QuotationBOQDetailsPanel,
-  quotationFromOfferSource,
 } from '@/components/features/rfq-detail/QuotationBOQCard';
 import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
+import { RfqOffersCompareTable } from '@/components/features/rfq-detail/RfqOffersCompareTable';
+import { computeOfferMetrics } from '@/components/features/rfq-detail/rfqOfferMetrics';
 import { Button } from '@/components/ui/button';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 
@@ -76,11 +76,6 @@ type RfqDetailOffersSectionProps = {
 
 function formatTHB(n: number): string {
   return formatCurrency(n);
-}
-
-function asNumber(v: unknown): number {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
 }
 
 export function RfqDetailOffersSection({
@@ -162,7 +157,7 @@ export function RfqDetailOffersSection({
               </p>
             </div>
           </div>
-          <div className='space-y-3'>
+          <div className='grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4'>
             {offers.map((offer) => (
               <div
                 key={offer.id}
@@ -329,57 +324,12 @@ export function RfqDetailOffersSection({
   }
 
   if (!isHistoryView && offers.length > 0) {
-    const recommendedOffers = offers.filter((o) => o.recommended);
     return (
       <>
-        <div
-          className='rounded-lg p-4 relative overflow-hidden mt-3'
-          style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)' }}
-        >
-          <div className='absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-20 bg-white' />
-          <div className='relative z-10'>
-            <div className='flex items-center gap-2 mb-2'>
-              <Zap size={16} className='text-yellow-300' />
-              <span className='text-white text-xs' style={{ fontWeight: 600 }}>
-                AI แนะนำ
-              </span>
-            </div>
-            {recommendedOffers.map((offer) => (
-              <div key={offer.id}>
-                <p className='text-white mb-1' style={{ fontWeight: 700 }}>
-                  {offer.factoryName} คุ้มค่าที่สุด
-                </p>
-                <p className='text-white/80 text-xs'>{offer.aiReason}</p>
-                <div className='flex gap-3 mt-3'>
-                  <div className='text-center'>
-                    <p className='text-white text-sm' style={{ fontWeight: 700 }}>
-                      {formatCurrency(offer.price)}
-                    </p>
-                    <p className='text-white/70 text-[10px]'>ราคา</p>
-                  </div>
-                  <div className='w-px bg-white/30' />
-                  <div className='text-center'>
-                    <p className='text-white text-sm' style={{ fontWeight: 700 }}>
-                      {offer.leadTime} วัน
-                    </p>
-                    <p className='text-white/70 text-[10px]'>lead time</p>
-                  </div>
-                  <div className='w-px bg-white/30' />
-                  <div className='text-center'>
-                    <p className='text-white text-sm' style={{ fontWeight: 700 }}>
-                      ★ {offer.rating}
-                    </p>
-                    <p className='text-white/70 text-[10px]'>rating</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
         <div data-tour='offers-compare'>
-          <div className='mb-4 lg:mb-8 lg:mt-2 flex items-start gap-3 lg:gap-4'>
+          <div className='mb-3 lg:mb-4 lg:mt-1 flex items-start gap-2.5 lg:gap-3'>
             <div
-              className='mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border'
+              className='mt-0.5 flex h-8 w-8 lg:h-9 lg:w-9 shrink-0 items-center justify-center rounded-lg border'
               style={{
                 background:
                   'linear-gradient(145deg, rgba(242,138,46,0.16) 0%, rgba(162,56,255,0.08) 100%)',
@@ -390,18 +340,18 @@ export function RfqDetailOffersSection({
             >
               <GitCompare size={19} strokeWidth={2} style={{ color: '#C2410C' }} />
             </div>
-            <div className='min-w-0 flex-1 border-b border-gray-100/90 pb-3'>
+            <div className='min-w-0 flex-1 border-b border-gray-100/90 pb-2 lg:pb-2.5'>
               <div
-                className='mb-1.5 h-1 w-11 rounded-full'
+                className='mb-1 h-0.5 w-9 rounded-full lg:mb-1.5 lg:h-1 lg:w-11'
                 style={{
                   background:
                     'linear-gradient(90deg, var(--brand-orange) 0%, var(--brand-purple) 100%)',
                 }}
               />
-              <h3 className='text-base font-bold tracking-tight text-brand-navy'>
+              <h3 className='text-sm lg:text-[15px] font-bold tracking-tight text-brand-navy'>
                 เปรียบเทียบใบเสนอราคา
               </h3>
-              <p className='mt-0.5 text-[11px] leading-relaxed text-gray-500'>
+              <p className='mt-0.5 text-[10px] lg:text-[11px] leading-relaxed text-gray-500 hidden sm:block'>
                 เลือกดูรายละเอียดและยอมรับข้อเสนอที่เหมาะสม
               </p>
             </div>
@@ -426,49 +376,42 @@ export function RfqDetailOffersSection({
               {flowError}
             </p>
           )}
-          <div className='space-y-3'>
+
+          <div className='hidden lg:block'>
+            <RfqOffersCompareTable
+              offers={offers}
+              rfqQuantity={rfqQuantity}
+              rfqUnitName={rfqUnitName}
+              rfqStatus={rfqStatus}
+              selectedOfferId={selectedOfferId}
+              onSelectOffer={onSelectOffer}
+              onChatWithOffer={onChatWithOffer}
+              onAcceptOffer={handleAcceptOffer}
+              acceptingId={acceptingId}
+              isRequestClosed={isRequestClosed}
+              quoteHistories={quoteHistories}
+            />
+          </div>
+
+          <div className='grid grid-cols-1 gap-3 lg:hidden'>
             {offers.map((offer) => {
-              const qSt = (offer.quoteStatus ?? 'PD').toUpperCase();
-              const isAccepted = qSt === 'AC';
-              const isRejected = qSt === 'RJ';
-              const isExpired =
-                qSt === 'EX' ||
-                (() => {
-                  // ตรวจ valid_until จาก API — ถ้าผ่านแล้วและยังไม่ AC ให้ถือว่าหมดอายุ
-                  if (isAccepted) return false;
-                  const vu = offer.quotationDetail?.valid_until;
-                  if (!vu) return false;
-                  const d = new Date(vu);
-                  return !Number.isNaN(d.getTime()) && d < new Date();
-                })();
-              const boqOpen = expandedBoqOfferId === offer.id || selectedOfferId === offer.id;
-              const boq = quotationFromOfferSource(offer, rfqQuantity);
+              const {
+                boq,
+                isAccepted,
+                isRejected,
+                isExpired,
+                shippingCost,
+                packagingCost,
+                toolingMoldCost,
+                discountAmount,
+                subtotal,
+                vatRate,
+                vatAmount,
+                grandTotal,
+              } = computeOfferMetrics(offer, rfqQuantity, rfqUnitName);
               const qd = (offer.quotationDetail ?? {}) as Partial<Quotation> &
                 Record<string, unknown>;
-              const shippingCost = asNumber(qd.shipping_cost);
-              const packagingCost = asNumber(qd.packaging_cost);
-              const toolingMoldCost = asNumber(
-                qd.tooling_mold_cost ?? qd.mold_cost ?? boq.mold_cost,
-              );
-              const discountAmount = asNumber(qd.discount_amount);
-              const subtotal =
-                asNumber(qd.subtotal) > 0
-                  ? asNumber(qd.subtotal)
-                  : Math.max(0, boq.price_per_piece * (rfqQuantity > 0 ? rfqQuantity : boq.moq));
-              const vatRate = asNumber(qd.vat_rate);
-              const vatAmount = asNumber(qd.vat_amount);
-              const grandTotal =
-                asNumber(qd.grand_total) > 0
-                  ? asNumber(qd.grand_total)
-                  : Math.max(
-                      0,
-                      subtotal -
-                        discountAmount +
-                        shippingCost +
-                        packagingCost +
-                        toolingMoldCost +
-                        vatAmount,
-                    );
+              const boqOpen = expandedBoqOfferId === offer.id || selectedOfferId === offer.id;
               return (
                 <div
                   key={offer.id}
@@ -563,7 +506,7 @@ export function RfqDetailOffersSection({
                       />
                     </div>
                   </div>
-                  <div className='grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2'>
+                  <div className={`grid gap-2 mb-2 ${boqOpen ? 'grid-cols-2' : 'grid-cols-2'}`}>
                     <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
                       <p
                         className='text-sm text-brand-navy'
