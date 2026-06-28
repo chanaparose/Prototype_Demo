@@ -13,9 +13,16 @@ interface Props {
   variant?: 'accordion';
   defaultOpen?: boolean;
   collapsible?: boolean;
+  /** Render body only — for bottom sheets */
+  bare?: boolean;
 }
 
-export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }: Props) {
+export function RfqReferenceCard({
+  rfq,
+  defaultOpen = true,
+  collapsible = true,
+  bare = false,
+}: Props) {
   const [open, setOpen] = useState(defaultOpen);
 
   // Use enriched data from GET /orders/:id — no extra API calls needed.
@@ -223,6 +230,8 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }
 
     </div>
   );
+
+  if (bare) return body;
 
   return (
     <section className='my-3 rounded-md border border-slate-200 bg-white'>

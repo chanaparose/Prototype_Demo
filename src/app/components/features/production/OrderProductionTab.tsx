@@ -30,6 +30,7 @@ type Props = {
   onRequestOverviewTab?: () => void;
   onPayDeposit?: () => void;
   onContactFactory?: () => void;
+  hideHeader?: boolean;
 };
 
 export function OrderProductionTab({
@@ -38,6 +39,7 @@ export function OrderProductionTab({
   onRequestOverviewTab,
   onPayDeposit,
   onContactFactory,
+  hideHeader = false,
 }: Props) {
   const { user } = useAuth();
   const {
@@ -160,7 +162,7 @@ export function OrderProductionTab({
 
   return (
     <div className='space-y-4'>
-      <ProductionHeader merged={merged} orderStatus={orderStatus} />
+      {!hideHeader ? <ProductionHeader merged={merged} orderStatus={orderStatus} /> : null}
       <ProductionTimeline
         merged={merged}
         orderStatus={orderStatus}

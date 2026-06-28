@@ -69,12 +69,18 @@ export function ProductionHeader({ merged, orderStatus }: Props) {
     return best;
   }, [merged]);
 
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const currentStepNo = currentIdx >= 0 ? currentIdx + 1 : total;
+  const progressLabel =
+    done === total && total > 0
+      ? `เสร็จครบ ${total} ขั้นตอน`
+      : currentIdx >= 0
+        ? `ขั้นที่ ${currentStepNo} จาก ${total} · เสร็จแล้ว ${done} ขั้น`
+        : `เสร็จแล้ว ${done} จาก ${total} ขั้นตอน`;
 
   return (
-    <div className='bg-white rounded-md border border-slate-200 p-4 space-y-3 lg:p-6 lg:space-y-4'>
+    <div className='rounded-xl border border-slate-200/80 bg-white p-4 space-y-2.5 lg:p-5'>
       <div className='flex flex-wrap items-center justify-between gap-2 lg:gap-4'>
-        <p className='text-sm font-bold text-gray-900'>ความคืบหน้าการผลิต</p>
+        <p className='text-sm font-bold text-brand-navy-ink'>ความคืบหน้าการผลิต</p>
         <span
           className={`text-[11px] font-semibold px-2 py-1 rounded-md ${pillClass}`}
           aria-label={`สถานะคำสั่งซื้อ ${orderStatusLabel(orderStatus)}`}
@@ -82,20 +88,10 @@ export function ProductionHeader({ merged, orderStatus }: Props) {
           {orderStatusLabel(orderStatus)}
         </span>
       </div>
+      <p className='text-[13px] font-medium text-slate-600'>{progressLabel}</p>
       <div>
-        <div className='h-2 bg-gray-100 rounded-full overflow-hidden'>
-          <div
-            className='h-full rounded-full transition-all'
-            style={{ width: `${pct}%`, background: 'var(--brand-violet)' }}
-          />
-        </div>
-        <p className='text-xs text-gray-600 mt-1.5'>
-          {done}/{total} ขั้นตอน
-        </p>
-      </div>
-      <div className='lg:pt-1'>
-        <p className='text-[10px] text-gray-500 uppercase'>ขั้นปัจจุบัน</p>
-        <p className='text-sm font-semibold text-gray-900'>{currentName}</p>
+        <p className='text-[10px] font-medium uppercase tracking-wide text-slate-400'>ขั้นปัจจุบัน</p>
+        <p className='text-sm font-semibold text-brand-navy-ink'>{currentName}</p>
       </div>
       {lastIso ? (
         <p className='text-xs text-gray-500'>อัปเดตล่าสุด {formatRelativeTh(lastIso)}</p>

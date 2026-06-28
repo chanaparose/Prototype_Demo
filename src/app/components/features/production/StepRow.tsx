@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, MessageCircle } from 'lucide-react';
 import type { MergedProductionStep } from '@/components/features/production/types';
 import {
   STEP_VISUAL,
@@ -13,88 +13,81 @@ type Props = {
   merged: MergedProductionStep;
   derivedState: StepDerivedState;
   expanded: boolean;
+  isLast: boolean;
   onToggleExpand: () => void;
   isFactory: boolean;
   isCustomer: boolean;
   canReject: boolean;
   onOpenDrawer: () => void;
-  onOpenReject: () => void;
   onContactFactory?: () => void;
   onPhotoClick: (url: string) => void;
 };
 
-function renderStateIcon(state: StepDerivedState) {
+function renderRailDot(state: StepDerivedState) {
   switch (state) {
     case 'completed':
-      return <CheckCircle2 size={20} className='text-emerald-600' aria-hidden />;
+      return (
+        <span className='relative z-10 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500'>
+          <CheckCircle2 size={12} className='text-white' aria-hidden />
+        </span>
+      );
     case 'active':
       return (
-        <span
-          className='inline-flex h-5 w-5 items-center justify-center rounded-full border-2 border-brand-purple bg-brand-purple/10'
-          aria-label='กำลังดำเนินการ'
-          role='img'
-        >
-          <span className='h-2 w-2 rounded-full bg-brand-purple' />
+        <span className='relative z-10 flex h-5 w-5 items-center justify-center rounded-full bg-brand-purple ring-4 ring-brand-purple/20'>
+          <span className='h-2 w-2 rounded-full bg-white' />
         </span>
       );
     case 'blocked':
-      return <AlertCircle size={20} className='text-amber-500' aria-hidden />;
+      return (
+        <span className='relative z-10 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400'>
+          <AlertCircle size={12} className='text-white' aria-hidden />
+        </span>
+      );
     case 'rejected':
-      return <XCircle size={20} className='text-red-500' aria-hidden />;
+      return (
+        <span className='relative z-10 flex h-5 w-5 items-center justify-center rounded-full bg-red-500'>
+          <XCircle size={12} className='text-white' aria-hidden />
+        </span>
+      );
     case 'upcoming':
     default:
-      return <Lock size={18} className='text-gray-300' aria-hidden />;
+      return (
+        <span className='relative z-10 h-3 w-3 rounded-full border-2 border-slate-200 bg-white' />
+      );
   }
 }
 
-function rowShell(state: StepDerivedState): string {
-  switch (state) {
-    case 'active':
-      return 'bg-brand-lavender-row border-brand-purple shadow-sm';
-    case 'blocked':
-      return 'bg-amber-50 border-amber-200';
-    case 'rejected':
-      return 'bg-red-50 border-red-200';
-    case 'completed':
-    case 'upcoming':
-    default:
-      return 'bg-white border-gray-100';
-  }
-}
-
-function titleClass(state: StepDerivedState): string {
-  if (state === 'active') return 'text-sm text-gray-900 font-bold';
-  if (state === 'upcoming') return 'text-sm text-gray-400 font-semibold';
-  return 'text-sm text-gray-700 font-semibold';
-}
-
-function descClass(state: StepDerivedState): string {
-  if (state === 'active') return 'text-[11px] text-gray-600 mt-0.5 line-clamp-1';
-  if (state === 'upcoming') return 'text-[11px] text-gray-400 mt-0.5 line-clamp-1';
-  return 'text-[11px] text-gray-500 mt-0.5 line-clamp-1';
+function shortTimestamp(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+  return `${day}/${month}\n${hh}:${mm}`;
 }
 
 export function StepRow({
   merged,
   derivedState,
   expanded,
+  isLast,
   onToggleExpand,
   isFactory,
   isCustomer,
   canReject,
   onOpenDrawer,
-  onOpenReject,
   onContactFactory,
   onPhotoClick,
 }: Props) {
   const { template, update } = merged;
   const stepId = Number(template.step_id ?? 0);
-  // Business rule: step 5 "จัดส่งสำเร็จ" รอลูกค้ายืนยัน/14 วัน auto — factory ไม่แก้ได้
   const factoryCanUpdateThisStep = Number.isFinite(stepId) && stepId > 0 && stepId <= 4;
   const st = update.status;
   const visual = STEP_VISUAL[derivedState];
   const isActive = derivedState === 'active';
-  const isBlocked = derivedState === 'blocked';
+  const isCompleted = derivedState === 'completed';
 
   const ctaFactory = !factoryCanUpdateThisStep ? null : st === 'IP' ? (
     <Button
@@ -104,7 +97,7 @@ export function StepRow({
         e.stopPropagation();
         onOpenDrawer();
       }}
-      className='shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white'
+      className='shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold text-white'
       style={{ background: 'var(--brand-violet)' }}
     >
       อัปเดตขั้นนี้
@@ -117,7 +110,7 @@ export function StepRow({
         e.stopPropagation();
         onOpenDrawer();
       }}
-      className='shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold border border-violet-200 text-violet-800'
+      className='shrink-0 rounded-xl border border-violet-200 px-3 py-1.5 text-xs font-semibold text-violet-800'
     >
       แก้ไข
     </Button>
@@ -129,7 +122,7 @@ export function StepRow({
         e.stopPropagation();
         onOpenDrawer();
       }}
-      className='shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white'
+      className='shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold text-white'
       style={{ background: 'var(--brand-purple)' }}
     >
       ส่งใหม่
@@ -142,120 +135,155 @@ export function StepRow({
         e.stopPropagation();
         onOpenDrawer();
       }}
-      className='shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white'
+      className='shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold text-white'
       style={{ background: 'var(--brand-purple)' }}
     >
       เริ่มขั้นต่อไป
     </Button>
   ) : null;
 
-  const ctaCustomer =
-    st === 'CD' && canReject ? (
-      <Button
-        variant='unstyled'
-        type='button'
-        onClick={(e) => {
-          e.stopPropagation();
-          onContactFactory?.();
-        }}
-        className='shrink-0 text-xs font-semibold text-violet-700 underline'
-      >
-        ติดต่อโรงงาน
-      </Button>
-    ) : null;
+  const timestamp = update.last_updated_at;
+  const titleClass =
+    isActive || derivedState === 'blocked' || derivedState === 'rejected'
+      ? 'text-sm font-bold text-brand-navy-ink'
+      : isCompleted
+        ? 'text-sm font-medium text-slate-500'
+        : 'text-sm font-medium text-slate-400';
 
-  const showPayChip =
-    template.is_payment_trigger &&
-    (derivedState === 'upcoming' || derivedState === 'active' || derivedState === 'blocked');
+  const canExpand = derivedState !== 'upcoming';
 
   return (
     <div
-      className={`rounded-2xl border ${rowShell(derivedState)} overflow-hidden transition-colors`}
+      className='flex gap-2'
       aria-current={isActive ? 'step' : undefined}
       aria-disabled={derivedState === 'upcoming' ? true : undefined}
     >
-      <div
-        role='button'
-        tabIndex={0}
-        className='w-full text-left px-4 py-3 flex items-start gap-3 cursor-pointer lg:px-6 lg:py-4 lg:gap-4'
-        onClick={onToggleExpand}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onToggleExpand();
-          }
-        }}
-      >
-        <div className='mt-0.5 shrink-0'>{renderStateIcon(derivedState)}</div>
-        <div className='flex-1 min-w-0'>
-          <div className='flex items-center gap-2 min-w-0'>
-            <p className={`${titleClass(derivedState)} truncate`}>{template.step_name_th}</p>
-            {visual.chipLabel ? (
-              <span
-                className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${visual.chipClass}`}
-              >
-                {visual.chipLabel}
-              </span>
-            ) : null}
-            <span className='sr-only'>{visual.ariaLabel}</span>
-          </div>
-          {template.description ? (
-            <p className={descClass(derivedState)}>{template.description}</p>
-          ) : null}
-        </div>
-        <div
-          className='shrink-0 flex flex-col items-end gap-1'
-          onClick={(e) => e.stopPropagation()}
-        >
-          {isFactory ? ctaFactory : null}
-          {isCustomer ? ctaCustomer : null}
-        </div>
+      <div className='w-11 shrink-0 pt-0.5 text-right'>
+        <p className='whitespace-pre-line text-[10px] leading-tight text-slate-400'>
+          {shortTimestamp(timestamp)}
+        </p>
       </div>
 
-      {/*isBlocked ? (
-        <div className='px-4 pb-3 -mt-1 lg:px-6 lg:pb-4'>
-          <p className='text-[11px] text-amber-800'>รอโรงงานเริ่มงาน</p>
-        </div>
-      ) : null*/}
+      <div className='flex w-5 shrink-0 flex-col items-center'>
+        {renderRailDot(derivedState)}
+        {!isLast ? (
+          <div
+            className={`mt-1 w-0.5 flex-1 min-h-[24px] ${
+              isCompleted ? 'bg-emerald-300' : 'bg-slate-200'
+            }`}
+          />
+        ) : null}
+      </div>
 
-      {expanded ? (
-        <div className='px-4 pb-4 pt-0 border-t border-gray-100/80 space-y-3 text-sm lg:px-6 lg:pb-5 lg:space-y-4'>
-          {update.description ? (
-            <div>
-              <p className='text-[10px] text-gray-500 uppercase pt-3'>หมายเหตุ</p>
-              <p className='text-gray-800 whitespace-pre-wrap'>{update.description}</p>
+      <div className={`min-w-0 flex-1 ${isLast ? 'pb-1' : 'pb-5'}`}>
+        <div
+          role={canExpand ? 'button' : undefined}
+          tabIndex={canExpand ? 0 : undefined}
+          className={`text-left ${canExpand ? 'cursor-pointer' : ''}`}
+          onClick={canExpand ? onToggleExpand : undefined}
+          onKeyDown={
+            canExpand
+              ? (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onToggleExpand();
+                  }
+                }
+              : undefined
+          }
+        >
+          <div className='flex items-start justify-between gap-2'>
+            <div className='min-w-0 flex-1'>
+              <div className='flex flex-wrap items-center gap-1.5'>
+                <p className={titleClass}>{template.step_name_th}</p>
+                {visual.chipLabel ? (
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${visual.chipClass}`}
+                  >
+                    {visual.chipLabel}
+                  </span>
+                ) : null}
+                <span className='sr-only'>{visual.ariaLabel}</span>
+              </div>
+              {!expanded && template.description ? (
+                <p
+                  className={`mt-0.5 line-clamp-1 text-[11px] ${
+                    isActive ? 'text-slate-600' : 'text-slate-400'
+                  }`}
+                >
+                  {template.description}
+                </p>
+              ) : null}
             </div>
-          ) : null}
-          {update.rejected_reason && st === 'RJ' ? (
-            <div className='rounded-xl bg-red-100 border border-red-200 px-3 py-2 text-xs text-red-900'>
-              <strong>เหตุผลปฏิเสธ:</strong> {update.rejected_reason}
-            </div>
-          ) : null}
-          {update.image_urls && update.image_urls.length > 0 ? (
-            <div>
-              <p className='text-[10px] text-gray-500 uppercase mb-1'>รูปภาพ</p>
+            {isFactory ? (
+              <div className='shrink-0' onClick={(e) => e.stopPropagation()}>
+                {ctaFactory}
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        {expanded ? (
+          <div className='mt-2 space-y-2.5 text-sm'>
+            {template.description ? (
+              <p className='text-xs leading-relaxed text-slate-600'>{template.description}</p>
+            ) : null}
+            {update.description ? (
+              <div>
+                <p className='text-[10px] font-medium uppercase tracking-wide text-slate-400'>
+                  หมายเหตุ
+                </p>
+                <p className='whitespace-pre-wrap text-xs text-slate-700'>{update.description}</p>
+              </div>
+            ) : null}
+            {update.rejected_reason && st === 'RJ' ? (
+              <div className='rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900'>
+                <strong>เหตุผลปฏิเสธ:</strong> {update.rejected_reason}
+              </div>
+            ) : null}
+            {update.image_urls && update.image_urls.length > 0 ? (
               <div className='flex flex-wrap gap-2'>
                 {update.image_urls.map((u) => (
                   <Button
                     variant='unstyled'
                     key={u}
                     type='button'
-                    className='w-16 h-16 rounded-lg overflow-hidden border border-gray-200'
+                    className='h-14 w-14 overflow-hidden rounded-lg border border-slate-200'
                     onClick={() => onPhotoClick(u)}
                   >
-                    <Image src={u} alt='' className='w-full h-full object-cover' />
+                    <Image src={u} alt='' className='h-full w-full object-cover' />
                   </Button>
                 ))}
               </div>
-            </div>
-          ) : null}
-          {update.last_updated_at ? (
-            <p className='text-[11px] text-gray-400'>
-              อัปเดตล่าสุด {formatDateTime(update.last_updated_at)}
-            </p>
-          ) : null}
-        </div>
-      ) : null}
+            ) : null}
+            {isCustomer && canReject && onContactFactory ? (
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={onContactFactory}
+                className='inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-800'
+              >
+                <MessageCircle size={14} aria-hidden />
+                แชทกับโรงงาน
+              </Button>
+            ) : null}
+            {isCustomer && derivedState === 'blocked' && onContactFactory ? (
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={onContactFactory}
+                className='inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-800'
+              >
+                <MessageCircle size={14} aria-hidden />
+                แชทกับโรงงาน
+              </Button>
+            ) : null}
+            {timestamp ? (
+              <p className='text-[11px] text-slate-400'>อัปเดต {formatDateTime(timestamp)}</p>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

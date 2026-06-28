@@ -13,6 +13,8 @@ interface Props {
   quotation: IQuoteNestedResponse;
   factoryName?: string;
   factoryId?: string | number;
+  /** Render body only — for bottom sheets */
+  bare?: boolean;
 }
 
 const fmt = (n: number) => formatCurrency(n, 'THB').replace('฿', '').trim();
@@ -25,7 +27,7 @@ const paymentTermsLabel: Record<string, string> = {
   net_30: 'Net 30 วัน',
 };
 
-export function OrderBOQCard({ quotation, factoryName, factoryId }: Props) {
+export function OrderBOQCard({ quotation, factoryName, factoryId, bare = false }: Props) {
   const [open, setOpen] = useState(true);
   const navigate = useNavigate();
 
@@ -49,21 +51,8 @@ export function OrderBOQCard({ quotation, factoryName, factoryId }: Props) {
     ? q.image_urls.filter((u) => typeof u === 'string' && u.trim())
     : [];
 
-  return (
-    <CollapsibleCard
-      defaultOpen={open}
-      onOpenChange={setOpen}
-      header={
-        <div className='flex items-center gap-2'>
-          <span className='text-sm font-bold text-gray-900'>ใบเสนอราคา BOQ</span>
-          <StatusBadge variant='success' size='sm'>
-            <CheckCircle size={10} /> ยอมรับแล้ว
-          </StatusBadge>
-        </div>
-      }
-      className='mb-3 rounded-2xl border border-gray-100 bg-white overflow-hidden'
-    >
-      <div className='space-y-4 lg:space-y-5'>
+  const body = (
+    <div className='space-y-4 lg:space-y-5'>
         <button
           type='button'
           onClick={() => factoryId && navigate(`/factories/${factoryId}`)}
@@ -174,7 +163,26 @@ export function OrderBOQCard({ quotation, factoryName, factoryId }: Props) {
             </div>
           </div>
         )}
-      </div>
+    </div>
+  );
+
+  if (bare) return body;
+
+  return (
+    <CollapsibleCard
+      defaultOpen={open}
+      onOpenChange={setOpen}
+      header={
+        <div className='flex items-center gap-2'>
+          <span className='text-sm font-bold text-gray-900'>ใบเสนอราคา BOQ</span>
+          <StatusBadge variant='success' size='sm'>
+            <CheckCircle size={10} /> ยอมรับแล้ว
+          </StatusBadge>
+        </div>
+      }
+      className='mb-3 rounded-2xl border border-gray-100 bg-white overflow-hidden'
+    >
+      {body}
     </CollapsibleCard>
   );
 }

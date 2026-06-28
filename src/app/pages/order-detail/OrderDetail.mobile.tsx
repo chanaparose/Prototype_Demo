@@ -1,10 +1,9 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
   MessageCircle,
   Star,
-  X,
   AlertTriangle,
   PackageCheck,
   Clock,
@@ -17,18 +16,17 @@ import { getCurrentUserId } from '@/utils/chatContract';
 import { ApiHttpError } from '@/services/api/httpClient';
 import { ordersApi } from '@/services/api/ordersApi';
 import { Button } from '@/components/ui/button';
-import { OrderSummaryCard } from '@/components/features/order-detail/OrderSummaryCard';
-import { OrderOverviewSection } from '@/components/features/order-detail/OrderOverviewSection';
+import { OrderDetailStatusHero } from '@/components/features/order-detail/OrderDetailStatusHero';
+import { OrderDetailReferenceDocs } from '@/components/features/order-detail/OrderDetailReferenceDocs';
+import { OrderDetailMetaSection } from '@/components/features/order-detail/OrderDetailMetaSection';
+import { formatDateTh } from '@/components/features/order-detail/utils';
 import { OrderPhotoGallery } from '@/components/features/order-detail/OrderPhotoGallery';
 import { OrderActionBanner } from '@/components/features/order-detail/OrderActionBanner';
 import { DepositPaymentModal } from '@/components/features/order-detail/DepositPaymentModal';
-import { RfqReferenceCard } from '@/components/features/order-detail/RfqReferenceCard';
-import { OrderBOQCard } from '@/components/features/order-detail/OrderBOQCard';
-import { formatDateTh } from '@/components/features/order-detail/utils';
 import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { OrderProductionTab } from '@/components/features/production/OrderProductionTab';
-import { useRfqDetailQuery } from '@/domain/rfq/queries/useRfqDetailQuery';
+import { mergeTemplateWithUpdates } from '@/components/features/production/types';
 import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
 import { AppDialog } from '@/components/ui/app-dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -89,7 +87,6 @@ function OrderDetailMobileBody() {
   } = useOrderDetail();
 
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'overview' | 'production'>('overview');
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [confirmingReceive, setConfirmingReceive] = useState(false);
   const [receiveForbidden, setReceiveForbidden] = useState(false);
@@ -126,10 +123,13 @@ function OrderDetailMobileBody() {
     setDepositModalOpen(true);
   };
 
-  const { data: rfqDetail } = useRfqDetailQuery(order.rfqId || undefined);
-  const relatedRfq = rfqDetail?.rfq ?? undefined;
   const relatedFactory = data.factories.find((f) => f.id === order.factoryId);
-  const rfqOffers = relatedRfq?.offers ?? [];
+
+  const productionMerged = useMemo(() => {
+    const templateSteps = production.template_preview ?? [];
+    if (!templateSteps.length) return [];
+    return mergeTemplateWithUpdates(templateSteps, production.updates);
+  }, [production.template_preview, production.updates]);
 
   const openOrderChat = () => {
     const my = getCurrentUserId(user);
@@ -284,44 +284,17 @@ function OrderDetailMobileBody() {
           <FactoryIdeasHeaderBackdrop />
           <div className='relative z-10 space-y-3'>
             <OrderDetailSubHeader onBack={goBack} onChat={openOrderChat} />
-            <OrderSummaryCard
-              order={order}
+            <OrderDetailStatusHero
               orderId={order.id}
-              rfqSummary={rfqSummary}
-              relatedFactory={relatedFactory}
+              projectName={order.projectName}
               statusLabelTh={statusLabelTh}
+              merged={productionMerged}
+              orderStatus={production.order_status}
+              factoryId={order.factoryId}
+              factoryName={order.factoryName}
+              factoryImage={relatedFactory?.image}
+              onChat={openOrderChat}
             />
-          </div>
-        </div>
-
-        <div className='sticky top-14 z-20 overflow-visible bg-white shadow-none'>
-          <div data-tour='order-tabs' className='flex border-b border-gray-100 bg-white'>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => setActiveSection('overview')}
-              className={`flex-1 py-3 border-b-2 transition-colors ${
-                activeSection === 'overview'
-                  ? 'border-brand-purple text-brand-purple'
-                  : 'border-transparent text-gray-400'
-              }`}
-              style={{ fontSize: 14 }}
-            >
-              ภาพรวม
-            </Button>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => setActiveSection('production')}
-              className={`flex-1 py-3 border-b-2 transition-colors ${
-                activeSection === 'production'
-                  ? 'border-brand-purple text-brand-purple'
-                  : 'border-transparent text-gray-400'
-              }`}
-              style={{ fontSize: 14 }}
-            >
-              การผลิต
-            </Button>
           </div>
         </div>
       </div>
@@ -443,57 +416,35 @@ function OrderDetailMobileBody() {
             </div>
           ) : null}
 
-          {activeSection === 'overview' && (
-            <div data-tour='order-overview'>
-              {quotation ? (
-                <OrderBOQCard
-                  quotation={quotation}
-                  factoryName={order.factoryName}
-                  factoryId={order.factoryId}
-                />
-              ) : null}
-              {rfq ? <RfqReferenceCard rfq={rfq} variant='accordion' defaultOpen={false} /> : null}
-              <OrderOverviewSection
-                order={{
-                  totalAmount: order.totalAmount,
-                  depositPaid: order.depositPaid,
-                  factoryId: order.factoryId,
-                  factoryName: order.factoryName,
-                }}
-                relatedRfq={relatedRfq ?? undefined}
-                rfqOffers={rfqOffers}
-              />
+          <OrderProductionTab
+            orderId={order.id}
+            hideHeader
+            onPhotoClick={setSelectedPhoto}
+            onPayDeposit={uiMode.lockReason === 'PENDING_DEPOSIT' ? openDepositModal : undefined}
+            onContactFactory={openOrderChat}
+          />
 
-              {canShowCancelButton ? (
-                <div className='pt-2 pb-1'>
-                  <Button
-                    variant='unstyled'
-                    type='button'
-                    onClick={() => setCancelModalOpen(true)}
-                    className='w-full py-3 rounded-2xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors'
-                    style={{
-                      borderColor: '#FCA5A5',
-                      color: 'var(--status-danger-deep)',
-                      backgroundColor: 'var(--surface-rose-tint)',
-                    }}
-                  >
-                    <X size={16} />
-                    ยกเลิกคำสั่งซื้อ
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-          )}
+          <OrderDetailReferenceDocs
+            quotation={quotation}
+            rfq={rfq}
+            factoryName={order.factoryName}
+            factoryId={order.factoryId}
+            rfqId={order.rfqId}
+          />
 
-          {activeSection === 'production' && (
-            <OrderProductionTab
-              orderId={order.id}
-              onPhotoClick={setSelectedPhoto}
-              onRequestOverviewTab={() => setActiveSection('overview')}
-              onPayDeposit={uiMode.lockReason === 'PENDING_DEPOSIT' ? openDepositModal : undefined}
-              onContactFactory={openOrderChat}
-            />
-          )}
+          <OrderDetailMetaSection
+            order={{
+              id: order.id,
+              totalAmount: order.totalAmount,
+              depositPaid: order.depositPaid,
+              estimatedDelivery: order.estimatedDelivery,
+              status: order.status,
+              quantity: order.quantity,
+            }}
+            rfqSummary={rfqSummary}
+            showCancel={canShowCancelButton}
+            onCancel={() => setCancelModalOpen(true)}
+          />
         </div>
 
         {showFloatingAction && (
