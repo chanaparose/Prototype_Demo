@@ -103,6 +103,7 @@ export function ImageCropModal({
   const [viewport, setViewport] = useState<Size>({ width: 0, height: 0 });
   const [baseScale, setBaseScale] = useState(1);
   const [zoom, setZoom] = useState(1);
+  const [minZoom, setMinZoom] = useState(1);
   const [offset, setOffset] = useState<CropPoint>({ x: 0, y: 0 });
   const [submitting, setSubmitting] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -116,6 +117,7 @@ export function ImageCropModal({
       setViewport({ width: 0, height: 0 });
       setBaseScale(1);
       setZoom(1);
+      setMinZoom(1);
       setOffset({ x: 0, y: 0 });
       setSubmitting(false);
       return;
@@ -173,11 +175,12 @@ export function ImageCropModal({
     if (!natural.width || !natural.height || !viewport.width || !viewport.height) return;
     if (didInitForSourceRef.current) return;
 
-    // at its original size and let white padding fill the rest.
-    // The user can then zoom in freely to fill the frame as desired.
-    const scaleToFit = Math.min(viewport.width / natural.width, viewport.height / natural.height);
-    const scaleToFill = Math.min(1, scaleToFit);
+    // Scale to FILL: image always covers the entire crop frame
+    // — portrait images fill by width and user pans up/down
+    // — landscape images fill by height and user pans left/right
+    const scaleToFill = Math.max(viewport.width / natural.width, viewport.height / natural.height);
     setBaseScale(scaleToFill);
+    setMinZoom(1); // zoom=1 at baseScale already fills frame; don't allow zooming out below fill
     setZoom(1);
     setOffset({ x: 0, y: 0 });
     didInitForSourceRef.current = true;
@@ -296,31 +299,36 @@ export function ImageCropModal({
             ) : null}
           </div>
 
-          <div className='flex items-center gap-3'>
-            <span className='text-xs text-slate-500 shrink-0'>ซูม</span>
-            <input
-              type='range'
-              min={0.2}
-              max={3}
-              step={0.01}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
-              className='w-full'
-              disabled={submitting}
-            />
-            <Button
-              onClick={() => {
-                setZoom(1);
-                setOffset({ x: 0, y: 0 });
-              }}
-              disabled={submitting}
-              variant='outline'
-              size='xs'
-              className='inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-600 disabled:opacity-50'
-            >
-              <RotateCcw size={12} />
-              รีเซ็ต
-            </Button>
+          <div className='space-y-1'>
+            <div className='flex items-center gap-3'>
+              <span className='text-xs text-slate-500 shrink-0'>ซูม</span>
+              <input
+                type='range'
+                min={minZoom}
+                max={minZoom * 4}
+                step={0.01}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className='w-full'
+                disabled={submitting}
+              />
+              <Button
+                onClick={() => {
+                  setZoom(minZoom);
+                  setOffset({ x: 0, y: 0 });
+                }}
+                disabled={submitting}
+                variant='outline'
+                size='xs'
+                className='inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-600 disabled:opacity-50'
+              >
+                <RotateCcw size={12} />
+                รีเซ็ต
+              </Button>
+            </div>
+            <p className='text-[10px] text-slate-400 text-center'>
+              ลากเพื่อเลือกตำแหน่ง · เลื่อนขึ้นลงสำหรับภาพแนวตั้ง
+            </p>
           </div>
         </div>
 
