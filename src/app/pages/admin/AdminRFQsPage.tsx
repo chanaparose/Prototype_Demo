@@ -9,6 +9,7 @@ import {
   Factory,
   FileText,
   ImageIcon,
+  Star,
 } from 'lucide-react';
 import type { IAdminRfqListResponse } from '@/services/api/types/admin.types';
 import { formatIsoDate } from '@/utils/formatting/formatDate';
@@ -54,6 +55,8 @@ interface AdminRfqView {
   quantity: number;
   category: string;
   sub_category: string;
+  quotation_count: number;
+  accepted_count: number;
 }
 
 function toUiStatus(raw: string): 'open' | 'matched' | 'closed' {
@@ -88,6 +91,8 @@ function mapRfq(row: IAdminRfqListResponse): AdminRfqView {
     quantity: pickScalarNumber(row.quantity) ?? 0,
     category: pickScalarString(row.category_name, '-'),
     sub_category: pickScalarString(row.sub_category_name, '-'),
+    quotation_count: pickScalarNumber(row.quotation_count) ?? 0,
+    accepted_count: pickScalarNumber((row as Record<string, unknown>).accepted_count as number) ?? 0,
   };
 }
 
@@ -144,6 +149,8 @@ function AdminRfqDetailDialog({ rfq, open, onOpenChange }: AdminRfqDetailDialogP
     detailQ.error instanceof Error ? detailQ.error.message : detailQ.error ? 'โหลดไม่สำเร็จ' : '';
 
   const raw = (detail?.rfq ?? detail ?? {}) as Record<string, unknown>;
+  // customer fields & reference_images are at top-level of detail (not inside detail.rfq)
+  const meta = (detail ?? {}) as Record<string, unknown>;
   const status = toUiStatus(pickScalarString(raw.status, rfq?.status, 'OP'));
   const statusMeta = STATUS_META[status];
   const deliveryDate = pickScalarString(
@@ -163,16 +170,18 @@ function AdminRfqDetailDialog({ rfq, open, onOpenChange }: AdminRfqDetailDialogP
   const quantity = pickScalarNumber(raw.quantity) ?? rfq?.quantity ?? 0;
   const unitName = pickScalarString(raw.unit_name, 'ชิ้น');
   const imageUrls = collectImageUrls(
+    meta.reference_images,  // top-level from BE
     raw.image_urls,
     raw.reference_images,
     raw.images,
-    detail?.image_urls,
   );
-  const quotations = Array.isArray(detail?.quotations)
-    ? (detail.quotations as Record<string, unknown>[])
-    : Array.isArray(raw.quotations)
-      ? (raw.quotations as Record<string, unknown>[])
-      : [];
+  const quotations = Array.isArray(meta.quotations)
+    ? (meta.quotations as Record<string, unknown>[])
+    : Array.isArray(detail?.quotations)
+      ? (detail.quotations as Record<string, unknown>[])
+      : Array.isArray(raw.quotations)
+        ? (raw.quotations as Record<string, unknown>[])
+        : [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -208,17 +217,20 @@ function AdminRfqDetailDialog({ rfq, open, onOpenChange }: AdminRfqDetailDialogP
                 </h4>
                 <div className='grid gap-4 sm:grid-cols-2'>
                   <DetailField label='ชื่อลูกค้า'>
-                    {pickScalarString(raw.customer_name, rfq?.buyer_name, '-')}
+                    {pickScalarString(meta.customer_name as string, raw.customer_name, rfq?.buyer_name, '-')}
                   </DetailField>
                   <DetailField label='อีเมล'>
-                    {pickScalarString(raw.customer_email, '-')}
+                    {pickScalarString(meta.customer_email as string, raw.customer_email, '-')}
+                  </DetailField>
+                  <DetailField label='เบอร์โทร'>
+                    {pickScalarString(meta.customer_phone as string, raw.customer_phone, '-')}
                   </DetailField>
                   <DetailField label='User ID'>
                     {pickScalarString(raw.user_id, '-')}
                   </DetailField>
                   <DetailField label='จำนวนข้อเสนอ'>
                     {formatCompactNumber(
-                      pickScalarNumber(raw.quotation_count, detail?.quotation_count) ?? 0,
+                      pickScalarNumber(meta.quotation_count as number, raw.quotation_count) ?? 0,
                     )}{' '}
                     รายการ
                   </DetailField>
@@ -320,45 +332,103 @@ function AdminRfqDetailDialog({ rfq, open, onOpenChange }: AdminRfqDetailDialogP
                 </section>
               ) : null}
 
-              {quotations.length > 0 ? (
-                <section>
-                  <h4 className='mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-500'>
-                    <Factory size={13} />
-                    ข้อเสนอจากโรงงาน ({quotations.length})
-                  </h4>
-                  <div className='space-y-2'>
+              <section>
+                <h4 className='mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-500'>
+                  <Factory size={13} />
+                  โรงงานที่จับคู่ ({quotations.length > 0 ? quotations.length : pickScalarNumber(meta.quotation_count) ?? 0})
+                </h4>
+                {quotations.length === 0 ? (
+                  <p className='text-xs text-slate-400 italic'>ยังไม่มีโรงงานยื่นข้อเสนอ</p>
+                ) : (
+                  <div className='space-y-3'>
                     {quotations.map((quote, idx) => {
-                      const quoteId = pickScalarString(quote.quote_id, quote.quotation_id, idx);
+                      const quoteId = pickScalarString(quote.quote_id, quote.quotation_id, String(idx));
+                      const status = pickScalarString(quote.status, '');
+                      const statusColor = status === 'AC' ? 'bg-emerald-100 text-emerald-700'
+                        : status === 'RJ' ? 'bg-red-100 text-red-600'
+                        : status === 'EX' ? 'bg-slate-100 text-slate-500'
+                        : 'bg-amber-100 text-amber-700';
+                      const statusLabel = status === 'AC' ? 'ยอมรับ' : status === 'RJ' ? 'ปฏิเสธ' : status === 'EX' ? 'หมดอายุ' : 'รอพิจารณา';
+                      const rating = pickScalarNumber(quote.factory_rating);
+                      const factoryImageUrl = pickScalarString(quote.factory_image_url, quote.factory_logo_url);
+
                       return (
-                        <div
-                          key={quoteId}
-                          className='flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-100 bg-white px-3 py-2.5'
-                        >
-                          <div className='min-w-0'>
-                            <p className='truncate text-sm font-medium text-slate-800'>
-                              {pickScalarString(quote.factory_name, 'โรงงาน')}
-                            </p>
-                            <p className='text-xs text-slate-400'>
-                              Quote #{pickScalarString(quote.quote_id, quote.quotation_id, '-')}
-                            </p>
-                          </div>
-                          <div className='text-right'>
-                            <p className='text-sm font-semibold tabular-nums text-slate-900'>
-                              ฿
-                              {formatCompactNumber(
-                                pickScalarNumber(quote.grand_total, quote.price) ?? 0,
+                        <div key={quoteId} className='rounded-xl border border-slate-100 bg-slate-50/50 p-3'>
+                          {/* Factory header */}
+                          <div className='flex items-center gap-2.5 mb-3'>
+                            <div className='h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white'>
+                              {factoryImageUrl ? (
+                                <ImageWithFallback src={factoryImageUrl} alt='' className='h-full w-full object-cover' />
+                              ) : (
+                                <div className='flex h-full w-full items-center justify-center text-xs font-bold text-slate-400'>
+                                  {pickScalarString(quote.factory_name, 'F').slice(0, 1)}
+                                </div>
                               )}
-                            </p>
-                            <p className='text-xs text-slate-400'>
-                              {pickScalarString(quote.status, '-')}
-                            </p>
+                            </div>
+                            <div className='min-w-0 flex-1'>
+                              <div className='flex items-center gap-1.5'>
+                                <p className='truncate text-sm font-semibold text-slate-800'>
+                                  {pickScalarString(quote.factory_name, 'โรงงาน')}
+                                </p>
+                                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${statusColor}`}>
+                                  {statusLabel}
+                                </span>
+                              </div>
+                              <div className='flex items-center gap-2 text-xs text-slate-400'>
+                                <span>Quote #{quoteId}</span>
+                                {rating != null && rating > 0 && (
+                                  <span className='flex items-center gap-0.5'>
+                                    <Star size={10} className='fill-amber-400 text-amber-400' />
+                                    {rating.toFixed(1)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
+
+                          {/* Pricing grid */}
+                          <div className='grid grid-cols-3 gap-2 text-center'>
+                            <div className='rounded-lg bg-white px-2 py-2 border border-slate-100'>
+                              <p className='text-[10px] text-slate-400 mb-0.5'>ราคา/หน่วย</p>
+                              <p className='text-sm font-bold tabular-nums text-slate-900'>
+                                ฿{formatCompactNumber(pickScalarNumber(quote.price_per_piece) ?? 0)}
+                              </p>
+                            </div>
+                            <div className='rounded-lg bg-white px-2 py-2 border border-slate-100'>
+                              <p className='text-[10px] text-slate-400 mb-0.5'>Lead time</p>
+                              <p className='text-sm font-bold text-slate-900'>
+                                {pickScalarNumber(quote.lead_time_days) ?? '-'} วัน
+                              </p>
+                            </div>
+                            <div className='rounded-lg bg-white px-2 py-2 border border-slate-100'>
+                              <p className='text-[10px] text-slate-400 mb-0.5'>รวมทั้งสิ้น</p>
+                              <p className='text-sm font-bold tabular-nums text-brand-purple'>
+                                ฿{formatCompactNumber(pickScalarNumber(quote.grand_total, quote.price) ?? 0)}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Shipping & note */}
+                          {(pickScalarString(quote.shipping_method) || pickScalarString(quote.factory_note)) && (
+                            <div className='mt-2 space-y-1'>
+                              {pickScalarString(quote.shipping_method) && (
+                                <p className='text-[11px] text-slate-500'>
+                                  <span className='font-medium'>จัดส่ง:</span> {pickScalarString(quote.shipping_method)}
+                                </p>
+                              )}
+                              {pickScalarString(quote.factory_note) && (
+                                <p className='text-[11px] text-slate-500 line-clamp-2'>
+                                  <span className='font-medium'>หมายเหตุ:</span> {pickScalarString(quote.factory_note)}
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
                   </div>
-                </section>
-              ) : null}
+                )}
+              </section>
             </div>
           )}
         </div>
@@ -515,9 +585,17 @@ export function AdminRFQsPage() {
                       <AdminTableCell className='max-w-[180px] truncate px-4 py-3 text-sm text-slate-700'>
                         {rfq.buyer_name}
                       </AdminTableCell>
-                      <AdminTableCell className='px-4 py-3 text-sm text-slate-500'>
-                        {rfq.factory_name ?? (
-                          <span className='text-xs italic text-slate-300'>ยังไม่จับคู่</span>
+                      <AdminTableCell className='px-4 py-3'>
+                        {rfq.accepted_count > 0 ? (
+                          <span className='inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700'>
+                            ✓ ยืนยัน {rfq.accepted_count} ราย
+                          </span>
+                        ) : rfq.quotation_count > 0 ? (
+                          <span className='inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700'>
+                            {rfq.quotation_count} ข้อเสนอ
+                          </span>
+                        ) : (
+                          <span className='text-[11px] italic text-slate-300'>ยังไม่จับคู่</span>
                         )}
                       </AdminTableCell>
                       <AdminTableCell className='px-4 py-3 text-sm font-semibold tabular-nums text-slate-900'>
