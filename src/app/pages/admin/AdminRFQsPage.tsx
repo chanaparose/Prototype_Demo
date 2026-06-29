@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ChevronDown,
-  ChevronUp,
   Package,
   Calendar,
-  DollarSign,
   Search,
   AlertTriangle,
+  Loader2,
+  User,
+  Factory,
+  FileText,
+  ImageIcon,
 } from 'lucide-react';
 import type { IAdminRfqListResponse } from '@/services/api/types/admin.types';
 import { formatIsoDate } from '@/utils/formatting/formatDate';
@@ -19,6 +21,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import {
   AdminTable,
   AdminTableBody,
@@ -70,7 +80,7 @@ function mapRfq(row: IAdminRfqListResponse): AdminRfqView {
   return {
     rfq_id: pickScalarString(row.rfq_id),
     buyer_name: pickScalarString(row.customer_name, '-'),
-    factory_name: undefined,
+    factory_name: pickScalarString(row.factory_name) || undefined,
     budget: pickScalarNumber(row.target_price) ?? 0,
     status: pickScalarString(row.status, 'OP'),
     created_at: pickScalarString(row.created_at),
@@ -81,82 +91,285 @@ function mapRfq(row: IAdminRfqListResponse): AdminRfqView {
   };
 }
 
-function RfqDetailPanel({ rfqId }: { rfqId: string }) {
-  const detailQ = useAdminRfqDetailQuery(rfqId);
+function collectImageUrls(...sources: unknown[]): string[] {
+  const urls: string[] = [];
+  for (const source of sources) {
+    if (typeof source === 'string' && source.trim()) {
+      urls.push(source.trim());
+      continue;
+    }
+    if (!Array.isArray(source)) continue;
+    for (const item of source) {
+      if (typeof item === 'string' && item.trim()) urls.push(item.trim());
+      else if (item && typeof item === 'object') {
+        const url = pickScalarString(
+          (item as Record<string, unknown>).url,
+          (item as Record<string, unknown>).image_url,
+        );
+        if (url) urls.push(url);
+      }
+    }
+  }
+  return [...new Set(urls)];
+}
+
+function DetailField({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <p className='text-[11px] font-semibold uppercase tracking-wide text-slate-400'>{label}</p>
+      <div className='mt-1 text-sm text-slate-800'>{children}</div>
+    </div>
+  );
+}
+
+type AdminRfqDetailDialogProps = {
+  rfq: AdminRfqView | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+function AdminRfqDetailDialog({ rfq, open, onOpenChange }: AdminRfqDetailDialogProps) {
+  const detailQ = useAdminRfqDetailQuery(rfq?.rfq_id ?? '', open && !!rfq?.rfq_id);
   const detail = detailQ.data ?? null;
   const loading = detailQ.isLoading;
   const error =
     detailQ.error instanceof Error ? detailQ.error.message : detailQ.error ? 'โหลดไม่สำเร็จ' : '';
 
-  const rfq = (detail?.rfq ?? detail ?? {}) as Record<string, unknown>;
-  const deliveryDate = pickScalarString(rfq.required_delivery_date, rfq.deadline);
+  const raw = (detail?.rfq ?? detail ?? {}) as Record<string, unknown>;
+  const status = toUiStatus(pickScalarString(raw.status, rfq?.status, 'OP'));
+  const statusMeta = STATUS_META[status];
+  const deliveryDate = pickScalarString(
+    raw.required_delivery_date,
+    raw.deadline,
+    raw.target_date,
+    raw.delivery_deadline,
+  );
+  const leadTimeDays = pickScalarNumber(
+    raw.target_lead_time_days,
+    raw.target_days,
+    raw.lead_time_target,
+  );
+  const budget =
+    pickScalarNumber(raw.target_price, raw.budget_total, raw.total_budget) ?? rfq?.budget ?? 0;
+  const budgetPerPiece = pickScalarNumber(raw.budget_per_piece, raw.target_unit_price);
+  const quantity = pickScalarNumber(raw.quantity) ?? rfq?.quantity ?? 0;
+  const unitName = pickScalarString(raw.unit_name, 'ชิ้น');
+  const imageUrls = collectImageUrls(
+    raw.image_urls,
+    raw.reference_images,
+    raw.images,
+    detail?.image_urls,
+  );
+  const quotations = Array.isArray(detail?.quotations)
+    ? (detail.quotations as Record<string, unknown>[])
+    : Array.isArray(raw.quotations)
+      ? (raw.quotations as Record<string, unknown>[])
+      : [];
 
   return (
-    <AdminTableRow>
-      <AdminTableCell colSpan={6} className='bg-purple-50/50 px-6 py-4 border-b border-purple-100'>
-        {loading ? (
-          <div className='text-sm text-slate-500'>กำลังโหลดรายละเอียด...</div>
-        ) : error ? (
-          <div className='text-sm text-red-600'>{error}</div>
-        ) : (
-          <>
-            <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
-              <div className='flex items-start gap-2'>
-                <Package size={14} className='text-purple-500 mt-0.5 shrink-0' />
-                <div>
-                  <p className='text-xs text-slate-400 uppercase font-semibold'>สินค้า</p>
-                  <p className='text-base text-slate-900 font-medium'>
-                    {pickScalarString(rfq.title, '-')}
-                  </p>
-                  <p className='text-sm text-slate-500 mt-0.5'>
-                    จำนวน: {formatCompactNumber(pickScalarNumber(rfq.quantity) ?? 0)} {pickScalarString(rfq.unit_name) || 'ชิ้น'}
-                  </p>
-                  <p className='text-sm text-slate-500'>
-                    หมวดหมู่: {pickScalarString(rfq.category_name, '-')} /{' '}
-                    {pickScalarString(rfq.sub_category_name, '-')}
-                  </p>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className='max-w-2xl gap-0 p-0'>
+        <DialogHeader className='border-b border-slate-100 px-6 py-4 text-left'>
+          <DialogTitle className='flex flex-wrap items-center gap-2 text-lg'>
+            <span className='font-mono text-purple-600'>#{rfq?.rfq_id}</span>
+            <Badge variant={statusMeta.variant} size='sm'>
+              {statusMeta.label}
+            </Badge>
+          </DialogTitle>
+          <DialogDescription className='text-left text-sm text-slate-600'>
+            {pickScalarString(raw.title, rfq?.title, '-')}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className='max-h-[min(72vh,640px)] overflow-y-auto px-6 py-5'>
+          {loading ? (
+            <div className='flex items-center justify-center gap-2 py-16 text-sm text-slate-500'>
+              <Loader2 size={16} className='animate-spin text-purple-500' />
+              กำลังโหลดรายละเอียด...
+            </div>
+          ) : error ? (
+            <div className='rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700'>
+              {error}
+            </div>
+          ) : (
+            <div className='space-y-6'>
+              <section>
+                <h4 className='mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-500'>
+                  <User size={13} />
+                  ผู้ซื้อ
+                </h4>
+                <div className='grid gap-4 sm:grid-cols-2'>
+                  <DetailField label='ชื่อลูกค้า'>
+                    {pickScalarString(raw.customer_name, rfq?.buyer_name, '-')}
+                  </DetailField>
+                  <DetailField label='อีเมล'>
+                    {pickScalarString(raw.customer_email, '-')}
+                  </DetailField>
+                  <DetailField label='User ID'>
+                    {pickScalarString(raw.user_id, '-')}
+                  </DetailField>
+                  <DetailField label='จำนวนข้อเสนอ'>
+                    {formatCompactNumber(
+                      pickScalarNumber(raw.quotation_count, detail?.quotation_count) ?? 0,
+                    )}{' '}
+                    รายการ
+                  </DetailField>
                 </div>
-              </div>
-              <div className='flex items-start gap-2'>
-                <Calendar size={14} className='text-purple-500 mt-0.5 shrink-0' />
-                <div>
-                  <p className='text-xs text-slate-400 uppercase font-semibold'>กำหนดส่ง</p>
-                  <p className='text-base text-slate-900 font-medium'>
+              </section>
+
+              <section>
+                <h4 className='mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-500'>
+                  <Package size={13} />
+                  สินค้า / งาน
+                </h4>
+                <div className='grid gap-4 sm:grid-cols-2'>
+                  <DetailField label='ชื่องาน' className='sm:col-span-2'>
+                    {pickScalarString(raw.title, rfq?.title, '-')}
+                  </DetailField>
+                  <DetailField label='จำนวน'>
+                    {formatCompactNumber(quantity)} {unitName}
+                  </DetailField>
+                  <DetailField label='หมวดหมู่'>
+                    {pickScalarString(raw.category_name, rfq?.category, '-')}
+                    {pickScalarString(raw.sub_category_name, rfq?.sub_category) !== '-' ? (
+                      <span className='text-slate-500'>
+                        {' '}
+                        / {pickScalarString(raw.sub_category_name, rfq?.sub_category)}
+                      </span>
+                    ) : null}
+                  </DetailField>
+                  <DetailField label='เกรดวัตถุดิบ'>
+                    {pickScalarString(raw.material_grade, '-')}
+                  </DetailField>
+                  <DetailField label='สเปกบรรจุภัณฑ์'>
+                    {pickScalarString(raw.packaging_spec, '-')}
+                  </DetailField>
+                </div>
+              </section>
+
+              <section>
+                <h4 className='mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-500'>
+                  <Calendar size={13} />
+                  งบประมาณ & กำหนดส่ง
+                </h4>
+                <div className='grid gap-4 sm:grid-cols-2'>
+                  <DetailField label='งบประมาณรวม'>
+                    <span className='text-base font-bold tabular-nums text-slate-900'>
+                      ฿{formatCompactNumber(budget)}
+                    </span>
+                  </DetailField>
+                  <DetailField label='ราคาเป้าหมายต่อหน่วย'>
+                    {budgetPerPiece != null ? `฿${formatCompactNumber(budgetPerPiece)}` : '-'}
+                  </DetailField>
+                  <DetailField label='กำหนดส่ง'>
                     {deliveryDate ? formatIsoDate(deliveryDate) : '-'}
-                  </p>
-                  <p className='text-sm text-slate-400 mt-0.5'>
-                    สร้างเมื่อ {formatIsoDate(rfq.created_at as string)}
-                  </p>
+                  </DetailField>
+                  <DetailField label='Lead time เป้าหมาย'>
+                    {leadTimeDays != null ? `${leadTimeDays} วัน` : '-'}
+                  </DetailField>
+                  <DetailField label='วันที่สร้าง'>
+                    {formatIsoDate(pickScalarString(raw.created_at, rfq?.created_at))}
+                  </DetailField>
+                  <DetailField label='ที่อยู่จัดส่ง'>
+                    {pickScalarString(raw.address_summary, raw.shipping_address, '-')}
+                  </DetailField>
                 </div>
-              </div>
-              <div className='flex items-start gap-2'>
-                <span className='text-purple-500 mt-0.5 shrink-0 font-bold' style={{ fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '14px', height: '14px' }}>
-                  ฿
-                </span>
-                <div>
-                  <p className='text-xs text-slate-400 uppercase font-semibold'>งบประมาณ</p>
-                  <p className='text-base text-slate-900 font-bold'>
-                    {formatCompactNumber(pickScalarNumber(rfq.target_price) ?? 0)}
-                  </p>
-                </div>
-              </div>
+              </section>
+
+              <section>
+                <h4 className='mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-500'>
+                  <FileText size={13} />
+                  รายละเอียดเพิ่มเติม
+                </h4>
+                <p className='whitespace-pre-wrap rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-700'>
+                  {pickScalarString(raw.details, raw.description, '-')}
+                </p>
+              </section>
+
+              {imageUrls.length > 0 ? (
+                <section>
+                  <h4 className='mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-500'>
+                    <ImageIcon size={13} />
+                    รูปอ้างอิง
+                  </h4>
+                  <div className='flex flex-wrap gap-2'>
+                    {imageUrls.map((url) => (
+                      <a
+                        key={url}
+                        href={url}
+                        target='_blank'
+                        rel='noreferrer'
+                        className='h-20 w-20 overflow-hidden rounded-lg border border-slate-200 bg-slate-50'
+                      >
+                        <ImageWithFallback
+                          src={url}
+                          alt=''
+                          className='h-full w-full object-cover'
+                        />
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
+              {quotations.length > 0 ? (
+                <section>
+                  <h4 className='mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-500'>
+                    <Factory size={13} />
+                    ข้อเสนอจากโรงงาน ({quotations.length})
+                  </h4>
+                  <div className='space-y-2'>
+                    {quotations.map((quote, idx) => {
+                      const quoteId = pickScalarString(quote.quote_id, quote.quotation_id, idx);
+                      return (
+                        <div
+                          key={quoteId}
+                          className='flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-100 bg-white px-3 py-2.5'
+                        >
+                          <div className='min-w-0'>
+                            <p className='truncate text-sm font-medium text-slate-800'>
+                              {pickScalarString(quote.factory_name, 'โรงงาน')}
+                            </p>
+                            <p className='text-xs text-slate-400'>
+                              Quote #{pickScalarString(quote.quote_id, quote.quotation_id, '-')}
+                            </p>
+                          </div>
+                          <div className='text-right'>
+                            <p className='text-sm font-semibold tabular-nums text-slate-900'>
+                              ฿
+                              {formatCompactNumber(
+                                pickScalarNumber(quote.grand_total, quote.price) ?? 0,
+                              )}
+                            </p>
+                            <p className='text-xs text-slate-400'>
+                              {pickScalarString(quote.status, '-')}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              ) : null}
             </div>
-            <div className='mt-3 pt-3 border-t border-purple-100'>
-              <p className='text-xs text-slate-400 uppercase font-semibold mb-1'>หมายเหตุ</p>
-              <p className='text-base text-slate-700 whitespace-pre-wrap'>
-                {pickScalarString(rfq.details, rfq.description, '-')}
-              </p>
-            </div>
-          </>
-        )}
-      </AdminTableCell>
-    </AdminTableRow>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 export function AdminRFQsPage() {
   const [statusTab, setStatusTab] = useState<RfqStatusTab>('all');
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedRfq, setSelectedRfq] = useState<AdminRfqView | null>(null);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -191,8 +404,8 @@ export function AdminRFQsPage() {
     return result;
   }, [allRows]);
 
-  const toggleExpand = (id: string) => {
-    setExpandedId((prev) => (prev === id ? null : id));
+  const openRfqDetail = (rfq: AdminRfqView) => {
+    setSelectedRfq(rfq);
   };
 
   return (
@@ -287,54 +500,52 @@ export function AdminRFQsPage() {
                 rows.map((rfq) => {
                   const status = toUiStatus(rfq.status);
                   const meta = STATUS_META[status];
-                  const isExpanded = expandedId === rfq.rfq_id;
 
                   return (
-                    <React.Fragment key={rfq.rfq_id}>
-                      <AdminTableRow
-                        className={`hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-100 ${isExpanded ? 'bg-purple-50/30' : ''}`}
-                        onClick={() => toggleExpand(rfq.rfq_id)}
-                      >
-                        <AdminTableCell className='px-4 py-3'>
-                          <div className='flex items-center gap-2'>
-                            {isExpanded ? (
-                              <ChevronUp size={13} className='text-purple-500 shrink-0' />
-                            ) : (
-                              <ChevronDown size={13} className='text-slate-400 shrink-0' />
-                            )}
-                            <span className='font-mono text-xs text-purple-600 font-semibold'>
-                              #{rfq.rfq_id}
-                            </span>
-                          </div>
-                        </AdminTableCell>
-                        <AdminTableCell className='px-4 py-3 text-sm text-slate-700 max-w-[180px] truncate'>
-                          {rfq.buyer_name}
-                        </AdminTableCell>
-                        <AdminTableCell className='px-4 py-3 text-sm text-slate-500'>
-                          {rfq.factory_name ?? (
-                            <span className='text-slate-300 italic text-xs'>ยังไม่จับคู่</span>
-                          )}
-                        </AdminTableCell>
-                        <AdminTableCell className='px-4 py-3 text-sm text-slate-900 font-semibold tabular-nums'>
-                          ฿{formatCompactNumber(rfq.budget)}
-                        </AdminTableCell>
-                        <AdminTableCell className='px-4 py-3'>
-                          <Badge variant={meta.variant} size='sm'>
-                            {meta.label}
-                          </Badge>
-                        </AdminTableCell>
-                        <AdminTableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
-                          {formatIsoDate(rfq.created_at)}
-                        </AdminTableCell>
-                      </AdminTableRow>
-                      {isExpanded ? <RfqDetailPanel rfqId={rfq.rfq_id} /> : null}
-                    </React.Fragment>
+                    <AdminTableRow
+                      key={rfq.rfq_id}
+                      className='cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50'
+                      onClick={() => openRfqDetail(rfq)}
+                    >
+                      <AdminTableCell className='px-4 py-3'>
+                        <span className='font-mono text-xs font-semibold text-purple-600'>
+                          #{rfq.rfq_id}
+                        </span>
+                      </AdminTableCell>
+                      <AdminTableCell className='max-w-[180px] truncate px-4 py-3 text-sm text-slate-700'>
+                        {rfq.buyer_name}
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-sm text-slate-500'>
+                        {rfq.factory_name ?? (
+                          <span className='text-xs italic text-slate-300'>ยังไม่จับคู่</span>
+                        )}
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-sm font-semibold tabular-nums text-slate-900'>
+                        ฿{formatCompactNumber(rfq.budget)}
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3'>
+                        <Badge variant={meta.variant} size='sm'>
+                          {meta.label}
+                        </Badge>
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-xs tabular-nums text-slate-400'>
+                        {formatIsoDate(rfq.created_at)}
+                      </AdminTableCell>
+                    </AdminTableRow>
                   );
                 })
               )}
             </AdminTableBody>
           </AdminTable>
       </AdminTableContainer>
+
+      <AdminRfqDetailDialog
+        rfq={selectedRfq}
+        open={!!selectedRfq}
+        onOpenChange={(open) => {
+          if (!open) setSelectedRfq(null);
+        }}
+      />
     </div>
   );
 }
