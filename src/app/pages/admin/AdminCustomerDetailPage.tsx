@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router';
-import { ChevronLeft, User, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, User, AlertTriangle, ImageIcon, ExternalLink } from 'lucide-react';
 import { adminCustomerApi } from '@/services/api/adminApi';
 import type {
   IAdminCustomerDetailResponse,
@@ -125,17 +125,37 @@ function CustomerInfoTab({ detail }: { detail: IAdminCustomerDetailResponse }) {
   );
 }
 
+const SLIP_STATUS: Record<string, { label: string; color: string }> = {
+  PE: { label: 'รอสลีป', color: 'slate' },
+  ST: { label: 'รอตรวจสอบ', color: 'amber' },
+  AP: { label: 'อนุมัติแล้ว', color: 'emerald' },
+  RJ: { label: 'ปฏิเสธ', color: 'red' },
+};
+
+const ORDER_PAYMENT_STATUS: Record<string, { label: string; color: string }> = {
+  WS: { label: 'รอชำระ', color: 'amber' },
+  WA: { label: 'รอยืนยันสลีป', color: 'blue' },
+  PD: { label: 'กำลังผลิต', color: 'indigo' },
+  SH: { label: 'จัดส่งแล้ว', color: 'cyan' },
+  CP: { label: 'เสร็จสิ้น', color: 'emerald' },
+  CL: { label: 'ยกเลิก', color: 'red' },
+};
+
 function CustomerWalletTab({ userId }: { userId: number }) {
-  const [wallet, setWallet] = useState<IAdminCustomerWalletResponse | null>(null);
+  const [orders, setOrders] = useState<IAdminCustomerOrderItemResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [previewSlip, setPreviewSlip] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
     adminCustomerApi
-      .getWallet(userId)
-      .then((res) => setWallet(res as unknown as IAdminCustomerWalletResponse))
-      .catch((e) => setError(e instanceof Error ? e.message : 'โหลด wallet ไม่สำเร็จ'))
+      .getOrders(userId, { limit: 50, offset: 0 })
+      .then((res) => {
+        const r = res as unknown as { orders?: IAdminCustomerOrderItemResponse[]; total?: number } | IAdminCustomerOrderItemResponse[];
+        setOrders(Array.isArray(r) ? r : (r.orders ?? []));
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : 'โหลดไม่สำเร็จ'))
       .finally(() => setLoading(false));
   }, [userId]);
 
@@ -154,77 +174,100 @@ function CustomerWalletTab({ userId }: { userId: number }) {
       </div>
     );
   }
-  if (!wallet) return null;
 
-  const transactionLabel =
-    wallet.transactions.length > 0
-      ? `${wallet.transactions.length} รายการล่าสุด`
-      : 'ยังไม่มีรายการล่าสุด';
+  const paidCount = orders.filter((o) => {
+    const s = String((o as Record<string, unknown>).slip_status ?? '');
+    return s === 'AP';
+  }).length;
+  const pendingSlipCount = orders.filter((o) => {
+    const s = String((o as Record<string, unknown>).slip_status ?? '');
+    return s === 'ST';
+  }).length;
+  const waitingCount = orders.filter((o) => {
+    const s = String((o as Record<string, unknown>).slip_status ?? '');
+    return s === 'PE';
+  }).length;
 
   return (
     <div className='space-y-5'>
-      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6'>
-        <StatCard label='กองทุนพร้อมใช้' value={formatCurrency(wallet.good_fund)} color='emerald' />
-        <StatCard label='รอยืนยัน' value={formatCurrency(wallet.pending_fund)} color='amber' />
-        <StatCard label='รวมทั้งหมด' value={formatCurrency(wallet.total)} color='indigo' />
+      {/* Summary stats */}
+      <div className='grid grid-cols-3 gap-4'>
+        <StatCard label='รอสลีป' value={String(waitingCount) + ' รายการ'} color='slate' />
+        <StatCard label='รอตรวจสอบ' value={String(pendingSlipCount) + ' รายการ'} color='amber' />
+        <StatCard label='อนุมัติแล้ว' value={String(paidCount) + ' รายการ'} color='emerald' />
       </div>
 
+      {/* Order + slip table */}
       <div className='space-y-3'>
-        <div className='px-4'>
-          <h3 className='text-sm font-semibold text-slate-900'>ประวัติธุรกรรม</h3>
-          <p className='text-xs text-slate-400 mt-0.5'>{transactionLabel}</p>
+        <div className='px-1'>
+          <h3 className='text-sm font-semibold text-slate-900'>รายการชำระเงิน</h3>
+          <p className='text-xs text-slate-400 mt-0.5'>{orders.length} รายการ — ชำระผ่านการโอนเงินตรงพร้อมแนบสลีป</p>
         </div>
+
         <AdminTableContainer>
           <AdminTable>
             <AdminTableHeader>
               <AdminTableRow>
-                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
-                  วันที่
-                </AdminTableHead>
-                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
-                  ประเภท
-                </AdminTableHead>
-                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
-                  จำนวน
-                </AdminTableHead>
-                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
-                  สถานะ
-                </AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>Order</AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>งาน / โรงงาน</AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>ยอดรวม</AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>สถานะสลีป</AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>สลีป</AdminTableHead>
+                <AdminTableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>วันที่</AdminTableHead>
               </AdminTableRow>
             </AdminTableHeader>
             <AdminTableBody className='divide-y divide-slate-50'>
-              {wallet.transactions.length === 0 ? (
+              {orders.length === 0 ? (
                 <AdminTableRow>
-                  <AdminTableCell colSpan={4} className='px-4 py-10 text-center text-sm text-slate-400'>
-                    ยังไม่มีธุรกรรม
+                  <AdminTableCell colSpan={6} className='px-4 py-10 text-center text-sm text-slate-400'>
+                    ยังไม่มีรายการ
                   </AdminTableCell>
                 </AdminTableRow>
               ) : (
-                wallet.transactions.map((tx: IAdminWalletTxItemResponse) => {
-                  const ttype = TX_TYPE[tx.type] ?? {
-                    label: tx.type,
-                    color: 'slate',
-                    sign: '+' as const,
-                  };
-                  const tstatus = TX_STATUS[tx.status] ?? { label: tx.status, color: 'slate' };
-                  const amountCls =
-                    ttype.sign === '+'
-                      ? 'text-emerald-600 font-semibold'
-                      : 'text-red-600 font-semibold';
+                orders.map((o) => {
+                  const raw = o as Record<string, unknown>;
+                  const slipStatus = String(raw.slip_status ?? 'PE');
+                  const slipUrl = raw.slip_url as string | undefined;
+                  const rfqTitle = String(raw.rfq_title ?? '-');
+                  const slipMeta = SLIP_STATUS[slipStatus] ?? { label: slipStatus, color: 'slate' };
                   return (
-                    <AdminTableRow key={tx.tx_id}>
-                      <AdminTableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
-                        {formatDateTime(tx.created_at)}
-                      </AdminTableCell>
+                    <AdminTableRow key={o.order_id}>
                       <AdminTableCell className='px-4 py-3'>
-                        <BadgeCustom label={ttype.label} color={ttype.color} />
+                        <Link to={`/admin/orders/${o.order_id}`} className='font-mono text-xs font-semibold text-purple-600 hover:underline'>
+                          #{o.order_id}
+                        </Link>
                       </AdminTableCell>
-                      <AdminTableCell className={`px-4 py-3 text-left tabular-nums ${amountCls}`}>
-                        {ttype.sign}
-                        {formatCurrency(tx.amount)}
+                      <AdminTableCell className='px-4 py-3 max-w-[180px]'>
+                        <p className='truncate text-sm text-slate-800'>{rfqTitle}</p>
+                        <p className='truncate text-xs text-slate-400'>{o.factory_name}</p>
                       </AdminTableCell>
-                      <AdminTableCell className='px-4 py-3 text-left'>
-                        <BadgeCustom label={tstatus.label} color={tstatus.color} />
+                      <AdminTableCell className='px-4 py-3 text-right text-sm font-semibold tabular-nums text-slate-900'>
+                        {formatCurrency(o.grand_total)}
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-center'>
+                        <BadgeCustom label={slipMeta.label} color={slipMeta.color} />
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-center'>
+                        {slipUrl ? (
+                          <div className='flex items-center justify-center gap-1.5'>
+                            <button
+                              type='button'
+                              onClick={() => setPreviewSlip(slipUrl)}
+                              className='text-blue-600 hover:text-blue-800 transition-colors'
+                              title='ดูสลีป'
+                            >
+                              <ImageIcon size={15} />
+                            </button>
+                            <a href={slipUrl} target='_blank' rel='noreferrer' className='text-slate-400 hover:text-slate-600'>
+                              <ExternalLink size={13} />
+                            </a>
+                          </div>
+                        ) : (
+                          <span className='text-xs italic text-slate-300'>ยังไม่แนบ</span>
+                        )}
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
+                        {formatDate(o.created_at)}
                       </AdminTableCell>
                     </AdminTableRow>
                   );
@@ -234,6 +277,27 @@ function CustomerWalletTab({ userId }: { userId: number }) {
           </AdminTable>
         </AdminTableContainer>
       </div>
+
+      {/* Slip preview modal */}
+      {previewSlip && (
+        <div
+          className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4'
+          onClick={() => setPreviewSlip(null)}
+        >
+          <div className='relative max-w-lg w-full rounded-xl overflow-hidden shadow-2xl bg-white' onClick={(e) => e.stopPropagation()}>
+            <div className='flex items-center justify-between px-4 py-3 border-b border-slate-100'>
+              <span className='text-sm font-semibold text-slate-900'>สลีปการโอน</span>
+              <button type='button' onClick={() => setPreviewSlip(null)} className='text-slate-400 hover:text-slate-700 text-lg leading-none'>×</button>
+            </div>
+            <img src={previewSlip} alt='slip' className='w-full object-contain max-h-[70vh]' />
+            <div className='flex justify-end px-4 py-3 border-t border-slate-100'>
+              <a href={previewSlip} target='_blank' rel='noreferrer' className='flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:underline'>
+                <ExternalLink size={13} /> เปิดต้นฉบับ
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -372,7 +436,7 @@ type TabKey = 'info' | 'wallet' | 'orders';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'info', label: 'ข้อมูลทั่วไป' },
-  { key: 'wallet', label: 'Wallet & ธุรกรรม' },
+  { key: 'wallet', label: 'การชำระเงิน & สลีป' },
   { key: 'orders', label: 'ประวัติออเดอร์' },
 ];
 
