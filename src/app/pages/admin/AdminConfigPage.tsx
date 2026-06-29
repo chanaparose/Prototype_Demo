@@ -135,6 +135,10 @@ export function AdminConfigPage() {
       support_phone: '',
       rfq_expired: '',
       shipping_days: '',
+      tryly_bank_name: '',
+      tryly_bank_account_no: '',
+      tryly_account_holder: '',
+      tryly_promptpay: '',
     },
   });
   const [isEditingGeneral, setIsEditingGeneral] = useState(false);
@@ -200,6 +204,10 @@ export function AdminConfigPage() {
       generalForm.reset({
         platform_name: tc['platform_name'] ?? '',
         contact_email: tc['contact_email'] ?? '',
+        tryly_bank_name: tc['tryly_bank_name'] ?? '',
+        tryly_bank_account_no: tc['tryly_bank_account_no'] ?? '',
+        tryly_account_holder: tc['tryly_account_holder'] ?? '',
+        tryly_promptpay: tc['tryly_promptpay'] ?? '',
         support_phone: tc['support_phone'] ?? '',
         rfq_expired: tc['rfq_expired'] ?? '',
         shipping_days: tc['shipping_days'] ?? '',
@@ -229,6 +237,10 @@ export function AdminConfigPage() {
       };
       if (values.rfq_expired) payload['rfq_expired'] = values.rfq_expired;
       if (values.shipping_days) payload['shipping_days'] = values.shipping_days;
+      if (values.tryly_bank_name !== undefined) payload['tryly_bank_name'] = values.tryly_bank_name ?? '';
+      if (values.tryly_bank_account_no !== undefined) payload['tryly_bank_account_no'] = values.tryly_bank_account_no ?? '';
+      if (values.tryly_account_holder !== undefined) payload['tryly_account_holder'] = values.tryly_account_holder ?? '';
+      if (values.tryly_promptpay !== undefined) payload['tryly_promptpay'] = values.tryly_promptpay ?? '';
       await adminTConfigApi.patchBulk(payload);
       setIsEditingGeneral(false);
       setSavedGeneral(true);
@@ -457,6 +469,22 @@ export function AdminConfigPage() {
                       ))}
                     </div>
                   </div>
+                  <div>
+                    <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3'>บัญชีรับชำระ (Commission)</p>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                      {[
+                        { label: 'ธนาคาร',       value: generalForm.getValues('tryly_bank_name') },
+                        { label: 'เลขบัญชี',     value: generalForm.getValues('tryly_bank_account_no') },
+                        { label: 'ชื่อบัญชี',    value: generalForm.getValues('tryly_account_holder') },
+                        { label: 'PromptPay',     value: generalForm.getValues('tryly_promptpay') },
+                      ].map(({ label, value }) => (
+                        <div key={label} className='rounded-xl border border-blue-100 bg-blue-50/40 px-4 py-3'>
+                          <span className='block text-xs font-semibold text-slate-500'>{label}</span>
+                          <span className='mt-1 block text-sm font-semibold text-slate-800'>{value || '—'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ) : (
                 /* Edit mode */
@@ -535,6 +563,33 @@ export function AdminConfigPage() {
                             </FormItem>
                           )}
                         />
+                      </div>
+                    </div>
+                    <div className='border-t border-slate-100 pt-3'>
+                      <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3'>บัญชีรับชำระ (Commission)</p>
+                      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                        {([
+                          { name: 'tryly_bank_name', label: 'ธนาคาร', placeholder: 'ธนาคารกสิกรไทย' },
+                          { name: 'tryly_bank_account_no', label: 'เลขบัญชี', placeholder: '098-8-12345-6' },
+                          { name: 'tryly_account_holder', label: 'ชื่อบัญชี', placeholder: 'บริษัท Tryly จำกัด' },
+                          { name: 'tryly_promptpay', label: 'PromptPay (ไม่บังคับ)', placeholder: '0812345678' },
+                        ] as const).map(({ name, label, placeholder }) => (
+                          <FormField
+                            key={name}
+                            control={generalForm.control}
+                            name={name}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className='text-xs font-semibold text-slate-700'>{label}</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder={placeholder}
+                                    className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        ))}
                       </div>
                     </div>
                   </div>

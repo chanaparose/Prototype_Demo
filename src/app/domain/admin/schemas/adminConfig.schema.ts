@@ -12,6 +12,10 @@ export const adminGeneralConfigSchema = z.object({
     .string()
     .trim()
     .refine((v) => !v || (Number.isInteger(Number(v)) && Number(v) > 0), 'ต้องเป็นจำนวนเต็มบวก'),
+  tryly_bank_name: z.string().trim().optional(),
+  tryly_bank_account_no: z.string().trim().optional(),
+  tryly_account_holder: z.string().trim().optional(),
+  tryly_promptpay: z.string().trim().optional(),
 });
 
 export type AdminGeneralConfigFormValues = z.infer<typeof adminGeneralConfigSchema>;
