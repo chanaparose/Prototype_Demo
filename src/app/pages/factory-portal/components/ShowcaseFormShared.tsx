@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { Camera, Plus, X } from 'lucide-react';
 import type { UseQueryResult } from '@tanstack/react-query';
+import { ImageCropModal } from '@/components/common/ImageCropModal';
+import { mediaApi } from '@/services/api/factoryApi';
 import { LookupSelect } from '@/components/common/LookupSelect';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,6 +49,108 @@ const SHOWCASE_TYPE_META: Record<
 };
 
 type Option = { id: number; name: string };
+
+export const SHOWCASE_MAX_IMAGES = 5;
+
+export type ShowcaseImageUploadOptions = {
+  maxImages?: number;
+  onUploadError?: (message: string) => void;
+  /** เมื่อกำหนด — รับผิดชอบอัปเดต state เอง (เช่น ลบผ่าน API ในหน้าแก้ไข) */
+  removeImage?: (url: string, index: number) => void | Promise<void>;
+};
+
+export function useShowcaseImageUpload(options?: ShowcaseImageUploadOptions) {
+  const maxImages = options?.maxImages ?? SHOWCASE_MAX_IMAGES;
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+
+  const onPickImage = useCallback(
+    (file: File | null) => {
+      if (!file || imageUrls.length >= maxImages) return;
+      setCropFile(file);
+    },
+    [imageUrls.length, maxImages],
+  );
+
+  const onRemoveImage = useCallback(
+    async (url: string, index: number) => {
+      if (options?.removeImage) {
+        await options.removeImage(url, index);
+        return;
+      }
+      setImageUrls((prev) => prev.filter((_, i) => i !== index));
+    },
+    [options?.removeImage],
+  );
+
+  const onCropCancel = useCallback(() => setCropFile(null), []);
+
+  const onCropConfirm = useCallback(
+    async (file: File) => {
+      setUploading(true);
+      try {
+        const up = await mediaApi.upload(file);
+        const url = String(up.url ?? '').trim();
+        if (url) setImageUrls((prev) => [...prev, url].slice(0, maxImages));
+      } catch (e) {
+        options?.onUploadError?.(e instanceof Error ? e.message : 'อัปโหลดรูปไม่สำเร็จ');
+      } finally {
+        setUploading(false);
+        setCropFile(null);
+      }
+    },
+    [maxImages, options?.onUploadError],
+  );
+
+  return {
+    imageUrls,
+    setImageUrls,
+    uploading,
+    cropFile,
+    onPickImage,
+    onRemoveImage,
+    onCropCancel,
+    onCropConfirm,
+  };
+}
+
+export type ShowcaseImageUploadControl = ReturnType<typeof useShowcaseImageUpload>;
+
+export function ShowcaseImageUploadBlock({
+  imageUrls,
+  uploading,
+  cropFile,
+  onPickImage,
+  onRemoveImage,
+  onCropCancel,
+  onCropConfirm,
+  onRemoveImageOverride,
+}: ShowcaseImageUploadControl & {
+  onRemoveImageOverride?: ShowcaseImageUploadControl['onRemoveImage'];
+}) {
+  const handleRemove = onRemoveImageOverride ?? onRemoveImage;
+
+  return (
+    <>
+      <ImageCropModal
+        open={cropFile != null}
+        file={cropFile}
+        title='จัดตำแหน่งภาพ Showcase'
+        aspect={4 / 3}
+        outputWidth={1600}
+        onCancel={onCropCancel}
+        onConfirm={onCropConfirm}
+      />
+      <ShowcaseImageManager
+        imageUrls={imageUrls}
+        uploading={uploading}
+        onPickImage={onPickImage}
+        onRemoveImage={(url, index) => void handleRemove(url, index)}
+      />
+    </>
+  );
+}
 
 export function ShowcaseTypeBadge({ type }: { type: ShowcaseType }) {
   const meta = SHOWCASE_TYPE_META[type] ?? SHOWCASE_TYPE_META.PD;

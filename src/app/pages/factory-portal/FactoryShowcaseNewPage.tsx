@@ -3,7 +3,7 @@ import { useForm, type Path, type PathValue } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useSearchParams } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
-import { showcasesApi, mediaApi } from '@/services/api/factoryApi';
+import { showcasesApi } from '@/services/api/factoryApi';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { MarkdownEditor } from '@/components/common/MarkdownEditor';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
@@ -12,12 +12,12 @@ import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { RelatedShowcasePicker } from '@/components/features/factory-portal/RelatedShowcasePicker';
 import { mapLinkedShowcasesErrorToThai } from '@/utils/linkedShowcases';
-import { ImageCropModal } from '@/components/common/ImageCropModal';
 import { ShowcaseTypeSelector } from '@/components/factory/showcase/ShowcaseTypeSelector';
 import {
   ShowcaseCategoryFields,
-  ShowcaseImageManager,
+  ShowcaseImageUploadBlock,
   ShowcaseTypeBadge,
+  useShowcaseImageUpload,
   type ShowcaseType,
 } from '@/pages/factory-portal/components/ShowcaseFormShared';
 import { Button } from '@/components/ui/button';
@@ -50,13 +50,17 @@ export function FactoryShowcaseNewPage() {
     mode: 'onSubmit',
   });
   const form = watch();
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [selectedShowcaseIds, setSelectedShowcaseIds] = useState<number[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [cropFile, setCropFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [linkedShowcaseError, setLinkedShowcaseError] = useState('');
+  const imageUpload = useShowcaseImageUpload({
+    onUploadError: (msg) => {
+      setError(msg);
+      setLinkedShowcaseError('');
+    },
+  });
+  const { imageUrls } = imageUpload;
   const [idScope, setIdScope] = useState<'PD' | 'MT'>('PD');
   const [pmScope, setPmScope] = useState<'PD' | 'MT'>('PD');
   const [units, setUnits] = useState<UnitOption[]>([]);
@@ -120,13 +124,6 @@ export function FactoryShowcaseNewPage() {
     key: K,
     value: PathValue<ShowcaseFormValues, K>,
   ) => setValue(key, value);
-
-  const onPickImage = async (file: File | null) => {
-    if (!file || imageUrls.length >= 5) return;
-    setCropFile(file);
-  };
-
-  const removeImage = (idx: number) => setImageUrls((prev) => prev.filter((_, i) => i !== idx));
 
   const buildPayload = (
     status: 'DR' | 'AC',
@@ -236,31 +233,6 @@ export function FactoryShowcaseNewPage() {
       </header>
 
       <div className='max-w-[1500px] mx-auto px-0 py-5'>
-        <ImageCropModal
-          open={cropFile != null}
-          file={cropFile}
-          title='จัดตำแหน่งภาพ Showcase'
-          // Lock crop frame to 4:3 for showcase uploader/editor consistency.
-          aspect={4 / 3}
-          outputWidth={1600}
-          onCancel={() => setCropFile(null)}
-          onConfirm={async (file) => {
-            setUploading(true);
-            setError('');
-            setLinkedShowcaseError('');
-            try {
-              const up = await mediaApi.upload(file);
-              const url = String(up.url ?? '').trim();
-              if (url) setImageUrls((prev) => [...prev, url].slice(0, 5));
-            } catch (e) {
-              setError(e instanceof Error ? e.message : 'อัปโหลดรูปไม่สำเร็จ');
-            } finally {
-              setUploading(false);
-              setCropFile(null);
-            }
-          }}
-        />
-
         {error ? <ErrorAlert>{error}</ErrorAlert> : null}
 
         <div
@@ -290,12 +262,7 @@ export function FactoryShowcaseNewPage() {
                 />
               </section>
             ) : (
-              <ShowcaseImageManager
-                imageUrls={imageUrls}
-                uploading={uploading}
-                onPickImage={(file) => void onPickImage(file)}
-                onRemoveImage={(_, index) => removeImage(index)}
-              />
+              <ShowcaseImageUploadBlock {...imageUpload} />
             )}
           </div>
 

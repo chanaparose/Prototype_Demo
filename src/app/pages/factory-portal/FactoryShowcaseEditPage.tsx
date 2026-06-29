@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Controller } from 'react-hook-form';
 import { ChevronLeft } from 'lucide-react';
 
-import { mediaApi, showcasesApi } from '@/services/api/factoryApi';
+import { showcasesApi } from '@/services/api/factoryApi';
 import { useEditForm } from '@/hooks/forms/useEditForm';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
@@ -16,12 +16,12 @@ import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { RelatedShowcasePicker } from '@/components/features/factory-portal/RelatedShowcasePicker';
 import { mapLinkedShowcasesErrorToThai, partitionLinkedShowcases } from '@/utils/linkedShowcases';
-import { ImageCropModal } from '@/components/common/ImageCropModal';
 import { ShowcaseTypeSelector } from '@/components/factory/showcase/ShowcaseTypeSelector';
 import {
   ShowcaseCategoryFields,
-  ShowcaseImageManager,
+  ShowcaseImageUploadBlock,
   ShowcaseTypeBadge,
+  useShowcaseImageUpload,
   type ShowcaseType,
 } from '@/pages/factory-portal/components/ShowcaseFormShared';
 import { Button } from '@/components/ui/button';
@@ -177,9 +177,8 @@ export function FactoryShowcaseEditPage() {
   const fid = getFactoryEntityId(user);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
-  const [uploading, setUploading] = React.useState(false);
-  const [cropFile, setCropFile] = React.useState<File | null>(null);
-  const [imageUrls, setImageUrls] = React.useState<string[]>([]);
+  const imageUpload = useShowcaseImageUpload({ onUploadError: setError });
+  const { imageUrls, setImageUrls } = imageUpload;
   const [persistedImageIdByUrl, setPersistedImageIdByUrl] = React.useState<Record<string, number>>(
     {},
   );
@@ -193,8 +192,7 @@ export function FactoryShowcaseEditPage() {
   }, [id]);
 
   const removeImage = useCallback(
-    async (urlToRemove: string) => {
-      // Optimistic UI
+    async (urlToRemove: string, _index: number) => {
       setImageUrls((prev) => prev.filter((u) => u !== urlToRemove));
 
       const imageId = persistedImageIdByUrl[urlToRemove];
@@ -208,14 +206,13 @@ export function FactoryShowcaseEditPage() {
           return next;
         });
       } catch (e) {
-        // Revert on failure
         setImageUrls((prev) =>
           prev.includes(urlToRemove) ? prev : [...prev, urlToRemove].slice(0, 5),
         );
         setError(e instanceof Error ? e.message : 'ลบรูปไม่สำเร็จ');
       }
     },
-    [id, persistedImageIdByUrl],
+    [id, persistedImageIdByUrl, setImageUrls],
   );
 
   const { form, isLoading, isError, refetch } = useEditForm<ShowcaseFormValues, Raw>({
@@ -513,11 +510,6 @@ export function FactoryShowcaseEditPage() {
     navigate(backPath);
   }, [backPath, form.formState.isDirty, navigate]);
 
-  const onPickImage = async (file: File | null) => {
-    if (!file || imageUrls.length >= 5) return;
-    setCropFile(file);
-  };
-
   const titleValue = form.watch('title');
   const canPublish =
     (titleValue ?? '').trim().length > 0 && (contentType === 'ID' || imageUrls.length > 0);
@@ -579,30 +571,6 @@ export function FactoryShowcaseEditPage() {
       </header>
 
       <div className='max-w-[1500px] mx-auto px-0 py-5'>
-        <ImageCropModal
-          open={cropFile != null}
-          file={cropFile}
-          title='จัดตำแหน่งภาพ Showcase'
-          // Lock crop frame to 4:3 for showcase uploader/editor consistency.
-          aspect={4 / 3}
-          outputWidth={1600}
-          onCancel={() => setCropFile(null)}
-          onConfirm={async (file) => {
-            setUploading(true);
-            setError('');
-            try {
-              const up = await mediaApi.upload(file);
-              const url = String(up.url ?? '').trim();
-              if (!url) return;
-              setImageUrls((prev) => [...prev, url].slice(0, 5));
-            } catch (e) {
-              setError(e instanceof Error ? e.message : 'อัปโหลดรูปไม่สำเร็จ');
-            } finally {
-              setUploading(false);
-              setCropFile(null);
-            }
-          }}
-        />
         {error ? <ErrorAlert>{error}</ErrorAlert> : null}
 
         <div
@@ -638,12 +606,7 @@ export function FactoryShowcaseEditPage() {
             </section>
           ) : (
             <div>
-              <ShowcaseImageManager
-                imageUrls={imageUrls}
-                uploading={uploading}
-                onPickImage={(file) => void onPickImage(file)}
-                onRemoveImage={(url) => void removeImage(url)}
-              />
+              <ShowcaseImageUploadBlock {...imageUpload} onRemoveImageOverride={removeImage} />
             </div>
           )}
 
