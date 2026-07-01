@@ -1,5 +1,4 @@
 import { Award, CheckCircle, ChevronRight, Factory, ImageIcon } from 'lucide-react';
-import { openImageLightbox } from '@/stores/useLightboxStore';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { OfferItem } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import {
@@ -23,31 +22,36 @@ const MOBILE_COMPARE_ROW_GRID =
 const MOBILE_CELL_CLAMP_2_CLASS =
   'line-clamp-2 overflow-hidden break-words [overflow-wrap:anywhere]';
 
-function MobileHighlightCell({ m }: { m: OfferMetrics }) {
+function MobileHighlightCell({
+  m,
+  onRowPress,
+}: {
+  m: OfferMetrics;
+  onRowPress: (offer: OfferItem) => void;
+}) {
   const images = m.boq.image_urls ?? [];
   const hasHighlight = Boolean(m.offer.factoryHighlight?.trim());
 
   if (images.length > 0) {
     return (
-      <div className='flex items-center justify-end gap-0.5'>
-        {images.slice(0, 2).map((url, idx) => (
-          <button
-            key={`${url}-${idx}`}
-            type='button'
-            onClick={(e) => {
-              e.stopPropagation();
-              openImageLightbox(url);
-            }}
-            className='h-7 w-7 shrink-0 overflow-hidden rounded border border-brand-purple/12 bg-slate-50'
-            aria-label='ดูรูปขนาดใหญ่'
-          >
-            <ImageWithFallback src={url} alt='' className='h-full w-full object-cover' />
-          </button>
-        ))}
-        {images.length > 2 ? (
-          <span className='text-[9px] text-slate-400'>+{images.length - 2}</span>
+      <button
+        type='button'
+        onClick={(e) => {
+          e.stopPropagation();
+          onRowPress(m.offer);
+        }}
+        className='relative ml-auto block h-7 w-7 shrink-0 overflow-hidden rounded border border-brand-purple/12 bg-slate-50'
+        aria-label={
+          images.length > 1 ? `ดูรูปจุดเด่น ${images.length} ภาพ` : 'ดูรูปจุดเด่น'
+        }
+      >
+        <ImageWithFallback src={images[0]} alt='' className='h-full w-full object-cover' />
+        {images.length > 1 ? (
+          <span className='absolute inset-0 flex items-center justify-center bg-black/40 text-[9px] font-bold text-white'>
+            +{images.length - 1}
+          </span>
         ) : null}
-      </div>
+      </button>
     );
   }
 
@@ -126,7 +130,7 @@ export function RfqOffersMobileCompareList({
                     </div>
                     {recommended ? (
                       <span className='mt-0.5 inline-flex items-center gap-0.5 rounded-full bg-brand-lavender-chip/80 px-1.5 py-px text-[9px] font-semibold text-brand-violet-deep'>
-                        <Award size={9} /> AI แนะนำ
+                        <Award size={9} /> แนะนำ
                       </span>
                     ) : null}
                   </div>
@@ -157,7 +161,7 @@ export function RfqOffersMobileCompareList({
                 </div>
 
                 <div className='min-w-0'>
-                  <MobileHighlightCell m={m} />
+                  <MobileHighlightCell m={m} onRowPress={onRowPress} />
                 </div>
 
                 <ChevronRight

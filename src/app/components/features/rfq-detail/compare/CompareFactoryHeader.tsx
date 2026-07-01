@@ -35,7 +35,7 @@ export function CompareFactoryHeader({ m, isSelected }: CompareFactoryHeaderProp
         <span className='mt-0.5 flex flex-wrap items-center gap-1'>
           {recommended ? (
             <span className='inline-flex items-center gap-0.5 rounded-full bg-brand-purple/15 px-1.5 py-px text-[9px] font-bold text-brand-violet-deep'>
-              <Sparkles size={9} /> AI แนะนำ
+              <Sparkles size={9} /> แนะนำ
             </span>
           ) : null}
           {m.offer.verified ? (

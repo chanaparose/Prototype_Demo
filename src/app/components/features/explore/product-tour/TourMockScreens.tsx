@@ -809,7 +809,7 @@ export function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
                   borderRadius: 99,
                 }}
               >
-                🤖 AI แนะนำ
+                แนะนำ
               </div>
             )}
             <div

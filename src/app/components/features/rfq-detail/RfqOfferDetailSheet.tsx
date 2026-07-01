@@ -176,7 +176,7 @@ export function RfqOfferDetailSheet({
               {offer.verified ? <CheckCircle size={13} className='text-brand-mauve' /> : null}
               {offer.recommended ? (
                 <span className='inline-flex items-center gap-0.5 rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-semibold text-brand-violet-deep'>
-                  <Award size={10} /> AI แนะนำ
+                  <Award size={10} /> แนะนำ
                 </span>
               ) : null}
             </div>
