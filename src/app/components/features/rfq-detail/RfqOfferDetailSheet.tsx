@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { openImageLightbox } from '@/stores/useLightboxStore';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { TextWithLinks } from '@/components/shared/TextWithLinks';
 import type { Quotation } from '@/components/features/rfq-detail/QuotationBOQCard';
 import { QuotationBOQDetailsPanel } from '@/components/features/rfq-detail/QuotationBOQCard';
 import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
@@ -255,7 +256,10 @@ export function RfqOfferDetailSheet({
         {offer.factoryHighlight ? (
           <div className='rounded-lg border border-violet-100 bg-violet-50/70 px-2.5 py-2'>
             <p className='mb-0.5 text-[10px] font-semibold text-violet-700'>จุดเด่นจากโรงงาน</p>
-            <p className='text-[11px] leading-relaxed text-violet-900'>{offer.factoryHighlight}</p>
+            <TextWithLinks
+              text={offer.factoryHighlight}
+              className='text-[11px] leading-relaxed text-violet-900'
+            />
           </div>
         ) : null}
 

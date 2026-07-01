@@ -83,7 +83,7 @@ import { CheckCircle } from 'lucide-react';
   defaultOpen={true}
   header={
     <div className='flex items-center gap-2'>
-      <span className='font-bold'>ใบเสนอราคา BOQ</span>
+      <span className='font-bold'>ใบเสนอราคา</span>
       <StatusBadge variant='success' size='sm'>
         <CheckCircle size={10} /> ยอมรับแล้ว
       </StatusBadge>

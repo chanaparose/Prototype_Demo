@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { ChevronDown, ExternalLink, MessageCircle } from 'lucide-react';
 import { openImageLightbox } from '@/stores/useLightboxStore';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { TextWithLinks } from '@/components/shared/TextWithLinks';
 import { CompareFactoryHeader } from '@/components/features/rfq-detail/compare/CompareFactoryHeader';
 import {
   COMPARE_ROWS,
@@ -268,7 +269,7 @@ export function RfqOffersCompareTable({
                     >
                       {hasHighlight ? (
                         <p className='mb-1.5 line-clamp-3 text-[11px] leading-relaxed text-brand-violet-deep'>
-                          {m.offer.factoryHighlight}
+                          <TextWithLinks text={m.offer.factoryHighlight} />
                         </p>
                       ) : m.offer.aiReason ? (
                         <p className='mb-1.5 line-clamp-2 text-[11px] text-slate-500'>

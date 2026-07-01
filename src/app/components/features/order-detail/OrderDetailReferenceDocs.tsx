@@ -28,10 +28,9 @@ export function OrderDetailReferenceDocs({
 
   if (!quotation && !rfq) return null;
 
-  const grandTotal = quotation ? Number((quotation as Record<string, unknown>).grand_total ?? 0) : 0;
-  const rfqData = rfq as unknown as Record<string, unknown> | undefined;
-  const rfqQty = rfqData ? Math.max(0, pickScalarNumber(rfqData.quantity, rfq?.quantity) ?? 0) : 0;
-  const rfqUnit = String(rfqData?.unit_name ?? rfq?.unit_name ?? 'ชิ้น');
+  const grandTotal = quotation?.grand_total ?? 0;
+  const rfqQty = rfq ? Math.max(0, pickScalarNumber(rfq.quantity) ?? 0) : 0;
+  const rfqUnit = rfq?.unit_name ?? 'ชิ้น';
 
   return (
     <>
@@ -83,7 +82,7 @@ export function OrderDetailReferenceDocs({
         <AppSheetDialog
           open={quoteOpen}
           onOpenChange={setQuoteOpen}
-          title='ใบเสนอราคา BOQ'
+          title='ใบเสนอราคา'
           bodyClassName='p-4 max-h-[75vh]'
         >
           <OrderBOQCard
