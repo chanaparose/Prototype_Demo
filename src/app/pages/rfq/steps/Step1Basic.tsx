@@ -104,7 +104,10 @@ export function Step1Basic({
         : mode === 'PS'
           ? 'ระบุขนาด/สี/สูตร/มาตรฐานที่ต้องการ (อย่างน้อย 20 ตัวอักษร) *'
           : 'รายละเอียดงาน *';
-  const showSubCategory = mode !== 'MS' && mode !== 'MR';
+  // ซ่อน dropdown หมวดย่อยไปเลยถ้าเลือกหมวดหมู่แล้วแต่หมวดหมู่นั้นไม่มีหมวดย่อยให้เลือก
+  const hasSubCategoryOptions =
+    !draft.category_id || subCategoriesLoading || subCategories.length > 0;
+  const showSubCategory = mode !== 'MS' && mode !== 'MR' && hasSubCategoryOptions;
   const fieldClass = RFQ_FIELD_CLASS;
   return (
     <div className='space-y-4'>
@@ -207,16 +210,17 @@ export function Step1Basic({
 
       {hubs.length > 0 ? (
         <label className='block'>
-          <span className={`mb-1 block ${RFQ_LABEL_CLASS}`}>กลุ่มธุรกิจ</span>
+          <span className={`mb-1 block ${RFQ_LABEL_CLASS}`}>
+            กลุ่มธุรกิจ <span className='text-brand-orange-deep'>*</span>
+          </span>
           <Select
-            value={selectedHubId != null ? String(selectedHubId) : '__all'}
-            onValueChange={(v) => onHubChange?.(v === '__all' ? null : Number(v))}
+            value={selectedHubId != null ? String(selectedHubId) : ''}
+            onValueChange={(v) => onHubChange?.(Number(v))}
           >
             <SelectTrigger className={fieldClass}>
-              <SelectValue placeholder='ทุกกลุ่ม' />
+              <SelectValue placeholder='เลือกกลุ่มธุรกิจ' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='__all'>ทุกกลุ่ม</SelectItem>
               {hubs.map((h) => (
                 <SelectItem key={h.hub_id} value={String(h.hub_id)}>
                   {h.name}
@@ -240,9 +244,12 @@ export function Step1Basic({
               sub_category_id: undefined,
             })
           }
+          disabled={hubs.length > 0 && selectedHubId == null}
         >
-          <SelectTrigger className={fieldClass}>
-            <SelectValue placeholder='เลือกหมวดหมู่' />
+          <SelectTrigger className={`${fieldClass} disabled:bg-gray-100`}>
+            <SelectValue
+              placeholder={hubs.length > 0 && selectedHubId == null ? 'เลือกกลุ่มธุรกิจก่อน' : 'เลือกหมวดหมู่'}
+            />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value='__empty'>หมวดหมู่ *</SelectItem>
