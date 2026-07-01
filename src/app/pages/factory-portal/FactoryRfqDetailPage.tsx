@@ -235,6 +235,11 @@ export function FactoryRfqDetailPage() {
     return name || 'ชิ้น';
   }, [rfqBody]);
 
+  const rfqUnitId = useMemo(() => {
+    const n = Number(rfqBody.unit_id ?? 0);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }, [rfqBody]);
+
   const revenueApprox = useMemo(() => {
     const totalBudget = Number(
       rfqBody.target_price ?? rfqBody.budget_total ?? rfqBody.total_budget ?? 0,
@@ -750,6 +755,7 @@ export function FactoryRfqDetailPage() {
                       lockedShippingMethodName={customerShipLabel || undefined}
                       rfqQuantity={quantity}
                       rfqUnitName={unitName}
+                      rfqUnitId={rfqUnitId}
                       patchQuotationId={
                         myQuote && canEdit && quoteIdOf(myQuote) ? quoteIdOf(myQuote) : undefined
                       }

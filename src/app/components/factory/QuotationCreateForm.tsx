@@ -8,7 +8,6 @@ import React, {
   useState,
 } from 'react';
 import { Send, Save, Loader2, ImagePlus, Lock, AlertTriangle, X as XIcon } from 'lucide-react';
-import { FactoryNoteField } from '@/components/factory/FactoryNoteField';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getErrorMessage } from '@/lib/apiError';
@@ -68,6 +67,7 @@ interface Props {
   lockedShippingMethodName?: string;
   rfqQuantity?: number | null; // จำนวนที่ลูกค้าขอ — ใช้คำนวณ preview
   rfqUnitName?: string | null; // หน่วยที่ลูกค้าขอ — แสดง hint
+  rfqUnitId?: number | null; // หน่วยที่ลูกค้าขอ — default เมื่อยังไม่มี quotation
   initial?: Partial<QuotationCreateFormValues>;
   initialFactoryQty?: number | null;
   initialFactoryUnitId?: number | null;
@@ -90,6 +90,17 @@ function fmt(n: number): string {
   return formatCurrencyNoDecimals(n);
 }
 
+function resolveInitialFactoryUnitId(
+  initialFactoryUnitId: number | null | undefined,
+  rfqUnitId: number | null | undefined,
+  isEdit: boolean,
+): number | undefined {
+  if (initialFactoryUnitId != null && initialFactoryUnitId > 0) return initialFactoryUnitId;
+  if (isEdit) return undefined;
+  const rid = Number(rfqUnitId ?? 0);
+  return Number.isFinite(rid) && rid > 0 ? rid : undefined;
+}
+
 export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
   function QuotationCreateForm(
     {
@@ -99,6 +110,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       lockedShippingMethodName,
       rfqQuantity = null,
       rfqUnitName = null,
+      rfqUnitId = null,
       initial,
       initialImageUrls,
       initialFactoryHighlight,
@@ -124,8 +136,12 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
     const [factoryQty, setFactoryQty] = useState<number | null>(
       initialFactoryQty ?? rfqQuantity ?? null,
     );
-    const [factoryUnitId, setFactoryUnitId] = useState<number | undefined>(
-      initialFactoryUnitId ?? undefined,
+    const [factoryUnitId, setFactoryUnitId] = useState<number | undefined>(() =>
+      resolveInitialFactoryUnitId(
+        initialFactoryUnitId,
+        rfqUnitId,
+        Boolean(patchQuotationId),
+      ),
     );
     useEffect(() => {
       masterApi
@@ -549,11 +565,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           maxLength={200}
           error={highlightError}
         />
-
-        {/* factory_note — shown only when creating (edit mode uses FactoryNoteInline) */}
-        {!patchQuotationId ? (
-          <FactoryNoteField value={factoryNote} onChange={setFactoryNote} disabled={readOnly} />
-        ) : null}
 
         {!readOnly ? (
           <div>
