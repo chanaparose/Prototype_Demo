@@ -671,7 +671,7 @@ export function FactoryRfqDetailPage() {
                       <div
                         className={factoryBoxClass({ variant: 'violet', className: 'px-4 py-3' })}
                       >
-                        <p className='text-sm leading-relaxed text-slate-800 break-words'>
+                        <p className='text-sm leading-relaxed text-slate-800 break-words whitespace-pre-wrap'>
                           {String(rfqBody.details ?? rfqBody.description ?? '—')}
                         </p>
                       </div>

@@ -119,10 +119,10 @@ export function RfqDetailSpecs({ rfq, bare = false }: RfqDetailSpecsProps) {
         <div className={`mt-3 pt-3 ${sectionDividerClass}`}>
           <p className={`${labelClass} mb-1.5`}>รายละเอียด</p>
           {bare ? (
-            <p className={RFQ_DETAIL_SPEC_NOTE_TEXT_CLASS}>{rfq.description}</p>
+            <p className={`${RFQ_DETAIL_SPEC_NOTE_TEXT_CLASS} whitespace-pre-wrap`}>{rfq.description}</p>
           ) : (
             <div className='rounded-xl border border-violet-100 bg-violet-50/80 px-3 py-2.5'>
-              <p className='text-xs leading-relaxed text-violet-950'>{rfq.description}</p>
+              <p className='text-xs leading-relaxed text-violet-950 whitespace-pre-wrap'>{rfq.description}</p>
             </div>
           )}
         </div>
