@@ -855,18 +855,6 @@ export function FactoryOrderDetailPage() {
                         )}
                       </div>
 
-                      {/* ── สลิปการโอนเงิน ── */}
-                      <div className='px-4 py-4'>
-                        <SlipVerificationCard
-                          orderId={String(order.order_id ?? id)}
-                          orderStatus={status}
-                          onStatusChange={() => {
-                            setError('');
-                            loadOrder();
-                          }}
-                        />
-                      </div>
-
                       {/* ── ประวัติการชำระเงิน ── */}
                       <div className='px-4 py-4'>
                         <PaymentTransactionsTable orderId={String(order.order_id ?? id)} />
@@ -891,6 +879,16 @@ export function FactoryOrderDetailPage() {
                     <Flag size={14} className='text-brand-purple' />
                     <h2 className='text-sm font-bold text-slate-900'>ความคืบหน้าการผลิต</h2>
                   </div>
+
+                  {/* ── สลิปการโอนเงิน — ต้องยืนยันก่อนเริ่มงาน ── */}
+                  <SlipVerificationCard
+                    orderId={String(order.order_id ?? id)}
+                    orderStatus={status}
+                    onStatusChange={() => {
+                      setError('');
+                      loadOrder();
+                    }}
+                  />
 
                   {updQ.isLoading ? (
                     <div className='flex items-center gap-2 py-6 justify-center text-gray-500 text-sm'>
