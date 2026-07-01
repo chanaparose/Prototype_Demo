@@ -786,6 +786,8 @@ export function FactoryRfqDetailPage() {
                             )
                           : ''
                       }
+                      initialFactoryQty={myQuote?.factory_qty ?? null}
+                      initialFactoryUnitId={myQuote?.factory_unit_id ?? null}
                       submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}
                       pageError={error || undefined}
                       readOnly={Boolean(myQuote && !canEdit)}

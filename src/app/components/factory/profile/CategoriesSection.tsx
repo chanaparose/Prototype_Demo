@@ -4,8 +4,10 @@ import { useProductCategories } from '@/hooks/master/useProductCategories';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByCategory';
 import type { SubCategoryOption } from '@/hooks/master/useSubCategoriesByCategory';
+import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
 import { CategoryCard } from '@/components/factory/profile/CategoryCard';
 import { CategoryPickerModal } from '@/components/factory/profile/CategoryPickerModal';
+import { AddHubModal } from '@/components/factory/profile/AddHubModal';
 import { SubCategoryPickerModal } from '@/components/factory/profile/SubCategoryPickerModal';
 import type { ProfileFormValues } from '@/components/factory/profile/ProfileFormTypes';
 
@@ -26,6 +28,8 @@ interface Props {
   factoryId: number | string;
   /** Called by parent to register the "open category picker" handler */
   onRegisterAdd?: (handler: () => void) => void;
+  /** Called by parent to register the "open hub picker" handler */
+  onRegisterAddHub?: (handler: () => void) => void;
   /** Raw categories from /factories/me — used as fallback when master data is unavailable */
   apiCategories?: ApiCategory[];
   /** Raw sub_categories from /factories/me — used as fallback when master data is unavailable */
@@ -41,6 +45,7 @@ export function CategoriesSection({
   form,
   factoryId,
   onRegisterAdd,
+  onRegisterAddHub,
   apiCategories = [],
   apiSubCategories = [],
   onPdSubValidation,
@@ -49,6 +54,7 @@ export function CategoriesSection({
   const { data: allCategories = [] } = useProductCategories();
   const { data: pdCategories = [] } = useLbiCategoriesByScope('PD');
   const { data: mtCategories = [] } = useLbiCategoriesByScope('MT');
+  const { data: hubs = [] } = useLbiHubsQuery();
 
   const categoryIds = form.watch('category_ids');
   const subCategoryIds = form.watch('sub_category_ids');
@@ -76,13 +82,16 @@ export function CategoriesSection({
   }, [masterByCategory, apiByCategoryMap]);
 
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
+  const [hubPickerOpen, setHubPickerOpen] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
 
   const openCategoryPicker = () => setCategoryPickerOpen(true);
+  const openHubPicker = () => setHubPickerOpen(true);
 
-  // Register the add handler with parent once on mount
+  // Register the add handlers with parent once on mount
   useEffect(() => {
     onRegisterAdd?.(openCategoryPicker);
+    onRegisterAddHub?.(openHubPicker);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -120,17 +129,31 @@ export function CategoriesSection({
   const pdIds = useMemo(() => new Set(pdCategories.map((c) => c.id)), [pdCategories]);
   const mtIds = useMemo(() => new Set(mtCategories.map((c) => c.id)), [mtCategories]);
 
-  const groupedCategories = useMemo(() => {
-    const pd: { id: number; name: string }[] = [];
-    const mt: { id: number; name: string }[] = [];
+  // category_id → hub, ใช้จัดกลุ่ม hub -> category -> subcategory
+  const hubByCategoryId = useMemo(() => {
+    const map = new Map<number, (typeof hubs)[number]>();
+    for (const h of hubs) {
+      for (const c of h.categories) map.set(c.category_id, h);
+    }
+    return map;
+  }, [hubs]);
+
+  const groupedByHub = useMemo(() => {
+    const groups = new Map<number, { hub: (typeof hubs)[number]; categories: { id: number; name: string }[] }>();
     const unknown: { id: number; name: string }[] = [];
     for (const c of resolvedCategories) {
-      if (pdIds.has(c.id)) pd.push(c);
-      else if (mtIds.has(c.id)) mt.push(c);
-      else unknown.push(c);
+      const hub = hubByCategoryId.get(c.id);
+      if (!hub) {
+        unknown.push(c);
+        continue;
+      }
+      const bucket = groups.get(hub.hub_id) ?? { hub, categories: [] };
+      bucket.categories.push(c);
+      groups.set(hub.hub_id, bucket);
     }
-    return { pd, mt, unknown };
-  }, [resolvedCategories, pdIds, mtIds]);
+    const sorted = [...groups.values()].sort((a, b) => a.hub.name.localeCompare(b.hub.name, 'th'));
+    return { hubs: sorted, unknown };
+  }, [resolvedCategories, hubByCategoryId]);
 
   // PD categories ที่ไม่มี sub-category เลือกไว้เลย (ใช้สำหรับ validation + highlight)
   const pdCatsWithNoSubs = useMemo(() => {
@@ -178,36 +201,27 @@ export function CategoriesSection({
       {resolvedCategories.length === 0 ? (
         <div className='border border-dashed border-gray-300 rounded-lg p-6 text-center'>
           <p className='text-sm text-gray-500'>ยังไม่ได้เลือกหมวดหมู่</p>
-          <p className='text-xs text-gray-400 mt-1'>กด [+ เพิ่มหมวดหมู่] เพื่อเริ่มต้น</p>
+          <p className='text-xs text-gray-400 mt-1'>กด [+ เพิ่ม Hub] เพื่อเริ่มต้น</p>
         </div>
       ) : (
-        <div className='space-y-4'>
-          <div>
-            <p className='text-xs font-semibold text-brand-purple mb-2'>หมวดสินค้า (PD)</p>
-            {groupedCategories.pd.length > 0 ? (
-              renderCategoryGrid(groupedCategories.pd)
-            ) : (
-              <div className='rounded-lg border border-dashed border-brand-purple/20 bg-brand-lavender/40 px-3 py-2 text-xs text-brand-purple'>
-                ยังไม่ได้เลือกหมวด PD
-              </div>
-            )}
-          </div>
+        <div className='space-y-5'>
+          {groupedByHub.hubs.map(({ hub, categories }) => (
+            <div key={hub.hub_id}>
+              <p
+                className={`text-xs font-semibold mb-2 ${
+                  hub.scope === 'MT' ? 'text-emerald-700' : 'text-brand-purple'
+                }`}
+              >
+                {hub.name}
+              </p>
+              {renderCategoryGrid(categories, hub.scope === 'MT')}
+            </div>
+          ))}
 
-          <div>
-            <p className='text-xs font-semibold text-emerald-700 mb-2'>หมวดวัตถุดิบ (MT)</p>
-            {groupedCategories.mt.length > 0 ? (
-              renderCategoryGrid(groupedCategories.mt, true)
-            ) : (
-              <div className='rounded-lg border border-dashed border-emerald-200 bg-emerald-50/40 px-3 py-2 text-xs text-emerald-600'>
-                ยังไม่ได้เลือกหมวด MT
-              </div>
-            )}
-          </div>
-
-          {groupedCategories.unknown.length > 0 ? (
+          {groupedByHub.unknown.length > 0 ? (
             <div>
               <p className='text-xs font-semibold text-gray-500 mb-2'>หมวดอื่นๆ</p>
-              {renderCategoryGrid(groupedCategories.unknown)}
+              {renderCategoryGrid(groupedByHub.unknown)}
             </div>
           ) : null}
         </div>
@@ -241,6 +255,26 @@ export function CategoriesSection({
           form.setValue('category_ids', nextIds, { shouldDirty: true });
           form.setValue('sub_category_ids', prunedSubIds, { shouldDirty: true });
           setCategoryPickerOpen(false);
+        }}
+      />
+
+      <AddHubModal
+        open={hubPickerOpen}
+        currentCategoryIds={categoryIds}
+        onClose={() => setHubPickerOpen(false)}
+        onConfirm={(nextIds) => {
+          const stillValidParents = new Set(nextIds);
+          const prunedSubIds = subCategoryIds.filter((sid) => {
+            for (const [cid, subs] of byCategory.entries()) {
+              if (subs.some((s) => s.id === sid)) {
+                return stillValidParents.has(cid);
+              }
+            }
+            return true;
+          });
+          form.setValue('category_ids', nextIds, { shouldDirty: true });
+          form.setValue('sub_category_ids', prunedSubIds, { shouldDirty: true });
+          setHubPickerOpen(false);
         }}
       />
 

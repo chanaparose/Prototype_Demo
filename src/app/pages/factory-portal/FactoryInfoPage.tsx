@@ -42,6 +42,7 @@ import { ImageCropModal } from '@/components/common/ImageCropModal';
 import { VerifyStatusBanner } from '@/components/factory/profile/VerifyStatusBanner';
 import { BusinessInfoSection } from '@/components/factory/profile/BusinessInfoSection';
 import { CategoriesSection } from '@/components/factory/profile/CategoriesSection';
+import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
 import { AddressesSection } from '@/components/factory/profile/AddressesSection';
 import { CertificatesSection } from '@/components/factory/profile/CertificatesSection';
 import { FactoryBankSettingsPage } from '@/pages/factory-portal/FactoryBankSettingsPage';
@@ -68,8 +69,6 @@ function normalizeIds(ids: number[]): number[] {
     .filter((id) => Number.isFinite(id) && id > 0)
     .sort((a, b) => a - b);
 }
-
-type CategoryScope = 'PD' | 'MT' | 'OTHER';
 
 // ─── Shared UI ────────────────────────────────────────────────────────────────
 
@@ -269,23 +268,56 @@ function AvatarUploader({
 }
 
 // ─── CategoryViewCard — view-mode card for categories (no edit) ───────────────
-type SubEntryView = { id: number; name: string };
+type SubEntryView = { id: number; name: string; categoryName?: string };
 type CatCardView = { id: number; name: string; subs: SubEntryView[] };
 
 function CategoryViewCard({ cat, isMT = false }: { cat: CatCardView; isMT?: boolean }) {
+  // Group subs by categoryName to show the intermediate category level
+  const subsByCategory = useMemo(() => {
+    const groups = new Map<string, SubEntryView[]>();
+    for (const s of cat.subs) {
+      const key = s.categoryName ?? '';
+      const bucket = groups.get(key) ?? [];
+      bucket.push(s);
+      groups.set(key, bucket);
+    }
+    return groups;
+  }, [cat.subs]);
+
+  const hasCategories = cat.subs.some((s) => s.categoryName);
+
   return (
     <div className={factoryCardClass({ variant: 'list', className: 'space-y-2' })}>
       <h3 className='text-sm font-bold text-gray-900'>{cat.name}</h3>
 
       {!isMT &&
         (cat.subs.length > 0 ? (
-          <ul className='flex flex-wrap gap-1.5'>
-            {cat.subs.map((s) => (
-              <li key={s.id}>
-                <span className={factoryBadgeClass({ variant: 'status' })}>{s.name}</span>
-              </li>
-            ))}
-          </ul>
+          hasCategories ? (
+            <div className='space-y-2'>
+              {[...subsByCategory.entries()].map(([catName, subs]) => (
+                <div key={catName} className='space-y-1'>
+                  {catName && (
+                    <p className='text-[11px] font-semibold text-gray-500'>{catName}</p>
+                  )}
+                  <ul className='flex flex-wrap gap-1.5'>
+                    {subs.map((s) => (
+                      <li key={s.id}>
+                        <span className={factoryBadgeClass({ variant: 'status' })}>{s.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <ul className='flex flex-wrap gap-1.5'>
+              {cat.subs.map((s) => (
+                <li key={s.id}>
+                  <span className={factoryBadgeClass({ variant: 'status' })}>{s.name}</span>
+                </li>
+              ))}
+            </ul>
+          )
         ) : (
           <p className='text-xs text-gray-400'>ยังไม่ได้เลือกหมวดย่อย</p>
         ))}
@@ -354,6 +386,7 @@ export function FactoryInfoPage() {
   const [okMsg, setOkMsg] = useState('');
 
   const openCategoryPickerRef = useRef<(() => void) | null>(null);
+  const openHubPickerRef = useRef<(() => void) | null>(null);
   // PD categories ที่ยังไม่ได้เลือก sub — ใช้ block save
   const pdSubErrorsRef = useRef<Set<number>>(new Set());
   const openCertAddRef = useRef<(() => void) | null>(null);
@@ -461,43 +494,48 @@ export function FactoryInfoPage() {
   const rawCats = (factoryQ.data?.categories as Array<Record<string, unknown>> | undefined) ?? [];
   const rawSubs =
     (factoryQ.data?.sub_categories as Array<Record<string, unknown>> | undefined) ?? [];
-  const lbiCategories =
-    (initQ.data?.lbi_categories as Array<Record<string, unknown>> | undefined) ?? [];
-  const catScopeById = useMemo(() => {
-    const map = new Map<number, CategoryScope>();
-    lbiCategories.forEach((c) => {
-      const id = Number(c.category_id);
-      const scope = String(c.scope ?? '').toUpperCase();
-      if (!Number.isFinite(id)) return;
-      if (scope === 'PD' || scope === 'MT') map.set(id, scope);
-      else map.set(id, 'OTHER');
-    });
-    return map;
-  }, [lbiCategories]);
-  type SubEntry = { id: number; name: string };
+  const { data: hubs = [] } = useLbiHubsQuery();
+  type SubEntry = { id: number; name: string; categoryName?: string };
   type CatCard = { id: number; name: string; subs: SubEntry[] };
-  const categoryCardsByScope = useMemo(() => {
-    const out: Record<'PD' | 'MT', CatCard[]> = { PD: [], MT: [] };
+  const categoryCardsById = useMemo(() => {
+    const map = new Map<number, CatCard>();
     const subByCat = new Map<number, SubEntry[]>();
     rawSubs.forEach((s) => {
       const catId = Number(s.category_id);
       const id = Number(s.sub_category_id);
       const name = String(s.sub_category_name ?? s.name ?? '').trim();
+      const categoryName = String(s.category_name ?? '').trim() || undefined;
       if (!Number.isFinite(catId) || !Number.isFinite(id) || !name) return;
       const bucket = subByCat.get(catId) ?? [];
-      if (!bucket.some((x) => x.id === id)) bucket.push({ id, name });
+      if (!bucket.some((x) => x.id === id)) bucket.push({ id, name, categoryName });
       subByCat.set(catId, bucket);
     });
     rawCats.forEach((c) => {
       const id = Number(c.category_id);
       const name = String(c.category_name ?? c.name ?? '').trim();
       if (!Number.isFinite(id) || !name) return;
-      const scope = catScopeById.get(id) ?? 'PD';
-      if (scope !== 'PD' && scope !== 'MT') return;
-      out[scope].push({ id, name, subs: subByCat.get(id) ?? [] });
+      map.set(id, { id, name, subs: subByCat.get(id) ?? [] });
     });
-    return out;
-  }, [catScopeById, rawCats, rawSubs]);
+    return map;
+  }, [rawCats, rawSubs]);
+
+  // hub -> category -> subcategory, จัดกลุ่มตาม hub ที่แต่ละหมวดหมู่ที่โรงงานเลือกไว้สังกัดอยู่
+  type HubCard = { id: number; name: string; scope: string; cats: CatCard[] };
+  const hubCards = useMemo(() => {
+    const out: HubCard[] = [];
+    const usedCategoryIds = new Set<number>();
+    hubs.forEach((h) => {
+      const cats = h.categories
+        .map((c) => categoryCardsById.get(c.category_id))
+        .filter((c): c is CatCard => c != null);
+      if (cats.length === 0) return;
+      cats.forEach((c) => usedCategoryIds.add(c.id));
+      out.push({ id: h.hub_id, name: h.name, scope: h.scope, cats });
+    });
+    out.sort((a, b) => a.name.localeCompare(b.name, 'th'));
+    const otherCats = [...categoryCardsById.values()].filter((c) => !usedCategoryIds.has(c.id));
+    return { hubs: out, other: otherCats };
+  }, [hubs, categoryCardsById]);
 
   // ── Guards ─────────────────────────────────────────────────────────────────
   if (fid == null) return <p className='text-sm text-red-600'>บัญชีนี้ไม่ใช่โรงงาน</p>;
@@ -618,20 +656,33 @@ export function FactoryInfoPage() {
             <div>
               <div className='flex items-center justify-between gap-2 mb-3'>
                 <p className='text-xs font-semibold text-gray-500'>ข้อมูลการผลิตและหมวดหมู่</p>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  onClick={() => openCategoryPickerRef.current?.()}
-                  className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
-                >
-                  <Plus size={11} /> เพิ่มหมวดหมู่
-                </Button>
+                <div className='flex items-center gap-2'>
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={() => openHubPickerRef.current?.()}
+                    className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
+                  >
+                    <Plus size={11} /> เพิ่ม Hub
+                  </Button>
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={() => openCategoryPickerRef.current?.()}
+                    className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
+                  >
+                    <Plus size={11} /> เพิ่มหมวดหมู่
+                  </Button>
+                </div>
               </div>
               <CategoriesSection
                 form={form}
                 factoryId={fid}
                 onRegisterAdd={(h) => {
                   openCategoryPickerRef.current = h;
+                }}
+                onRegisterAddHub={(h) => {
+                  openHubPickerRef.current = h;
                 }}
                 apiCategories={
                   (factoryQ.data?.categories ?? []) as Parameters<
@@ -668,31 +719,41 @@ export function FactoryInfoPage() {
             <div className='space-y-4'>
               <p className='text-xs font-semibold text-gray-500'>ข้อมูลการผลิตและหมวดหมู่</p>
 
-              {/* PD categories */}
-              {categoryCardsByScope.PD.length > 0 ? (
-                <div className='space-y-2.5'>
-                  <p className='text-sm font-bold text-brand-purple'>หมวดสินค้า (PD)</p>
+              {/* Hub -> Category -> Subcategory */}
+              {hubCards.hubs.map((hub) => (
+                <div key={hub.id} className='space-y-2.5'>
+                  <p
+                    className={`text-sm font-bold ${
+                      hub.scope === 'MT' ? 'text-emerald-700' : 'text-brand-purple'
+                    }`}
+                  >
+                    {hub.name}
+                  </p>
                   <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3'>
-                    {categoryCardsByScope.PD.map((cat) => (
-                      <CategoryViewCard key={`pd-${cat.id}`} cat={cat} />
+                    {hub.cats.map((cat) => (
+                      <CategoryViewCard
+                        key={`${hub.id}-${cat.id}`}
+                        cat={cat}
+                        isMT={hub.scope === 'MT'}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {/* Categories not mapped to any known hub */}
+              {hubCards.other.length > 0 ? (
+                <div className='space-y-2.5'>
+                  <p className='text-sm font-bold text-gray-500'>หมวดอื่นๆ</p>
+                  <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3'>
+                    {hubCards.other.map((cat) => (
+                      <CategoryViewCard key={`other-${cat.id}`} cat={cat} />
                     ))}
                   </div>
                 </div>
               ) : null}
 
-              {/* MT categories */}
-              {categoryCardsByScope.MT.length > 0 ? (
-                <div className='space-y-2.5'>
-                  <p className='text-sm font-bold text-emerald-700'>หมวดวัตถุดิบ (MT)</p>
-                  <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3'>
-                    {categoryCardsByScope.MT.map((cat) => (
-                      <CategoryViewCard key={`mt-${cat.id}`} cat={cat} isMT />
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
-              {categoryCardsByScope.PD.length === 0 && categoryCardsByScope.MT.length === 0 ? (
+              {hubCards.hubs.length === 0 && hubCards.other.length === 0 ? (
                 <p className='text-sm text-gray-300 font-normal'>—</p>
               ) : null}
             </div>

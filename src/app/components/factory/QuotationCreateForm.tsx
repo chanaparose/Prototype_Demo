@@ -120,7 +120,10 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
   ) {
     const qc = useQueryClient();
     const [units, setUnits] = useState<UnitOption[]>([]);
-    const [factoryQty, setFactoryQty] = useState<number | null>(initialFactoryQty ?? null);
+    // จำนวนที่โรงงานเสนอ — ถ้าไม่เคยบันทึกไว้ (null) ให้เริ่มต้นจากจำนวนที่ลูกค้าขอใน RFQ
+    const [factoryQty, setFactoryQty] = useState<number | null>(
+      initialFactoryQty ?? rfqQuantity ?? null,
+    );
     const [factoryUnitId, setFactoryUnitId] = useState<number | undefined>(
       initialFactoryUnitId ?? undefined,
     );

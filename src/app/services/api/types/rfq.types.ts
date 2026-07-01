@@ -82,6 +82,9 @@ export interface IQuotationResponse {
   revision_no: number;
   image_urls?: string[];
   payment_terms?: string | null;
+  factory_qty?: number | null;
+  factory_unit_id?: number | null;
+  factory_unit_name?: string | null;
 }
 
 export type IQuotationHistoryEntry = {

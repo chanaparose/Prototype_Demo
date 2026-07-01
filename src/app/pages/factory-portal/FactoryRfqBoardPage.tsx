@@ -627,7 +627,7 @@ export function FactoryRfqBoardPage() {
                   </Button>
                 ) : rows.length === 0 ? (
                   <Link
-                    to='/factory/profile'
+                    to='/factory/info'
                     className='inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-semibold text-white'
                     style={{
                       background: 'var(--brand-purple)',
