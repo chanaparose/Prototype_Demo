@@ -270,7 +270,7 @@ export interface ICommissionInvoiceResponse {
   vat_amount: number;
   grand_total: number;
   status: string; // DR | ST | PA | VR
-  slip_url?: string | null;
+  slip_urls?: string[] | null;
   slip_note?: string | null;
   verified_by?: number | null;
   verified_at?: string | null;

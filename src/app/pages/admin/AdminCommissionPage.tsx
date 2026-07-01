@@ -166,24 +166,29 @@ function DetailModal({ invoice, items, actionLoading, onVerify, onClose }: Detai
             <div className='rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3'>
               <p className='text-base font-bold text-amber-800'>โรงงานแนบสลีปแล้ว — รอการยืนยัน</p>
 
-              {invoice.slip_url && (
+              {invoice.slip_urls && invoice.slip_urls.length > 0 && (
                 <div>
                   {showSlip ? (
                     <div className='relative'>
-                      <img
-                        src={invoice.slip_url}
-                        alt='สลีปค่า commission'
-                        className='rounded-lg max-h-64 object-contain border border-amber-200'
-                      />
                       <button
                         type='button'
                         onClick={() => setShowSlip(false)}
                         aria-label='ปิดรูปสลีป'
                         title='ปิดรูปสลีป'
-                        className='absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60'
+                        className='absolute top-1 right-1 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60'
                       >
                         <X size={14} />
                       </button>
+                      <div className='grid grid-cols-2 gap-2 sm:grid-cols-3'>
+                        {invoice.slip_urls.map((url, i) => (
+                          <img
+                            key={url}
+                            src={url}
+                            alt={`สลีปค่า commission ${i + 1}`}
+                            className='rounded-lg max-h-40 w-full object-contain border border-amber-200 bg-white'
+                          />
+                        ))}
+                      </div>
                     </div>
                   ) : (
                     <button
@@ -192,7 +197,7 @@ function DetailModal({ invoice, items, actionLoading, onVerify, onClose }: Detai
                       className='flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-white border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors'
                     >
                       <Image size={15} />
-                      ดูสลีปที่โรงงานแนบ
+                      ดูสลีปที่โรงงานแนบ ({invoice.slip_urls.length})
                     </button>
                   )}
                 </div>

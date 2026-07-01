@@ -9,9 +9,9 @@ import {
   Copy,
   Clock,
   X,
-  Image,
   Printer,
   ChevronRight,
+  ChevronDown,
   TrendingUp,
   ArrowRight,
 } from 'lucide-react';
@@ -23,6 +23,7 @@ import type {
   ICurrentPeriodSummary,
 } from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';
+import { AppDialog } from '@/components/ui/app-dialog';
 import { formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import {
@@ -38,6 +39,7 @@ const STATUS_META: Record<
   DR: { label: 'แบบร่าง', tone: 'neutral', icon: Clock },
   ST: { label: 'รอชำระ', tone: 'warning', icon: Clock },
   PA: { label: 'แนบสลิปแล้ว — รอตรวจสอบ', tone: 'info', icon: FileText },
+  RJ: { label: 'สลิปถูกปฏิเสธ — แนบใหม่', tone: 'danger', icon: AlertTriangle },
   VR: { label: 'ตรวจสอบแล้ว', tone: 'success', icon: CheckCircle },
 };
 
@@ -534,8 +536,17 @@ export function FactoryInvoicePage() {
     invoice: ICommissionInvoiceResponse;
     items: ICommissionInvoiceItemResponse[];
   } | null>(null);
-  const [previewSlip, setPreviewSlip] = useState<string | null>(null);
+  const [slipDialogInv, setSlipDialogInv] = useState<ICommissionInvoiceResponse | null>(null);
   const [loadingDetail, setLoadingDetail] = useState<number | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [pendingPreviewUrls, setPendingPreviewUrls] = useState<string[]>([]);
+
+  // สร้าง/ล้าง object URL สำหรับพรีวิวรูปที่เลือกไว้แต่ยังไม่ได้ส่ง
+  useEffect(() => {
+    const urls = pendingFiles.map((f) => URL.createObjectURL(f));
+    setPendingPreviewUrls(urls);
+    return () => urls.forEach((u) => URL.revokeObjectURL(u));
+  }, [pendingFiles]);
 
   const loadInvoices = async () => {
     setLoading(true);
@@ -574,28 +585,56 @@ export function FactoryInvoicePage() {
     fileRef.current?.click();
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !uploadTargetId) return;
-    if (file.type !== 'image/jpeg') {
-      toast.error('รองรับเฉพาะไฟล์ .jpg/.jpeg เท่านั้น');
-      if (fileRef.current) fileRef.current.value = '';
+  const ALLOWED_SLIP_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
+  const MAX_SLIP_FILES = 10;
+
+  // เลือกไฟล์แค่เก็บไว้พรีวิว — ยังไม่อัปโหลดจนกว่าจะกด "ส่ง slip"
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (fileRef.current) fileRef.current.value = '';
+    if (files.length === 0) return;
+    const invalid = files.some((f) => !ALLOWED_SLIP_TYPES.includes(f.type));
+    if (invalid) {
+      toast.error('รองรับเฉพาะไฟล์ .jpg/.jpeg/.png เท่านั้น');
       return;
     }
+    setPendingFiles((prev) => {
+      const next = [...prev, ...files];
+      if (next.length > MAX_SLIP_FILES) {
+        toast.error(`แนบได้สูงสุด ${MAX_SLIP_FILES} รูปต่อครั้ง`);
+        return next.slice(0, MAX_SLIP_FILES);
+      }
+      return next;
+    });
+  };
+
+  const removePendingFile = (idx: number) => {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const clearPendingFiles = () => setPendingFiles([]);
+
+  // ส่ง slip จริง — รอจนอัปโหลดครบทุกรูปเสร็จก่อนถึงจะปิด/รีเฟรชได้
+  const handleSubmitSlip = async () => {
+    if (!uploadTargetId || pendingFiles.length === 0 || uploading != null) return;
     setUploading(uploadTargetId);
     setError('');
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      pendingFiles.forEach((f) => formData.append('file', f));
       await factoryInvoiceApi.attachSlip(uploadTargetId, formData);
       toast.success('แนบสลิปสำเร็จ');
-      await loadInvoices();
+      clearPendingFiles();
+      const res = await factoryInvoiceApi.list();
+      const nextInvoices = res.invoices ?? [];
+      setInvoices(nextInvoices);
+      setSlipDialogInv(
+        nextInvoices.find((iv) => iv.invoice_id === uploadTargetId) ?? null,
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'แนบสลิปไม่สำเร็จ');
     } finally {
       setUploading(null);
-      setUploadTargetId(null);
-      if (fileRef.current) fileRef.current.value = '';
     }
   };
 
@@ -618,7 +657,8 @@ export function FactoryInvoicePage() {
       <input
         ref={fileRef}
         type='file'
-        accept='image/*'
+        accept='image/jpeg,image/jpg,image/png'
+        multiple
         onChange={handleFileChange}
         className='hidden'
       />
@@ -656,9 +696,12 @@ export function FactoryInvoicePage() {
       ) : (
         <div className='space-y-3'>
           {invoices.map((inv) => {
-            const st = STATUS_META[inv.status?.trim()] ?? STATUS_META.DR;
+            const invStatus = inv.status?.trim();
+            const st = STATUS_META[invStatus] ?? STATUS_META.DR;
             const StatusIcon = st.icon;
-            const canAttach = inv.status?.trim() === 'ST';
+            // ST/RJ = ยังไม่เคยแนบ (หรือถูกปฏิเสธ), PA = แนบแล้วแต่ยังรอตรวจสอบ — แก้ไขได้ทั้งคู่
+            const canAttach = invStatus === 'ST' || invStatus === 'RJ';
+            const slipActionsInBadge = invStatus === 'PA';
             const isUp = uploading === inv.invoice_id;
             const isLoadingThis = loadingDetail === inv.invoice_id;
 
@@ -709,10 +752,25 @@ export function FactoryInvoicePage() {
 
                   {/* Actions */}
                   <div className='flex shrink-0 flex-wrap items-center gap-2 sm:flex-col sm:items-end'>
-                    <FactoryStatusBadge tone={st.tone} className='gap-1 py-1'>
-                      <StatusIcon size={11} aria-hidden />
-                      {st.label}
-                    </FactoryStatusBadge>
+                    {slipActionsInBadge ? (
+                      <button
+                        type='button'
+                        onClick={() => setSlipDialogInv(inv)}
+                        className='inline-flex cursor-pointer items-center rounded-full outline-none ring-brand-purple/30 focus-visible:ring-2'
+                        aria-label='ดูสลิปการชำระ'
+                      >
+                        <FactoryStatusBadge tone={st.tone} className='gap-1 py-1 pr-1.5'>
+                          <StatusIcon size={11} aria-hidden />
+                          {st.label}
+                          <ChevronDown size={10} className='opacity-70' aria-hidden />
+                        </FactoryStatusBadge>
+                      </button>
+                    ) : (
+                      <FactoryStatusBadge tone={st.tone} className='gap-1 py-1'>
+                        <StatusIcon size={11} aria-hidden />
+                        {st.label}
+                      </FactoryStatusBadge>
+                    )}
 
                     {/* View PDF invoice */}
                     <button
@@ -735,8 +793,14 @@ export function FactoryInvoicePage() {
                         variant='unstyled'
                         type='button'
                         disabled={isUp}
-                        onClick={() => triggerUpload(inv.invoice_id)}
-                        className={factoryButtonClass({ variant: 'primary', size: 'sm' })}
+                        onClick={() => {
+                          setSlipDialogInv(inv);
+                          triggerUpload(inv.invoice_id);
+                        }}
+                        className={factoryButtonClass({
+                          variant: 'primary',
+                          size: 'sm',
+                        })}
                       >
                         {isUp ? (
                           <Loader2 size={12} className='animate-spin' />
@@ -745,17 +809,6 @@ export function FactoryInvoicePage() {
                         )}
                         แนบสลิปค่า Comm
                       </Button>
-                    )}
-
-                    {inv.slip_url && (
-                      <button
-                        type='button'
-                        onClick={() => setPreviewSlip(inv.slip_url!)}
-                        className='flex items-center gap-1 text-xs font-semibold text-slate-500 hover:underline'
-                      >
-                        <Image size={11} />
-                        ดูสลิปที่แนบ
-                      </button>
                     )}
                   </div>
                 </div>
@@ -774,27 +827,125 @@ export function FactoryInvoicePage() {
         />
       )}
 
-      {/* Slip image preview */}
-      {previewSlip && (
-        <div
-          className='fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4'
-          onClick={() => setPreviewSlip(null)}
-        >
-          <div
-            className='relative max-h-[90vh] max-w-3xl overflow-hidden rounded-lg border border-slate-200 bg-white'
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type='button'
-              onClick={() => setPreviewSlip(null)}
-              className='absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-white/90 text-slate-600 hover:bg-white'
-            >
-              <X size={16} />
-            </button>
-            <img src={previewSlip} alt='สลิป' className='max-h-[85vh] max-w-full object-contain' />
+      {/* Slip preview + edit dialog — ค้างไว้จนกว่าจะกด "ส่ง slip" หรือปิดเอง */}
+      <AppDialog
+        open={slipDialogInv != null}
+        onOpenChange={(open) => {
+          if (open || uploading != null) return;
+          setSlipDialogInv(null);
+          clearPendingFiles();
+          setUploadTargetId(null);
+        }}
+        title='สลิปการชำระ'
+        variant='center'
+        size='md'
+        bodyClassName='p-4'
+        footer={
+          slipDialogInv ? (
+            pendingFiles.length > 0 ? (
+              <div className='flex w-full flex-col gap-2'>
+                <div className='flex gap-2'>
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    disabled={uploading != null}
+                    onClick={() => triggerUpload(slipDialogInv.invoice_id)}
+                    className={factoryButtonClass({ variant: 'secondary', size: 'sm', className: 'flex-1' })}
+                  >
+                    <Upload size={14} />
+                    เพิ่มรูป
+                  </Button>
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    disabled={uploading != null}
+                    onClick={clearPendingFiles}
+                    className={factoryButtonClass({ variant: 'secondary', size: 'sm', className: 'flex-1' })}
+                  >
+                    ยกเลิก
+                  </Button>
+                </div>
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  disabled={uploading != null}
+                  onClick={() => void handleSubmitSlip()}
+                  className={factoryButtonClass({ variant: 'primary', size: 'sm', className: 'w-full' })}
+                >
+                  {uploading != null ? (
+                    <>
+                      <Loader2 size={14} className='animate-spin' />
+                      กำลังอัปโหลด {pendingFiles.length} รูป…
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={14} />
+                      ส่ง slip ({pendingFiles.length} รูป)
+                    </>
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant='unstyled'
+                type='button'
+                disabled={uploading != null}
+                onClick={() => triggerUpload(slipDialogInv.invoice_id)}
+                className={factoryButtonClass({ variant: 'secondary', size: 'sm', className: 'w-full' })}
+              >
+                <Upload size={14} />
+                แก้ไขสลิป
+              </Button>
+            )
+          ) : null
+        }
+      >
+        {pendingFiles.length > 0 ? (
+          <div className='space-y-2'>
+            <p className='text-xs font-semibold text-slate-500'>
+              รูปที่เลือกไว้ — ยังไม่ได้ส่ง (กด &quot;ส่ง slip&quot; เพื่อยืนยัน)
+            </p>
+            <div className='grid max-h-[55vh] grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3'>
+              {pendingPreviewUrls.map((url, i) => (
+                <div
+                  key={url}
+                  className='relative overflow-hidden rounded-lg border border-brand-purple/30 bg-slate-50'
+                >
+                  <img
+                    src={url}
+                    alt={`รูปที่เลือก ${i + 1}`}
+                    className='mx-auto max-h-40 w-full object-contain'
+                  />
+                  <button
+                    type='button'
+                    disabled={uploading != null}
+                    onClick={() => removePendingFile(i)}
+                    aria-label='เอารูปนี้ออก'
+                    title='เอารูปนี้ออก'
+                    className='absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 disabled:opacity-50'
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        ) : slipDialogInv?.slip_urls && slipDialogInv.slip_urls.length > 0 ? (
+          <div className='grid max-h-[60vh] grid-cols-1 gap-3 overflow-y-auto sm:grid-cols-2'>
+            {slipDialogInv.slip_urls.map((url, i) => (
+              <div key={url} className='overflow-hidden rounded-lg border border-slate-200 bg-slate-50'>
+                <img
+                  src={url}
+                  alt={`สลิปการชำระ ${i + 1}`}
+                  className='mx-auto max-h-[50vh] w-full object-contain'
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className='py-8 text-center text-sm text-slate-500'>ยังไม่มีสลิปที่แนบ</p>
+        )}
+      </AppDialog>
     </div>
   );
 }
