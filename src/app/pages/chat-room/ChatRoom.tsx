@@ -56,7 +56,7 @@ import { ChatPartyHeader } from '@/components/features/chat/ChatPartyHeader';
 import type { IConversationResponse } from '@/types/api';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { mediaApi } from '@/services/api/factoryApi';
 import { cn } from '@lib/utils';
 
@@ -190,7 +190,7 @@ function ChatRoomBody({
   const [quotationLoadingId, setQuotationLoadingId] = useState<number | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const messageInputRef = useRef<HTMLInputElement>(null);
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const seedConsumedRef = useRef(false);
@@ -368,6 +368,7 @@ function ChatRoomBody({
     };
     setMessages((prev) => insertMessageSorted(prev, optimistic));
     setMessage('');
+    if (messageInputRef.current) messageInputRef.current.style.height = 'auto';
     const refToSend = attachOnce ?? null;
     if (attachOnce) setPendingRef(null);
     await sendWithText(text, tempKey, refToSend);
@@ -777,7 +778,7 @@ function ChatRoomBody({
           </Button>
           <div
             className={cn(
-              'flex min-h-9 flex-1 items-center rounded-full border px-3 py-1',
+              'flex min-h-9 flex-1 items-end rounded-2xl border px-3 py-1.5',
               'border-[color-mix(in_srgb,var(--brand-purple)_12%,var(--neutral-border))]',
               'bg-[var(--neutral-warm-surface)]',
               'transition-[border-color,box-shadow] duration-200',
@@ -785,16 +786,21 @@ function ChatRoomBody({
               'focus-within:bg-white focus-within:shadow-[0_1px_6px_rgba(46,34,82,0.08)]',
             )}
           >
-            <Input
+            <Textarea
               ref={messageInputRef}
-              type='text'
+              rows={1}
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => {
+                setMessage(e.target.value);
+                const el = e.target;
+                el.style.height = 'auto';
+                el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+              }}
               onKeyDown={handleKeyDown}
               onDoubleClick={(e) => e.currentTarget.select()}
-              placeholder={apiConv ? 'พิมพ์ข้อความ…' : 'รอโหลดห้องแชท…'}
+              placeholder={apiConv ? 'พิมพ์ข้อความ… (Shift+Enter เพื่อขึ้นบรรทัดใหม่)' : 'รอโหลดห้องแชท…'}
               disabled={!apiConv}
-              className='h-auto min-h-0 flex-1 select-text border-0 bg-transparent p-0 text-[13px] font-normal leading-[1.35] text-[var(--brand-navy)] shadow-none ring-0 placeholder:text-[13px] placeholder:font-normal placeholder:text-[var(--neutral-placeholder)] focus-visible:border-transparent focus-visible:ring-0'
+              className='h-auto min-h-[22px] max-h-[120px] flex-1 resize-none select-text overflow-y-auto border-0 bg-transparent p-0 text-[13px] font-normal leading-[1.35] text-[var(--brand-navy)] shadow-none ring-0 placeholder:text-[13px] placeholder:font-normal placeholder:text-[var(--neutral-placeholder)] focus-visible:border-transparent focus-visible:ring-0'
             />
           </div>
           {isBuyer ? (
