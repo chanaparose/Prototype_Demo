@@ -246,8 +246,13 @@ function DetailModal({ invoice, items, actionLoading, onVerify, onClose }: Detai
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function AdminCommissionPage() {
   const now = new Date();
-  const [month, setMonth] = useState(now.getMonth() + 1);
-  const [year, setYear] = useState(now.getFullYear());
+  // Invoice ของแต่ละเดือนจะถูกสร้างย้อนหลังในวันที่ 1 ของเดือนถัดไป (cron)
+  // ดังนั้นค่าเริ่มต้นควรเป็น "เดือนที่แล้ว" ซึ่งเป็นรอบบิลล่าสุดที่มี invoice จริง
+  // ไม่ใช่เดือนปัจจุบันซึ่งยังไม่มี invoice จนกว่าจะสิ้นเดือน
+  const lastBilledMonth = now.getMonth() === 0 ? 12 : now.getMonth();
+  const lastBilledYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+  const [month, setMonth] = useState(lastBilledMonth);
+  const [year, setYear] = useState(lastBilledYear);
   const [summary, setSummary] = useState<ICommissionSummaryResponse | null>(null);
   const [invoices, setInvoices] = useState<ICommissionInvoiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
