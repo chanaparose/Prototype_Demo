@@ -47,7 +47,6 @@ import { FactoryNoteInline } from '@/components/factory/FactoryNoteInline';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { FactoryStatusBadge } from '@/pages/factory-portal/components/FactoryStatusBadge';
 import {
-  factoryBoxClass,
   factoryButtonClass,
   factoryBadgeClass,
   factoryInputClass,
@@ -1027,36 +1026,20 @@ export function FactoryOrderDetailPage() {
 function slipStatusConfig(s: string) {
   const code = s.toUpperCase();
   if (code === 'AP')
-    return {
-      label: 'ยืนยันแล้ว',
-      tone: 'success' as const,
-      box: 'emerald' as const,
-      icon: 'text-emerald-600',
-      title: 'text-emerald-800',
-    };
+    return { label: 'ยืนยันแล้ว', tone: 'success' as const };
   if (code === 'RJ')
-    return {
-      label: 'ปฏิเสธแล้ว',
-      tone: 'danger' as const,
-      box: 'neutral' as const,
-      icon: 'text-red-600',
-      title: 'text-red-700',
-    };
+    return { label: 'ปฏิเสธแล้ว', tone: 'danger' as const };
   if (code === 'PE')
-    return {
-      label: 'รอลูกค้าแนบสลิป',
-      tone: 'neutral' as const,
-      box: 'neutral' as const,
-      icon: 'text-slate-400',
-      title: 'text-slate-600',
-    };
-  return {
-    label: 'รอตรวจสอบ',
-    tone: 'warning' as const,
-    box: 'amber' as const,
-    icon: 'text-amber-600',
-    title: 'text-amber-800',
-  };
+    return { label: 'รอลูกค้าแนบสลิป', tone: 'neutral' as const };
+  return { label: 'รอตรวจสอบ', tone: 'warning' as const };
+}
+
+function slipTitle(s: string): string {
+  const code = s.toUpperCase();
+  if (code === 'AP') return 'สลิปได้รับการยืนยันแล้ว';
+  if (code === 'RJ') return 'สลิปถูกปฏิเสธ';
+  if (code === 'PE') return 'รอลูกค้าแนบสลิปการโอนเงิน';
+  return 'ลูกค้าแนบสลิปการโอนเงิน — รอตรวจสอบ';
 }
 
 function SlipVerificationCard({
@@ -1139,46 +1122,39 @@ function SlipVerificationCard({
   };
 
   return (
-    <div className={factoryBoxClass({ variant: cfg.box, className: 'space-y-3 p-4' })}>
-      {/* Header */}
-      <div className='flex items-center justify-between gap-2'>
-        <div className='flex items-center gap-2'>
-          <AlertCircle size={16} className={cfg.icon} />
-          <p className={`text-sm font-bold ${cfg.title}`}>
-            {isPending && 'ลูกค้าแนบสลิปการโอนเงิน — รอตรวจสอบ'}
-            {isApproved && 'สลิปได้รับการยืนยันแล้ว'}
-            {isRejected && 'สลิปถูกปฏิเสธ'}
-            {isWaiting && 'รอลูกค้าแนบสลิปการโอนเงิน'}
-          </p>
+    <div className='overflow-hidden rounded-md border border-slate-200 bg-white'>
+      <div className='flex items-center justify-between gap-2 border-b border-slate-100 px-3 py-2.5'>
+        <div className='flex min-w-0 items-center gap-2'>
+          <AlertCircle size={14} className='shrink-0 text-brand-purple' />
+          <p className='truncate text-sm font-bold text-slate-900'>{slipTitle(slipStatus)}</p>
         </div>
         <FactoryStatusBadge tone={cfg.tone}>{cfg.label}</FactoryStatusBadge>
       </div>
 
+      <div className='space-y-3 p-3'>
       {/* Slip image */}
       {slipData.slip_url ? (
         <button
           type='button'
           onClick={() => setPreviewUrl(String(slipData.slip_url))}
-          className='block overflow-hidden rounded-lg border border-slate-200 bg-white shadow-none transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple'
+          className='block w-full overflow-hidden rounded-md border border-slate-200 bg-[var(--brand-page)] transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple/30'
         >
           <img
             src={String(slipData.slip_url)}
             alt='สลิปการโอนเงิน'
-            className='max-h-52 object-contain'
+            className='mx-auto max-h-52 w-full object-contain'
           />
         </button>
       ) : null}
 
       {/* Slip note */}
       {slipData.slip_note ? (
-        <p
-          className={factoryBadgeClass({
-            variant: isRejected ? 'danger' : isApproved ? 'verified' : 'warning',
-            className: 'w-fit max-w-full rounded-lg px-3 py-1.5 text-left font-medium',
-          })}
-        >
-          หมายเหตุจากลูกค้า: {String(slipData.slip_note)}
-        </p>
+        <div className='rounded-md border border-slate-200 bg-[var(--brand-page)] px-3 py-2'>
+          <p className='mb-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500'>
+            หมายเหตุจากลูกค้า
+          </p>
+          <p className='text-[12px] leading-relaxed text-slate-700'>{String(slipData.slip_note)}</p>
+        </div>
       ) : null}
 
       {/* Verification info (for AP/RJ) */}
@@ -1263,6 +1239,7 @@ function SlipVerificationCard({
           </div>
         )
       ) : null}
+      </div>
 
       {/* Fullscreen preview modal */}
       {previewUrl ? (
