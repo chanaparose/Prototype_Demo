@@ -798,7 +798,7 @@ function ChatRoomBody({
               }}
               onKeyDown={handleKeyDown}
               onDoubleClick={(e) => e.currentTarget.select()}
-              placeholder={apiConv ? 'พิมพ์ข้อความ… (Shift+Enter เพื่อขึ้นบรรทัดใหม่)' : 'รอโหลดห้องแชท…'}
+              placeholder={apiConv ? 'พิมพ์ข้อความ… ' : 'รอโหลดห้องแชท…'}
               disabled={!apiConv}
               className='h-auto min-h-[22px] max-h-[120px] flex-1 resize-none select-text overflow-y-auto border-0 bg-transparent p-0 text-[13px] font-normal leading-[1.35] text-[var(--brand-navy)] shadow-none ring-0 placeholder:text-[13px] placeholder:font-normal placeholder:text-[var(--neutral-placeholder)] focus-visible:border-transparent focus-visible:ring-0'
             />

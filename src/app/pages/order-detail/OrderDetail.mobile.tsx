@@ -419,6 +419,43 @@ function OrderDetailMobileBody() {
             onContactFactory={openOrderChat}
           />
 
+          {/* Review CTA — show right after production progress */}
+          {order.status === 'completed' ? (
+            <div className='rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 via-orange-50 to-white px-4 py-4'>
+              <div className='flex items-start gap-3'>
+                <div className='w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-200 to-yellow-100 flex items-center justify-center shrink-0 shadow-sm'>
+                  <Star size={18} className='text-amber-800' />
+                </div>
+                <div className='flex-1 min-w-0'>
+                  <p className='text-sm font-bold text-amber-900'>
+                    {reviewState?.already_reviewed ? 'ขอบคุณสำหรับการรีวิว' : 'ให้คะแนนและรีวิวโรงงาน'}
+                  </p>
+                  <p className='text-xs text-amber-800/90 mt-1 leading-relaxed'>
+                    {reviewState?.already_reviewed
+                      ? 'คุณรีวิวรายการนี้แล้ว'
+                      : 'ช่วยแชร์ประสบการณ์ของคุณ เพื่อให้โรงงานพัฒนาบริการ และช่วยลูกค้าคนอื่นตัดสินใจได้ง่ายขึ้น'}
+                  </p>
+                </div>
+              </div>
+
+              {!reviewState?.already_reviewed ? (
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={onOpenReview}
+                  className='mt-3 w-full py-3.5 rounded-2xl text-[13px] font-bold text-amber-950 shadow-[0_12px_28px_rgba(251,191,36,0.25)] flex items-center justify-center gap-2 hover:brightness-[1.02] active:scale-[0.995]'
+                  style={{
+                    background:
+                      'linear-gradient(135deg, #FDE68A 0%, #FBBF24 45%, #F59E0B 100%)',
+                  }}
+                >
+                  <Star size={17} className='text-amber-950' />
+                  รีวิวเลย
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+
           <OrderDetailReferenceDocs
             quotation={quotation}
             rfq={rfq}
@@ -442,49 +479,29 @@ function OrderDetailMobileBody() {
           />
         </div>
 
-        {showFloatingAction && (
+        {showFloatingAction && order.status === 'shipped' ? (
           <div className='shrink-0 px-4 pt-3 pb-6 bg-gradient-to-t from-white/90 to-transparent'>
             <Button
               variant='unstyled'
               type='button'
-              onClick={() => {
-                if (order.status === 'shipped') {
-                  void onConfirmReceive();
-                } else if (order.status === 'completed') {
-                  onOpenReview();
-                }
-              }}
-              disabled={order.status === 'shipped' ? confirmingReceive : false}
-              className='w-full py-4 rounded-2xl text-white text-sm shadow-xl'
+              onClick={() => void onConfirmReceive()}
+              disabled={confirmingReceive}
+              className='w-full py-4 rounded-2xl text-white text-sm shadow-xl font-bold disabled:opacity-70'
               style={{
                 background: 'linear-gradient(135deg, var(--brand-navy-deep), #4A267D)',
-                fontWeight: 700,
-                opacity: order.status === 'shipped' && confirmingReceive ? 0.7 : 1,
               }}
             >
-              {order.status === 'shipped' ? (
-                confirmingReceive ? (
-                  'กำลังยืนยันการรับสินค้า...'
-                ) : (
-                  <span className='inline-flex items-center justify-center gap-2'>
-                    <PackageCheck size={17} />
-                    ยืนยันการรับสินค้า
-                  </span>
-                )
-              ) : reviewState?.already_reviewed ? (
-                <span className='inline-flex items-center justify-center gap-2'>
-                  <PackageCheck size={17} />
-                  คุณรีวิวรายการนี้แล้ว
-                </span>
+              {confirmingReceive ? (
+                'กำลังยืนยันการรับสินค้า...'
               ) : (
                 <span className='inline-flex items-center justify-center gap-2'>
-                  <Star size={17} />
-                  ให้คะแนนและรีวิว
+                  <PackageCheck size={17} />
+                  ยืนยันการรับสินค้า
                 </span>
               )}
             </Button>
           </div>
-        )}
+        ) : null}
       </div>
 
       <OrderPhotoGallery photoUrl={selectedPhoto} onClose={() => setSelectedPhoto(null)} />

@@ -155,7 +155,7 @@ export function FactoryProfileTabContent({
       <div
         role='tablist'
         aria-label='เนื้อหาโปรไฟล์โรงงาน'
-        className='flex overflow-x-auto border-b border-slate-200 scrollbar-hide'
+        className='flex overflow-hidden border-b border-slate-200'
       >
         {TABS.map((tab) => {
           const active = activeTab === tab.id;
