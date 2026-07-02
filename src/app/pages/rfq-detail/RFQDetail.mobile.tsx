@@ -12,7 +12,6 @@ import { useRfqDetail } from '@/components/features/rfq/hooks/useRfqDetail';
 import { RfqDetailStatusCard } from '@/components/features/rfq-detail/RfqDetailStatusCard';
 import { RfqDetailSpecs } from '@/components/features/rfq-detail/RfqDetailSpecs';
 import { RfqDetailOffersSection } from '@/components/features/rfq-detail/RfqDetailOffersSection';
-import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
 import {
   factoryIdeasChromeGradientClass,
   factoryIdeasContentSurfaceClass,
@@ -285,12 +284,6 @@ export function RFQDetailMobile() {
                 if (orderId) navigate(`/orders/${orderId}`);
               }}
             />
-            {selectedOffer ? (
-              <QuotationHistoryPanel
-                quotationId={selectedOffer}
-                preloadedHistory={quoteHistories?.[selectedOffer]}
-              />
-            ) : null}
           </div>
         )}
       </div>

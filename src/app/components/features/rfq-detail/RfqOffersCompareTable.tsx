@@ -11,7 +11,6 @@ import {
   CompareCell,
   type CompareRowDef,
 } from '@/components/features/rfq-detail/compare/CompareTableCells';
-import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
 import type { OfferItem } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import {
   RFQ_COMPARE_ACTIONS_ROW_CLASS,
@@ -44,10 +43,6 @@ export type RfqOffersCompareTableProps = {
   onAcceptOffer: (offerId: string, e: React.MouseEvent) => void;
   acceptingId: string | null;
   isRequestClosed: boolean;
-  quoteHistories?: Record<
-    string,
-    import('@/services/api/types/rfq.types').IQuotationHistoryEntry[]
-  >;
 };
 
 function CompareSectionToggle({
@@ -117,7 +112,6 @@ export function RfqOffersCompareTable({
   onAcceptOffer,
   acceptingId,
   isRequestClosed,
-  quoteHistories,
 }: RfqOffersCompareTableProps) {
   const metrics = offers.map((o) => computeOfferMetrics(o, rfqQuantity, rfqUnitName));
   const visibleRows = COMPARE_ROWS.filter(
@@ -412,16 +406,6 @@ export function RfqOffersCompareTable({
           </table>
         </div>
       </div>
-
-      {selectedOfferId ? (
-        <div className='rounded-lg border border-brand-purple/10 bg-white p-3'>
-          <p className='mb-2 text-[12px] font-semibold text-brand-navy-ink'>ประวัติใบเสนอราคา</p>
-          <QuotationHistoryPanel
-            quotationId={selectedOfferId}
-            preloadedHistory={quoteHistories?.[selectedOfferId]}
-          />
-        </div>
-      ) : null}
     </div>
   );
 }

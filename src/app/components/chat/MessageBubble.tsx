@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import {
   ArrowRight,
-  Calendar,
   Check,
   Clock,
   CreditCard,
@@ -418,13 +417,11 @@ function QuotationStatusPill({ status, viewerRole }: { status: string; viewerRol
 }
 
 function QuotationChatCard({
-  msg,
   quote,
   viewerRole,
   disabled,
   onOpen,
 }: {
-  msg: RoomMessage;
   quote: NonNullable<RoomMessage['quoteData']>;
   viewerRole: 'CT' | 'FT';
   disabled: boolean;
@@ -433,77 +430,88 @@ function QuotationChatCard({
   const qStatus = String(quote.status ?? 'pending').toLowerCase();
 
   return (
-    <div className='flex justify-center px-2'>
-      <Button
-        variant='unstyled'
-        type='button'
-        disabled={disabled}
-        onClick={onOpen}
+    <div className='flex justify-center px-1'>
+      <article
         className={cn(
-          'w-full max-w-sm rounded-[14px] bg-white border border-brand-purple/15 overflow-hidden transition-all duration-150',
-          'disabled:cursor-default disabled:opacity-60',
-          !disabled &&
-            'hover:border-brand-purple/25 hover:shadow-md active:opacity-95',
+          CHAT_CARD_SHELL,
+          'max-w-[min(100%,304px)] border-violet-200/80',
+          !disabled && 'hover:-translate-y-0.5 active:scale-[0.995]',
         )}
-        aria-label='ดูรายละเอียดใบเสนอราคา'
       >
-        {/* Top accent line */}
-        <div className='h-1 bg-gradient-to-r from-brand-purple to-brand-violet' />
-
-        <div className='p-5 sm:p-6 space-y-4'>
-          {/* Header */}
-          <div className='flex items-start justify-between gap-3'>
-            <div className='flex items-center gap-2.5'>
-              <div className='flex-shrink-0 h-7 w-7 rounded-lg bg-brand-purple/10 flex items-center justify-center'>
-                <CreditCard size={15} className='text-brand-purple' strokeWidth={2.2} />
-              </div>
-              <div>
-                <p className='text-[11px] font-bold text-brand-purple uppercase tracking-wider'>
-                  ใบเสนอราคา
-                </p>
-              </div>
+        <div
+          className='pointer-events-none absolute inset-0 rounded-2xl'
+          style={{
+            border: '1px solid rgba(139,92,246,0.24)',
+          }}
+        />
+        <div className='pointer-events-none absolute left-3 right-3 top-2 h-8 rounded-full bg-white/45 blur-md' />
+        <div
+          className='relative z-[1] h-[3px] w-full'
+          style={{
+            background:
+              'linear-gradient(90deg, var(--brand-mauve) 0%, var(--brand-purple) 55%, var(--brand-violet-soft) 100%)',
+          }}
+        />
+        <div className='relative z-[1] p-3.5'>
+          <div className='mb-2.5 flex items-start gap-2'>
+            <span
+              className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl'
+              style={{
+                background:
+                  'linear-gradient(145deg, color-mix(in srgb, var(--brand-mauve) 24%, white), color-mix(in srgb, var(--brand-purple) 18%, white))',
+              }}
+            >
+              <CreditCard size={16} className='text-[var(--brand-purple)]' strokeWidth={2.2} />
+            </span>
+            <div className='min-w-0 flex-1 pt-0.5'>
+              <p className='text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--brand-purple)]'>
+                ใบเสนอราคา
+              </p>
+              <p className='mt-1 text-[13px] font-bold leading-snug text-[var(--brand-navy)] tabular-nums'>
+                {formatCurrency(quote.price, 'THB')}
+              </p>
             </div>
             <QuotationStatusPill status={qStatus} viewerRole={viewerRole} />
           </div>
 
-          {/* Price and Lead time */}
-          <div className='grid grid-cols-2 gap-2.5'>
-            <div className='rounded-[10px] bg-brand-lavender/40 px-3.5 py-3 text-center border border-brand-purple/10'>
-              <p className='text-[10px] text-brand-muted-purple font-semibold uppercase tracking-wide mb-1.5'>
-                ราคา
-              </p>
-              <p className='text-[15px] sm:text-[16px] font-bold text-brand-navy-ink tabular-nums'>
-                {formatCurrency(quote.price, 'THB')}
-              </p>
-            </div>
-            <div className='rounded-[10px] bg-brand-lavender/40 px-3.5 py-3 text-center border border-brand-purple/10'>
-              <p className='text-[10px] text-brand-muted-purple font-semibold uppercase tracking-wide mb-1.5 flex items-center justify-center gap-1'>
-                <Clock size={11} className='text-brand-violet' />
+          <div className='mb-2.5 grid grid-cols-2 gap-1.5'>
+            <div className='rounded-lg border border-violet-100 bg-violet-50/55 px-2 py-1.5 text-center'>
+              <p className='flex items-center justify-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-violet-700'>
+                <Clock size={10} className='text-[var(--brand-purple)]' />
                 Lead time
               </p>
-              <p className='text-[15px] sm:text-[16px] font-bold text-brand-navy-ink tabular-nums'>
-                {quote.leadTime} <span className='text-[11px] font-medium text-brand-muted-purple'>วัน</span>
+              <p className='mt-0.5 text-[12px] font-bold tabular-nums text-[var(--brand-navy)]'>
+                {quote.leadTime} <span className='text-[10px] font-medium text-violet-700'>วัน</span>
+              </p>
+            </div>
+            <div className='rounded-lg border border-violet-100 bg-violet-50/55 px-2 py-1.5 text-center'>
+              <p className='text-[9px] font-semibold uppercase tracking-wide text-violet-700'>ใช้ได้ถึง</p>
+              <p className='mt-0.5 text-[12px] font-bold text-[var(--brand-navy)]'>
+                {quote.validUntil || '-'}
               </p>
             </div>
           </div>
 
-          {/* Valid until */}
-          <div className='flex items-center gap-2 rounded-[10px] bg-brand-lavender/30 px-3 py-2.5 border border-brand-purple/8'>
-            <Calendar size={13} className='text-brand-violet flex-shrink-0' strokeWidth={1.8} />
-            <span className='text-[12px] text-brand-navy leading-relaxed'>
-              ใช้ได้ถึง <span className='font-semibold text-brand-navy-ink'>{quote.validUntil || '-'}</span>
-            </span>
-          </div>
-
-          {/* CTA */}
-          {!disabled ? (
-            <div className='pt-1 flex items-center justify-center gap-2 text-[13px] font-semibold text-brand-purple hover:text-brand-purple/80 transition-colors'>
-              <span>ดูรายละเอียด</span>
-              <ArrowRight size={14} strokeWidth={2.5} />
-            </div>
-          ) : null}
+          <Button
+            variant='unstyled'
+            type='button'
+            disabled={disabled}
+            onClick={onOpen}
+            className={cn(
+              'flex w-full items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white',
+              'disabled:cursor-not-allowed disabled:opacity-45',
+              !disabled && 'hover:brightness-[1.02] active:scale-[0.995]',
+            )}
+            style={{
+              background:
+                'linear-gradient(135deg, var(--brand-mauve) 0%, var(--brand-purple) 100%)',
+            }}
+          >
+            ดูรายละเอียด
+            <ArrowRight size={15} strokeWidth={2.5} />
+          </Button>
         </div>
-      </Button>
+      </article>
     </div>
   );
 }
@@ -556,7 +564,6 @@ export function MessageBubble({
 
     return (
       <QuotationChatCard
-        msg={msg}
         quote={q}
         viewerRole={viewerRole}
         disabled={viewerRole === 'CT' ? rfqId <= 0 : !canOpen}

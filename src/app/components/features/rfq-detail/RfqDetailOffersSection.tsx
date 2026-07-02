@@ -380,7 +380,6 @@ export function RfqDetailOffersSection({
               onAcceptOffer={handleAcceptOffer}
               acceptingId={acceptingId}
               isRequestClosed={isRequestClosed}
-              quoteHistories={quoteHistories}
             />
           </div>
 

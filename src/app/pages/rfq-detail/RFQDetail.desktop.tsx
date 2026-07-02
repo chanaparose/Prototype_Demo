@@ -9,7 +9,6 @@ import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';
 import type { OfferItem } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import { CLOSEABLE_STATUSES, HISTORY_STATUSES, STATUS_LABEL } from '@/domain/rfq/constants';
-import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
 import { RfqDetailOffersSection } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import { RfqDetailSpecs } from '@/components/features/rfq-detail/RfqDetailSpecs';
 import { RfqDetailStatusCard } from '@/components/features/rfq-detail/RfqDetailStatusCard';
@@ -285,12 +284,6 @@ export function RFQDetailDesktop() {
                 />
               </div>
             </div>
-            {selectedOffer ? (
-              <QuotationHistoryPanel
-                quotationId={selectedOffer}
-                preloadedHistory={quoteHistories?.[selectedOffer]}
-              />
-            ) : null}
           </div>
         )}
       </div>

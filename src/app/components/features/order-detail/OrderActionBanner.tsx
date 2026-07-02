@@ -1,14 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import {
-  ACCENT_ORANGE_DEEP,
-  CTA_GRADIENT,
-  PEACH_MIST,
-} from '@/components/features/rfq-and-orders/constants';
+import { Clock } from 'lucide-react';
+import { CTA_GRADIENT } from '@/components/features/rfq-and-orders/constants';
 import { diffDaysFromNow, formatDateTh } from '@/components/features/order-detail/utils';
 import type { NextAction, PaymentScheduleItem } from '@/pages/order-detail/orderDetailFromApi';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
+import { cn } from '@lib/utils';
 
 type Props = {
   nextAction: NextAction | null;
@@ -33,7 +31,6 @@ export function OrderActionBanner({
   const amount = nextAction?.amount ?? pay?.amount ?? 0;
   const due = nextAction?.due_date ?? pay?.due_date ?? '';
   const daysLeft = diffDaysFromNow(due);
-  const urgencyBg = daysLeft <= 1 ? 'var(--status-danger-soft)' : PEACH_MIST;
   const ctaUrl = (nextAction?.cta_url || fallbackCtaUrl || '').trim();
   const ctaLabel = nextAction?.cta_label_th ?? 'ชำระเงินเต็มจำนวน';
 
@@ -52,45 +49,50 @@ export function OrderActionBanner({
     navigate(ctaUrl || '.');
   };
 
+  const isExpired = variant === 'deposit_expired';
+
   return (
     <div
-      className='sticky top-0 z-20 -mx-4 flex flex-col gap-2 border-b border-amber-100/80 px-4 py-3 sm:flex-row sm:items-center sm:gap-3 lg:mx-0 lg:rounded-2xl lg:border lg:px-6 lg:py-4'
-      style={{ background: urgencyBg }}
+      className={cn(
+        'rounded-2xl border px-4 py-4 space-y-3',
+        isExpired ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50',
+      )}
     >
-      <div className='flex items-start gap-2 sm:items-center sm:flex-1 min-w-0'>
-        <span className='text-lg shrink-0' aria-hidden>
-          🟠
-        </span>
-        <div className='text-sm min-w-0'>
-          <p className='font-semibold' style={{ color: ACCENT_ORANGE_DEEP }}>
+      <div className='space-y-1'>
+        <div className='flex items-center gap-2'>
+          <Clock
+            size={16}
+            className={cn('shrink-0', isExpired ? 'text-red-500' : 'text-amber-500')}
+          />
+          <span
+            className={cn('text-sm font-bold', isExpired ? 'text-red-700' : 'text-amber-800')}
+          >
             {headline}
-          </p>
-          <p className='text-gray-700 mt-0.5 break-words'>
-            <span className='font-medium'>{formatCurrency(amount, 'THB')}</span>
-            {due ? (
-              <>
-                <span className='text-gray-500'> · </span>
-                <span>
-                  {variant === 'deposit_expired'
-                    ? `ชำระเงินได้ถึงวันที่ ${formatDateTh(due)}`
-                    : `ครบกำหนด ${formatDateTh(due)}`}
-                </span>
-                <span
-                  className={`${daysLeft <= 1 ? 'text-red-600 font-semibold' : 'text-gray-600'}`}
-                >
+          </span>
+        </div>
+        <p className={cn('text-xs ml-6', isExpired ? 'text-red-600' : 'text-amber-700')}>
+          <span className='font-semibold'>{formatCurrency(amount, 'THB')}</span>
+          {due ? (
+            <>
+              {' · '}
+              {isExpired
+                ? `ชำระเงินได้ถึงวันที่ ${formatDateTh(due)}`
+                : `ครบกำหนด ${formatDateTh(due)}`}
+              {!isExpired ? (
+                <span className={daysLeft <= 1 ? ' font-semibold text-red-600' : ''}>
                   {' '}
                   (เหลือ {daysLeft} วัน)
                 </span>
-              </>
-            ) : null}
-          </p>
-        </div>
+              ) : null}
+            </>
+          ) : null}
+        </p>
       </div>
       <Button
         variant='unstyled'
         type='button'
         onClick={onCta}
-        className='w-full sm:w-auto shrink-0 rounded-lg px-4 py-2.5 sm:py-1.5 text-xs font-semibold text-white'
+        className='w-full rounded-xl px-4 py-2.5 text-[13px] font-bold text-white hover:brightness-[1.02] active:scale-[0.995]'
         style={{ background: CTA_GRADIENT }}
       >
         {ctaLabel} →
