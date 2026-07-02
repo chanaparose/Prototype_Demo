@@ -33,7 +33,10 @@ export function useRelatedShowcasesQuery(ids: number[]) {
         )
         .filter(
           (s): s is FactoryShowcase =>
-            Boolean(s.id) && (s.contentType === 'product' || s.contentType === 'promotion'),
+            Boolean(s.id) &&
+            (s.contentType === 'product' ||
+              s.contentType === 'promotion' ||
+              s.contentType === 'material'),
         );
     },
     enabled: stableIds.length > 0,

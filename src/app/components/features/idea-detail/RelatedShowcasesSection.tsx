@@ -67,10 +67,16 @@ export function RelatedShowcasesSection({
                   className={`inline-flex rounded-full px-1.5 py-px text-[9px] font-semibold ${
                     item.contentType === 'promotion'
                       ? 'bg-orange-100 text-orange-700'
-                      : 'bg-violet-100 text-violet-700'
+                      : item.contentType === 'material'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-violet-100 text-violet-700'
                   }`}
                 >
-                  {item.contentType === 'promotion' ? 'โปรโมชัน' : 'สินค้า'}
+                  {item.contentType === 'promotion'
+                    ? 'โปรโมชัน'
+                    : item.contentType === 'material'
+                      ? 'วัตถุดิบ'
+                      : 'สินค้า'}
                 </span>
                 <p className='mt-1 text-[12px] font-medium leading-snug text-gray-600 line-clamp-2'>
                   {item.title}
@@ -113,10 +119,16 @@ export function RelatedShowcasesSection({
                 className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                   item.contentType === 'promotion'
                     ? 'bg-orange-100 text-orange-700'
-                    : 'bg-violet-100 text-violet-700'
+                    : item.contentType === 'material'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-violet-100 text-violet-700'
                 }`}
               >
-                {item.contentType === 'promotion' ? 'โปรโมชัน' : 'สินค้า'}
+                {item.contentType === 'promotion'
+                  ? 'โปรโมชัน'
+                  : item.contentType === 'material'
+                    ? 'วัตถุดิบ'
+                    : 'สินค้า'}
               </span>
               <p className='text-[12px] font-semibold text-gray-800 line-clamp-2 mt-1'>
                 {item.title}
