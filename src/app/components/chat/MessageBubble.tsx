@@ -299,6 +299,9 @@ function TextChatBubble({
 const CHAT_CARD_SHELL =
   'relative w-full max-w-[min(100%,332px)] overflow-hidden rounded-2xl border border-white/70 bg-[linear-gradient(155deg,rgba(255,255,255,0.92),rgba(248,245,255,0.86))] text-left backdrop-blur-xl transition-all';
 
+const QUOTATION_CHAT_CARD_SHELL =
+  'relative w-full max-w-[min(100%,332px)] overflow-hidden rounded-2xl border border-orange-200/75 bg-[linear-gradient(155deg,rgba(255,255,255,0.94),rgba(255,247,237,0.92))] text-left backdrop-blur-xl transition-all';
+
 function RfqChatCard({
   rfqId,
   title,
@@ -433,23 +436,23 @@ function QuotationChatCard({
     <div className='flex justify-center px-1'>
       <article
         className={cn(
-          CHAT_CARD_SHELL,
-          'max-w-[min(100%,304px)] border-violet-200/80',
+          QUOTATION_CHAT_CARD_SHELL,
+          'max-w-[min(100%,304px)]',
           !disabled && 'hover:-translate-y-0.5 active:scale-[0.995]',
         )}
       >
         <div
           className='pointer-events-none absolute inset-0 rounded-2xl'
           style={{
-            border: '1px solid rgba(139,92,246,0.24)',
+            border: '1px solid color-mix(in srgb, var(--brand-orange) 28%, white)',
           }}
         />
-        <div className='pointer-events-none absolute left-3 right-3 top-2 h-8 rounded-full bg-white/45 blur-md' />
+        <div className='pointer-events-none absolute left-3 right-3 top-2 h-8 rounded-full bg-orange-100/40 blur-md' />
         <div
           className='relative z-[1] h-[3px] w-full'
           style={{
             background:
-              'linear-gradient(90deg, var(--brand-mauve) 0%, var(--brand-purple) 55%, var(--brand-violet-soft) 100%)',
+              'linear-gradient(90deg, var(--brand-orange-deep) 0%, var(--brand-orange) 55%, #fdba74 100%)',
           }}
         />
         <div className='relative z-[1] p-3.5'>
@@ -458,13 +461,13 @@ function QuotationChatCard({
               className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl'
               style={{
                 background:
-                  'linear-gradient(145deg, color-mix(in srgb, var(--brand-mauve) 24%, white), color-mix(in srgb, var(--brand-purple) 18%, white))',
+                  'linear-gradient(145deg, color-mix(in srgb, var(--brand-orange-deep) 22%, white), color-mix(in srgb, var(--brand-orange) 16%, white))',
               }}
             >
-              <CreditCard size={16} className='text-[var(--brand-purple)]' strokeWidth={2.2} />
+              <CreditCard size={16} className='text-[var(--brand-orange-deep)]' strokeWidth={2.2} />
             </span>
             <div className='min-w-0 flex-1 pt-0.5'>
-              <p className='text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--brand-purple)]'>
+              <p className='text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--brand-orange-deep)]'>
                 ใบเสนอราคา
               </p>
               <p className='mt-1 text-[13px] font-bold leading-snug text-[var(--brand-navy)] tabular-nums'>
@@ -475,17 +478,17 @@ function QuotationChatCard({
           </div>
 
           <div className='mb-2.5 grid grid-cols-2 gap-1.5'>
-            <div className='rounded-lg border border-violet-100 bg-violet-50/55 px-2 py-1.5 text-center'>
-              <p className='flex items-center justify-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-violet-700'>
-                <Clock size={10} className='text-[var(--brand-purple)]' />
+            <div className='rounded-lg border border-orange-100 bg-orange-50/70 px-2 py-1.5 text-center'>
+              <p className='flex items-center justify-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-orange-800'>
+                <Clock size={10} className='text-[var(--brand-orange-deep)]' />
                 Lead time
               </p>
               <p className='mt-0.5 text-[12px] font-bold tabular-nums text-[var(--brand-navy)]'>
-                {quote.leadTime} <span className='text-[10px] font-medium text-violet-700'>วัน</span>
+                {quote.leadTime} <span className='text-[10px] font-medium text-orange-700'>วัน</span>
               </p>
             </div>
-            <div className='rounded-lg border border-violet-100 bg-violet-50/55 px-2 py-1.5 text-center'>
-              <p className='text-[9px] font-semibold uppercase tracking-wide text-violet-700'>ใช้ได้ถึง</p>
+            <div className='rounded-lg border border-orange-100 bg-orange-50/70 px-2 py-1.5 text-center'>
+              <p className='text-[9px] font-semibold uppercase tracking-wide text-orange-800'>ใช้ได้ถึง</p>
               <p className='mt-0.5 text-[12px] font-bold text-[var(--brand-navy)]'>
                 {quote.validUntil || '-'}
               </p>
@@ -504,7 +507,7 @@ function QuotationChatCard({
             )}
             style={{
               background:
-                'linear-gradient(135deg, var(--brand-mauve) 0%, var(--brand-purple) 100%)',
+                'linear-gradient(135deg, var(--brand-orange-deep) 0%, var(--brand-orange) 100%)',
             }}
           >
             ดูรายละเอียด
