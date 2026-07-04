@@ -4,12 +4,18 @@ import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
 import { getFactoryIdeasHubPath } from '@/components/features/factory-ideas/factoryIdeasHubNav';
 import { factoryBadgeClass } from '@/pages/factory-portal/factoryUi';
-import { HUB_SCOPE_LABELS, type HubScope } from '@/components/features/hub/hubRowShared';
+import { type HubScope } from '@/components/features/hub/hubRowShared';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-const HUB_SCOPES: HubScope[] = ['PD', 'MT'];
+type ScopeOption = HubScope | 'all';
+const HUB_SCOPES: ScopeOption[] = ['all', 'PD', 'MT'];
+const SCOPE_LABELS: Record<ScopeOption, string> = {
+  all: 'ทั้งหมด',
+  PD: 'โรงงานรับผลิต',
+  MT: 'วัตถุดิบ',
+};
 
 type FactoryIdeasPageHeaderProps = {
   title: string;
@@ -18,7 +24,7 @@ type FactoryIdeasPageHeaderProps = {
   showBack?: boolean;
   currentHubId?: number;
   onHubChange?: (hubId: number, scope: HubScope | undefined) => void;
-  onScopeChange?: (scope: HubScope) => void;
+  onScopeChange?: (scope: HubScope | null) => void;
   className?: string;
 };
 
@@ -64,8 +70,8 @@ export function FactoryIdeasPageHeader({
     left: 0,
   });
 
-  const activeScope: HubScope = hubScope ?? 'PD';
-  const activeScopeLabel = HUB_SCOPE_LABELS[activeScope] ?? activeScope;
+  const activeScope: ScopeOption = hubScope ?? 'all';
+  const activeScopeLabel = SCOPE_LABELS[activeScope] ?? activeScope;
 
   useEffect(() => {
     if (!hubOpen && !scopeOpen) return;
@@ -112,7 +118,7 @@ export function FactoryIdeasPageHeader({
               <Button
                 variant='unstyled'
                 type='button'
-                onClick={() => navigate(getFactoryIdeasHubPath(activeScope))}
+                onClick={() => navigate(getFactoryIdeasHubPath(activeScope === 'all' ? undefined : activeScope))}
                 className='-ml-1 inline-flex h-6 shrink-0 items-center gap-1 rounded-md px-1 text-[12px] font-medium text-slate-500 transition-colors hover:text-brand-purple'
               >
                 <ArrowLeft size={15} strokeWidth={2.25} aria-hidden />
@@ -157,7 +163,7 @@ export function FactoryIdeasPageHeader({
                           role='option'
                           aria-selected={scope === activeScope}
                           onClick={() => {
-                            onScopeChange(scope);
+                            onScopeChange(scope === 'all' ? null : scope);
                             setScopeOpen(false);
                           }}
                           className={cn(
@@ -172,7 +178,7 @@ export function FactoryIdeasPageHeader({
                           ) : (
                             <span className='h-1.5 w-1.5 shrink-0' aria-hidden />
                           )}
-                          <span>{HUB_SCOPE_LABELS[scope] ?? scope}</span>
+                          <span>{SCOPE_LABELS[scope] ?? scope}</span>
                         </button>
                       ))}
                     </div>,
@@ -212,8 +218,7 @@ export function FactoryIdeasPageHeader({
                 className='fixed z-[9999] w-52 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg'
                 style={{ top: hubDropdownPos.top, left: hubDropdownPos.left }}
               >
-                {allHubs
-                  .filter((hub) => hub.scope === activeScope)
+                {(activeScope === 'all' ? allHubs : allHubs.filter((hub) => hub.scope === activeScope))
                   .map((hub) => (
                   <button
                     key={hub.hub_id}

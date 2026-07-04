@@ -114,10 +114,17 @@ export function FactoryIdeasMobile() {
     });
   };
 
-  const handleScopeChange = (scope: 'PD' | 'MT') => {
+  const handleScopeChange = (scope: 'PD' | 'MT' | null) => {
     setSearchParams((prev) => {
       const p = new URLSearchParams(prev);
-      applyFactoryIdeasScopeChange(p, scope, allHubs);
+      if (scope === null) {
+        p.delete('hub_scope');
+        p.delete('hub_id');
+        p.delete('category_id');
+        p.delete('sub_category_id');
+      } else {
+        applyFactoryIdeasScopeChange(p, scope, allHubs);
+      }
       return p;
     });
   };
