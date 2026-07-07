@@ -19,13 +19,13 @@ function ComingSoonStrip() {
       aria-hidden
     >
       <div className='mb-1 flex flex-wrap items-center gap-2'>
-        <span className='text-[13px] font-semibold text-gray-600'>อาหารคน · Human Food</span>
+        <span className='text-[13px] font-semibold text-gray-600'>หมวดอื่นๆ</span>
         <span className='rounded-md bg-[#EEEDFE] px-2 py-0.5 text-[9px] font-semibold text-brand-purple'>
           เร็วๆ นี้
         </span>
       </div>
       <p className='text-[11px] leading-relaxed text-gray-400'>
-        โรงงาน GMP · Halal / กำลังเปิดให้บริการเร็วๆ นี้
+        กำลังเปิดให้บริการเร็วๆ นี้
       </p>
     </div>
   );
