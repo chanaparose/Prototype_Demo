@@ -213,6 +213,7 @@ export function FactoryOrdersPage() {
   const navigate = useNavigate();
   const [statusTab, setStatusTab] = useState<TabId>('needs_action');
   const [search, setSearch] = useState('');
+  const [kindFilter, setKindFilter] = useState<'sample' | ''>('');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
   const [page, setPage] = useState(1);
   const [updateModal, setUpdateModal] = useState<{
@@ -239,6 +240,11 @@ export function FactoryOrdersPage() {
       .map((r, i) => ({ row: r, derived: derived[i] }))
       .filter((x) => matchTab(x.row, x.derived, statusTab))
       .filter((x) => searchMatch(x.row, q))
+      .filter((x) => {
+        if (!kindFilter) return true;
+        const k = String(x.row.request_kind ?? '').toUpperCase();
+        return k === 'PS' || k === 'MS';
+      })
       .sort((a, b) => {
         const diff = new Date(b.row.created_at).getTime() - new Date(a.row.created_at).getTime();
         return sortDir === 'desc' ? diff : -diff;
@@ -328,16 +334,30 @@ export function FactoryOrdersPage() {
         onSearchChange={setSearch}
         searchPlaceholder='ค้นหา #ออเดอร์ / ชื่อสินค้า / ชื่อลูกค้า...'
         searchTrailing={
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
-            className='inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-normal text-slate-700 transition-colors hover:bg-[var(--brand-page)]'
-            title={sortDir === 'desc' ? 'ใหม่สุด → เก่าสุด' : 'เก่าสุด → ใหม่สุด'}
-          >
-            <ArrowUpDown className='h-4 w-4' />
-            {sortDir === 'desc' ? 'ใหม่สุด' : 'เก่าสุด'}
-          </Button>
+          <div className='flex shrink-0 items-center gap-2'>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => setKindFilter((prev) => (prev === 'sample' ? '' : 'sample'))}
+              className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-xs font-normal transition-colors ${
+                kindFilter === 'sample'
+                  ? 'border-teal-400 bg-teal-50 text-teal-700'
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-[var(--brand-page)]'
+              }`}
+            >
+              ตัวอย่าง
+            </Button>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
+              className='inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-normal text-slate-700 transition-colors hover:bg-[var(--brand-page)]'
+              title={sortDir === 'desc' ? 'ใหม่สุด → เก่าสุด' : 'เก่าสุด → ใหม่สุด'}
+            >
+              <ArrowUpDown className='h-4 w-4' />
+              {sortDir === 'desc' ? 'ใหม่สุด' : 'เก่าสุด'}
+            </Button>
+          </div>
         }
       >
         {filteredRows.length === 0 ? (

@@ -300,7 +300,7 @@ export function Step1Basic({
               min={1}
               value={draft.qty ?? ''}
               onChange={(e) => setDraft({ qty: Number(e.target.value) || null })}
-              placeholder={mode === 'PS' ? '1–10' : mode === 'MS' ? '1–5' : '0'}
+              placeholder='0'
               className={fieldClass}
             />
             <UnitPicker

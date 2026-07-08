@@ -11,6 +11,10 @@ import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCu
 import { Image } from '@/components/ui/image';
 import { Button } from '@/components/ui/button';
 import {
+  FactoryStatusBadge,
+  type FactoryStatusTone,
+} from '@/pages/factory-portal/components/FactoryStatusBadge';
+import {
   Table,
   TableBody,
   TableCell,
@@ -49,6 +53,14 @@ function requestKindLabel(kind?: string): string {
   if (k === 'MS') return 'ตัวอย่างวัสดุ';
   if (k === 'MR') return 'สั่งวัตถุดิบ';
   return 'OEM';
+}
+
+function requestKindTone(kind?: string): FactoryStatusTone {
+  const k = String(kind ?? '').toUpperCase();
+  if (k === 'MR') return 'info';
+  if (k === 'PS') return 'warning';
+  if (k === 'MS') return 'teal';
+  return 'brand';
 }
 
 function formatBaht(n: number): string {
@@ -230,8 +242,10 @@ function RfqTableRowLink({
         </div>
       </TableCell>
       <TableCell className='min-w-[140px] py-2.5 text-xs text-slate-700'>{categoryLabel(row)}</TableCell>
-      <TableCell className='min-w-[100px] py-2.5 text-xs text-slate-700'>
-        {requestKindLabel(row.requestKind)}
+      <TableCell className='min-w-[100px] py-2.5'>
+        <FactoryStatusBadge tone={requestKindTone(row.requestKind)}>
+          {requestKindLabel(row.requestKind)}
+        </FactoryStatusBadge>
       </TableCell>
       <TableCell className='min-w-[120px] py-2.5 text-xs font-medium text-slate-900 tabular-nums'>
         {priceLabel(row)}

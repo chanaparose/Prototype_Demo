@@ -32,8 +32,8 @@ export const rfqChoiceClass = (active: boolean, activeBorder = 'border-brand-vio
 export const REQUEST_KIND_OPTIONS = [
   { id: 'PR' as const, label: 'OEM', desc: 'ขอราคาผลิต' },
   { id: 'MR' as const, label: 'วัตถุดิบ', desc: 'ขอราคาสั่งซื้อ' },
-  { id: 'PS' as const, label: 'ตัวอย่าง สินค้า', desc: 'สินค้า 1–10' },
-  { id: 'MS' as const, label: 'ตัวอย่าง วัตถุดิบ', desc: 'วัตถุดิบ 1–5' },
+  { id: 'PS' as const, label: 'ตัวอย่าง สินค้า', desc: 'สั่งซื้อตัวอย่าง' },
+  { id: 'MS' as const, label: 'ตัวอย่าง วัตถุดิบ', desc: 'สั่งซื้อตัวอย่าง' },
 ] as const;
 
 type RfqFormSectionProps = {

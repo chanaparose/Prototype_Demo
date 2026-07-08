@@ -286,10 +286,6 @@ export function RFQCreateWizard() {
     if (!draft.category_id || Number(draft.category_id) <= 0) issues.push('เลือกหมวดหมู่');
     if (!Number.isFinite(qty) || qty <= 0) {
       issues.push('กรอกจำนวน');
-    } else if (kind === 'PS' && (qty < 1 || qty > 10)) {
-      issues.push('จำนวนโหมดขอตัวอย่างสินค้า ต้องอยู่ระหว่าง 1-10 ชิ้น');
-    } else if (kind === 'MS' && (qty < 1 || qty > 5)) {
-      issues.push('จำนวนโหมดขอตัวอย่างวัตถุดิบ ต้องอยู่ระหว่าง 1-5 ชิ้น');
     }
     if (kind === 'PS' || kind === 'MS') {
       if (descLen < 20) issues.push('รายละเอียดต้องอย่างน้อย 20 ตัวอักษร');
@@ -311,8 +307,7 @@ export function RFQCreateWizard() {
   const isFormValid = React.useMemo(() => {
     const qty = Number(draft.qty ?? 0);
     const kind = draft.request_kind ?? 'PR';
-    const withinKindQty =
-      kind === 'PS' ? qty >= 1 && qty <= 10 : kind === 'MS' ? qty >= 1 && qty <= 5 : qty > 0;
+    const withinKindQty = qty > 0;
     if (!withinKindQty) return false;
     if ((kind === 'PS' || kind === 'MS') && (draft.description?.trim()?.length ?? 0) < 20)
       return false;
