@@ -5,7 +5,6 @@ import type { HubScope } from '@/components/features/hub/hubRowShared';
 import { HubSectionSkeleton } from '@/components/features/hub/HubSectionSkeleton';
 import { buildFactoryIdeasHubPageUrl } from '@/components/features/explore/exploreHubFilter';
 import {
-  getPalette,
   HUB_CARD_IMG_FRAME_CLASS,
   HUB_CARD_IMG_CLASS,
 } from '@/components/features/hub/HubCategoryCard';
@@ -243,7 +242,6 @@ function CompactCategoryCard({
   cat: ICategoryForHubResponse;
   onClick: () => void;
 }) {
-  const palette = getPalette(cat.category_id);
   const imgSrc = cat.img || cat.image_url || cat.image || '';
 
   return (
@@ -253,7 +251,10 @@ function CompactCategoryCard({
       className='group flex w-[78px] shrink-0 flex-col items-center gap-1 text-center'
     >
       <div
-        className={cn(HUB_CARD_IMG_FRAME_CLASS, 'rounded-xl border border-gray-100 transition-colors group-hover:border-brand-purple/40', palette.bg)}
+        className={cn(
+          HUB_CARD_IMG_FRAME_CLASS,
+          'rounded-xl border border-gray-100 transition-colors group-hover:border-brand-purple/40',
+        )}
         style={{ aspectRatio: '1 / 1' }}
       >
         {imgSrc ? (

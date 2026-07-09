@@ -18,7 +18,7 @@ export function getPalette(categoryId: number) {
 
 /** สไตล์พื้นที่ภาพ 1:1 — ใช้ร่วมกันระหว่าง card จริงกับหน้า admin เพื่อให้ preview ตรงกัน */
 export const HUB_CARD_IMG_FRAME_CLASS =
-  'relative flex w-full items-center justify-center bg-white p-[3%]';
+  'relative flex w-full items-center justify-center overflow-hidden rounded-[14px] bg-white p-1';
 export const HUB_CARD_IMG_CLASS = 'h-full w-full rounded-[10px] object-contain';
 
 export function HubCategoryCard({
