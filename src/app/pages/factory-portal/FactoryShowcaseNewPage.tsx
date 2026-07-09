@@ -63,6 +63,7 @@ export function FactoryShowcaseNewPage() {
   const { imageUrls } = imageUpload;
   const [idScope, setIdScope] = useState<'PD' | 'MT'>('PD');
   const [pmScope, setPmScope] = useState<'PD' | 'MT'>('PD');
+  const [hubId, setHubId] = useState<number | null>(null);
   const [units, setUnits] = useState<UnitOption[]>([]);
 
   const categoryScope: 'PD' | 'MT' =
@@ -295,14 +296,19 @@ export function FactoryShowcaseNewPage() {
               pmScope={pmScope}
               onIdScopeChange={(scope) => {
                 setIdScope(scope);
+                setHubId(null);
                 setField('category_id', '');
                 setField('sub_category_id', '');
               }}
               onPmScopeChange={(scope) => {
                 setPmScope(scope);
+                setHubId(null);
                 setField('category_id', '');
                 setField('sub_category_id', '');
               }}
+              categoryScope={categoryScope}
+              hubValue={hubId}
+              onHubChange={setHubId}
               categoryValue={form.category_id ? Number(form.category_id) : null}
               subCategoryValue={form.sub_category_id ? Number(form.sub_category_id) : null}
               onCategoryChange={(value) =>

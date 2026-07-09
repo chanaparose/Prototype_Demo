@@ -242,6 +242,7 @@ export function FactoryShowcaseEditPage() {
 
   const [idScope, setIdScope] = React.useState<'PD' | 'MT'>('PD');
   const [pmScope, setPmScope] = React.useState<'PD' | 'MT'>('PD');
+  const [hubId, setHubId] = React.useState<number | null>(null);
 
   const selectedCategoryId = form.watch('category_id');
   const contentType = form.watch('content_type');
@@ -262,6 +263,13 @@ export function FactoryShowcaseEditPage() {
   const categoriesQ = useLbiCategoriesByScope(categoryScope);
   const pdCategoriesQ = useLbiCategoriesByScope('PD');
   const mtCategoriesQ = useLbiCategoriesByScope('MT');
+
+  // เติมกลุ่มธุรกิจให้อัตโนมัติจากหมวดหมู่ที่เคยเลือกไว้ (ครั้งเดียวตอนโหลดข้อมูล)
+  React.useEffect(() => {
+    if (hubId != null || selectedCategoryId == null) return;
+    const cat = categoriesQ.data?.find((c) => c.id === selectedCategoryId);
+    if (cat?.hubId != null) setHubId(cat.hubId);
+  }, [selectedCategoryId, categoriesQ.data, hubId]);
 
   const subIds = useMemo(
     () => (contentType !== 'MT' && selectedCategoryId != null ? [selectedCategoryId] : []),
@@ -657,14 +665,19 @@ export function FactoryShowcaseEditPage() {
               pmScope={pmScope}
               onIdScopeChange={(scope) => {
                 setIdScope(scope);
+                setHubId(null);
                 form.setValue('category_id', null, { shouldDirty: true });
                 form.setValue('sub_category_id', null, { shouldDirty: true });
               }}
               onPmScopeChange={(scope) => {
                 setPmScope(scope);
+                setHubId(null);
                 form.setValue('category_id', null, { shouldDirty: true });
                 form.setValue('sub_category_id', null, { shouldDirty: true });
               }}
+              categoryScope={categoryScope}
+              hubValue={hubId}
+              onHubChange={setHubId}
               categoryValue={selectedCategoryId}
               subCategoryValue={form.watch('sub_category_id')}
               onCategoryChange={(value) => {

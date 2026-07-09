@@ -1,10 +1,12 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Camera, Plus, X } from 'lucide-react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { ImageCropModal } from '@/components/common/ImageCropModal';
 import { mediaApi } from '@/services/api/factoryApi';
 import { LookupSelect } from '@/components/common/LookupSelect';
+import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
+import type { CategoryOption } from '@/hooks/master/useLbiCategoriesByScope';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -266,6 +268,9 @@ export function ShowcaseCategoryFields({
   pmScope,
   onIdScopeChange,
   onPmScopeChange,
+  categoryScope,
+  hubValue,
+  onHubChange,
   categoryValue,
   subCategoryValue,
   onCategoryChange,
@@ -279,11 +284,15 @@ export function ShowcaseCategoryFields({
   pmScope: ShowcaseScope;
   onIdScopeChange: (scope: ShowcaseScope) => void;
   onPmScopeChange: (scope: ShowcaseScope) => void;
+  /** scope ปัจจุบันที่ใช้กรองหมวดหมู่ธุรกิจ (hub) — ต้องตรงกับ categoryScope ของ categoriesQ */
+  categoryScope: ShowcaseScope;
+  hubValue: number | null;
+  onHubChange: (value: number | null) => void;
   categoryValue: number | null;
   subCategoryValue: number | null;
   onCategoryChange: (value: number | null) => void;
   onSubCategoryChange: (value: number | null) => void;
-  categoriesQ: UseQueryResult<Option[]>;
+  categoriesQ: UseQueryResult<CategoryOption[]>;
   subOptions: Option[];
   subCategoriesLoading?: boolean;
 }) {
@@ -291,6 +300,28 @@ export function ShowcaseCategoryFields({
     contentType === 'MT' ||
     (contentType === 'ID' && idScope === 'MT') ||
     (contentType === 'PM' && pmScope === 'MT');
+
+  const hubsQ = useLbiHubsQuery();
+  const filteredHubsQ = useMemo(
+    () => ({
+      ...hubsQ,
+      data: (hubsQ.data ?? [])
+        .filter((h) => h.scope === categoryScope)
+        .map((h) => ({ id: h.hub_id, name: h.name })),
+    }),
+    [hubsQ, categoryScope],
+  ) as unknown as UseQueryResult<Option[]>;
+
+  const filteredCategoriesQ = useMemo(
+    () => ({
+      ...categoriesQ,
+      data:
+        hubValue != null
+          ? (categoriesQ.data ?? []).filter((c) => c.hubId === hubValue)
+          : categoriesQ.data,
+    }),
+    [categoriesQ, hubValue],
+  ) as UseQueryResult<Option[]>;
 
   const renderScopePicker = (
     label: string,
@@ -329,6 +360,24 @@ export function ShowcaseCategoryFields({
         ? renderScopePicker('ประเภทสินค้าที่โปรโมท', pmScope, onPmScopeChange)
         : null}
 
+      <LookupSelect
+        label='กลุ่มธุรกิจ'
+        value={hubValue}
+        onChange={(value) => {
+          onHubChange(value);
+          onCategoryChange(null);
+          onSubCategoryChange(null);
+        }}
+        queryResult={filteredHubsQ}
+        getId={(option) => option.id}
+        getLabel={(option) => option.name}
+        placeholder='เลือกกลุ่มธุรกิจ (ไม่บังคับ)'
+        triggerClassName='text-xs shadow-none focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10 focus-visible:border-brand-purple/40'
+        contentClassName='text-xs'
+        itemClassName='text-xs'
+        searchable
+      />
+
       <div
         className={`grid grid-cols-1 gap-3 ${hideSubCat ? '' : 'sm:grid-cols-2'}`}
       >
@@ -339,7 +388,7 @@ export function ShowcaseCategoryFields({
             onCategoryChange(value);
             onSubCategoryChange(null);
           }}
-          queryResult={categoriesQ}
+          queryResult={filteredCategoriesQ}
           getId={(option) => option.id}
           getLabel={(option) => option.name}
           placeholder='เลือกหมวดหมู่'

@@ -110,6 +110,8 @@ function SelectContent({
   style,
   searchable,
   searchPlaceholder = 'พิมพ์เพื่อค้นหา...',
+  side = 'bottom',
+  avoidCollisions = false,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content> & {
   /** บังคับเปิด/ปิดช่องค้นหา — ไม่ระบุ = เปิดอัตโนมัติเมื่อมีตัวเลือกตั้งแต่ 8 รายการ */
@@ -175,6 +177,8 @@ function SelectContent({
         )}
         position={position}
         align={align}
+        side={side}
+        avoidCollisions={avoidCollisions}
         style={{ ...popperWidthStyle, ...style }}
         {...props}
       >
