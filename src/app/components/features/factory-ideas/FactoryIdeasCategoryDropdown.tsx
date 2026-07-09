@@ -1,5 +1,5 @@
-import type { RefObject } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { useEffect, useMemo, useState, type RefObject } from 'react';
+import { ChevronDown, ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@lib/utils';
@@ -66,6 +66,41 @@ export function FactoryIdeasCategoryDropdown({
 }: FactoryIdeasCategoryDropdownProps) {
   const hasSubs = (catId: string) => categoriesWithSubs?.has(catId) ?? !isMaterialTab;
   const categoryActive = effectiveCategoryId !== 'all';
+
+  // พิมพ์ค้นหาในเมนู — กรองทั้งหมวดหมู่และหมวดย่อย ล้างคำค้นทุกครั้งที่ปิดเมนู
+  const [menuQuery, setMenuQuery] = useState('');
+  useEffect(() => {
+    if (!categoryMenuOpen) setMenuQuery('');
+  }, [categoryMenuOpen]);
+  const q = menuQuery.trim().toLowerCase();
+  const visibleCategories = useMemo(
+    () =>
+      q
+        ? categoryFilters.filter((c) => c.id === 'all' || c.name.toLowerCase().includes(q))
+        : categoryFilters,
+    [categoryFilters, q],
+  );
+  const visibleSubs = useMemo(
+    () => (q ? panelSubs.filter((s) => s.name.toLowerCase().includes(q)) : panelSubs),
+    [panelSubs, q],
+  );
+
+  const menuSearchBox = (autoFocus: boolean) => (
+    <div className='sticky top-0 z-10 border-b border-gray-100 bg-white px-2 pb-1.5 pt-1.5'>
+      <div className='relative'>
+        <Search size={13} className='pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-gray-400' />
+        <input
+          type='text'
+          value={menuQuery}
+          onChange={(e) => setMenuQuery(e.target.value)}
+          placeholder='พิมพ์เพื่อค้นหา...'
+          autoFocus={autoFocus}
+          autoComplete='off'
+          className='h-7 w-full rounded-md border border-gray-200 bg-gray-50/60 pl-7 pr-2 text-xs text-gray-900 outline-none placeholder:text-gray-400 focus:border-brand-purple/50 focus:bg-white'
+        />
+      </div>
+    </div>
+  );
   const chipLabel =
     categoryActive && categoryMenuTriggerLabel
       ? categoryMenuTriggerLabel
@@ -131,8 +166,9 @@ export function FactoryIdeasCategoryDropdown({
                 : 'absolute top-full left-0 right-0 z-40 mt-1 max-h-[50vh] overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-xl'
             }
           >
+            {menuSearchBox(false)}
             {categoryMenuStep === 'categories' ? (
-              categoryFilters.map((cat) => {
+              visibleCategories.map((cat) => {
                 const selected = categoryOptionSelected(effectiveCategoryId, cat.id);
                 const isAll = cat.id === 'all';
                 return (
@@ -192,9 +228,9 @@ export function FactoryIdeasCategoryDropdown({
                     <Loader2 className='w-4 h-4 animate-spin shrink-0' />
                     กำลังโหลดหมวดย่อย...
                   </div>
-                ) : panelSubs.length === 0 ? (
+                ) : visibleSubs.length === 0 ? (
                   <p className='px-4 py-4 text-center text-[12px] text-gray-500'>
-                    ไม่มีหมวดย่อยในหมวดนี้
+                    {q ? `ไม่พบหมวดย่อยที่ตรงกับ "${menuQuery}"` : 'ไม่มีหมวดย่อยในหมวดนี้'}
                   </p>
                 ) : (
                   <>
@@ -215,7 +251,7 @@ export function FactoryIdeasCategoryDropdown({
                     >
                       ทุกหมวดย่อย
                     </Button>
-                    {panelSubs.map((s) => {
+                    {visibleSubs.map((s) => {
                       const selected = selectedSubCategoryId === s.id && effectiveCategoryId === menuHighlightCategoryId;
                       return (
                         <Button
@@ -274,11 +310,13 @@ export function FactoryIdeasCategoryDropdown({
         />
       </Button>
       {categoryMenuOpen ? (
-        <div className='absolute top-full mt-1.5 left-0 flex rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden max-w-[calc(100vw-4rem)]'>
+        <div className='absolute top-full mt-1.5 left-0 flex flex-col rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden max-w-[calc(100vw-4rem)]'>
+          {menuSearchBox(true)}
+          <div className='flex'>
           <div
             className={`max-h-[min(75vh,22rem)] overflow-y-auto py-1 shrink-0 ${menuHighlightCategoryId && hasSubs(menuHighlightCategoryId) ? 'w-44 sm:w-52 border-r border-gray-100' : 'w-56 sm:w-64'}`}
           >
-            {categoryFilters.map((cat) => {
+            {visibleCategories.map((cat) => {
               const selected = categoryOptionSelected(effectiveCategoryId, cat.id);
               const rowHi =
                 cat.id === 'all'
@@ -333,8 +371,10 @@ export function FactoryIdeasCategoryDropdown({
                   />
                   กำลังโหลดหมวดย่อย…
                 </div>
-              ) : panelSubs.length === 0 ? (
-                <p className='px-3 py-4 text-[11px] text-gray-400'>ไม่มีหมวดย่อยในหมวดนี้</p>
+              ) : visibleSubs.length === 0 ? (
+                <p className='px-3 py-4 text-[11px] text-gray-400'>
+                  {q ? `ไม่พบหมวดย่อยที่ตรงกับ "${menuQuery}"` : 'ไม่มีหมวดย่อยในหมวดนี้'}
+                </p>
               ) : (
                 <>
                   <Button
@@ -359,7 +399,7 @@ export function FactoryIdeasCategoryDropdown({
                   >
                     ทุกหมวดย่อย
                   </Button>
-                  {panelSubs.map((s) => {
+                  {visibleSubs.map((s) => {
                     const active =
                       selectedSubCategoryId === s.id &&
                       effectiveCategoryId === menuHighlightCategoryId;
@@ -384,6 +424,7 @@ export function FactoryIdeasCategoryDropdown({
               )}
             </div>
           ) : null}
+          </div>
         </div>
       ) : null}
     </div>

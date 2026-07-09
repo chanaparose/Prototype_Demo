@@ -1,8 +1,58 @@
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon, SearchIcon } from 'lucide-react';
 import * as React from 'react';
 
 import { cn } from '@lib/utils';
+
+/** จำนวนตัวเลือกขั้นต่ำที่จะแสดงช่องค้นหาใน dropdown อัตโนมัติ */
+const SEARCHABLE_ITEM_THRESHOLD = 8;
+
+/** ดึงข้อความจาก children ของ SelectItem (รองรับ nested elements) */
+function extractNodeText(node: React.ReactNode): string {
+  if (node == null || typeof node === 'boolean') return '';
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(extractNodeText).join(' ');
+  if (React.isValidElement(node)) {
+    return extractNodeText((node.props as { children?: React.ReactNode }).children);
+  }
+  return '';
+}
+
+function countSelectItems(children: React.ReactNode): number {
+  let count = 0;
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return;
+    const slot = (child.props as { 'data-slot'?: string })['data-slot'];
+    if (child.type === SelectItem || slot === 'select-item') {
+      count += 1;
+    } else {
+      count += countSelectItems((child.props as { children?: React.ReactNode }).children);
+    }
+  });
+  return count;
+}
+
+/** กรอง SelectItem ตามคำค้น — เก็บ element อื่น (group/label/separator) ไว้ตามโครงสร้างเดิม */
+function filterSelectChildren(children: React.ReactNode, query: string): React.ReactNode {
+  if (!query.trim()) return children;
+  const q = query.trim().toLowerCase();
+  return React.Children.map(children, (child) => {
+    if (!React.isValidElement(child)) return child;
+    if (child.type === SelectItem) {
+      const text = extractNodeText((child.props as { children?: React.ReactNode }).children);
+      return text.toLowerCase().includes(q) ? child : null;
+    }
+    const inner = (child.props as { children?: React.ReactNode }).children;
+    if (inner != null && countSelectItems(inner) > 0) {
+      const filtered = filterSelectChildren(inner, query);
+      if (countSelectItems(filtered) === 0) return null;
+      return React.cloneElement(child as React.ReactElement<{ children?: React.ReactNode }>, {
+        children: filtered,
+      });
+    }
+    return child;
+  });
+}
 
 function Select({ ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {
   return <SelectPrimitive.Root data-slot='select' {...props} />;
@@ -58,8 +108,53 @@ function SelectContent({
   position = 'popper',
   align = 'start',
   style,
+  searchable,
+  searchPlaceholder = 'พิมพ์เพื่อค้นหา...',
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Content>) {
+}: React.ComponentProps<typeof SelectPrimitive.Content> & {
+  /** บังคับเปิด/ปิดช่องค้นหา — ไม่ระบุ = เปิดอัตโนมัติเมื่อมีตัวเลือกตั้งแต่ 8 รายการ */
+  searchable?: boolean;
+  searchPlaceholder?: string;
+}) {
+  const [query, setQuery] = React.useState('');
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const itemCount = React.useMemo(() => countSelectItems(children), [children]);
+  const showSearch = searchable ?? itemCount >= SEARCHABLE_ITEM_THRESHOLD;
+
+  // Radix Select ยึด focus ไว้ที่ item ตอนเปิด (จังหวะไม่แน่นอน อาจมาทีหลังเรา) —
+  // ช่วง 500ms แรกหลังช่องค้นหา mount ถ้า focus ตกอยู่บน item ให้ดึงกลับมาที่ช่องค้นหา
+  // เพื่อให้ผู้ใช้เปิด dropdown แล้วพิมพ์ได้ทันที (หลังจากนั้นถือว่าผู้ใช้ตั้งใจย้ายเอง)
+  // หมายเหตุ: ใช้ callback ref เพราะ SelectContent (wrapper) mount ค้างไว้ตลอด —
+  // ตัว input เพิ่งจะ mount จริงตอน dropdown เปิด (Radix render content ผ่าน portal)
+  const stealTimersRef = React.useRef<{ interval?: ReturnType<typeof setInterval>; stop?: ReturnType<typeof setTimeout> }>({});
+  const searchInputCallbackRef = React.useCallback((el: HTMLInputElement | null) => {
+    searchInputRef.current = el;
+    clearInterval(stealTimersRef.current.interval);
+    clearTimeout(stealTimersRef.current.stop);
+    if (!el) {
+      // dropdown ปิด (input ถูก unmount) — ล้างคำค้นไม่ให้ค้างไปกรองรอบถัดไป
+      setQuery('');
+      return;
+    }
+    const interval = setInterval(() => {
+      if (document.activeElement === el) return;
+      const active = document.activeElement;
+      const shouldSteal =
+        active instanceof HTMLElement &&
+        (active.getAttribute('data-slot') === 'select-item' ||
+          active.closest('[data-slot="select-content"]') != null ||
+          active === document.body);
+      if (shouldSteal) el.focus({ preventScroll: true });
+    }, 50);
+    const stop = setTimeout(() => clearInterval(interval), 500);
+    stealTimersRef.current = { interval, stop };
+  }, []);
+  const filteredChildren = React.useMemo(
+    () => (showSearch ? filterSelectChildren(children, query) : children),
+    [children, query, showSearch],
+  );
+  const noResults = showSearch && query.trim() !== '' && countSelectItems(filteredChildren) === 0;
+
   const popperWidthStyle =
     position === 'popper'
       ? {
@@ -83,11 +178,39 @@ function SelectContent({
         style={{ ...popperWidthStyle, ...style }}
         {...props}
       >
+        {showSearch ? (
+          <div className='sticky top-0 z-10 border-b border-gray-100 bg-white p-1.5'>
+            <div className='relative'>
+              <SearchIcon className='pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400' />
+              <input
+                ref={searchInputCallbackRef}
+                type='text'
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={searchPlaceholder}
+                className='h-7 w-full rounded-md border border-gray-200 bg-gray-50/60 pl-7 pr-2 text-xs text-gray-900 outline-none placeholder:text-gray-400 focus:border-brand-purple/50 focus:bg-white'
+                // กัน Radix typeahead ขโมยตัวอักษรที่พิมพ์ — แต่ปล่อย Escape (ปิด dropdown)
+                // และลูกศรขึ้น/ลง (ย้าย focus ไปเลือก item ด้วยคีย์บอร์ด) ให้ Radix จัดการต่อ
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape' || e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Tab') return;
+                  e.stopPropagation();
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+                autoComplete='off'
+              />
+            </div>
+          </div>
+        ) : null}
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport
           className={cn('bg-white p-1', position === 'popper' && 'w-full scroll-my-1')}
         >
-          {children}
+          {filteredChildren}
+          {noResults ? (
+            <div className='px-2 py-3 text-center text-xs text-gray-400'>
+              ไม่พบตัวเลือกที่ตรงกับ "{query}"
+            </div>
+          ) : null}
         </SelectPrimitive.Viewport>
         <SelectScrollDownButton />
       </SelectPrimitive.Content>
