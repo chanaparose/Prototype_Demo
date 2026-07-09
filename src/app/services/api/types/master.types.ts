@@ -17,6 +17,7 @@ export interface ICategoryForHubResponse {
   name: string;
   factory_count: number;
   sub_preview: string[];
+  img?: string;
   image_url?: string;
   image?: string;
 }

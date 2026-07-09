@@ -1,7 +1,20 @@
-import { ArrowRight, PackageSearch } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { cn } from '@lib/utils';
 import type { ICategoryForHubResponse } from '@/services/api/types/master.types';
-import { hubRowCardClass } from '@/components/features/hub/hubRowShared';
+
+const PASTEL_PALETTES = [
+  { bg: 'bg-[#FFF3E8]', text: 'text-[#B85C00]' },
+  { bg: 'bg-[#EEF3FF]', text: 'text-[#3D5FBF]' },
+  { bg: 'bg-[#F0FBF4]', text: 'text-[#1A7A45]' },
+  { bg: 'bg-[#FFF0F9]', text: 'text-[#A0267A]' },
+  { bg: 'bg-[#F5F0FF]', text: 'text-[#6D28D9]' },
+  { bg: 'bg-[#FFFBEB]', text: 'text-[#92601A]' },
+  { bg: 'bg-[#F0FFFE]', text: 'text-[#107272]' },
+];
+
+function getPalette(categoryId: number) {
+  return PASTEL_PALETTES[categoryId % PASTEL_PALETTES.length];
+}
 
 export function HubCategoryCard({
   cat,
@@ -10,34 +23,47 @@ export function HubCategoryCard({
   cat: ICategoryForHubResponse;
   onClick: () => void;
 }) {
-  const subText = (cat.sub_preview ?? []).slice(0, 2).join(' · ');
+  const palette = getPalette(cat.category_id);
+  const imgSrc = cat.img || cat.image_url || cat.image || '';
 
   return (
-    <button type='button' onClick={onClick} className={hubRowCardClass}>
-      <div className='mb-1 flex items-center gap-1 lg:mb-1.5 lg:gap-1.5'>
-        <span className='flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-brand-purple/10 text-brand-purple lg:h-6 lg:w-6 lg:rounded-lg'>
-          <PackageSearch size={12} strokeWidth={2.25} className='lg:hidden' />
-          <PackageSearch size={14} strokeWidth={2.25} className='hidden lg:block' />
-        </span>
-        <span className='line-clamp-1 text-xs font-medium leading-tight text-gray-700 group-hover:text-brand-purple lg:text-sm lg:text-[var(--brand-navy)]'>
+    <button
+      type='button'
+      onClick={onClick}
+      className='group flex w-[120px] shrink-0 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white text-left shadow-[0_1px_4px_rgba(0,0,0,0.06)] transition-all hover:shadow-[0_2px_8px_rgba(0,0,0,0.10)] active:scale-[0.97] lg:w-[140px]'
+    >
+      {/* 1:1 image area */}
+      <div className={cn('relative w-full', palette.bg)} style={{ aspectRatio: '1 / 1' }}>
+        {imgSrc ? (
+          <img
+            src={imgSrc}
+            alt={cat.name}
+            className='h-full w-full object-cover'
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className='flex h-full w-full items-center justify-center'>
+            <span className={cn('text-3xl opacity-30', palette.text)}>□</span>
+          </div>
+        )}
+      </div>
+
+      {/* text area */}
+      <div className='flex flex-1 flex-col px-2.5 py-2'>
+        <span className='line-clamp-2 text-[11px] font-bold leading-tight text-gray-800 group-hover:text-brand-purple lg:text-[12px]'>
           {cat.name}
         </span>
-      </div>
-      {subText ? (
-        <span className='line-clamp-2 text-[10px] leading-tight text-[var(--brand-muted-purple)] lg:text-xs'>
-          {subText}
+        <span
+          className={cn(
+            'mt-1 text-[10px] font-medium leading-none lg:text-[11px]',
+            cat.factory_count > 0 ? 'text-brand-purple' : 'text-gray-400',
+          )}
+        >
+          {cat.factory_count > 0 ? `${cat.factory_count} โรงงาน` : 'เร็วๆ นี้'}
         </span>
-      ) : (
-        <span className='text-[10px] text-gray-400 lg:text-xs'>ดูรายการในหมวดนี้</span>
-      )}
-      <span
-        className={cn(
-          'mt-auto text-[9px] font-semibold leading-none lg:text-xs lg:font-bold',
-          cat.factory_count > 0 ? 'text-brand-purple' : 'text-gray-400',
-        )}
-      >
-        {cat.factory_count > 0 ? `${cat.factory_count} โรงงาน` : 'ดูหมวดนี้'}
-      </span>
+      </div>
     </button>
   );
 }
@@ -53,35 +79,32 @@ export function HubSeeAllCard({
   totalFactories: number;
   onClick: () => void;
 }) {
-  const subText = hiddenNames.slice(0, 2).join(' · ');
-
   return (
     <button
       type='button'
       onClick={onClick}
-      className={cn(hubRowCardClass, 'border-dashed hover:border-brand-purple/40')}
+      className='group flex w-[120px] shrink-0 flex-col overflow-hidden rounded-xl border border-dashed border-brand-purple/30 bg-brand-violet-soft/60 text-left shadow-none transition-all hover:border-brand-purple/50 hover:bg-brand-violet-soft active:scale-[0.97] lg:w-[140px]'
     >
-      <div className='mb-1 flex items-center gap-1 lg:mb-1.5 lg:gap-1.5'>
-        <span className='flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-brand-purple/10 text-brand-purple lg:h-6 lg:w-6 lg:rounded-lg'>
-          <ArrowRight size={12} strokeWidth={2.25} className='lg:hidden' />
-          <ArrowRight size={14} strokeWidth={2.25} className='hidden lg:block' />
-        </span>
-        <span className='line-clamp-1 text-xs font-medium leading-tight text-brand-purple lg:text-sm'>
+      <div className='relative w-full bg-brand-lavender-chip/50' style={{ aspectRatio: '1 / 1' }}>
+        <div className='flex h-full w-full items-center justify-center'>
+          <ArrowRight size={24} strokeWidth={2} className='text-brand-purple/50 group-hover:text-brand-purple' />
+        </div>
+      </div>
+      <div className='flex flex-1 flex-col px-2.5 py-2'>
+        <span className='line-clamp-2 text-[11px] font-bold leading-tight text-brand-purple lg:text-[12px]'>
           +{count} หมวด
         </span>
+        {hiddenNames.length > 0 ? (
+          <span className='mt-0.5 line-clamp-1 text-[10px] text-brand-purple/60'>
+            {hiddenNames[0]}
+          </span>
+        ) : null}
+        {totalFactories > 0 ? (
+          <span className='mt-1 text-[10px] font-medium leading-none text-brand-purple lg:text-[11px]'>
+            {totalFactories} โรงงาน
+          </span>
+        ) : null}
       </div>
-      {subText ? (
-        <span className='line-clamp-2 text-[10px] leading-tight text-[var(--brand-muted-purple)] lg:text-xs'>
-          {subText}
-        </span>
-      ) : (
-        <span className='text-[10px] text-gray-400 lg:text-xs'>ดูครบทุกหมวด</span>
-      )}
-      {totalFactories > 0 ? (
-        <span className='mt-auto text-[9px] font-semibold leading-none text-brand-purple lg:text-xs lg:font-bold'>
-          {totalFactories} โรงงานในกลุ่มนี้
-        </span>
-      ) : null}
     </button>
   );
 }
