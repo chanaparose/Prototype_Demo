@@ -24,6 +24,8 @@ interface LookupSelectProps<Option> {
   triggerClassName?: string;
   contentClassName?: string;
   itemClassName?: string;
+  /** บังคับเปิด/ปิดช่องพิมพ์ค้นหาใน dropdown — ไม่ระบุ = เปิดอัตโนมัติเมื่อตัวเลือกเยอะ */
+  searchable?: boolean;
 }
 
 export function LookupSelect<Option>({
@@ -40,6 +42,7 @@ export function LookupSelect<Option>({
   triggerClassName = '',
   contentClassName = '',
   itemClassName = '',
+  searchable,
 }: LookupSelectProps<Option>) {
   const { data, isLoading, isError, refetch } = queryResult;
   const opts = data ?? [];
@@ -64,7 +67,7 @@ export function LookupSelect<Option>({
           <SelectTrigger className={`mt-1 w-full ${triggerClassName}`}>
             <SelectValue placeholder={isLoading ? 'กำลังโหลด…' : placeholder} />
           </SelectTrigger>
-          <SelectContent className={contentClassName}>
+          <SelectContent className={contentClassName} searchable={searchable}>
             <SelectItem value='__empty' className={itemClassName}>
               {isLoading ? 'กำลังโหลด…' : placeholder}
             </SelectItem>

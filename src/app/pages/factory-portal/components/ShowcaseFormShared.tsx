@@ -346,6 +346,7 @@ export function ShowcaseCategoryFields({
           triggerClassName='text-xs shadow-none focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-brand-purple/10 focus-visible:border-brand-purple/40'
           contentClassName='text-xs'
           itemClassName='text-xs'
+          searchable
         />
 
         {!hideSubCat ? (
@@ -370,7 +371,7 @@ export function ShowcaseCategoryFields({
                   }
                 />
               </SelectTrigger>
-              <SelectContent className='text-xs'>
+              <SelectContent className='text-xs' searchable>
                 <SelectItem value='__empty' className='text-xs'>
                   {categoryValue == null
                     ? '— เลือกหมวดหมู่ก่อน —'
