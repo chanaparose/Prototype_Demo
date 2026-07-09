@@ -2,9 +2,8 @@ import { ChevronRight } from 'lucide-react';
 import { cn } from '@lib/utils';
 import type { IHubResponse } from '@/services/api/types/master.types';
 import { Button } from '@/components/ui/button';
-import { HubCategoryCard, HubSeeAllCard } from '@/components/features/hub/HubCategoryCard';
+import { HubCategoryCard } from '@/components/features/hub/HubCategoryCard';
 import {
-  getHubRowVisibleCount,
   hubSectionDividerClass,
   hubSectionShellClass,
 } from '@/components/features/hub/hubRowShared';
@@ -17,10 +16,6 @@ type HubSectionProps = {
 
 export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
   const totalFactories = hub.categories.reduce((s, c) => s + (c.factory_count ?? 0), 0);
-  const visibleCount = getHubRowVisibleCount(hub.categories.length);
-  const visible = hub.categories.slice(0, visibleCount);
-  const hidden = hub.categories.slice(visibleCount);
-  const hiddenCount = hidden.length;
 
   return (
     <section className={cn(hubSectionShellClass, className)}>
@@ -52,11 +47,11 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
 
       <div
         className={cn(
-          'flex flex-nowrap items-stretch gap-2 overflow-x-auto pb-2 scrollbar-hide lg:gap-2.5 lg:overflow-hidden',
+          'flex flex-nowrap items-stretch gap-2 overflow-x-auto pb-2 scrollbar-hide lg:gap-2.5',
           hubSectionDividerClass,
         )}
       >
-        {visible.map((cat) => (
+        {hub.categories.map((cat) => (
           <HubCategoryCard
             key={cat.category_id}
             cat={cat}
@@ -67,14 +62,6 @@ export function HubSection({ hub, onNavigate, className }: HubSectionProps) {
             }
           />
         ))}
-        {hiddenCount > 0 ? (
-          <HubSeeAllCard
-            count={hiddenCount}
-            hiddenNames={hidden.map((c) => c.name)}
-            totalFactories={totalFactories}
-            onClick={() => onNavigate(`/factory-ideas?hub_id=${hub.hub_id}&hub_scope=${hub.scope}`)}
-          />
-        ) : null}
       </div>
     </section>
   );
