@@ -33,7 +33,10 @@ export function SubCategoryPickerModal({
   const [confirmError, setConfirmError] = useState('');
 
   useEffect(() => {
-    if (open) { setWorking(initialSelected); setConfirmError(''); }
+    if (open) {
+      setWorking(initialSelected);
+      setConfirmError('');
+    }
   }, [open, initialSelected]);
 
   // หา item ที่เป็น "ทั้งหมด" (sort_order === 99) — must be before early return (hooks order)
@@ -87,7 +90,9 @@ export function SubCategoryPickerModal({
   return (
     <AppSheetDialog
       open={open}
-      onOpenChange={(next) => { if (!next) onClose(); }}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
       title='เลือกหมวดย่อย'
       className='sm:max-w-lg'
       bodyClassName='p-4 sm:p-5 space-y-4 bg-white'
@@ -147,10 +152,12 @@ export function SubCategoryPickerModal({
                   />
                   {sub.name}
                   {isAll && (
-                    <span className={cn(
-                      'ml-0.5 text-[9px] font-bold px-1 rounded',
-                      sel ? 'bg-white/25 text-white' : 'bg-violet-100 text-violet-600',
-                    )}>
+                    <span
+                      className={cn(
+                        'ml-0.5 text-[9px] font-bold px-1 rounded',
+                        sel ? 'bg-white/25 text-white' : 'bg-violet-100 text-violet-600',
+                      )}
+                    >
                       ทั้งหมด
                     </span>
                   )}

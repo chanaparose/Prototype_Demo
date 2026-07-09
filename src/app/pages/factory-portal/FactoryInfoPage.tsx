@@ -270,6 +270,7 @@ function AvatarUploader({
 // ─── CategoryViewCard — view-mode card for categories (no edit) ───────────────
 type SubEntryView = { id: number; name: string; categoryName?: string };
 type CatCardView = { id: number; name: string; subs: SubEntryView[] };
+type HubCardView = { id: number; name: string; scope: string; cats: CatCardView[] };
 
 function CategoryViewCard({ cat, isMT = false }: { cat: CatCardView; isMT?: boolean }) {
   // Group subs by categoryName to show the intermediate category level
@@ -296,9 +297,7 @@ function CategoryViewCard({ cat, isMT = false }: { cat: CatCardView; isMT?: bool
             <div className='space-y-2'>
               {[...subsByCategory.entries()].map(([catName, subs]) => (
                 <div key={catName} className='space-y-1'>
-                  {catName && (
-                    <p className='text-[11px] font-semibold text-gray-500'>{catName}</p>
-                  )}
+                  {catName && <p className='text-[11px] font-semibold text-gray-500'>{catName}</p>}
                   <ul className='flex flex-wrap gap-1.5'>
                     {subs.map((s) => (
                       <li key={s.id}>
@@ -321,6 +320,136 @@ function CategoryViewCard({ cat, isMT = false }: { cat: CatCardView; isMT?: bool
         ) : (
           <p className='text-xs text-gray-400'>ยังไม่ได้เลือกหมวดย่อย</p>
         ))}
+    </div>
+  );
+}
+
+function CategorySheetView({
+  hubCards,
+}: {
+  hubCards: { hubs: HubCardView[]; other: CatCardView[] };
+}) {
+  const renderRows = (cats: CatCardView[], scope?: string) =>
+    cats.map((cat) => {
+      const isMT = scope === 'MT';
+      return (
+        <tr key={`${scope ?? 'other'}-${cat.id}`} className='hover:bg-slate-50/70'>
+          <td className='border-b border-slate-100 px-3 py-3 align-top'>
+            <p className='text-sm font-bold text-slate-900'>{cat.name}</p>
+            <span
+              className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                isMT ? 'bg-emerald-50 text-emerald-700' : 'bg-violet-50 text-brand-purple'
+              }`}
+            >
+              {isMT ? 'วัตถุดิบ (MT)' : 'รับผลิต (PD)'}
+            </span>
+          </td>
+          <td className='border-b border-slate-100 px-3 py-3 align-top'>
+            {isMT ? (
+              <span className='text-xs font-medium text-slate-400'>ไม่ต้องเลือกหมวดย่อย</span>
+            ) : cat.subs.length > 0 ? (
+              <div className='flex flex-wrap gap-1.5'>
+                {cat.subs.map((s) => (
+                  <span
+                    key={s.id}
+                    className='inline-flex rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-800'
+                  >
+                    {s.name}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className='text-xs text-slate-400'>ยังไม่ได้เลือกหมวดย่อย</span>
+            )}
+          </td>
+        </tr>
+      );
+    });
+
+  const renderTable = (title: string, scope: 'PD' | 'MT', hubs: HubCardView[]) => {
+    const isMT = scope === 'MT';
+    const hasRows = hubs.length > 0;
+
+    return (
+      <div className='overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm'>
+        <div
+          className={`flex items-center justify-between gap-3 border-b border-slate-100 px-3 py-2.5 ${
+            isMT ? 'bg-emerald-50/70' : 'bg-violet-50/70'
+          }`}
+        >
+          <div>
+            <p
+              className={`text-sm font-extrabold ${isMT ? 'text-emerald-700' : 'text-brand-purple'}`}
+            >
+              {title}
+            </p>
+            <p className='text-[11px] font-medium text-slate-500'>
+              {hasRows
+                ? `${hubs.reduce((sum, h) => sum + h.cats.length, 0)} หมวดหลัก`
+                : 'ยังไม่มีข้อมูล'}
+            </p>
+          </div>
+        </div>
+        {hasRows ? (
+          <div className='overflow-x-auto'>
+            <table className='w-full min-w-[560px] border-collapse'>
+              <thead>
+                <tr className='bg-slate-50 text-left'>
+                  <th className='border-b border-slate-200 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-slate-500'>
+                    Hub / หมวดหลัก
+                  </th>
+                  <th className='border-b border-slate-200 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-slate-500'>
+                    หมวดย่อยที่รับงาน
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {hubs.map((hub) => (
+                  <React.Fragment key={hub.id}>
+                    <tr>
+                      <td
+                        colSpan={2}
+                        className={`border-b border-slate-100 px-3 py-2 text-xs font-extrabold ${
+                          isMT
+                            ? 'bg-emerald-50/40 text-emerald-700'
+                            : 'bg-violet-50/40 text-brand-purple'
+                        }`}
+                      >
+                        {hub.name}
+                      </td>
+                    </tr>
+                    {renderRows(hub.cats, hub.scope)}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className='px-3 py-5 text-sm text-slate-400'>ยังไม่ได้เลือกหมวดใน scope นี้</div>
+        )}
+      </div>
+    );
+  };
+
+  const pdHubs = hubCards.hubs.filter((h) => h.scope !== 'MT');
+  const mtHubs = hubCards.hubs.filter((h) => h.scope === 'MT');
+
+  return (
+    <div className='space-y-4'>
+      {renderTable('หมวดสินค้า / รับผลิต (PD)', 'PD', pdHubs)}
+      {renderTable('หมวดวัตถุดิบ (MT)', 'MT', mtHubs)}
+      {hubCards.other.length > 0 ? (
+        <div className='overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm'>
+          <div className='border-b border-slate-100 bg-slate-50 px-3 py-2.5'>
+            <p className='text-sm font-extrabold text-slate-600'>หมวดอื่นๆ</p>
+          </div>
+          <div className='overflow-x-auto'>
+            <table className='w-full min-w-[560px] border-collapse'>
+              <tbody>{renderRows(hubCards.other)}</tbody>
+            </table>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -386,7 +515,6 @@ export function FactoryInfoPage() {
   const [okMsg, setOkMsg] = useState('');
 
   const openCategoryPickerRef = useRef<(() => void) | null>(null);
-  const openHubPickerRef = useRef<(() => void) | null>(null);
   // PD categories ที่ยังไม่ได้เลือก sub — ใช้ block save
   const pdSubErrorsRef = useRef<Set<number>>(new Set());
   const openCertAddRef = useRef<(() => void) | null>(null);
@@ -520,9 +648,8 @@ export function FactoryInfoPage() {
   }, [rawCats, rawSubs]);
 
   // hub -> category -> subcategory, จัดกลุ่มตาม hub ที่แต่ละหมวดหมู่ที่โรงงานเลือกไว้สังกัดอยู่
-  type HubCard = { id: number; name: string; scope: string; cats: CatCard[] };
   const hubCards = useMemo(() => {
-    const out: HubCard[] = [];
+    const out: HubCardView[] = [];
     const usedCategoryIds = new Set<number>();
     hubs.forEach((h) => {
       const cats = h.categories
@@ -660,18 +787,10 @@ export function FactoryInfoPage() {
                   <Button
                     variant='unstyled'
                     type='button'
-                    onClick={() => openHubPickerRef.current?.()}
-                    className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
-                  >
-                    <Plus size={11} /> เพิ่ม Hub
-                  </Button>
-                  <Button
-                    variant='unstyled'
-                    type='button'
                     onClick={() => openCategoryPickerRef.current?.()}
                     className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
                   >
-                    <Plus size={11} /> เพิ่มหมวดหมู่
+                    <Plus size={11} /> จัดการหมวดหมู่
                   </Button>
                 </div>
               </div>
@@ -680,9 +799,6 @@ export function FactoryInfoPage() {
                 factoryId={fid}
                 onRegisterAdd={(h) => {
                   openCategoryPickerRef.current = h;
-                }}
-                onRegisterAddHub={(h) => {
-                  openHubPickerRef.current = h;
                 }}
                 apiCategories={
                   (factoryQ.data?.categories ?? []) as Parameters<
@@ -719,43 +835,11 @@ export function FactoryInfoPage() {
             <div className='space-y-4'>
               <p className='text-xs font-semibold text-gray-500'>ข้อมูลการผลิตและหมวดหมู่</p>
 
-              {/* Hub -> Category -> Subcategory */}
-              {hubCards.hubs.map((hub) => (
-                <div key={hub.id} className='space-y-2.5'>
-                  <p
-                    className={`text-sm font-bold ${
-                      hub.scope === 'MT' ? 'text-emerald-700' : 'text-brand-purple'
-                    }`}
-                  >
-                    {hub.name}
-                  </p>
-                  <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3'>
-                    {hub.cats.map((cat) => (
-                      <CategoryViewCard
-                        key={`${hub.id}-${cat.id}`}
-                        cat={cat}
-                        isMT={hub.scope === 'MT'}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-
-              {/* Categories not mapped to any known hub */}
-              {hubCards.other.length > 0 ? (
-                <div className='space-y-2.5'>
-                  <p className='text-sm font-bold text-gray-500'>หมวดอื่นๆ</p>
-                  <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3'>
-                    {hubCards.other.map((cat) => (
-                      <CategoryViewCard key={`other-${cat.id}`} cat={cat} />
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
-              {hubCards.hubs.length === 0 && hubCards.other.length === 0 ? (
+              {hubCards.hubs.length > 0 || hubCards.other.length > 0 ? (
+                <CategorySheetView hubCards={hubCards} />
+              ) : (
                 <p className='text-sm text-gray-300 font-normal'>—</p>
-              ) : null}
+              )}
             </div>
           </div>
         )}

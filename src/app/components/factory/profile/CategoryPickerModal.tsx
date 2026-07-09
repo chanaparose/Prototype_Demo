@@ -69,7 +69,10 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
   const mtCategories = categories.filter((c) => c.scope === 'MT');
 
   useEffect(() => {
-    if (open) { setSelected(initialSelected); setConfirmError(''); }
+    if (open) {
+      setSelected(initialSelected);
+      setConfirmError('');
+    }
   }, [open, initialSelected]);
 
   const toggle = (id: number) => {
@@ -154,7 +157,9 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
   return (
     <AppSheetDialog
       open={open}
-      onOpenChange={(next) => { if (!next) onClose(); }}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
       title='เลือกหมวดหมู่หลัก'
       className='sm:max-w-lg'
       bodyClassName='p-4 sm:p-5 space-y-4 bg-white'
@@ -180,18 +185,22 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
           <p className='text-sm text-gray-400'>ไม่พบข้อมูลหมวด</p>
         ) : !isError ? (
           <div className='space-y-4 max-h-[55vh] overflow-y-auto pr-1'>
-            {pdCategories.length > 0 && renderGroup(
-              'หมวดสินค้า (PD)', pdCategories,
-              'text-brand-purple',
-              'border-[var(--brand-purple)] bg-[var(--brand-purple)] font-semibold text-white shadow-sm',
-              'border-[var(--brand-lavender-muted,#e5e0f0)] bg-white text-[var(--neutral-subtle,#6b7280)] hover:border-[var(--brand-mauve,#9c84c0)] hover:text-[var(--brand-purple,#7c3aed)]',
-            )}
-            {mtCategories.length > 0 && renderGroup(
-              'หมวดวัตถุดิบ (MT)', mtCategories,
-              'text-emerald-600',
-              'border-emerald-500 bg-emerald-500 font-semibold text-white shadow-sm',
-              'border-gray-200 bg-white text-gray-600 hover:border-emerald-300 hover:text-emerald-600',
-            )}
+            {pdCategories.length > 0 &&
+              renderGroup(
+                'หมวดสินค้า (PD)',
+                pdCategories,
+                'text-brand-purple',
+                'border-[var(--brand-purple)] bg-[var(--brand-purple)] font-semibold text-white shadow-sm',
+                'border-[var(--brand-lavender-muted,#e5e0f0)] bg-white text-[var(--neutral-subtle,#6b7280)] hover:border-[var(--brand-mauve,#9c84c0)] hover:text-[var(--brand-purple,#7c3aed)]',
+              )}
+            {mtCategories.length > 0 &&
+              renderGroup(
+                'หมวดวัตถุดิบ (MT)',
+                mtCategories,
+                'text-emerald-600',
+                'border-emerald-500 bg-emerald-500 font-semibold text-white shadow-sm',
+                'border-gray-200 bg-white text-gray-600 hover:border-emerald-300 hover:text-emerald-600',
+              )}
           </div>
         ) : null}
       </FormField>

@@ -22,6 +22,13 @@ function toOption(r: Row, categoryIdHint: number): SubCategoryOption | null {
   return { id, name, categoryId, sortOrder: Number.isFinite(sortOrderRaw) ? sortOrderRaw : 0 };
 }
 
+function sortSubCategories(a: SubCategoryOption, b: SubCategoryOption) {
+  const sortA = Number.isFinite(Number(a.sortOrder)) ? Number(a.sortOrder) : 0;
+  const sortB = Number.isFinite(Number(b.sortOrder)) ? Number(b.sortOrder) : 0;
+  if (sortA !== sortB) return sortA - sortB;
+  return a.name.localeCompare(b.name, 'th');
+}
+
 export function useSubCategoriesByCategories(categoryIds: number[]) {
   const queries = useQueries({
     queries: categoryIds.map((cid) => ({
@@ -32,7 +39,7 @@ export function useSubCategoriesByCategories(categoryIds: number[]) {
         return arr
           .map((r) => toOption(r, cid))
           .filter((x): x is SubCategoryOption => x != null)
-          .sort((a, b) => a.name.localeCompare(b.name, 'th'));
+          .sort(sortSubCategories);
       },
       staleTime: 5 * 60_000,
       gcTime: 30 * 60_000,
@@ -55,10 +62,7 @@ export function useSubCategoriesByCategories(categoryIds: number[]) {
     for (const item of normalized) {
       if (!uniq.has(item.id)) uniq.set(item.id, item);
     }
-    byCategory.set(
-      cid,
-      [...uniq.values()].sort((a, b) => a.name.localeCompare(b.name, 'th')),
-    );
+    byCategory.set(cid, [...uniq.values()].sort(sortSubCategories));
   });
 
   const flat: SubCategoryOption[] = [];
