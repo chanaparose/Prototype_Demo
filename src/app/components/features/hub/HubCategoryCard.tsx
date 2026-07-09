@@ -38,7 +38,7 @@ export function HubCategoryCard({
           <img
             src={imgSrc}
             alt={cat.name}
-            className='h-full w-full object-cover'
+            className='absolute inset-[4%] h-[94%] w-[94%] rounded-xl object-contain '
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = 'none';
             }}
