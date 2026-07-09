@@ -1,11 +1,15 @@
 import React, { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ImagePlus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ImagePlus, CheckCircle2, AlertCircle, Crop, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { getLbiHubs } from '@/services/api/masterApi';
 import { mediaApi } from '@/services/api/factoryApi';
 import { adminCatalogApi } from '@/services/api/adminApi';
 import { ImageCropModal } from '@/components/common/ImageCropModal';
+import {
+  HUB_CARD_IMG_FRAME_CLASS,
+  HUB_CARD_IMG_CLASS,
+} from '@/components/features/hub/HubCategoryCard';
 import type { IHubResponse, ICategoryForHubResponse } from '@/services/api/types/master.types';
 
 type EditTarget = {
@@ -13,55 +17,72 @@ type EditTarget = {
   file: File;
 };
 
+/** ดึงภาพเดิมจาก URL มาเป็น File เพื่อครอปใหม่ได้โดยไม่ต้องอัพโหลดไฟล์ใหม่ */
+async function urlToFile(url: string, name: string): Promise<File> {
+  const res = await fetch(url, { mode: 'cors' });
+  if (!res.ok) throw new Error('โหลดภาพเดิมไม่สำเร็จ');
+  const blob = await res.blob();
+  const ext = blob.type === 'image/png' ? 'png' : blob.type === 'image/webp' ? 'webp' : 'jpg';
+  return new File([blob], `${name}.${ext}`, { type: blob.type || 'image/jpeg' });
+}
+
 function CategoryCard({
   cat,
   onPickFile,
+  onRecrop,
 }: {
   cat: ICategoryForHubResponse;
   onPickFile: (cat: ICategoryForHubResponse, file: File) => void;
+  onRecrop: (cat: ICategoryForHubResponse) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const hasImg = Boolean(cat.img);
-
   return (
-    <div className='relative flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm'>
-      {/* image slot 1:1 */}
-      <div
-        className='relative w-full cursor-pointer bg-gray-50'
-        style={{ aspectRatio: '1 / 1' }}
-        onClick={() => inputRef.current?.click()}
-        title='คลิกเพื่อเปลี่ยนภาพ'
-      >
+    <div className='group relative flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm'>
+      {/* image slot — สไตล์เดียวกับ HubCategoryCard เพื่อให้เห็นผลลัพธ์จริง */}
+      <div className={HUB_CARD_IMG_FRAME_CLASS} style={{ aspectRatio: '1 / 1' }}>
         {hasImg ? (
-          <img
-            src={cat.img}
-            alt={cat.name}
-            className='absolute inset-[4%] h-[92%] w-[92%] rounded-lg object-contain'
-          />
+          <img src={cat.img} alt={cat.name} className={HUB_CARD_IMG_CLASS} />
         ) : (
           <div className='flex h-full w-full flex-col items-center justify-center gap-1 text-gray-300'>
             <ImagePlus size={28} strokeWidth={1.5} />
             <span className='text-[10px]'>ยังไม่มีภาพ</span>
           </div>
         )}
-        <div className='absolute inset-0 flex items-center justify-center opacity-0 transition-opacity hover:opacity-100 bg-black/20 rounded-none'>
-          <span className='rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-gray-700 shadow'>
-            เปลี่ยนภาพ
-          </span>
+
+        {/* hover actions */}
+        <div className='absolute inset-0 flex items-center justify-center gap-1.5 bg-black/25 opacity-0 transition-opacity group-hover:opacity-100'>
+          <button
+            type='button'
+            onClick={() => inputRef.current?.click()}
+            title='อัปโหลดภาพใหม่'
+            className='flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow transition-transform hover:scale-105'
+          >
+            <Upload size={14} />
+          </button>
+          {hasImg ? (
+            <button
+              type='button'
+              onClick={() => onRecrop(cat)}
+              title='ครอป/จัดตำแหน่งภาพเดิม'
+              className='flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow transition-transform hover:scale-105'
+            >
+              <Crop size={14} />
+            </button>
+          ) : null}
         </div>
-        {hasImg ? (
-          <span className='absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow'>
+
+        <span className='absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow'>
+          {hasImg ? (
             <CheckCircle2 size={13} className='text-emerald-500' />
-          </span>
-        ) : (
-          <span className='absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow'>
+          ) : (
             <AlertCircle size={13} className='text-gray-300' />
-          </span>
-        )}
+          )}
+        </span>
       </div>
 
       <div className='px-2.5 py-2'>
-        <p className='text-[11px] font-semibold leading-tight text-gray-800 line-clamp-2'>{cat.name}</p>
+        <p className='line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800'>{cat.name}</p>
         <p className='mt-0.5 text-[10px] text-gray-400'>ID {cat.category_id}</p>
       </div>
 
@@ -84,6 +105,7 @@ export function AdminCategoryImagesPage() {
   const qc = useQueryClient();
   const [editTarget, setEditTarget] = useState<EditTarget | null>(null);
   const [saving, setSaving] = useState(false);
+  const [loadingRecropId, setLoadingRecropId] = useState<number | null>(null);
 
   const hubsQ = useQuery({
     queryKey: ['lbi-hubs', 'all'],
@@ -96,6 +118,19 @@ export function AdminCategoryImagesPage() {
   });
 
   const hubs = hubsQ.data ?? [];
+
+  const handleRecrop = async (cat: ICategoryForHubResponse) => {
+    if (!cat.img) return;
+    setLoadingRecropId(cat.category_id);
+    try {
+      const file = await urlToFile(cat.img, `category-${cat.category_id}`);
+      setEditTarget({ category: cat, file });
+    } catch {
+      toast.error('โหลดภาพเดิมไม่สำเร็จ ลองอัปโหลดไฟล์ใหม่แทน');
+    } finally {
+      setLoadingRecropId(null);
+    }
+  };
 
   const handleConfirmCrop = async (croppedFile: File) => {
     if (!editTarget) return;
@@ -118,7 +153,7 @@ export function AdminCategoryImagesPage() {
       <div>
         <h2 className='text-lg font-bold text-gray-900'>ภาพประจำหมวดหมู่</h2>
         <p className='mt-0.5 text-sm text-gray-500'>
-          คลิกที่ card เพื่ออัปโหลดและครอปภาพ (1:1) สำหรับแต่ละหมวดหมู่
+          ภาพแสดงตามสัดส่วนจริงบน card หน้าแรก — วางเมาส์บน card เพื่ออัปโหลดใหม่ หรือครอปภาพเดิม (1:1)
         </p>
       </div>
 
@@ -145,6 +180,7 @@ export function AdminCategoryImagesPage() {
                 key={cat.category_id}
                 cat={cat}
                 onPickFile={(c, f) => setEditTarget({ category: c, file: f })}
+                onRecrop={handleRecrop}
               />
             ))}
           </div>
@@ -161,10 +197,10 @@ export function AdminCategoryImagesPage() {
         onConfirm={handleConfirmCrop}
       />
 
-      {saving ? (
+      {saving || loadingRecropId !== null ? (
         <div className='fixed inset-0 z-[200] flex items-center justify-center bg-black/30'>
           <div className='rounded-xl bg-white px-6 py-4 text-sm font-medium text-gray-700 shadow-xl'>
-            กำลังอัปโหลด...
+            {saving ? 'กำลังอัปโหลด...' : 'กำลังโหลดภาพเดิม...'}
           </div>
         </div>
       ) : null}

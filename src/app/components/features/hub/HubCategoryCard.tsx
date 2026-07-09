@@ -12,9 +12,14 @@ const PASTEL_PALETTES = [
   { bg: 'bg-[#F0FFFE]', text: 'text-[#107272]' },
 ];
 
-function getPalette(categoryId: number) {
+export function getPalette(categoryId: number) {
   return PASTEL_PALETTES[categoryId % PASTEL_PALETTES.length];
 }
+
+/** สไตล์พื้นที่ภาพ 1:1 — ใช้ร่วมกันระหว่าง card จริงกับหน้า admin เพื่อให้ preview ตรงกัน */
+export const HUB_CARD_IMG_FRAME_CLASS =
+  'relative flex w-full items-center justify-center bg-white p-[3%]';
+export const HUB_CARD_IMG_CLASS = 'h-full w-full rounded-[10px] object-contain';
 
 export function HubCategoryCard({
   cat,
@@ -34,14 +39,14 @@ export function HubCategoryCard({
     >
       {/* 1:1 image area */}
       <div
-        className={cn('relative flex w-full items-center justify-center p-[3%]', palette.bg)}
+        className={HUB_CARD_IMG_FRAME_CLASS}
         style={{ aspectRatio: '1 / 1' }}
       >
         {imgSrc ? (
           <img
             src={imgSrc}
             alt={cat.name}
-            className='h-full w-full rounded-[10px] object-contain'
+            className={HUB_CARD_IMG_CLASS}
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = 'none';
             }}
