@@ -1,15 +1,12 @@
 import { useQueries } from '@tanstack/react-query';
 import { masterKeys } from '@/lib/queryKeys';
 import { categoriesApi } from '@/services/api/masterApi';
+import {
+  sortSubCategories,
+  type SubCategoryOption,
+} from '@/components/factory/profile/subCategoryPicker.utils';
 
 type Row = Record<string, unknown>;
-
-export interface SubCategoryOption {
-  id: number;
-  name: string;
-  categoryId: number;
-  sortOrder?: number;
-}
 
 function toOption(r: Row, categoryIdHint: number): SubCategoryOption | null {
   const id = Number(r.sub_category_id ?? r.id);
@@ -20,13 +17,6 @@ function toOption(r: Row, categoryIdHint: number): SubCategoryOption | null {
   if (!Number.isFinite(categoryId) || categoryId <= 0) return null;
   if (!name) return null;
   return { id, name, categoryId, sortOrder: Number.isFinite(sortOrderRaw) ? sortOrderRaw : 0 };
-}
-
-function sortSubCategories(a: SubCategoryOption, b: SubCategoryOption) {
-  const sortA = Number.isFinite(Number(a.sortOrder)) ? Number(a.sortOrder) : 0;
-  const sortB = Number.isFinite(Number(b.sortOrder)) ? Number(b.sortOrder) : 0;
-  if (sortA !== sortB) return sortA - sortB;
-  return a.name.localeCompare(b.name, 'th');
 }
 
 export function useSubCategoriesByCategories(categoryIds: number[]) {
@@ -70,3 +60,5 @@ export function useSubCategoriesByCategories(categoryIds: number[]) {
 
   return { byCategory, flat, isLoading, isError };
 }
+
+export type { SubCategoryOption };

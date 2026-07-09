@@ -7,6 +7,11 @@ import {
   useSubCategoriesByCategories,
   type SubCategoryOption,
 } from '@/hooks/master/useSubCategoriesByCategory';
+import {
+  selectedSubNames as formatSelectedSubNames,
+  subsForDisplay,
+} from '@/components/factory/profile/subCategoryPicker.utils';
+import { SubCategoryPickerField } from '@/components/factory/profile/SubCategoryPickerField';
 import { AppSheetDialog } from '@/components/ui/app-sheet-dialog';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/shared/ui/forms/FormField';
@@ -23,41 +28,6 @@ interface Props {
   focusCategoryId?: number | null;
   onClose: () => void;
   onConfirm: (categoryIds: number[], subCategoryIds: number[]) => void;
-}
-
-function toggleSubCategory(working: number[], subs: SubCategoryOption[], id: number): number[] {
-  const allItem = subs.find((s) => Number(s.sortOrder ?? 0) === 99);
-  const catSubIds = subs.map((s) => s.id);
-  const sub = subs.find((s) => s.id === id);
-  const isAll = Number(sub?.sortOrder ?? 0) === 99;
-  const allSelected = allItem ? working.includes(allItem.id) : false;
-
-  if (working.includes(id)) {
-    return working.filter((x) => x !== id);
-  }
-  if (isAll) {
-    return [...working.filter((x) => !catSubIds.includes(x)), id].sort((a, b) => a - b);
-  }
-  if (allItem && allSelected) {
-    return [...working.filter((x) => x !== allItem.id), id].sort((a, b) => a - b);
-  }
-  return [...working, id].sort((a, b) => a - b);
-}
-
-function subsForDisplay(working: number[], subs: SubCategoryOption[]): number[] {
-  const allItem = subs.find((s) => Number(s.sortOrder ?? 0) === 99);
-  const catSubIds = subs.map((s) => s.id);
-  if (allItem && working.includes(allItem.id)) {
-    return working.filter((x) => !catSubIds.includes(x) || x === allItem.id);
-  }
-  return working;
-}
-
-function sortSubCategories(a: SubCategoryOption, b: SubCategoryOption) {
-  const sortA = Number.isFinite(Number(a.sortOrder)) ? Number(a.sortOrder) : 0;
-  const sortB = Number.isFinite(Number(b.sortOrder)) ? Number(b.sortOrder) : 0;
-  if (sortA !== sortB) return sortA - sortB;
-  return a.name.localeCompare(b.name, 'th');
 }
 
 function hubSelectedCount(hub: IHubResponse, categoryIds: number[]) {
@@ -280,10 +250,14 @@ export function CategoryManageModal({
   const thClass =
     'border border-gray-300 bg-gray-100 px-2.5 py-2 text-left text-[11px] font-semibold text-gray-600 whitespace-nowrap';
   const tdClass = 'border border-gray-200 px-2.5 py-2 text-xs text-gray-800 align-top';
-  const pillSelected =
-    'border-[var(--brand-purple)] bg-[var(--brand-purple)] font-semibold text-white shadow-sm';
-  const pillDefault =
-    'border-[var(--brand-lavender-muted,#e5e0f0)] bg-white text-[var(--neutral-subtle,#6b7280)] hover:border-[var(--brand-mauve,#9c84c0)] hover:text-[var(--brand-purple,#7c3aed)]';
+  const renderSubPicker = (subs: SubCategoryOption[]) => (
+    <SubCategoryPickerField
+      subs={subs}
+      selectedIds={subCategoryIds}
+      onChange={setSubCategoryIds}
+      isLoading={subsLoading}
+    />
+  );
 
   const title =
     mode === 'manage'
@@ -291,83 +265,6 @@ export function CategoryManageModal({
       : mode === 'pick-hub'
         ? 'เพิ่ม Hub'
         : `เลือกหมวดใน "${targetHub?.name ?? ''}"`;
-
-  const renderSubPills = (catId: number, subs: SubCategoryOption[]) => {
-    const sortedSubs = [...subs].sort(sortSubCategories);
-    const displaySubs = subsForDisplay(subCategoryIds, sortedSubs);
-    const allItem = sortedSubs.find((s) => Number(s.sortOrder ?? 0) === 99);
-    const allSelected = allItem ? displaySubs.includes(allItem.id) : false;
-    const selectedCount = sortedSubs.filter((s) => displaySubs.includes(s.id)).length;
-
-    if (subsLoading && subs.length === 0) {
-      return <p className='text-xs text-gray-400'>กำลังโหลดหมวดย่อย…</p>;
-    }
-    if (sortedSubs.length === 0) {
-      return <p className='text-xs text-gray-400'>ไม่มีหมวดย่อย</p>;
-    }
-
-    return (
-      <div className='rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm'>
-        <div className='mb-2 flex items-center justify-between gap-2'>
-          <p className='text-[11px] font-bold text-slate-600'>เลือกหมวดย่อย</p>
-          <span className='rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500'>
-            {selectedCount}/{sortedSubs.length}
-          </span>
-        </div>
-        <div className='grid gap-1.5 sm:grid-cols-2'>
-          {sortedSubs.map((sub) => {
-            const isAll = Number(sub.sortOrder ?? 0) === 99;
-            const sel = displaySubs.includes(sub.id);
-            const disabled = !isAll && allSelected;
-
-            return (
-              <label
-                key={sub.id}
-                className={cn(
-                  'flex min-h-9 cursor-pointer select-none items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[11px] transition-all',
-                  sel
-                    ? 'border-brand-purple bg-brand-purple font-semibold text-white shadow-sm'
-                    : 'border-slate-200 bg-slate-50/70 text-slate-600 hover:border-brand-mauve hover:bg-white hover:text-brand-purple',
-                  disabled && 'pointer-events-none opacity-35',
-                  isAll && !sel && 'border-violet-200 bg-violet-50/60 text-violet-700',
-                )}
-              >
-                <input
-                  type='checkbox'
-                  className='sr-only'
-                  checked={sel}
-                  onChange={() =>
-                    setSubCategoryIds((prev) => toggleSubCategory(prev, sortedSubs, sub.id))
-                  }
-                />
-                <span
-                  className={cn(
-                    'flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px]',
-                    sel
-                      ? 'border-white/70 bg-white/20 text-white'
-                      : 'border-slate-300 bg-white text-transparent',
-                  )}
-                >
-                  ✓
-                </span>
-                <span className='min-w-0 flex-1 truncate'>{sub.name}</span>
-                {isAll ? (
-                  <span
-                    className={cn(
-                      'rounded px-1 text-[9px] font-bold',
-                      sel ? 'bg-white/25 text-white' : 'bg-violet-100 text-violet-600',
-                    )}
-                  >
-                    ทั้งหมด
-                  </span>
-                ) : null}
-              </label>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
 
   const renderManageTable = (title: string, scope: ScopeTab) => {
     const isMTScope = scope === 'MT';
@@ -411,13 +308,10 @@ export function CategoryManageModal({
               <tbody>
                 {rows.map(({ hub, cat, isFirstInHub, hubRowSpan, isMT }) => {
                   const subs = byCategory.get(cat.category_id) ?? [];
-                  const displaySubs = subsForDisplay(subCategoryIds, subs);
-                  const selectedSubNames = subs
-                    .filter((s) => displaySubs.includes(s.id))
-                    .map((s) => s.name);
+                  const names = formatSelectedSubNames(subCategoryIds, subs);
                   const isFocus = focusCategoryId === cat.category_id;
                   const isEditing = expandedEditCatId === cat.category_id;
-                  const hasSubError = !isMT && subs.length > 0 && selectedSubNames.length === 0;
+                  const hasSubError = !isMT && subs.length > 0 && names.length === 0;
 
                   return (
                     <Fragment key={cat.category_id}>
@@ -466,9 +360,9 @@ export function CategoryManageModal({
                         <td className={tdClass}>
                           {isMT ? (
                             <span className='text-[11px] text-gray-400'>ไม่ต้องเลือกหมวดย่อย</span>
-                          ) : selectedSubNames.length > 0 ? (
+                          ) : names.length > 0 ? (
                             <span className='text-[11px] leading-relaxed text-gray-700'>
-                              {selectedSubNames.join(', ')}
+                              {names.join(', ')}
                             </span>
                           ) : subs.length > 0 ? (
                             <span className='text-[11px] font-medium text-red-500'>
@@ -519,7 +413,7 @@ export function CategoryManageModal({
                             <p className='mb-2 text-[11px] font-medium text-gray-600'>
                               เลือกหมวดย่อย — {cat.name}
                             </p>
-                            {renderSubPills(cat.category_id, subs)}
+                            {renderSubPicker(subs)}
                           </td>
                         </tr>
                       ) : null}
@@ -703,7 +597,7 @@ export function CategoryManageModal({
                   </label>
 
                   {selected && !isMT ? (
-                    <div className='mt-2 pl-6'>{renderSubPills(cat.category_id, subs)}</div>
+                    <div className='mt-2 pl-6'>{renderSubPicker(subs)}</div>
                   ) : null}
                   {selected && isMT ? (
                     <p className='mt-1.5 pl-6 text-[11px] text-emerald-600'>ไม่ต้องเลือกหมวดย่อย</p>
