@@ -1,9 +1,14 @@
 import { Link, useNavigate } from 'react-router';
-import { Building2, ChevronRight, Leaf, PackageSearch, type LucideIcon } from 'lucide-react';
+import { Building2, ChevronRight, Leaf, type LucideIcon } from 'lucide-react';
 import { cn } from '@lib/utils';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import { HubSectionSkeleton } from '@/components/features/hub/HubSectionSkeleton';
 import { buildFactoryIdeasHubPageUrl } from '@/components/features/explore/exploreHubFilter';
+import {
+  getPalette,
+  HUB_CARD_IMG_FRAME_CLASS,
+  HUB_CARD_IMG_CLASS,
+} from '@/components/features/hub/HubCategoryCard';
 import type { ICategoryForHubResponse, IHubResponse } from '@/services/api/types/master.types';
 
 type ExploreHubPreviewProps = {
@@ -238,36 +243,32 @@ function CompactCategoryCard({
   cat: ICategoryForHubResponse;
   onClick: () => void;
 }) {
-  const subText = (cat.sub_preview ?? []).slice(0, 2).join(' · ');
+  const palette = getPalette(cat.category_id);
+  const imgSrc = cat.img || cat.image_url || cat.image || '';
 
   return (
     <button
       type='button'
       onClick={onClick}
-      className='group flex h-[92px] w-[155px] shrink-0 flex-col rounded-lg border border-gray-100 bg-white px-2.5 py-2 text-left transition-colors hover:border-brand-purple/40 hover:bg-slate-50/50 active:bg-slate-50 md:border-slate-200'
+      className='group flex w-[78px] shrink-0 flex-col items-center gap-1 text-center'
     >
-      <div className='mb-1 flex items-center gap-1'>
-        <span className='flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-brand-purple/10 text-brand-purple'>
-          <PackageSearch size={12} strokeWidth={2.25} />
-        </span>
-        <span className='line-clamp-1 text-xs font-medium leading-tight text-gray-700 group-hover:text-brand-purple'>
-          {cat.name}
-        </span>
-      </div>
-      {subText ? (
-        <span className='line-clamp-2 text-[10px] leading-tight text-[var(--brand-muted-purple)]'>
-          {subText}
-        </span>
-      ) : (
-        <span className='text-[10px] text-gray-400'>ดูรายการในหมวดนี้</span>
-      )}
-      <span
-        className={cn(
-          'mt-auto text-[9px] font-semibold leading-none',
-          cat.factory_count > 0 ? 'text-brand-purple' : 'text-gray-400',
-        )}
+      <div
+        className={cn(HUB_CARD_IMG_FRAME_CLASS, 'rounded-xl border border-gray-100 transition-colors group-hover:border-brand-purple/40', palette.bg)}
+        style={{ aspectRatio: '1 / 1' }}
       >
-        {cat.factory_count > 0 ? `${cat.factory_count} โรงงาน` : 'ดูหมวดนี้'}
+        {imgSrc ? (
+          <img
+            src={imgSrc}
+            alt={cat.name}
+            className={HUB_CARD_IMG_CLASS}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        ) : null}
+      </div>
+      <span className='line-clamp-2 text-[10px] font-medium leading-tight text-gray-700 group-hover:text-brand-purple'>
+        {cat.name}
       </span>
     </button>
   );
