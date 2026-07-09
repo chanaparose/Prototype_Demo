@@ -9,3 +9,4 @@ export { AdminConfigPage } from '@/pages/admin/AdminConfigPage';
 export { AdminCustomersPage } from '@/pages/admin/AdminCustomersPage';
 export { AdminCustomerDetailPage } from '@/pages/admin/AdminCustomerDetailPage';
 export { AdminCommissionPage } from '@/pages/admin/AdminCommissionPage';
+export { AdminCategoryImagesPage } from '@/pages/admin/AdminCategoryImagesPage';

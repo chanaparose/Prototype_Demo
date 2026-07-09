@@ -361,3 +361,12 @@ export const adminSettlementApi = {
       })}`,
     ),
 };
+
+
+export const adminCatalogApi = {
+  patchCategoryImg: (categoryId: number, img: string) =>
+    httpClient.patch<{ ok: boolean; category_id: number; img: string }>(
+      `/admin/categories/${categoryId}/img`,
+      { img },
+    ),
+};

@@ -37,6 +37,7 @@ import {
   AdminCustomersPage,
   AdminCustomerDetailPage,
   AdminCommissionPage,
+  AdminCategoryImagesPage,
 } from '@/pages/admin';
 import { AuthGuard } from '@/components/AuthGuard';
 import { RoleRedirectIndex } from '@/components/RoleRedirectIndex';
@@ -182,6 +183,7 @@ export const router = createBrowserRouter([
               { path: 'config', Component: AdminConfigPage },
               { path: 'commission', Component: AdminCommissionPage },
               { path: 'commission-config', Component: CommissionConfig },
+              { path: 'category-images', Component: AdminCategoryImagesPage },
             ],
           },
         ],

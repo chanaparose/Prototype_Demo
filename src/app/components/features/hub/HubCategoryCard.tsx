@@ -33,12 +33,15 @@ export function HubCategoryCard({
       className='group flex w-[120px] shrink-0 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white text-left shadow-[0_1px_4px_rgba(0,0,0,0.06)] transition-all hover:shadow-[0_2px_8px_rgba(0,0,0,0.10)] active:scale-[0.97] lg:w-[140px]'
     >
       {/* 1:1 image area */}
-      <div className={cn('relative w-full', palette.bg)} style={{ aspectRatio: '1 / 1' }}>
+      <div
+        className={cn('relative flex w-full items-center justify-center p-[3%]', palette.bg)}
+        style={{ aspectRatio: '1 / 1' }}
+      >
         {imgSrc ? (
           <img
             src={imgSrc}
             alt={cat.name}
-            className='absolute inset-[4%] h-[94%] w-[94%] rounded-xl object-contain '
+            className='h-full w-full rounded-[10px] object-contain'
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = 'none';
             }}

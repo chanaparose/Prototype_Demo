@@ -12,6 +12,7 @@ import {
   X,
   LogOut,
   Bell,
+  ImageIcon,
 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { Navigate } from 'react-router';
@@ -44,6 +45,7 @@ const NAV_ITEMS = [
   { path: '/admin/orders', icon: ShoppingCart, label: 'คำสั่งซื้อ', minRank: 1 },
   { path: '/admin/commission', icon: ClipboardList, label: 'Commission', minRank: 2 },
   { path: '/admin/config', icon: Settings, label: 'ตั้งค่า', minRank: 2 },
+  { path: '/admin/category-images', icon: ImageIcon, label: 'ภาพหมวดหมู่', minRank: 3 },
 ];
 
 const sidebarTheme = {
@@ -60,6 +62,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/orders': 'จัดการคำสั่งซื้อ',
   '/admin/commission': 'Commission',
   '/admin/config': 'ตั้งค่าระบบ',
+  '/admin/category-images': 'ภาพหมวดหมู่',
 };
 
 function getPageTitle(pathname: string): string {
