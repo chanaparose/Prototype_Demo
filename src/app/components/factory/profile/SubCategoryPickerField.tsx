@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Search } from 'lucide-react';
 import { cn } from '@lib/utils';
 import type { SubCategoryOption } from '@/components/factory/profile/subCategoryPicker.utils';
 import {
@@ -22,13 +23,25 @@ export function SubCategoryPickerField({
   isLoading = false,
   className,
 }: Props) {
+  const [search, setSearch] = useState('');
   const { allItem, regular } = partitionSubs(subs);
   const displayIds = subsForDisplay(selectedIds, subs);
   const allSelected = allItem ? displayIds.includes(allItem.id) : false;
   const selectedCount = subs.filter((s) => displayIds.includes(s.id)).length;
 
-  // ทำความสะอาด state เมื่อโหลดแล้วพบว่าเลือก "ทั้งหมด" ค้างอยู่พร้อมตัวอื่น
+  const filteredRegular = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return regular;
+    return regular.filter((s) => s.name.toLowerCase().includes(q));
+  }, [regular, search]);
+
+  // รีเซ็ตคำค้นเมื่อเปลี่ยนชุดหมวดย่อย (สลับหมวด)
   const subsKey = subs.map((s) => s.id).join(',');
+  useEffect(() => {
+    setSearch('');
+  }, [subsKey]);
+
+  // ทำความสะอาด state เมื่อโหลดแล้วพบว่าเลือก "ทั้งหมด" ค้างอยู่พร้อมตัวอื่น
   useEffect(() => {
     if (!allItem || !selectedIds.includes(allItem.id)) return;
     const catSubIds = new Set(subs.map((s) => s.id));
@@ -53,6 +66,11 @@ export function SubCategoryPickerField({
     onChange(toggleSubCategory(selectedIds, subs, id));
   };
 
+  const showSearch = regular.length > 5;
+  const q = search.trim();
+  const allItemVisible =
+    !q || (allItem != null && allItem.name.toLowerCase().includes(q.toLowerCase()));
+
   return (
     <div className={cn('overflow-hidden rounded-lg border border-slate-200 bg-white', className)}>
       <div className='flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50 px-3 py-2'>
@@ -62,7 +80,25 @@ export function SubCategoryPickerField({
         </span>
       </div>
 
-      {allItem ? (
+      {showSearch ? (
+        <div className='border-b border-slate-100 px-3 py-2'>
+          <div className='relative'>
+            <Search
+              size={13}
+              className='pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400'
+            />
+            <input
+              type='search'
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder='ค้นหาหมวดย่อย…'
+              className='w-full rounded-md border border-slate-200 bg-white py-1.5 pl-8 pr-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-brand-mauve focus:outline-none focus:ring-1 focus:ring-brand-mauve'
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {allItem && allItemVisible ? (
         <div className='border-b border-slate-100 px-3 py-2'>
           <label
             className={cn(
@@ -96,54 +132,58 @@ export function SubCategoryPickerField({
 
       {regular.length > 0 ? (
         <div className='max-h-44 overflow-y-auto'>
-          <table className='w-full border-collapse text-xs'>
-            <thead className='sticky top-0 z-[1] bg-slate-50'>
-              <tr>
-                <th className='w-10 border-b border-slate-200 px-2 py-1.5 text-center text-[10px] font-semibold text-slate-500'>
-                  ลำดับ
-                </th>
-                <th className='border-b border-slate-200 px-2 py-1.5 text-left text-[10px] font-semibold text-slate-500'>
-                  หมวดย่อย
-                </th>
-                <th className='w-12 border-b border-slate-200 px-2 py-1.5 text-center text-[10px] font-semibold text-slate-500'>
-                  เลือก
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {regular.map((sub) => {
-                const sel = displayIds.includes(sub.id);
-                const disabled = allSelected;
-                const order = Number.isFinite(Number(sub.sortOrder)) ? Number(sub.sortOrder) : 0;
+          {filteredRegular.length === 0 ? (
+            <p className='px-3 py-4 text-center text-[11px] text-slate-400'>ไม่พบหมวดย่อย</p>
+          ) : (
+            <table className='w-full border-collapse text-xs'>
+              <thead className='sticky top-0 z-[1] bg-slate-50'>
+                <tr>
+                  <th className='w-10 border-b border-slate-200 px-2 py-1.5 text-center text-[10px] font-semibold text-slate-500'>
+                    ลำดับ
+                  </th>
+                  <th className='border-b border-slate-200 px-2 py-1.5 text-left text-[10px] font-semibold text-slate-500'>
+                    หมวดย่อย
+                  </th>
+                  <th className='w-12 border-b border-slate-200 px-2 py-1.5 text-center text-[10px] font-semibold text-slate-500'>
+                    เลือก
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRegular.map((sub) => {
+                  const sel = displayIds.includes(sub.id);
+                  const disabled = allSelected;
+                  const order = Number.isFinite(Number(sub.sortOrder)) ? Number(sub.sortOrder) : 0;
 
-                return (
-                  <tr
-                    key={sub.id}
-                    className={cn(
-                      sel && !disabled && 'bg-brand-purple/5',
-                      disabled && 'bg-slate-50/80 opacity-50',
-                    )}
-                  >
-                    <td className='border-b border-slate-100 px-2 py-2 text-center text-[10px] tabular-nums text-slate-400'>
-                      {order > 0 && order < 99 ? order : '—'}
-                    </td>
-                    <td className='border-b border-slate-100 px-2 py-2 font-medium text-slate-700'>
-                      {sub.name}
-                    </td>
-                    <td className='border-b border-slate-100 px-2 py-2 text-center'>
-                      <input
-                        type='checkbox'
-                        className='h-4 w-4 rounded border-slate-300 text-brand-purple focus:ring-brand-mauve disabled:cursor-not-allowed'
-                        checked={sel}
-                        disabled={disabled}
-                        onChange={() => handleToggle(sub.id)}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                  return (
+                    <tr
+                      key={sub.id}
+                      className={cn(
+                        sel && !disabled && 'bg-brand-purple/5',
+                        disabled && 'bg-slate-50/80 opacity-50',
+                      )}
+                    >
+                      <td className='border-b border-slate-100 px-2 py-2 text-center text-[10px] tabular-nums text-slate-400'>
+                        {order > 0 && order < 99 ? order : '—'}
+                      </td>
+                      <td className='border-b border-slate-100 px-2 py-2 font-medium text-slate-700'>
+                        {sub.name}
+                      </td>
+                      <td className='border-b border-slate-100 px-2 py-2 text-center'>
+                        <input
+                          type='checkbox'
+                          className='h-4 w-4 rounded border-slate-300 text-brand-purple focus:ring-brand-mauve disabled:cursor-not-allowed'
+                          checked={sel}
+                          disabled={disabled}
+                          onChange={() => handleToggle(sub.id)}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       ) : null}
     </div>

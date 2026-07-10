@@ -67,7 +67,19 @@ export function CategoryManageModal({
     [categoryIds, mtCategoryIds],
   );
 
-  const { byCategory, isLoading: subsLoading } = useSubCategoriesByCategories(pdSelectedIds);
+  // โหลดหมวดย่อยของหมวดที่เลือก + หมวดใน Hub ที่กำลังเลือก (เพื่อค้นหาชื่อหมวดย่อยได้)
+  const subFetchIds = useMemo(() => {
+    const ids = new Set(pdSelectedIds);
+    if (mode === 'pick-categories' && targetHubId != null) {
+      const hub = hubs.find((h) => h.hub_id === targetHubId);
+      if (hub && hub.scope !== 'MT') {
+        for (const c of hub.categories) ids.add(c.category_id);
+      }
+    }
+    return [...ids].sort((a, b) => a - b);
+  }, [pdSelectedIds, mode, targetHubId, hubs]);
+
+  const { byCategory, isLoading: subsLoading } = useSubCategoriesByCategories(subFetchIds);
 
   const categoryNameById = useMemo(() => {
     const map = new Map<number, string>();
@@ -205,12 +217,28 @@ export function CategoryManageModal({
     setMode('manage');
   };
 
+  const matchesQuery = (q: string, ...texts: string[]) => {
+    if (!q) return true;
+    return texts.some((t) => t.toLowerCase().includes(q));
+  };
+
+  const categoryMatchesSearch = (categoryId: number, categoryName: string, q: string) => {
+    if (!q) return true;
+    if (categoryName.toLowerCase().includes(q)) return true;
+    const subs = byCategory.get(categoryId) ?? [];
+    return subs.some((s) => s.name.toLowerCase().includes(q));
+  };
+
   const filteredAvailableHubs = useMemo(() => {
     const q = search.trim().toLowerCase();
     return availableHubs
       .filter((h) => h.scope === scopeTab)
-      .filter((h) => !q || h.name.toLowerCase().includes(q));
-  }, [availableHubs, scopeTab, search]);
+      .filter((h) => {
+        if (!q) return true;
+        if (h.name.toLowerCase().includes(q)) return true;
+        return h.categories.some((c) => categoryMatchesSearch(c.category_id, c.name, q));
+      });
+  }, [availableHubs, scopeTab, search, byCategory]);
 
   const pickCategoriesList = useMemo(() => {
     if (!targetHub) return [];
@@ -220,8 +248,8 @@ export function CategoryManageModal({
       ? targetHub.categories.filter((c) => !categoryIds.includes(c.category_id))
       : targetHub.categories;
     if (!q) return list;
-    return list.filter((c) => c.name.toLowerCase().includes(q));
-  }, [targetHub, categoryIds, search]);
+    return list.filter((c) => categoryMatchesSearch(c.category_id, c.name, q));
+  }, [targetHub, categoryIds, search, byCategory]);
 
   const sheetRows = useMemo(() => {
     const rows: Array<{
@@ -231,21 +259,36 @@ export function CategoryManageModal({
       hubRowSpan: number;
       isMT: boolean;
     }> = [];
+    const q = search.trim().toLowerCase();
 
     for (const hub of activeHubs) {
-      const selectedCats = hub.categories.filter((c) => categoryIds.includes(c.category_id));
+      const selectedCats = hub.categories.filter((c) => {
+        if (!categoryIds.includes(c.category_id)) return false;
+        if (!q) return true;
+        if (matchesQuery(q, hub.name, c.name)) return true;
+        return categoryMatchesSearch(c.category_id, c.name, q);
+      });
+      if (selectedCats.length === 0) continue;
+
+      const isMT = hub.scope === 'MT';
+      // นับแถวแก้ไขหมวดย่อยด้วย เพื่อให้ Hub rowspan ไม่ทับแผงเลือก
+      const editExtra = isMT
+        ? 0
+        : selectedCats.filter((c) => expandedEditCatId === c.category_id).length;
+      const hubRowSpan = selectedCats.length + editExtra;
+
       selectedCats.forEach((cat, idx) => {
         rows.push({
           hub,
           cat,
           isFirstInHub: idx === 0,
-          hubRowSpan: selectedCats.length,
-          isMT: hub.scope === 'MT',
+          hubRowSpan,
+          isMT,
         });
       });
     }
     return rows;
-  }, [activeHubs, categoryIds]);
+  }, [activeHubs, categoryIds, expandedEditCatId, search, byCategory]);
 
   const thClass =
     'border border-gray-300 bg-gray-100 px-2.5 py-2 text-left text-[11px] font-semibold text-gray-600 whitespace-nowrap';
@@ -301,7 +344,9 @@ export function CategoryManageModal({
                 <tr>
                   <th className={thClass}>Hub</th>
                   <th className={thClass}>หมวดหมู่</th>
-                  <th className={cn(thClass, 'min-w-[140px]')}>หมวดย่อย</th>
+                  {!isMTScope ? (
+                    <th className={cn(thClass, 'min-w-[140px]')}>หมวดย่อย</th>
+                  ) : null}
                   <th className={cn(thClass, 'w-16 text-center')}>จัดการ</th>
                 </tr>
               </thead>
@@ -357,21 +402,21 @@ export function CategoryManageModal({
                           </td>
                         ) : null}
                         <td className={cn(tdClass, 'font-medium')}>{cat.name}</td>
-                        <td className={tdClass}>
-                          {isMT ? (
-                            <span className='text-[11px] text-gray-400'>ไม่ต้องเลือกหมวดย่อย</span>
-                          ) : names.length > 0 ? (
-                            <span className='text-[11px] leading-relaxed text-gray-700'>
-                              {names.join(', ')}
-                            </span>
-                          ) : subs.length > 0 ? (
-                            <span className='text-[11px] font-medium text-red-500'>
-                              ยังไม่ได้เลือก
-                            </span>
-                          ) : (
-                            <span className='text-[11px] text-gray-400'>—</span>
-                          )}
-                        </td>
+                        {!isMTScope ? (
+                          <td className={tdClass}>
+                            {names.length > 0 ? (
+                              <span className='text-[11px] leading-relaxed text-gray-700'>
+                                {names.join(', ')}
+                              </span>
+                            ) : subs.length > 0 ? (
+                              <span className='text-[11px] font-medium text-red-500'>
+                                ยังไม่ได้เลือก
+                              </span>
+                            ) : (
+                              <span className='text-[11px] text-gray-400'>—</span>
+                            )}
+                          </td>
+                        ) : null}
                         <td className={cn(tdClass, 'text-center')}>
                           <div className='inline-flex items-center gap-0.5'>
                             {!isMT && subs.length > 0 ? (
@@ -406,10 +451,8 @@ export function CategoryManageModal({
                       </tr>
                       {isEditing && !isMT ? (
                         <tr className='bg-sky-50/40'>
-                          <td
-                            colSpan={isFirstInHub ? 4 : 3}
-                            className='border border-gray-200 px-3 py-2.5'
-                          >
+                          {/* ไม่รวมคอลัมน์ Hub — ให้ rowspan ของ Hub ครอบแถวนี้แทน */}
+                          <td colSpan={3} className='border border-gray-200 px-3 py-2.5'>
                             <p className='mb-2 text-[11px] font-medium text-gray-600'>
                               เลือกหมวดย่อย — {cat.name}
                             </p>
@@ -424,7 +467,9 @@ export function CategoryManageModal({
             </table>
           </div>
         ) : (
-          <div className='px-3 py-5 text-sm text-slate-400'>ยังไม่ได้เลือกหมวดใน scope นี้</div>
+          <div className='px-3 py-5 text-sm text-slate-400'>
+            {search.trim() ? 'ไม่พบหมวดใน scope นี้' : 'ยังไม่ได้เลือกหมวดใน scope นี้'}
+          </div>
         )}
       </div>
     );
@@ -432,10 +477,30 @@ export function CategoryManageModal({
 
   const renderManageView = () => (
     <div className='space-y-3'>
+      {activeHubs.length > 0 ? (
+        <div className='relative'>
+          <Search
+            size={14}
+            className='pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400'
+          />
+          <input
+            type='search'
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder='ค้นหาหมวดหมู่ หรือหมวดย่อย…'
+            className='w-full rounded-lg border border-gray-200 py-2 pl-9 pr-3 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-mauve focus:outline-none focus:ring-1 focus:ring-brand-mauve'
+          />
+        </div>
+      ) : null}
+
       {activeHubs.length === 0 ? (
         <div className='rounded-xl border border-dashed border-gray-200 px-4 py-8 text-center'>
           <p className='text-sm text-gray-600'>ยังไม่มี Hub ในรายการ</p>
           <p className='mt-1 text-xs text-gray-400'>กดปุ่มด้านล่างเพื่อเพิ่ม Hub แรก</p>
+        </div>
+      ) : sheetRows.length === 0 && search.trim() ? (
+        <div className='rounded-xl border border-dashed border-gray-200 px-4 py-8 text-center'>
+          <p className='text-sm text-gray-500'>ไม่พบหมวดที่ตรงกับ &quot;{search.trim()}&quot;</p>
         </div>
       ) : (
         <div className='space-y-4'>
@@ -470,7 +535,7 @@ export function CategoryManageModal({
           type='search'
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder='ค้นหา Hub…'
+          placeholder='ค้นหา Hub หรือหมวด…'
           className='w-full rounded-lg border border-gray-200 py-2 pl-9 pr-3 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-mauve focus:outline-none focus:ring-1 focus:ring-brand-mauve'
         />
       </div>
@@ -550,7 +615,7 @@ export function CategoryManageModal({
           </p>
         )}
 
-        {pickCategoriesList.length > 3 ? (
+        {pickCategoriesList.length > 0 || search.trim() ? (
           <div className='relative'>
             <Search
               size={14}
@@ -560,7 +625,7 @@ export function CategoryManageModal({
               type='search'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder='ค้นหาหมวด…'
+              placeholder={isMT ? 'ค้นหาหมวด…' : 'ค้นหาหมวด หรือหมวดย่อย…'}
               className='w-full rounded-lg border border-gray-200 py-2 pl-9 pr-3 text-sm focus:border-brand-mauve focus:outline-none focus:ring-1 focus:ring-brand-mauve'
             />
           </div>
@@ -568,7 +633,11 @@ export function CategoryManageModal({
 
         {pickCategoriesList.length === 0 ? (
           <p className='py-6 text-center text-sm text-gray-400'>
-            {isAddingToExisting ? 'เพิ่มหมวดครบแล้วใน Hub นี้' : 'ไม่พบหมวด'}
+            {search.trim()
+              ? 'ไม่พบหมวดที่ตรงกับคำค้น'
+              : isAddingToExisting
+                ? 'เพิ่มหมวดครบแล้วใน Hub นี้'
+                : 'ไม่พบหมวด'}
           </p>
         ) : (
           <div className='max-h-[48vh] space-y-2 overflow-y-auto pr-1'>

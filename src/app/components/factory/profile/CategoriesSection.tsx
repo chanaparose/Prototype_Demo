@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { Fragment, useState, useMemo, useEffect } from 'react';
 import { Controller, type UseFormReturn } from 'react-hook-form';
 import { useProductCategories } from '@/hooks/master/useProductCategories';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
@@ -6,8 +6,10 @@ import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByC
 import type { SubCategoryOption } from '@/hooks/master/useSubCategoriesByCategory';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
 import { CategoryManageModal } from '@/components/factory/profile/CategoryManageModal';
+import { selectedSubNames } from '@/components/factory/profile/subCategoryPicker.utils';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2 } from 'lucide-react';
+import { cn } from '@lib/utils';
 import type { ProfileFormValues } from '@/components/factory/profile/ProfileFormTypes';
 
 interface ApiCategory {
@@ -40,7 +42,6 @@ interface Props {
 
 export function CategoriesSection({
   form,
-  factoryId,
   onRegisterAdd,
   apiCategories = [],
   apiSubCategories = [],
@@ -48,7 +49,6 @@ export function CategoriesSection({
 }: Props) {
   const { control } = form;
   const { data: allCategories = [] } = useProductCategories();
-  const { data: pdCategories = [] } = useLbiCategoriesByScope('PD');
   const { data: mtCategories = [] } = useLbiCategoriesByScope('MT');
   const { data: hubs = [] } = useLbiHubsQuery();
 
@@ -57,7 +57,6 @@ export function CategoriesSection({
 
   const { byCategory: masterByCategory } = useSubCategoriesByCategories(categoryIds);
 
-  // Build fallback maps from API data for when master data is unavailable
   const apiByCategoryMap = useMemo(() => {
     const map = new Map<number, SubCategoryOption[]>();
     for (const s of apiSubCategories) {
@@ -71,7 +70,6 @@ export function CategoriesSection({
     return map;
   }, [apiSubCategories]);
 
-  // Merge master + API fallback: prefer master data when available
   const byCategory = useMemo(() => {
     if (masterByCategory.size > 0) return masterByCategory;
     return apiByCategoryMap;
@@ -85,13 +83,11 @@ export function CategoriesSection({
     setManageModalOpen(true);
   };
 
-  // Register the add handler with parent once on mount
   useEffect(() => {
     onRegisterAdd?.(() => openManageModal(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Build a lookup from API categories for fallback name resolution
   const apiCategoryMap = useMemo(() => {
     const map = new Map<number, string>();
     for (const c of apiCategories) map.set(c.category_id, c.name);
@@ -99,7 +95,6 @@ export function CategoriesSection({
   }, [apiCategories]);
 
   const resolvedCategories = useMemo(() => {
-    // Collect all category IDs: from form + from API (in case form hasn't been seeded yet)
     const allIds = Array.from(
       new Set([...categoryIds, ...apiCategories.map((c) => c.category_id)]),
     );
@@ -113,10 +108,8 @@ export function CategoriesSection({
       .filter((c): c is { id: number; name: string } => c != null);
   }, [categoryIds, allCategories, apiCategories, apiCategoryMap]);
 
-  const pdIds = useMemo(() => new Set(pdCategories.map((c) => c.id)), [pdCategories]);
   const mtIds = useMemo(() => new Set(mtCategories.map((c) => c.id)), [mtCategories]);
 
-  // category_id → hub, ใช้จัดกลุ่ม hub -> category -> subcategory
   const hubByCategoryId = useMemo(() => {
     const map = new Map<number, (typeof hubs)[number]>();
     for (const h of hubs) {
@@ -145,13 +138,12 @@ export function CategoriesSection({
     return { hubs: sorted, unknown };
   }, [resolvedCategories, hubByCategoryId]);
 
-  // PD categories ที่ไม่มี sub-category เลือกไว้เลย (ใช้สำหรับ validation + highlight)
   const pdCatsWithNoSubs = useMemo(() => {
     return new Set(
       categoryIds.filter((cid) => {
-        if (mtIds.has(cid)) return false; // ไม่ใช่ PD
+        if (mtIds.has(cid)) return false;
         const subsAvailable = (byCategory.get(cid) ?? []).length;
-        if (subsAvailable === 0) return false; // ไม่มี sub ให้เลือก = ไม่นับ
+        if (subsAvailable === 0) return false;
         const subsSelected = (byCategory.get(cid) ?? []).filter((s) =>
           subCategoryIds.includes(s.id),
         ).length;
@@ -160,7 +152,6 @@ export function CategoriesSection({
     );
   }, [categoryIds, subCategoryIds, byCategory, mtIds]);
 
-  // แจ้ง parent เมื่อ validation state เปลี่ยน
   useEffect(() => {
     onPdSubValidation?.(pdCatsWithNoSubs);
   }, [pdCatsWithNoSubs, onPdSubValidation]);
@@ -179,88 +170,32 @@ export function CategoriesSection({
     );
   };
 
-  const renderSheetRows = (rows: { id: number; name: string }[], isMTGroup = false) =>
-    rows.map((c) => {
-      const isMT = isMTGroup || mtIds.has(c.id);
-      const selectedHere = (byCategory.get(c.id) ?? []).filter((s) =>
-        subCategoryIds.includes(s.id),
-      );
-      const hasSubError = !isMT && pdCatsWithNoSubs.has(c.id);
-
-      return (
-        <tr key={c.id} className={hasSubError ? 'bg-red-50/50' : 'hover:bg-slate-50/70'}>
-          <td className='border-b border-slate-100 px-3 py-3 align-top'>
-            <p className='text-sm font-bold text-slate-900'>{c.name}</p>
-            <span
-              className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                isMT ? 'bg-emerald-50 text-emerald-700' : 'bg-violet-50 text-brand-purple'
-              }`}
-            >
-              {isMT ? 'วัตถุดิบ (MT)' : 'รับผลิต (PD)'}
-            </span>
-          </td>
-          <td className='border-b border-slate-100 px-3 py-3 align-top'>
-            {isMT ? (
-              <span className='text-xs font-medium text-slate-400'>ไม่ต้องเลือกหมวดย่อย</span>
-            ) : selectedHere.length > 0 ? (
-              <div className='flex flex-wrap gap-1.5'>
-                {selectedHere.map((s) => (
-                  <span
-                    key={s.id}
-                    className='inline-flex rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-800'
-                  >
-                    {s.name}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <span className='text-xs font-semibold text-red-500'>ยังไม่ได้เลือกหมวดย่อย</span>
-            )}
-          </td>
-          <td className='border-b border-slate-100 px-3 py-3 text-right align-top'>
-            <div className='inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-sm'>
-              {!isMT ? (
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  onClick={() => openManageModal(c.id)}
-                  className='inline-flex h-7 items-center gap-1 rounded-md px-2 text-[11px] font-bold text-slate-600 hover:bg-violet-50 hover:text-brand-purple'
-                >
-                  <Pencil size={12} /> แก้
-                </Button>
-              ) : null}
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => removeCategoryFromForm(c.id)}
-                className='inline-flex h-7 items-center gap-1 rounded-md px-2 text-[11px] font-bold text-red-500 hover:bg-red-50'
-              >
-                <Trash2 size={12} /> ลบ
-              </Button>
-            </div>
-          </td>
-        </tr>
-      );
-    });
+  const thClass =
+    'border border-gray-300 bg-gray-100 px-2.5 py-2 text-left text-[11px] font-semibold text-gray-600 whitespace-nowrap';
+  const tdClass = 'border border-gray-200 px-2.5 py-2 text-xs text-gray-800 align-top';
 
   const renderScopeTable = (
     title: string,
     scope: 'PD' | 'MT',
     groups: typeof groupedByHub.hubs,
   ) => {
-    const isMT = scope === 'MT';
+    const isMTScope = scope === 'MT';
     const rowCount = groups.reduce((sum, item) => sum + item.categories.length, 0);
 
     return (
-      <div className='overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm'>
+      <div className='overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm'>
         <div
-          className={`flex items-center justify-between gap-3 border-b border-slate-100 px-3 py-2.5 ${
-            isMT ? 'bg-emerald-50/70' : 'bg-violet-50/70'
-          }`}
+          className={cn(
+            'flex items-center justify-between gap-3 border-b border-slate-100 px-3 py-2.5',
+            isMTScope ? 'bg-emerald-50/70' : 'bg-violet-50/70',
+          )}
         >
           <div>
             <p
-              className={`text-sm font-extrabold ${isMT ? 'text-emerald-700' : 'text-brand-purple'}`}
+              className={cn(
+                'text-sm font-extrabold',
+                isMTScope ? 'text-emerald-700' : 'text-brand-purple',
+              )}
             >
               {title}
             </p>
@@ -272,38 +207,94 @@ export function CategoriesSection({
 
         {rowCount > 0 ? (
           <div className='overflow-x-auto'>
-            <table className='w-full min-w-[640px] border-collapse'>
+            <table
+              className={cn(
+                'w-full border-collapse bg-white',
+                isMTScope ? 'min-w-[360px]' : 'min-w-[520px]',
+              )}
+            >
               <thead>
-                <tr className='bg-slate-50 text-left'>
-                  <th className='border-b border-slate-200 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-slate-500'>
-                    Hub / หมวดหลัก
-                  </th>
-                  <th className='border-b border-slate-200 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-slate-500'>
-                    หมวดย่อยที่รับงาน
-                  </th>
-                  <th className='w-[130px] border-b border-slate-200 px-3 py-2 text-right text-[11px] font-bold uppercase tracking-wide text-slate-500'>
-                    Action
-                  </th>
+                <tr>
+                  <th className={thClass}>Hub</th>
+                  <th className={thClass}>หมวดหมู่</th>
+                  {!isMTScope ? (
+                    <th className={cn(thClass, 'min-w-[140px]')}>หมวดย่อย</th>
+                  ) : null}
+                  <th className={cn(thClass, 'w-16 text-center')}>จัดการ</th>
                 </tr>
               </thead>
               <tbody>
-                {groups.map(({ hub, categories }) => (
-                  <React.Fragment key={hub.hub_id}>
-                    <tr>
-                      <td
-                        colSpan={3}
-                        className={`border-b border-slate-100 px-3 py-2 text-xs font-extrabold ${
-                          isMT
-                            ? 'bg-emerald-50/40 text-emerald-700'
-                            : 'bg-violet-50/40 text-brand-purple'
-                        }`}
+                {groups.map(({ hub, categories }) =>
+                  categories.map((c, idx) => {
+                    const isMT = isMTScope || hub.scope === 'MT' || mtIds.has(c.id);
+                    const names = selectedSubNames(subCategoryIds, byCategory.get(c.id) ?? []);
+                    const hasSubError = !isMT && pdCatsWithNoSubs.has(c.id);
+                    const isFirstInHub = idx === 0;
+
+                    return (
+                      <tr
+                        key={c.id}
+                        className={cn(hasSubError && 'bg-red-50/50', 'hover:bg-slate-50/50')}
                       >
-                        {hub.name}
-                      </td>
-                    </tr>
-                    {renderSheetRows(categories, hub.scope === 'MT')}
-                  </React.Fragment>
-                ))}
+                        {isFirstInHub ? (
+                          <td
+                            className={cn(tdClass, 'font-medium')}
+                            rowSpan={categories.length}
+                          >
+                            <span
+                              className={cn(
+                                'font-semibold',
+                                isMTScope ? 'text-emerald-700' : 'text-brand-purple',
+                              )}
+                            >
+                              {hub.name}
+                            </span>
+                          </td>
+                        ) : null}
+                        <td className={cn(tdClass, 'font-medium')}>{c.name}</td>
+                        {!isMTScope ? (
+                          <td className={tdClass}>
+                            {names.length > 0 ? (
+                              <span className='text-[11px] leading-relaxed text-gray-700'>
+                                {names.join(', ')}
+                              </span>
+                            ) : (byCategory.get(c.id) ?? []).length > 0 ? (
+                              <span className='text-[11px] font-medium text-red-500'>
+                                ยังไม่ได้เลือก
+                              </span>
+                            ) : (
+                              <span className='text-[11px] text-gray-400'>—</span>
+                            )}
+                          </td>
+                        ) : null}
+                        <td className={cn(tdClass, 'text-center')}>
+                          <div className='inline-flex items-center gap-0.5'>
+                            {!isMT ? (
+                              <Button
+                                type='button'
+                                variant='unstyled'
+                                onClick={() => openManageModal(c.id)}
+                                className='rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-brand-purple'
+                                aria-label={`แก้ไข ${c.name}`}
+                              >
+                                <Pencil size={13} />
+                              </Button>
+                            ) : null}
+                            <Button
+                              type='button'
+                              variant='unstyled'
+                              onClick={() => removeCategoryFromForm(c.id)}
+                              className='rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600'
+                              aria-label={`ลบ ${c.name}`}
+                            >
+                              <Trash2 size={13} />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }),
+                )}
               </tbody>
             </table>
           </div>
@@ -329,13 +320,67 @@ export function CategoriesSection({
           {renderScopeTable('หมวดสินค้า / รับผลิต (PD)', 'PD', pdGroups)}
           {renderScopeTable('หมวดวัตถุดิบ (MT)', 'MT', mtGroups)}
           {groupedByHub.unknown.length > 0 ? (
-            <div className='overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm'>
+            <div className='overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm'>
               <div className='border-b border-slate-100 bg-slate-50 px-3 py-2.5'>
                 <p className='text-sm font-extrabold text-slate-600'>หมวดอื่นๆ</p>
               </div>
               <div className='overflow-x-auto'>
-                <table className='w-full min-w-[640px] border-collapse'>
-                  <tbody>{renderSheetRows(groupedByHub.unknown)}</tbody>
+                <table className='w-full min-w-[360px] border-collapse bg-white'>
+                  <thead>
+                    <tr>
+                      <th className={thClass}>หมวดหมู่</th>
+                      <th className={cn(thClass, 'min-w-[140px]')}>หมวดย่อย</th>
+                      <th className={cn(thClass, 'w-16 text-center')}>จัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {groupedByHub.unknown.map((c) => {
+                      const isMT = mtIds.has(c.id);
+                      const names = selectedSubNames(subCategoryIds, byCategory.get(c.id) ?? []);
+                      return (
+                        <Fragment key={c.id}>
+                          <tr>
+                            <td className={cn(tdClass, 'font-medium')}>{c.name}</td>
+                            <td className={tdClass}>
+                              {isMT ? (
+                                <span className='text-[11px] text-gray-400'>—</span>
+                              ) : names.length > 0 ? (
+                                <span className='text-[11px] leading-relaxed text-gray-700'>
+                                  {names.join(', ')}
+                                </span>
+                              ) : (
+                                <span className='text-[11px] font-medium text-red-500'>
+                                  ยังไม่ได้เลือก
+                                </span>
+                              )}
+                            </td>
+                            <td className={cn(tdClass, 'text-center')}>
+                              <div className='inline-flex items-center gap-0.5'>
+                                {!isMT ? (
+                                  <Button
+                                    type='button'
+                                    variant='unstyled'
+                                    onClick={() => openManageModal(c.id)}
+                                    className='rounded p-1 text-gray-500 hover:bg-gray-100'
+                                  >
+                                    <Pencil size={13} />
+                                  </Button>
+                                ) : null}
+                                <Button
+                                  type='button'
+                                  variant='unstyled'
+                                  onClick={() => removeCategoryFromForm(c.id)}
+                                  className='rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600'
+                                >
+                                  <Trash2 size={13} />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        </Fragment>
+                      );
+                    })}
+                  </tbody>
                 </table>
               </div>
             </div>
