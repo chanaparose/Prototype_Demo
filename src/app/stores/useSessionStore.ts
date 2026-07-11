@@ -13,16 +13,30 @@ interface SessionActions {
   getFavoriteIds: () => Set<string>;
 }
 
-export const useSessionStore = create<SessionState & SessionActions>((set, get) => ({
-  data: null,
-  isLoading: false,
-  error: null,
-  lastFetchedAt: null,
+const EMPTY_FAVORITE_IDS: ReadonlySet<string> = new Set();
 
-  clear: () => set({ data: null, isLoading: false, error: null, lastFetchedAt: null }),
+export const useSessionStore = create<SessionState & SessionActions>((set, get) => {
+  // Memoize by source-array reference so repeated calls (incl. selectors/renders)
+  // return a stable Set and don't break referential-equality checks downstream.
+  let cachedSource: unknown;
+  let cachedIds: Set<string> = new Set();
 
-  getFavoriteIds: () => {
-    const ids = get().data?.favorites ?? [];
-    return new Set(ids.map(String));
-  },
-}));
+  return {
+    data: null,
+    isLoading: false,
+    error: null,
+    lastFetchedAt: null,
+
+    clear: () => set({ data: null, isLoading: false, error: null, lastFetchedAt: null }),
+
+    getFavoriteIds: () => {
+      const favorites = get().data?.favorites;
+      if (!favorites) return EMPTY_FAVORITE_IDS as Set<string>;
+      if (favorites !== cachedSource) {
+        cachedSource = favorites;
+        cachedIds = new Set(favorites.map(String));
+      }
+      return cachedIds;
+    },
+  };
+});

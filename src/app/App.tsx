@@ -3,6 +3,7 @@ import { RouterProvider } from 'react-router';
 import { Toaster } from 'sonner';
 import { router } from '@/routes';
 import { DataStoreInitializer } from '@/components/DataStoreInitializer';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { queryClient } from '@/lib/queryClient';
 import { installDevTrylyHelpers } from '@/lib/devTryly';
 
@@ -10,12 +11,14 @@ installDevTrylyHelpers();
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <DataStoreInitializer />
-      <div className='min-h-screen w-full bg-gray-50'>
-        <RouterProvider router={router} />
-        <Toaster richColors position='top-right' />
-      </div>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <DataStoreInitializer />
+        <div className='min-h-screen w-full bg-gray-50'>
+          <RouterProvider router={router} />
+          <Toaster richColors position='top-right' />
+        </div>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

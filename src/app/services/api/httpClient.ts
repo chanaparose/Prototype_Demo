@@ -1,5 +1,6 @@
 import { getTourMockResponse } from '@/utils/tourMocks';
-import { getToken, removeToken } from '@/services/api/tokenManager';
+import { getToken } from '@/services/api/tokenManager';
+import { notifyAuthExpired } from '@/services/api/authEvents';
 
 export type RequestOptions = {
   method?: string;
@@ -133,8 +134,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
 
     if (!authPostFailed) {
       if (!skipImmediateLogout) {
-        removeToken();
-        window.location.href = '/login';
+        notifyAuthExpired();
       }
     }
 
@@ -176,8 +176,7 @@ export const httpClient = {
     const res = await fetch(url, { method: 'POST', headers, body: formData });
 
     if (res.status === 401) {
-      removeToken();
-      window.location.href = '/login';
+      notifyAuthExpired();
       throw new Error('Unauthorized');
     }
 
