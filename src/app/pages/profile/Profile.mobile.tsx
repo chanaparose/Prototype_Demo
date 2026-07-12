@@ -19,6 +19,8 @@ import {
   Loader2,
   CheckCircle2,
   ReceiptText,
+  Wallet,
+  Clock,
 } from 'lucide-react';
 import { useData } from '@/stores/useDataStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -34,7 +36,8 @@ import {
 } from '@/domain/shared/mappers/mapAddressFromApi';
 import { resolveCustomerAvatarSrc } from '@/utils/customerAvatar';
 import { Button } from '@/components/ui/button';
-import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import { formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import { useMyWallet } from '@/hooks/useMyWallet';
 import { Image } from '@/components/ui/image';
 import { parseWalletTransaction, type WalletTransactionView } from '@/utils/walletTransaction';
 import { factoryIdeasChromeGradientClass, factoryIdeasContentSurfaceClass } from '@/components/features/factory-ideas/factoryIdeasTheme';
@@ -172,6 +175,8 @@ export function ProfileMobile() {
   const completedOrders = data.orders.filter((o) => o.status === 'completed').length;
   const totalSpent = data.orders.reduce((s, o) => s + o.depositPaid, 0);
 
+  const wallet = useMyWallet();
+
   const [walletTransactions, setWalletTransactions] = useState<WalletTransactionView[]>([]);
   const [txLoading, setTxLoading] = useState(true);
 
@@ -277,6 +282,49 @@ export function ProfileMobile() {
               <p className='mt-0.5 text-[10px] text-gray-400'>ใช้จ่ายรวม</p>
             </div>
           </div>
+        </div>
+
+        {/* กระเป๋าเงิน — good_fund (ใช้ได้) / pending_fund (รอยืนยัน) */}
+        <div className='overflow-hidden rounded-xl border border-gray-100 bg-white'>
+          <div className='flex items-center gap-2 border-b border-gray-100 px-4 py-3'>
+            <Wallet size={16} className='shrink-0 text-brand-violet-deep' />
+            <p className='text-sm font-bold text-[var(--brand-navy)]'>กระเป๋าเงิน</p>
+          </div>
+          {wallet.isError ? (
+            <p className='px-4 py-5 text-center text-xs text-gray-400'>โหลดยอดเงินไม่สำเร็จ</p>
+          ) : (
+            <div className='grid grid-cols-2 divide-x divide-gray-100'>
+              <div className='px-4 py-4'>
+                <div className='flex items-center gap-1.5'>
+                  <CheckCircle2 size={13} className='shrink-0 text-emerald-500' />
+                  <p className='text-[11px] font-medium text-gray-500'>ยอดที่ใช้ได้</p>
+                </div>
+                <p className='mt-1 text-lg font-bold tabular-nums text-[var(--brand-navy)]'>
+                  {wallet.isLoading ? (
+                    <Loader2 size={16} className='animate-spin text-gray-300' />
+                  ) : (
+                    formatCurrency(wallet.goodFund)
+                  )}
+                </p>
+              </div>
+              <div className='px-4 py-4'>
+                <div className='flex items-center gap-1.5'>
+                  <Clock size={13} className='shrink-0 text-amber-500' />
+                  <p className='text-[11px] font-medium text-gray-500'>รอยืนยัน</p>
+                </div>
+                <p className='mt-1 text-lg font-bold tabular-nums text-[var(--brand-navy)]'>
+                  {wallet.isLoading ? (
+                    <Loader2 size={16} className='animate-spin text-gray-300' />
+                  ) : (
+                    formatCurrency(wallet.pendingFund)
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
+          <p className='border-t border-gray-100 px-4 py-2.5 text-[11px] leading-relaxed text-gray-400'>
+            ยอด “รอยืนยัน” คือเงินที่ Tryly ดูแลให้ระหว่างรอออเดอร์เสร็จสมบูรณ์
+          </p>
         </div>
 
         <div className='overflow-hidden rounded-xl border border-gray-100 bg-white'>

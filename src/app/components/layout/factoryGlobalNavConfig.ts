@@ -97,16 +97,6 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
     hideInEscrow: true,
   },
   {
-    key: 'factory-wallet',
-    label: 'กระเป๋าเงิน',
-    icon: Wallet,
-    href: '/factory/wallet',
-    activeMatch: 'prefix',
-    activePath: '/factory/wallet',
-    requiresApproval: true,
-    escrowOnly: true,
-  },
-  {
     key: 'factory-reviews',
     label: 'รีวิว',
     icon: Star,
@@ -123,6 +113,16 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
     badge: 'unread-messages',
     activeMatch: 'prefix',
     activePath: '/messages',
+  },
+  {
+    key: 'factory-wallet',
+    label: 'กระเป๋าเงิน',
+    icon: Wallet,
+    href: '/factory/wallet',
+    activeMatch: 'prefix',
+    activePath: '/factory/wallet',
+    requiresApproval: true,
+    escrowOnly: true,
   },
 ];
 
