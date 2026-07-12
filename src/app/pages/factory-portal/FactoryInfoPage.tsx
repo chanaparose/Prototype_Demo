@@ -813,6 +813,44 @@ export function FactoryInfoPage() {
                 onPdSubValidation={(invalidIds) => {
                   pdSubErrorsRef.current = invalidIds;
                 }}
+                onSaved={async (nextCategoryIds, nextSubCategoryIds) => {
+                  if (!fid) return;
+                  const current = form.getValues();
+                  const catIds = normalizeIds(nextCategoryIds);
+                  const subIds = normalizeIds(nextSubCategoryIds);
+                  setSaving(true);
+                  setError('');
+                  setOkMsg('');
+                  try {
+                    await factoriesApi.saveProfile(fid, {
+                      factory_name: current.factory_name.trim(),
+                      tax_id: current.tax_id.trim() || undefined,
+                      description: current.description.trim() || undefined,
+                      lead_time_desc: current.lead_time_desc.trim() || undefined,
+                      image_url: String(current.image_url ?? ''),
+                      background_image_url: String(current.cover_image_url ?? ''),
+                      category_ids: catIds,
+                      sub_category_ids: subIds,
+                    });
+                    await factoriesApi.setCategories(fid, catIds);
+                    await factoriesApi.setSubCategories(fid, subIds);
+                    form.reset({
+                      ...current,
+                      category_ids: catIds,
+                      sub_category_ids: subIds,
+                    });
+                    setOkMsg('บันทึกหมวดหมู่เรียบร้อย');
+                    setEditSection(null);
+                    await refreshUser();
+                    await qc.invalidateQueries({ queryKey: profileInitKey });
+                  } catch (e) {
+                    const message = e instanceof Error ? e.message : 'บันทึกหมวดหมู่ไม่สำเร็จ';
+                    setError(message);
+                    throw new Error(message);
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
               />
             </div>
           </div>

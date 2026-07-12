@@ -38,6 +38,8 @@ interface Props {
    * จะถูกเรียกทุกครั้งที่ค่าเปลี่ยน
    */
   onPdSubValidation?: (invalidCategoryIds: Set<number>) => void;
+  /** Optional immediate persistence hook used by /factory/info modal save */
+  onSaved?: (categoryIds: number[], subCategoryIds: number[]) => void | Promise<void>;
 }
 
 export function CategoriesSection({
@@ -46,6 +48,7 @@ export function CategoriesSection({
   apiCategories = [],
   apiSubCategories = [],
   onPdSubValidation,
+  onSaved,
 }: Props) {
   const { control } = form;
   const { data: allCategories = [] } = useProductCategories();
@@ -217,9 +220,7 @@ export function CategoriesSection({
                 <tr>
                   <th className={thClass}>Hub</th>
                   <th className={thClass}>หมวดหมู่</th>
-                  {!isMTScope ? (
-                    <th className={cn(thClass, 'min-w-[140px]')}>หมวดย่อย</th>
-                  ) : null}
+                  {!isMTScope ? <th className={cn(thClass, 'min-w-[140px]')}>หมวดย่อย</th> : null}
                   <th className={cn(thClass, 'w-16 text-center')}>จัดการ</th>
                 </tr>
               </thead>
@@ -237,10 +238,7 @@ export function CategoriesSection({
                         className={cn(hasSubError && 'bg-red-50/50', 'hover:bg-slate-50/50')}
                       >
                         {isFirstInHub ? (
-                          <td
-                            className={cn(tdClass, 'font-medium')}
-                            rowSpan={categories.length}
-                          >
+                          <td className={cn(tdClass, 'font-medium')} rowSpan={categories.length}>
                             <span
                               className={cn(
                                 'font-semibold',
@@ -411,8 +409,10 @@ export function CategoriesSection({
         onConfirm={(nextCategoryIds, nextSubCategoryIds) => {
           form.setValue('category_ids', nextCategoryIds, { shouldDirty: true });
           form.setValue('sub_category_ids', nextSubCategoryIds, { shouldDirty: true });
-          setManageModalOpen(false);
-          setFocusCategoryId(null);
+          return Promise.resolve(onSaved?.(nextCategoryIds, nextSubCategoryIds)).then(() => {
+            setManageModalOpen(false);
+            setFocusCategoryId(null);
+          });
         }}
       />
     </div>

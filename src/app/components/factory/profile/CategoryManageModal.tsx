@@ -27,7 +27,7 @@ interface Props {
   initialSubCategoryIds: number[];
   focusCategoryId?: number | null;
   onClose: () => void;
-  onConfirm: (categoryIds: number[], subCategoryIds: number[]) => void;
+  onConfirm: (categoryIds: number[], subCategoryIds: number[]) => void | Promise<void>;
 }
 
 function hubSelectedCount(hub: IHubResponse, categoryIds: number[]) {
@@ -55,6 +55,7 @@ export function CategoryManageModal({
   const [draftHubId, setDraftHubId] = useState<number | null>(null);
   const [draftCategoryIds, setDraftCategoryIds] = useState<number[]>([]);
   const [draftSubCategoryIds, setDraftSubCategoryIds] = useState<number[]>([]);
+  const [confirming, setConfirming] = useState(false);
   const focusRef = useRef<HTMLTableRowElement | null>(null);
 
   const mtCategoryIds = useMemo(() => {
@@ -191,7 +192,7 @@ export function CategoryManageModal({
     setConfirmError('');
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     const parsed = parseCategorySelection(categoryIds);
     if (!parsed.success) {
       setConfirmError(parsed.error.issues[0]?.message ?? 'เลือกอย่างน้อย 1 หมวดหมู่');
@@ -210,7 +211,15 @@ export function CategoryManageModal({
       }
     }
 
-    onConfirm(categoryIds, subCategoryIds);
+    setConfirming(true);
+    setConfirmError('');
+    try {
+      await onConfirm(categoryIds, subCategoryIds);
+    } catch (e) {
+      setConfirmError(e instanceof Error ? e.message : 'บันทึกหมวดหมู่ไม่สำเร็จ');
+    } finally {
+      setConfirming(false);
+    }
   };
 
   const goPickHub = () => {
@@ -921,9 +930,9 @@ export function CategoryManageModal({
         accent='purple'
         primary={{
           label: `บันทึก (${categoryIds.length} หมวด)`,
-          loading: subsLoading,
-          loadingLabel: 'กำลังโหลด…',
-          onClick: handleConfirm,
+          loading: subsLoading || confirming,
+          loadingLabel: confirming ? 'กำลังบันทึก…' : 'กำลังโหลด…',
+          onClick: () => void handleConfirm(),
         }}
         secondary={{ label: 'ยกเลิก', onClick: onClose, tone: 'muted' }}
       />
