@@ -15,7 +15,6 @@ import {
 import { DesktopSidebar } from '@/components/layout/DesktopSidebar';
 import { ProductTour } from '@/components/features/explore/ProductTour';
 import { useAuth } from '@/stores/useAuthStore';
-import { useData } from '@/stores/useDataStore';
 import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
 import { isFactoryRole } from '@/utils/factoryUser';
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
@@ -142,7 +141,6 @@ const factoryBottomLinks = [
 export function Layout() {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
-  const data = useData();
   const unreadNotifications = useNotificationUnreadCount(isAuthenticated);
   const isFactory = isFactoryRole(user);
   const userRole = String(user?.role ?? '').toUpperCase();

@@ -27,6 +27,7 @@ import { usePromotionDetailShowcase } from '@/hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useFactoryReviewSummary } from '@/hooks/useFactoryReviewSummary';
 import { useFactoryReviewList } from '@/hooks/useFactoryReviewList';
@@ -62,7 +63,7 @@ export function PromotionDetailDesktop() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
-  const data = useData();
+  const data = useData(useShallow((s) => ({ factories: s.factories })));
   const { item, loading, error, factory, resolvedId, relatedShowcases } =
     usePromotionDetailShowcase();
   const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);

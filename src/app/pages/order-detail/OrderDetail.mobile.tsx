@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useAuth } from '@/stores/useAuthStore';
 import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';
@@ -61,7 +62,7 @@ function OrderDetailSubHeader({
 function OrderDetailMobileBody() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const data = useData();
+  const data = useData(useShallow((s) => ({ factories: s.factories })));
   const {
     mappedOrder: order,
     apiStatus,

@@ -21,6 +21,7 @@ import {
   ReceiptText,
 } from 'lucide-react';
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useAuth, useAuthStore } from '@/stores/useAuthStore';
 import { getAvailableRoles } from '@/services/api/authApi';
 import { profileApi } from '@/services/api/userApi';
@@ -159,7 +160,7 @@ function mapAddressTypeLabel(type: string): string {
 export function ProfileMobile() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const data = useData();
+  const data = useData(useShallow((s) => ({ currentUser: s.currentUser, orders: s.orders })));
   const { logout, user: authUser } = useAuth();
   const currentUser = data.currentUser;
   const role = String(

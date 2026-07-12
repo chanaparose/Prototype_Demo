@@ -130,11 +130,16 @@ export const walletApi = {
       payment_method,
     }),
 
-  withdraw: (amount: number, bank_account_id: string | number) =>
-    httpClient.post<Record<string, unknown>>('/wallet/withdraw', {
-      amount,
-      bank_account_id,
-    }),
+  /** POST /wallets/withdraw — สร้างคำขอถอนเงิน (hold เงินจาก good_fund ทันที) */
+  withdraw: (data: {
+    amount: number;
+    bank_name: string;
+    account_number: string;
+    account_holder_name: string;
+  }) => httpClient.post<Record<string, unknown>>('/wallets/withdraw', data),
+
+  /** GET /wallets/withdraw — รายการคำขอถอนเงินของโรงงาน */
+  listWithdrawals: () => httpClient.get<Record<string, unknown>[]>('/wallets/withdraw'),
 
   getWithdrawableBalance: () =>
     httpClient.get<{

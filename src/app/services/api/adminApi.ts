@@ -108,6 +108,28 @@ export const slipApi = {
 
   verify: (orderId: number, action: 'approve' | 'reject', reason?: string) =>
     httpClient.patch<ISlipInfoResponse>(`/factory/orders/${orderId}/verify-slip`, { action, reason }),
+
+  /** escrow mode: superadmin ตรวจสอบสลิปแทนโรงงาน */
+  verifyAsAdmin: (orderId: number, action: 'approve' | 'reject', reason?: string) =>
+    httpClient.patch<ISlipInfoResponse>(`/admin/orders/${orderId}/verify-slip`, { action, reason }),
+};
+
+// ─── Withdrawal Admin API (escrow mode) ─────────────────────────────────────
+
+export const adminWithdrawalApi = {
+  list: (params?: { status?: string; page?: number; page_size?: number }) => {
+    const q = new URLSearchParams();
+    if (params?.status) q.set('status', params.status);
+    q.set('page', String(params?.page ?? 1));
+    q.set('page_size', String(params?.page_size ?? 100));
+    return httpClient.get<Record<string, unknown>>(`/admin/withdrawals?${q.toString()}`);
+  },
+
+  /** อัปเดตสถานะ AP/RJ/CP — เมื่อ CP ต้องส่ง slip_url (อัปโหลดผ่าน media upload ก่อน) */
+  patch: (
+    requestId: number,
+    data: { status: 'AP' | 'RJ' | 'CP'; comments?: string; slip_url?: string },
+  ) => httpClient.patch<Record<string, unknown>>(`/admin/withdrawals/${requestId}`, data),
 };
 
 // ─── Commission Invoice Admin API (F5) ──────────────────────────────────────

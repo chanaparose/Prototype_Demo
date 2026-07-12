@@ -7,7 +7,6 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/stores/useAuthStore';
-import { useData } from '@/stores/useDataStore';
 import { meKeys } from '@/lib/queryKeys';
 import { meApi, type IMeRFQOrderSummary } from '@/services/api/meApi';
 import { mapRfqStatusFromApi } from '@/domain/rfq/status';
@@ -95,19 +94,19 @@ type MeRFQOrdersData = {
   orders: Order[];
 };
 
+// Factory names come from the /me/rfq-orders payload itself; the store's factory
+// list was always empty here, so an empty fallback map is behavior-preserving.
+const EMPTY_FACTORY_MAP = new Map<string, string>();
+
 export function useMeRFQOrdersQuery() {
   const { isAuthenticated } = useAuth();
-  const dataCtx = useData();
-
-  const factoryMap = new Map<string, string>();
-  for (const f of dataCtx.factories) factoryMap.set(String(f.id), f.name);
 
   return useQuery<MeRFQOrdersData>({
     queryKey: meKeys.rfqOrders(),
     queryFn: async () => {
       const items = await meApi.listRFQOrders();
       if (!Array.isArray(items)) return { rfqs: [], orders: [] };
-      return mapSummaryList(items, factoryMap);
+      return mapSummaryList(items, EMPTY_FACTORY_MAP);
     },
     enabled: isAuthenticated,
     staleTime: 30_000,

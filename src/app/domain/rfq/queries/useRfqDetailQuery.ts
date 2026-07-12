@@ -1,6 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo } from 'react';
-import { useData } from '@/stores/useDataStore';
 import { ordersApi } from '@/services/api/ordersApi';
 import { orderKeys, rfqKeys } from '@/lib/queryKeys';
 import {
@@ -11,24 +9,15 @@ import {
 
 export type { RfqDetailData };
 
+// Category/factory-name lookups come from the API payload now. The data store's
+// category/factory lists were always empty at this call site, so empty maps are
+// behavior-preserving and let this hook stop subscribing to the whole store.
+const EMPTY_MAP = new Map<string, string>();
+
 export function useRfqDetailQuery(rfqId: string | undefined) {
-  const dataCtx = useData();
-
-  const categoryMap = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const c of dataCtx.categories) m.set(String(c.id), c.name);
-    return m;
-  }, [dataCtx.categories]);
-
-  const factoryMap = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const f of dataCtx.factories) m.set(String(f.id), f.name);
-    return m;
-  }, [dataCtx.factories]);
-
   return useQuery({
     queryKey: rfqKeys.detail(rfqId ?? ''),
-    queryFn: () => fetchAndMapRfqDetail(rfqId!, categoryMap, factoryMap),
+    queryFn: () => fetchAndMapRfqDetail(rfqId!, EMPTY_MAP, EMPTY_MAP),
     enabled: Boolean(rfqId),
     placeholderData: (prev) => prev ?? EMPTY_RFQ_DETAIL,
     staleTime: 30_000,

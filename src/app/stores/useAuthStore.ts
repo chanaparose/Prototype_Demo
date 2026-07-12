@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { fetchCurrentUserAction, loginAction, registerAction, upgradeToFactoryAction, switchRoleAction } from '@/domain/auth/api/authActions';
 import { getToken, setToken, removeToken } from '@/services/api/tokenManager';
+import { queryClient } from '@/lib/queryClient';
 import type {
   ILoginRequest,
   IRegisterCustomerRequest,
@@ -124,6 +125,10 @@ export const useAuthStore = create<IAuthState & IAuthActions>((set) => {
     logout: () => {
       removeToken();
       set({ user: null, token: null, isLoading: false, isAuthenticated: false });
+      // Wipe every cached query (conversations, notifications, orders, …) so a
+      // subsequent login as another account never sees the previous account's
+      // data (e.g. stale unread-message badges on /messages).
+      queryClient.clear();
     },
 
     refreshUser: async () => {

@@ -23,6 +23,7 @@ import { useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useShowcases } from '@/hooks/useShowcases';
 import { RelatedShowcasesSection } from '@/components/features/idea-detail/RelatedShowcasesSection';
@@ -38,7 +39,7 @@ export function IdeaDetailDesktop() {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
   const { user } = useAuth();
-  const data = useData();
+  const data = useData(useShallow((s) => ({ factories: s.factories })));
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, resolvedId } = useIdeaDetailShowcase();
   const { showcases: relatedIdeas } = useShowcases({ type: 'ID' });

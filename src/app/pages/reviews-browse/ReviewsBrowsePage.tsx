@@ -4,6 +4,7 @@ import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
 import { useFactoryProfileQuery } from '@/domain/factory/queries/useFactoryProfileQuery';
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ReviewsBrowseView } from '@/components/features/reviews/ReviewsBrowseView';
 import {
   normalizeFactoryReview,
@@ -20,7 +21,13 @@ export function ReviewsBrowsePage() {
   const isFactoryRoute = /\/factories\/[^/]+\/reviews$/.test(location.pathname);
 
   const productState = useProductDetailShowcase();
-  const data = useData();
+  const data = useData(
+    useShallow((s) => ({
+      factories: s.factories,
+      factoryProfiles: s.factoryProfiles,
+      factoryReviews: s.factoryReviews,
+    })),
+  );
 
   const factoryFallback = useMemo(
     () => data.factories.find((f) => String(f.id) === String(pathId)),

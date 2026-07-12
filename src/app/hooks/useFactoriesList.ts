@@ -1,5 +1,6 @@
 import React from 'react';
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import { type Factory } from '@/stores/types';
 import { factoriesApi } from '@/services/api/factoryApi';
 import { normalizeFactoryRow } from '@/utils/normalizeFactoryRow';
@@ -11,7 +12,7 @@ export type FactoryFilterState = {
 };
 
 export function useFactoriesList() {
-  const data = useData();
+  const data = useData(useShallow((s) => ({ factories: s.factories })));
   const [apiFactories, setApiFactories] = React.useState<Factory[] | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);

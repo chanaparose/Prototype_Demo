@@ -42,7 +42,12 @@ export function useNotificationSSE(enabled: boolean): { unreadCount: number } {
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      // Logged out (or SSE disabled): drop the last account's badge count so it
+      // can't leak into the next session before the new stream's init event.
+      setUnreadCount(0);
+      return;
+    }
 
     const token = getToken();
     if (!token) return;

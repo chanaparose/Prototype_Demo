@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 import { ChevronLeft, ClipboardList, MessageCircle, X } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import type { IConversationResponse } from '@/services/api/types/chat.types';
 import type { IQuotationResponse } from '@/services/api/types/rfq.types';
 import { getFactoryEntityId } from '@/utils/factoryUser';
@@ -117,7 +118,7 @@ export function FactoryRfqDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const data = useData();
+  const data = useData(useShallow((s) => ({ categories: s.categories })));
   const fid = getFactoryEntityId(user);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import { type Factory, type FactoryShowcase } from '@/stores/types';
 import { useQuery } from '@tanstack/react-query';
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
@@ -156,7 +157,9 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   const qId = searchParams.get('showcase_id');
   const resolvedId = (pathId && pathId.trim() !== '' ? pathId : qId)?.trim() ?? '';
 
-  const data = useData();
+  const data = useData(
+    useShallow((s) => ({ factories: s.factories, factoryShowcases: s.factoryShowcases })),
+  );
 
   const fromContext = useMemo(() => {
     if (!resolvedId) return null;

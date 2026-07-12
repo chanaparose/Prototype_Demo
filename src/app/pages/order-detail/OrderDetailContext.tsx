@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import { walletApi } from '@/services/api/userApi';
 import { ordersApi } from '@/services/api/ordersApi';
 import { type Order } from '@/stores/types';
@@ -172,7 +173,9 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
     gcTime: 5 * 60_000,
     refetchOnWindowFocus: false,
   });
-  const { refetchWallet, refetchRfqs } = useData();
+  const { refetchWallet, refetchRfqs } = useData(
+    useShallow((s) => ({ refetchWallet: s.refetchWallet, refetchRfqs: s.refetchRfqs })),
+  );
 
   // Determine whether the embedded review_state is present.
   const embeddedReviewState = useMemo((): ReviewStateData | null => {

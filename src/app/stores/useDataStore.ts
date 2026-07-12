@@ -6,16 +6,12 @@ import { walletApi } from '@/services/api/userApi';
 import { queryClient } from '@/lib/queryClient';
 import { chatKeys, orderKeys, rfqKeys } from '@/lib/queryKeys';
 import { refreshConversationsCache } from '@/domain/chat/chatCache';
-import { fetchNotificationsList } from '@/domain/notifications/queries/useNotificationQueries';
-import { mapNotificationToBootstrapModel } from '@/domain/notifications/mappers/mapNotification';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
-import { mapRfqStatusFromApi } from '@/domain/rfq/status';
 import {
   mapOrderStatusFromApi,
   guessOrderProgressFromStep,
   parseCurrentStepId,
 } from '@/domain/order/status';
-import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
 import type {
   BootstrapCategoryModel,
   Factory,
@@ -23,9 +19,7 @@ import type {
   FactoryReview,
   IdeaArticle,
   FactoryShowcase,
-  Rfq,
   Order,
-  Notification,
   CurrentUser,
 } from '@/stores/types';
 
@@ -37,9 +31,7 @@ export interface DataState {
   factoryReviews: FactoryReview[];
   ideaArticles: IdeaArticle[];
   factoryShowcases: FactoryShowcase[];
-  rfqs: Rfq[];
   orders: Order[];
-  notifications: Notification[];
   isLoading: boolean;
   error: string | null;
 }
@@ -66,9 +58,7 @@ const INITIAL_STATE: DataState = {
   factoryReviews: [],
   ideaArticles: [],
   factoryShowcases: [],
-  rfqs: [],
   orders: [],
-  notifications: [],
   isLoading: false,
   error: null,
 };
@@ -91,15 +81,12 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
     set((state) => ({ ...state, isLoading: true, error: null }));
 
     try {
-      const [sessionRes, notifRes] = await Promise.allSettled([
-        frontendApi.getBootstrap(),
-        fetchNotificationsList(),
-      ]);
+      // Notifications and the RFQ list are owned by React Query (their own
+      // hooks / SSE), so bootstrap only feeds the session + orders + current
+      // user here — no second source of truth, and one fewer request on login.
+      const [sessionRes] = await Promise.allSettled([frontendApi.getBootstrap()]);
 
       const session = sessionRes.status === 'fulfilled' ? sessionRes.value : null;
-      const notificationModels = notifRes.status === 'fulfilled' ? notifRes.value : [];
-
-      const mappedNotifs: Notification[] = notificationModels.map(mapNotificationToBootstrapModel);
 
       useSessionStore.setState({
         data: session,
@@ -132,36 +119,10 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
         factoryReviews: [],
         ideaArticles: [],
         factoryShowcases: [],
-        rfqs: (() => {
-          const raw = session?.rfqs;
-          if (!Array.isArray(raw)) return [];
-          return (raw as Record<string, unknown>[]).map((r) => {
-            const category = pickScalarString(r.category);
-            const offerCount = pickScalarNumber(r.offerCount ?? r.offer_count) ?? 0;
-            const statusCode = pickScalarString(r.status);
-            const status = mapRfqStatusFromApi(statusCode, { quoteCount: offerCount });
-            return {
-              id: String(r.id ?? r.rfq_id ?? ''),
-              projectName: pickScalarString(r.projectName ?? r.project_name),
-              category,
-              categoryIcon: guessCategoryIcon(category),
-              status,
-              offerCount,
-              budget: pickScalarNumber(r.budget) ?? 0,
-              quantity: pickScalarNumber(r.quantity) ?? 0,
-              material: '',
-              deadline: '',
-              createdAt: pickScalarString(r.createdAt ?? r.created_at),
-              description: pickScalarString(r.description),
-              imageUrls: [],
-              offers: [],
-            } as Rfq;
-          });
-        })(),
         orders: (() => {
           const raw = session?.orders;
           if (!Array.isArray(raw)) return [];
-          return (raw as Record<string, unknown>[]).map((o) => {
+          return (raw as unknown as Record<string, unknown>[]).map((o) => {
             const status = mapOrderStatusFromApi(pickScalarString(o.status));
             const currentStepId = parseCurrentStepId(o.currentStepId ?? o.current_step_id);
             return {
@@ -184,7 +145,6 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
             } as Order;
           });
         })(),
-        notifications: mappedNotifs,
         isLoading: false,
         error: null,
       });

@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { bankAccountApi } from '@/services/api/factoryApi';
 import { slipApi } from '@/services/api/adminApi';
+import { usePaymentConfig } from '@/hooks/usePaymentConfig';
 import { AppDialog } from '@/components/ui/app-dialog';
 import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import {
@@ -26,11 +27,11 @@ type Props = {
   onSuccess?: () => void | Promise<void>;
 };
 
-function useBankAccount(factoryId: number, open: boolean) {
+function useBankAccount(factoryId: number, open: boolean, enabled: boolean) {
   return useQuery({
     queryKey: ['factory-bank-account', factoryId],
     queryFn: () => bankAccountApi.getPublicDefault(factoryId),
-    enabled: open && factoryId > 0,
+    enabled: enabled && open && factoryId > 0,
     staleTime: 30_000,
   });
 }
@@ -52,7 +53,9 @@ export function DepositPaymentModal({
   amount,
   onSuccess,
 }: Props) {
-  const bank = useBankAccount(factoryId, open);
+  const { isEscrow, trylyBank } = usePaymentConfig();
+  // escrow mode: ลูกค้าโอนเข้าบัญชี Tryly — ไม่ต้องโหลดบัญชีโรงงาน
+  const bank = useBankAccount(factoryId, open, !isEscrow);
   const slip = useSlipInfo(orderId, open);
   const [file, setFile] = React.useState<File | null>(null);
   const [preview, setPreview] = React.useState<string | null>(null);
@@ -99,7 +102,7 @@ export function DepositPaymentModal({
       formData.append('file', file);
       if (note.trim()) formData.append('note', note.trim());
       await slipApi.attach(Number(orderId), formData);
-      toast.success('แนบสลิปสำเร็จ รอโรงงานตรวจสอบ');
+      toast.success(isEscrow ? 'แนบสลิปสำเร็จ รอเจ้าหน้าที่ตรวจสอบ' : 'แนบสลิปสำเร็จ รอโรงงานตรวจสอบ');
       await onSuccess?.();
       onClose();
     } catch (err) {
@@ -156,14 +159,52 @@ export function DepositPaymentModal({
         </p>
       </div>
 
-      {/* ข้อมูลบัญชีโรงงาน */}
+      {/* ข้อมูลบัญชีสำหรับโอนเงิน — escrow: บัญชี Tryly / direct-pay: บัญชีโรงงาน */}
       <div className='rounded-2xl border border-slate-200 bg-white p-4 mb-4 space-y-3'>
         <p className='text-xs font-semibold text-slate-500 flex items-center gap-1.5'>
           <Building2 size={13} />
           ข้อมูลบัญชีสำหรับโอนเงิน
         </p>
 
-        {bank.isPending ? (
+        {isEscrow ? (
+          !trylyBank.accountNumber ? (
+            <div className='flex items-center gap-2 py-3'>
+              <AlertTriangle size={14} className='text-amber-500' />
+              <span className='text-xs text-amber-600'>
+                ระบบยังไม่ตั้งค่าบัญชีรับชำระ — กรุณาติดต่อเจ้าหน้าที่
+              </span>
+            </div>
+          ) : (
+            <>
+              <InfoRow label='ธนาคาร' value={trylyBank.bankName} />
+              <InfoRowCopy
+                label='เลขบัญชี'
+                value={trylyBank.accountNumber}
+                mono
+                copied={copiedField === 'num'}
+                onCopy={() => handleCopy(trylyBank.accountNumber, 'num')}
+              />
+              <InfoRowCopy
+                label='ชื่อบัญชี'
+                value={trylyBank.accountName}
+                copied={copiedField === 'name'}
+                onCopy={() => handleCopy(trylyBank.accountName, 'name')}
+              />
+              {trylyBank.promptPay ? (
+                <InfoRowCopy
+                  label='พร้อมเพย์'
+                  value={trylyBank.promptPay}
+                  mono
+                  copied={copiedField === 'pp'}
+                  onCopy={() => handleCopy(trylyBank.promptPay, 'pp')}
+                />
+              ) : null}
+              <p className='text-[11px] text-slate-400 leading-relaxed pt-1'>
+                ชำระผ่านบัญชีกลาง Tryly — ระบบจะถือเงินไว้ให้และโอนให้โรงงานเมื่อคุณยืนยันรับสินค้า
+              </p>
+            </>
+          )
+        ) : bank.isPending ? (
           <div className='flex items-center gap-2 py-3'>
             <Loader2 size={14} className='animate-spin text-slate-400' />
             <span className='text-xs text-slate-400'>กำลังโหลดข้อมูลบัญชี…</span>
@@ -196,7 +237,7 @@ export function DepositPaymentModal({
       {/* Slip status display */}
       {alreadySubmitted && (
         <div className='rounded-2xl border border-blue-200 bg-blue-50 p-4 mb-4'>
-          <p className='text-sm font-semibold text-blue-700'>สลิปถูกส่งแล้ว — รอโรงงานตรวจสอบ</p>
+          <p className='text-sm font-semibold text-blue-700'>{isEscrow ? 'สลิปถูกส่งแล้ว — รอเจ้าหน้าที่ Tryly ตรวจสอบ' : 'สลิปถูกส่งแล้ว — รอโรงงานตรวจสอบ'}</p>
           {slip.data?.slip_url && (
             <img
               src={slip.data.slip_url}
@@ -209,7 +250,7 @@ export function DepositPaymentModal({
 
       {alreadyApproved && (
         <div className='rounded-2xl border border-emerald-200 bg-emerald-50 p-4 mb-4'>
-          <p className='text-sm font-semibold text-emerald-700'>โรงงานยืนยันรับเงินแล้ว</p>
+          <p className='text-sm font-semibold text-emerald-700'>{isEscrow ? 'ยืนยันการชำระเงินแล้ว — ระบบถือเงินไว้จนกว่าจะรับสินค้า' : 'โรงงานยืนยันรับเงินแล้ว'}</p>
         </div>
       )}
 

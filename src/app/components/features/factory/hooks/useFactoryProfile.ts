@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router';
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import { type IdeaArticle } from '@/stores/types';
 import { type TabId } from '@/components/features/factory-profile/FactoryProfileTabContent';
 import { mapConversationToStoreModel } from '@/domain/chat/mappers/mapConversationStore';
@@ -18,7 +19,13 @@ export function useFactoryProfile() {
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = React.useState<TabId>('products');
   const [startingConversation, setStartingConversation] = React.useState(false);
-  const data = useData();
+  const data = useData(
+    useShallow((s) => ({
+      factories: s.factories,
+      factoryProfiles: s.factoryProfiles,
+      factoryReviews: s.factoryReviews,
+    })),
+  );
   const { isAuthenticated } = useAuth();
   const conversationsQ = useConversationsQuery(Boolean(id) && isAuthenticated);
 

@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useModal } from '@/hooks/ui/useModal';
 import { walletApi, transactionsApi } from '@/services/api/userApi';
+import { bankAccountApi } from '@/services/api/factoryApi';
+import type { IBankAccountResponse } from '@/services/api/types/admin.types';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -147,6 +149,9 @@ export function FactoryWalletPage() {
 
   const withdraw = useModal();
   const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [bankAccounts, setBankAccounts] = useState<IBankAccountResponse[]>([]);
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
+  const [withdrawals, setWithdrawals] = useState<Record<string, unknown>[]>([]);
 
   const load = async () => {
     setLoading(true);
@@ -168,6 +173,20 @@ export function FactoryWalletPage() {
         .filter((t) => t.id)
         .slice(0, 30);
       setTx(apiTx);
+
+      // คำขอถอนเงิน + บัญชีธนาคารของโรงงาน (best-effort — ไม่บล็อกหน้า)
+      const [wd, accounts] = await Promise.all([
+        walletApi.listWithdrawals().catch(() => []),
+        bankAccountApi
+          .list()
+          .then((r) => (Array.isArray(r?.accounts) ? r.accounts : []))
+          .catch(() => [] as IBankAccountResponse[]),
+      ]);
+      setWithdrawals(Array.isArray(wd) ? wd : []);
+      setBankAccounts(accounts);
+      const defaultAcc = accounts.find((a) => a.is_default) ?? accounts[0];
+      setSelectedAccountId((prev) => prev ?? (defaultAcc ? Number(defaultAcc.account_id) : null));
+
       setLastRefreshedAt(new Date());
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดกระเป๋าไม่สำเร็จ');
@@ -324,11 +343,76 @@ export function FactoryWalletPage() {
         </div>
 
         <div className='rounded-lg border border-brand-purple/15 bg-brand-lavender px-4 py-3 text-sm text-brand-purple'>
-          <p className='font-semibold mb-0.5'>เติมเงิน / ถอนเงิน (PromptPay)</p>
+          <p className='font-semibold mb-0.5'>การถอนเงิน</p>
           <p className='text-xs opacity-80 leading-relaxed'>
-            โฟลว์ PromptPay กำลังพัฒนา — ดูยอดและประวัติธุรกรรมด้านล่างได้จาก API ที่มีอยู่
+            ส่งคำขอถอนเงินเข้าบัญชีธนาคารของคุณ — เจ้าหน้าที่ Tryly จะโอนเงินพร้อมแนบสลิปให้ภายใน
+            1-2 วันทำการ
           </p>
         </div>
+
+        {withdrawals.length > 0 && (
+          <section className={factoryCardClass({ variant: 'shell' })}>
+            <div className='px-4 pt-4 pb-3 border-b border-gray-50'>
+              <h2 className='text-sm font-bold text-slate-900'>คำขอถอนเงิน</h2>
+            </div>
+            <ul>
+              {withdrawals.map((w) => {
+                const st = String(w.status ?? '').trim().toUpperCase();
+                const tone: FactoryStatusTone =
+                  st === 'CP' ? 'success' : st === 'RJ' ? 'danger' : 'warning';
+                const label =
+                  st === 'CP'
+                    ? 'โอนแล้ว'
+                    : st === 'RJ'
+                      ? 'ถูกปฏิเสธ'
+                      : st === 'AP'
+                        ? 'อนุมัติแล้ว — รอโอน'
+                        : 'รอตรวจสอบ';
+                const slipUrl = String(w.slip_url ?? '');
+                return (
+                  <li
+                    key={String(w.request_id)}
+                    className='flex items-center justify-between gap-3 border-t border-slate-100 px-4 py-3'
+                  >
+                    <div className='min-w-0'>
+                      <p className='text-sm font-medium text-slate-900'>
+                        {String(w.bank_name ?? '')} · {String(w.bank_account_no ?? '')}
+                      </p>
+                      <p className='text-xs text-gray-400'>
+                        {w.created_at
+                          ? new Date(String(w.created_at)).toLocaleDateString('th-TH', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            })
+                          : '-'}
+                        {slipUrl ? (
+                          <>
+                            {' · '}
+                            <a
+                              href={slipUrl}
+                              target='_blank'
+                              rel='noreferrer'
+                              className='text-brand-purple underline'
+                            >
+                              ดูสลิปโอนเงิน
+                            </a>
+                          </>
+                        ) : null}
+                      </p>
+                    </div>
+                    <div className='shrink-0 text-right'>
+                      <p className='text-sm font-bold text-slate-900'>
+                        {formatCurrency(Number(w.amount ?? 0))}
+                      </p>
+                      <FactoryStatusBadge tone={tone}>{label}</FactoryStatusBadge>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
 
         {pendingWithdrawals.length > 0 && (
           <section className='overflow-hidden rounded-lg border border-amber-200 bg-amber-50'>
@@ -468,10 +552,35 @@ export function FactoryWalletPage() {
                 <p className='text-xs text-gray-400 mt-1'>ขั้นต่ำ ฿500</p>
               </div>
 
-              <div className='rounded-lg border border-slate-200 bg-[var(--brand-page)] px-3 py-3'>
-                <p className='text-xs font-semibold text-gray-500 mb-0.5'>บัญชีปลายทาง</p>
-                <p className='text-sm font-medium text-slate-900'>PromptPay — จากโปรไฟล์</p>
-                <p className='text-xs text-gray-400'>(ข้อมูลบัญชีโหลดจาก profile API อัตโนมัติ)</p>
+              <div className='rounded-lg border border-slate-200 bg-[var(--brand-page)] px-3 py-3 space-y-2'>
+                <p className='text-xs font-semibold text-gray-500'>บัญชีปลายทาง</p>
+                {bankAccounts.length === 0 ? (
+                  <p className='text-xs text-amber-600'>
+                    ยังไม่มีบัญชีธนาคาร — เพิ่มได้ที่หน้า ข้อมูลโรงงาน › บัญชีธนาคาร
+                  </p>
+                ) : (
+                  bankAccounts.map((acc) => {
+                    const accId = Number(acc.account_id);
+                    const active = selectedAccountId === accId;
+                    return (
+                      <button
+                        key={accId}
+                        type='button'
+                        onClick={() => setSelectedAccountId(accId)}
+                        className={`w-full rounded-lg border px-3 py-2 text-left transition-colors ${
+                          active
+                            ? 'border-brand-purple bg-brand-lavender'
+                            : 'border-slate-200 bg-white hover:border-brand-purple/40'
+                        }`}
+                      >
+                        <p className='text-sm font-medium text-slate-900'>
+                          {acc.bank_name} · {acc.account_number}
+                        </p>
+                        <p className='text-xs text-gray-400'>{acc.account_name}</p>
+                      </button>
+                    );
+                  })
+                )}
               </div>
 
               {withdraw.error ? (
@@ -508,9 +617,20 @@ export function FactoryWalletPage() {
                       withdraw.setError('จำนวนเกินยอดคงเหลือ');
                       return;
                     }
+                    const acc = bankAccounts.find(
+                      (a) => Number(a.account_id) === selectedAccountId,
+                    );
+                    if (!acc) {
+                      withdraw.setError('กรุณาเลือกบัญชีปลายทาง');
+                      return;
+                    }
                     const ok = await withdraw.runAsync(async () => {
-                      // Existing withdrawal handler — wire to actual API when ready
-                      await new Promise((r) => setTimeout(r, 800));
+                      await walletApi.withdraw({
+                        amount: amt,
+                        bank_name: acc.bank_name,
+                        account_number: acc.account_number,
+                        account_holder_name: acc.account_name,
+                      });
                       await load();
                     });
                     if (ok !== undefined) withdraw.closeModal();

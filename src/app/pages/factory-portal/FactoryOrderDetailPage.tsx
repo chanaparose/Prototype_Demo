@@ -22,6 +22,7 @@ import { openShippingLabel } from '@/utils/printShippingLabel';
 import { useQueryClient } from '@tanstack/react-query';
 import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
 import { useAuth } from '@/stores/useAuthStore';
+import { usePaymentConfig } from '@/hooks/usePaymentConfig';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDate, formatDateTime } from '@/utils/formatting/formatDate';
@@ -1057,6 +1058,8 @@ function SlipVerificationCard({
   const [rejectReason, setRejectReason] = React.useState('');
   const [showRejectInput, setShowRejectInput] = React.useState(false);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+  // escrow mode: Tryly (superadmin) เป็นผู้ตรวจสอบสลิป — โรงงานดูได้อย่างเดียว
+  const { isEscrow } = usePaymentConfig();
 
   const fetchSlip = React.useCallback(async () => {
     try {
@@ -1171,8 +1174,17 @@ function SlipVerificationCard({
         </p>
       ) : null}
 
-      {/* Action buttons — only for ST (pending) */}
-      {isPending ? (
+      {/* Action buttons — only for ST (pending); escrow mode: Tryly ตรวจสอบแทน */}
+      {isPending && isEscrow ? (
+        <div className='rounded-md border border-brand-purple/15 bg-brand-lavender px-3 py-2.5'>
+          <p className='text-[12px] font-semibold text-brand-purple'>
+            Tryly กำลังตรวจสอบการชำระเงิน
+          </p>
+          <p className='text-[11px] text-brand-purple/80 leading-relaxed'>
+            ลูกค้าชำระผ่านบัญชีกลาง Tryly — เจ้าหน้าที่จะยืนยันสลิปและระบบจะโอนเงินให้เมื่อออเดอร์เสร็จสมบูรณ์
+          </p>
+        </div>
+      ) : isPending ? (
         !showRejectInput ? (
           <div className='flex items-center gap-2'>
             <Button

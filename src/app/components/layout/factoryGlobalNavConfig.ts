@@ -8,6 +8,7 @@ import {
   Receipt,
   IdCard,
   Star,
+  Wallet,
 } from 'lucide-react';
 
 export type FactorySidebarNavItem = {
@@ -22,7 +23,23 @@ export type FactorySidebarNavItem = {
   extraActivePaths?: string[];
   /** ต้องอนุมัติ (AP) ก่อนเข้าได้ */
   requiresApproval?: boolean;
+  /** ซ่อนเมื่อ config_payment เป็น escrow mode (เช่น tab สรุปค่าบริการ) */
+  hideInEscrow?: boolean;
+  /** แสดงเฉพาะ escrow mode (เช่น กระเป๋าเงิน/ถอนเงิน) */
+  escrowOnly?: boolean;
 };
+
+/** กรองเมนูตาม payment mode — ใช้ทั้ง DesktopSidebar และ MobileBottomNav */
+export function filterFactoryNavByPaymentMode(
+  items: FactorySidebarNavItem[],
+  isEscrow: boolean,
+): FactorySidebarNavItem[] {
+  return items.filter((item) => {
+    if (item.hideInEscrow && isEscrow) return false;
+    if (item.escrowOnly && !isEscrow) return false;
+    return true;
+  });
+}
 
 export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
   {
@@ -77,6 +94,17 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
     activeMatch: 'prefix',
     activePath: '/factory/invoices',
     requiresApproval: true,
+    hideInEscrow: true,
+  },
+  {
+    key: 'factory-wallet',
+    label: 'กระเป๋าเงิน',
+    icon: Wallet,
+    href: '/factory/wallet',
+    activeMatch: 'prefix',
+    activePath: '/factory/wallet',
+    requiresApproval: true,
+    escrowOnly: true,
   },
   {
     key: 'factory-reviews',

@@ -36,6 +36,7 @@ import { ShowcaseDetailMobileActionBar } from '@/components/features/showcase-de
 import { ShowcaseDetailMobileScrollHeader } from '@/components/features/showcase-detail/ShowcaseDetailMobileScrollHeader';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useFavorites } from '@/hooks/useFavorites';
 import { StrictSpecsBlock } from '@/shared/ui/StrictSpecsBlock/StrictSpecsBlock';
@@ -58,7 +59,7 @@ export function ProductDetailMobile() {
   const location = useLocation();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
-  const data = useData();
+  const data = useData(useShallow((s) => ({ factories: s.factories })));
   const {
     item,
     moqUnit,

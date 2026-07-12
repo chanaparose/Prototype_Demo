@@ -16,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useAuth, useAuthStore } from '@/stores/useAuthStore';
 import { getAvailableRoles } from '@/services/api/authApi';
 import { httpClient } from '@/services/api/httpClient';
@@ -23,8 +24,10 @@ import { isFactoryRole } from '@/utils/factoryUser';
 import { profileInitKey } from '@/hooks/factory/useProfileInit';
 import {
   FACTORY_SIDEBAR_NAV,
+  filterFactoryNavByPaymentMode,
   isFactorySidebarNavActive,
 } from '@/components/layout/factoryGlobalNavConfig';
+import { usePaymentConfig } from '@/hooks/usePaymentConfig';
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
 import { resolveCustomerAvatarSrc } from '@/utils/customerAvatar';
 import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
@@ -135,11 +138,13 @@ function RoleSwitcher({ isFactory }: { isFactory: boolean }) {
 export function DesktopSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const data = useData();
+  const data = useData(useShallow((s) => ({ currentUser: s.currentUser })));
   const { user: authUser, isAuthenticated } = useAuth();
   const currentUser = data.currentUser;
   const isFactory = isFactoryRole(authUser);
   const factoryApproved = factoryVerifyStatus(authUser) === 'AP';
+  const { isEscrow } = usePaymentConfig();
+  const factoryNavItems = filterFactoryNavByPaymentMode(FACTORY_SIDEBAR_NAV, isEscrow);
   // Tour state persisted with localStorage and synchronized via subscription
   const { value: tourOn, setValue: setTourOn } = useLocalStorage('tourActive', isTourActive());
   const { open: openLoginModal } = useAuthModalStore();
@@ -196,7 +201,7 @@ export function DesktopSidebar() {
 
       <nav className='flex-1 px-3 pt-4 space-y-0.5 overflow-y-auto' aria-label='เมนูหลัก'>
         {isFactory
-          ? FACTORY_SIDEBAR_NAV.map((item) => {
+          ? factoryNavItems.map((item) => {
               const active = isFactorySidebarNavActive(location.pathname, item);
               const Icon = item.icon;
               const locked = Boolean(item.requiresApproval && !factoryApproved);

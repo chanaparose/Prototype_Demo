@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { usePaymentConfig } from '@/hooks/usePaymentConfig';
 import {
   FileText,
   Upload,
@@ -524,6 +526,13 @@ function CurrentPeriodSection({ data }: { data: ICurrentPeriodSummary }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function FactoryInvoicePage() {
+  // escrow mode: ไม่มี commission invoice — redirect กลับ dashboard
+  const { isEscrow } = usePaymentConfig();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (isEscrow) navigate('/factory', { replace: true });
+  }, [isEscrow, navigate]);
+
   const [invoices, setInvoices] = useState<ICommissionInvoiceResponse[]>([]);
   const [currentPeriod, setCurrentPeriod] = useState<ICurrentPeriodSummary | null>(null);
   const [loading, setLoading] = useState(true);

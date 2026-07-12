@@ -5,6 +5,7 @@ import { getLbiHubs } from '@/services/api/masterApi';
 import type { IHubResponse } from '@/services/api/types/master.types';
 
 import { useData } from '@/stores/useDataStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useFactoryIdeasCategorySelection } from '@/hooks/useFactoryIdeasCategoryFromUrl';
 import {
@@ -85,7 +86,11 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     setSearchText(fromState);
   }, [location.key, location.state]);
 
-  const data = useData();
+  // `data` is returned from this hook and the FactoryIdeas pages read both
+  // categories and factories off it, so both must be in the selected slice.
+  const data = useData(
+    useShallow((s) => ({ categories: s.categories, factories: s.factories })),
+  );
   const favorites = useFavorites();
   const isFactoryTab = selectedType === 'factory';
   const isMaterialTab = selectedType === 'material';
