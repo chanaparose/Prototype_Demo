@@ -632,8 +632,9 @@ export function FactoryWalletPage() {
                         account_holder_name: acc.account_name,
                       });
                       await load();
+                      return true;
                     });
-                    if (ok !== undefined) withdraw.closeModal();
+                    if (ok) withdraw.closeModal();
                   }}
                   className={factoryButtonClass({
                     variant: 'primary',

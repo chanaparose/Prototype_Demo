@@ -164,6 +164,27 @@ export const adminCommissionApi = {
     httpClient.get<ICommissionSummaryResponse>(
       `/admin/commission/summary${params ? `?month=${params.month ?? 0}&year=${params.year ?? 0}` : ''}`,
     ),
+
+  /** escrow mode: ค่าคอมมิชชันที่ Tryly ได้รับต่อออเดอร์ */
+  escrowOrders: () =>
+    httpClient.get<{
+      orders: Array<{
+        order_id: number;
+        factory_id: number;
+        factory_name: string;
+        customer_name: string;
+        status: string;
+        grand_total: number;
+        commission_rate: number;
+        commission_amount: number;
+        vat_amount: number;
+        factory_net: number;
+        created_at: string;
+      }>;
+      total_commission: number;
+      total_gross: number;
+      count: number;
+    }>('/admin/commission/orders'),
 };
 
 export const adminApi = {

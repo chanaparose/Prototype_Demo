@@ -13,6 +13,7 @@ import {
   LogOut,
   Bell,
   ImageIcon,
+  Banknote,
 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { Navigate } from 'react-router';
@@ -44,6 +45,7 @@ const NAV_ITEMS = [
   { path: '/admin/rfqs', icon: ClipboardList, label: 'RFQ', minRank: 1 },
   { path: '/admin/orders', icon: ShoppingCart, label: 'คำสั่งซื้อ', minRank: 1 },
   { path: '/admin/commission', icon: ClipboardList, label: 'Commission', minRank: 2 },
+  { path: '/admin/withdrawals', icon: Banknote, label: 'คำขอถอนเงิน', minRank: 2 },
   { path: '/admin/config', icon: Settings, label: 'ตั้งค่า', minRank: 2 },
   { path: '/admin/category-images', icon: ImageIcon, label: 'ภาพหมวดหมู่', minRank: 3 },
 ];
@@ -61,6 +63,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/rfqs': 'จัดการ RFQ',
   '/admin/orders': 'จัดการคำสั่งซื้อ',
   '/admin/commission': 'Commission',
+  '/admin/withdrawals': 'คำขอถอนเงิน',
   '/admin/config': 'ตั้งค่าระบบ',
   '/admin/category-images': 'ภาพหมวดหมู่',
 };
