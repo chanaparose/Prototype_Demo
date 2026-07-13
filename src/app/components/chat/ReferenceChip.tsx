@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { showcasesApi } from '@/services/api/factoryApi';
+import { useAuth } from '@/stores/useAuthStore';
+import { isFactoryRole } from '@/utils/factoryUser';
 import type { ChatReference } from '@/utils/chatContract';
 
 type Props = {
@@ -9,7 +11,13 @@ type Props = {
   titleFallback?: string;
 };
 
-function hrefFor(ref: ChatReference): string {
+/**
+ * RFQ/Order มีคนละหน้าสำหรับลูกค้า (CT) กับโรงงาน (FT):
+ *   CT → /rfqs/:id, /orders/:id
+ *   FT → /factory/rfqs/:id, /factory/orders/:id
+ * Showcase (PD/PM/ID) ใช้หน้าเดียวกันทั้งสอง role
+ */
+function hrefFor(ref: ChatReference, isFactory: boolean): string {
   const id = ref.id;
   switch (ref.type) {
     case 'PD':
@@ -19,9 +27,9 @@ function hrefFor(ref: ChatReference): string {
     case 'ID':
       return `/idea-detail?showcase_id=${id}`;
     case 'RQ':
-      return `/rfqs/${id}`;
+      return isFactory ? `/factory/rfqs/${id}` : `/rfqs/${id}`;
     case 'OD':
-      return `/orders/${id}`;
+      return isFactory ? `/factory/orders/${id}` : `/orders/${id}`;
     default:
       return `/product-detail?showcase_id=${id}`;
   }
@@ -69,6 +77,8 @@ function useShowcaseTitle(referenceId: number, skip: boolean) {
 }
 
 export function ReferenceChip({ reference, titleFallback }: Props) {
+  const { user } = useAuth();
+  const isFactory = isFactoryRole(user);
   const hasTitle = Boolean(reference.title?.trim() || titleFallback?.trim());
   // Fetch from API only for showcase types (PD, PM, ID) or unknown type when no title
   const isShowcaseType =
@@ -83,7 +93,7 @@ export function ReferenceChip({ reference, titleFallback }: Props) {
   }
 
   const resolvedTitle = reference.title?.trim() || titleFallback?.trim() || fetchedTitle;
-  const to = hrefFor(reference);
+  const to = hrefFor(reference, isFactory);
   const label = labelFor({ ...reference, title: resolvedTitle }, resolvedTitle);
 
   return (

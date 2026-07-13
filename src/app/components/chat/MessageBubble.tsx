@@ -1,13 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import {
-  ArrowRight,
-  Check,
-  Clock,
-  CreditCard,
-  FileText,
-  X,
-} from 'lucide-react';
+import { ArrowRight, Check, Clock, CreditCard, FileText, X } from 'lucide-react';
 import { cn } from '@lib/utils';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { ChatReference, ChatReferenceType } from '@/utils/chatContract';
@@ -136,11 +129,14 @@ export function rowToRoomMessage(r: Record<string, unknown>): RoomMessage | null
   const receiver_id = Number(r.receiver_id ?? r.receiverId ?? 0);
   if (!Number.isFinite(sender_id)) return null;
 
-  const refType = String(r.reference_type ?? '').toUpperCase() as RoomMessage['reference_type'];
+  const rawRefType = String(r.reference_type ?? '').toUpperCase() as RoomMessage['reference_type'];
   const reference_id = Number(r.reference_id ?? 0);
   const reference_title = String(
     r.reference_title ?? r.ref_title ?? r.rfq_title ?? r.showcase_title ?? r.order_title ?? '',
   ).trim();
+  // reference_type จาก BE เชื่อถือได้แล้ว (migration 028 + store/select reference_type)
+  // ไม่ต้องเดาจาก content อีก
+  const refType = rawRefType;
 
   const createdAtRaw = String(r.created_at ?? r.sent_at ?? '');
 
@@ -223,10 +219,8 @@ function PeerAvatar({ url }: { url: string }) {
 function MessageTimeMeta({ msg, isMine }: { msg: RoomMessage; isMine: boolean }) {
   return (
     <span className='inline-flex shrink-0 items-center gap-0.5 text-[10px] leading-none text-gray-400'>
-      {msg.status === 'sending' ? (
-        <SendingSpinner color='var(--neutral-placeholder)' />
-      ) : null}
-     
+      {msg.status === 'sending' ? <SendingSpinner color='var(--neutral-placeholder)' /> : null}
+
       <span>{msg.display_time}</span>
       {msg.status === 'error' ? <span className='text-red-500'>!</span> : null}
       {isMine && msg.status === 'ok' ? (
@@ -254,7 +248,10 @@ function TextBubbleBody({
 }) {
   return (
     <div
-      className={cn('flex min-w-0 max-w-[78%] flex-col gap-1', isMine ? 'items-end' : 'items-start')}
+      className={cn(
+        'flex min-w-0 max-w-[78%] flex-col gap-1',
+        isMine ? 'items-end' : 'items-start',
+      )}
     >
       <div className={cn('flex items-end gap-1.5', isMine ? 'flex-row-reverse' : 'flex-row')}>
         <div
@@ -320,8 +317,7 @@ function RfqChatCard({
         className={cn(
           CHAT_CARD_SHELL,
           'max-w-[min(100%,304px)] border-violet-200/80',
-          canOpen &&
-            'hover:-translate-y-0.5 active:scale-[0.995]',
+          canOpen && 'hover:-translate-y-0.5 active:scale-[0.995]',
         )}
       >
         <div
@@ -368,16 +364,16 @@ function RfqChatCard({
             type='button'
             disabled={!canOpen}
             onClick={onOpen}
-              className={cn(
-                'flex w-full items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white',
-                'disabled:cursor-not-allowed disabled:opacity-45',
-                canOpen && 'hover:brightness-[1.02] active:scale-[0.995]',
-              )}
-              style={{
-                background:
-                  'linear-gradient(135deg, var(--brand-mauve) 0%, var(--brand-purple) 100%)',
-              }}
-            >
+            className={cn(
+              'flex w-full items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white',
+              'disabled:cursor-not-allowed disabled:opacity-45',
+              canOpen && 'hover:brightness-[1.02] active:scale-[0.995]',
+            )}
+            style={{
+              background:
+                'linear-gradient(135deg, var(--brand-mauve) 0%, var(--brand-purple) 100%)',
+            }}
+          >
             {viewerRole === 'FT' ? 'สร้างใบเสนอราคา' : 'ดู RFQ'}
             <ArrowRight size={15} strokeWidth={2.5} />
           </Button>
@@ -484,11 +480,14 @@ function QuotationChatCard({
                 Lead time
               </p>
               <p className='mt-0.5 text-[12px] font-bold tabular-nums text-[var(--brand-navy)]'>
-                {quote.leadTime} <span className='text-[10px] font-medium text-orange-700'>วัน</span>
+                {quote.leadTime}{' '}
+                <span className='text-[10px] font-medium text-orange-700'>วัน</span>
               </p>
             </div>
             <div className='rounded-lg border border-orange-100 bg-orange-50/70 px-2 py-1.5 text-center'>
-              <p className='text-[9px] font-semibold uppercase tracking-wide text-orange-800'>ใช้ได้ถึง</p>
+              <p className='text-[9px] font-semibold uppercase tracking-wide text-orange-800'>
+                ใช้ได้ถึง
+              </p>
               <p className='mt-0.5 text-[12px] font-bold text-[var(--brand-navy)]'>
                 {quote.validUntil || '-'}
               </p>

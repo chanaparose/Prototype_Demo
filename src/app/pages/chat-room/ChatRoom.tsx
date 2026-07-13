@@ -303,11 +303,23 @@ function ChatRoomBody({
         if (serverRow && serverRow.key) {
           setMessages((prev) => {
             const optimistic = prev.find((m) => m.key === tempKey);
+            const shouldKeepOptimisticReference =
+              optimistic?.reference_type === 'OD' &&
+              optimistic.reference_id > 0 &&
+              (serverRow.reference_type !== optimistic.reference_type ||
+                serverRow.reference_id !== optimistic.reference_id);
             const mergedServerRow: RoomMessage = {
               ...serverRow,
-              // ถ้า BE ไม่ส่ง reference กลับมา ให้ fallback จาก optimistic message
-              reference_type: serverRow.reference_type || optimistic?.reference_type || '',
-              reference_id: serverRow.reference_id > 0 ? serverRow.reference_id : (optimistic?.reference_id ?? 0),
+              // Order chat must keep OD reference. Some conversations may still have rfq_id
+              // context, so older BE responses can echo RQ even when FE sends OD.
+              reference_type: shouldKeepOptimisticReference
+                ? optimistic.reference_type
+                : serverRow.reference_type || optimistic?.reference_type || '',
+              reference_id: shouldKeepOptimisticReference
+                ? optimistic.reference_id
+                : serverRow.reference_id > 0
+                  ? serverRow.reference_id
+                  : (optimistic?.reference_id ?? 0),
               reference_title: serverRow.reference_title ?? optimistic?.reference_title,
               status: 'ok' as const,
             };
@@ -547,7 +559,9 @@ function ChatRoomBody({
       <div
         className={cn(
           'shrink-0 bg-white',
-          isFullMobile ? 'border-b border-gray-200' : 'border-b border-gray-100 bg-white/95 backdrop-blur-sm',
+          isFullMobile
+            ? 'border-b border-gray-200'
+            : 'border-b border-gray-100 bg-white/95 backdrop-blur-sm',
         )}
       >
         <div
@@ -733,7 +747,11 @@ function ChatRoomBody({
         className={cn(
           'shrink-0 border-t border-[color-mix(in_srgb,var(--brand-purple)_12%,var(--neutral-border))]',
           'bg-white/95 backdrop-blur-md',
-          isFullMobile ? 'px-3 pt-2 pb-2.5 lg:px-4 lg:pb-3' : isEmbeddedPanel ? 'px-5 py-3' : 'px-4 py-3',
+          isFullMobile
+            ? 'px-3 pt-2 pb-2.5 lg:px-4 lg:pb-3'
+            : isEmbeddedPanel
+              ? 'px-5 py-3'
+              : 'px-4 py-3',
         )}
       >
         {pendingRef ? (
@@ -832,7 +850,9 @@ function ChatRoomBody({
               size={16}
               strokeWidth={2}
               className={
-                message.trim() && !sending && apiConv ? 'text-white' : 'text-[var(--neutral-placeholder)]'
+                message.trim() && !sending && apiConv
+                  ? 'text-white'
+                  : 'text-[var(--neutral-placeholder)]'
               }
             />
           </Button>
