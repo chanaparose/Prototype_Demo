@@ -5,6 +5,7 @@ export { AdminFactoriesPage } from '@/pages/admin/AdminFactoriesPage';
 export { AdminFactoryDetailPage } from '@/pages/admin/AdminFactoryDetailPage';
 export { AdminRFQsPage } from '@/pages/admin/AdminRFQsPage';
 export { AdminOrdersPage } from '@/pages/admin/AdminOrdersPage';
+export { AdminOrderDetailPage } from '@/pages/admin/AdminOrderDetailPage';
 export { AdminConfigPage } from '@/pages/admin/AdminConfigPage';
 export { AdminCustomersPage } from '@/pages/admin/AdminCustomersPage';
 export { AdminCustomerDetailPage } from '@/pages/admin/AdminCustomerDetailPage';

@@ -1245,12 +1245,17 @@ const ORDER_SLIP_STATUS: Record<string, { label: string; variant: AdminBadgeVari
 };
 
 const ORDER_STATUS: Record<string, { label: string; variant: AdminBadgeVariant }> = {
-  PD: { label: 'รอดำเนินการ', variant: 'inactive' },
-  CF: { label: 'ยืนยันแล้ว', variant: 'info' },
+  WS: { label: 'รอแนบสลิป', variant: 'pending' },
+  WA: { label: 'รอยืนยันสลิป', variant: 'warning' },
+  PP: { label: 'รอชำระเงิน', variant: 'pending' },
+  PD: { label: 'ชำระแล้ว', variant: 'info' },
   PR: { label: 'กำลังผลิต', variant: 'active' },
   SH: { label: 'จัดส่งแล้ว', variant: 'info' },
   CP: { label: 'เสร็จสิ้น', variant: 'success' },
-  CL: { label: 'ยกเลิก', variant: 'error' },
+  CN: { label: 'ยกเลิกออเดอร์', variant: 'error' },
+  CC: { label: 'ยกเลิกออเดอร์', variant: 'error' },
+  CL: { label: 'ยกเลิกออเดอร์', variant: 'error' },
+  RJ: { label: 'ขอคืนเงิน', variant: 'warning' },
 };
 
 const ORDERS_LIMIT = 20;

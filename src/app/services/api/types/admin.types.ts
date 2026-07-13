@@ -131,10 +131,61 @@ export interface IAdminOrderListResponse {
   total_amount?: string | number;
   grand_total?: string | number;
   platform_commission_amount?: string | number;
+  platform_commission_rate?: string | number;
+  factory_net_receivable?: string | number;
+  vat_amount?: string | number;
+  vat_rate?: string | number;
   status?: string;
   slip_status?: string;
   slip_url?: string;
   created_at?: string;
+  [key: string]: unknown;
+}
+
+export interface IAdminOrderFinance {
+  platform_commission_rate?: string | number;
+  platform_commission_amount?: string | number;
+  vat_rate?: string | number;
+  vat_amount?: string | number;
+  factory_net_receivable?: string | number;
+  grand_total?: string | number;
+}
+
+/** GET /admin/orders/:id — OrderDetailResponse + admin_finance */
+export interface IAdminOrderDetailResponse {
+  order_id: number;
+  quote_id?: number;
+  user_id?: number;
+  factory_id?: number;
+  total_amount?: string | number;
+  deposit_amount?: string | number;
+  status?: string;
+  status_label_th?: string;
+  payment_type?: string;
+  currency?: string;
+  factory?: {
+    factory_id?: number;
+    name?: string;
+    phone?: string;
+    address?: string;
+    [key: string]: unknown;
+  };
+  customer_user_id?: number;
+  customer_name?: string;
+  customer_phone?: string;
+  estimated_delivery?: string;
+  shipping_days?: number;
+  lead_time_days?: number;
+  tracking_no?: string;
+  courier?: string;
+  shipped_at?: string;
+  created_at?: string;
+  updated_at?: string;
+  next_action?: Record<string, unknown> | null;
+  payment_schedule?: Array<Record<string, unknown>>;
+  rfq?: Record<string, unknown>;
+  quotation?: Record<string, unknown>;
+  admin_finance?: IAdminOrderFinance;
   [key: string]: unknown;
 }
 

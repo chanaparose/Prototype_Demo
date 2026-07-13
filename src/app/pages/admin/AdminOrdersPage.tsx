@@ -1,8 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { Search, AlertTriangle, Loader2, X } from 'lucide-react';
 import { adminApi, slipApi } from '@/services/api/adminApi';
 import { usePaymentConfig } from '@/hooks/usePaymentConfig';
 import type { IAdminOrderListResponse } from '@/services/api/types/admin.types';
+import {
+  getAdminOrderStatusMeta,
+  inferAdminOrderStatusTab,
+  type AdminOrderStatusTab,
+} from '@/domain/admin/adminOrderStatus';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { Button } from '@/components/ui/button';
@@ -21,7 +27,7 @@ import {
   TableSkeletonRows,
 } from '@/components/admin/AdminTable';
 
-type OrderStatusTab = 'all' | 'verify_slip' | 'pending' | 'processing' | 'completed' | 'cancelled';
+type OrderStatusTab = AdminOrderStatusTab;
 
 interface AdminOrderView {
   order_id: string;
@@ -29,37 +35,21 @@ interface AdminOrderView {
   factory: string;
   total_amount: number;
   commission_amount: number;
+  factory_net: number;
   vat_amount: number;
   status: string;
   created_at: string;
 }
 
-const STATUS_META: Record<OrderStatusTab, { label: string; variant: string }> = {
-  all: { label: 'ทั้งหมด', variant: 'default' },
-  verify_slip: { label: 'รอตรวจสลิป', variant: 'warning' },
-  pending: { label: 'รอดำเนินการ', variant: 'pending' },
-  processing: { label: 'กำลังดำเนินการ', variant: 'info' },
-  completed: { label: 'เสร็จสิ้น', variant: 'success' },
-  cancelled: { label: 'ยกเลิก', variant: 'error' },
-};
-
 const STATUS_TABS: { key: OrderStatusTab; label: string; apiStatus?: string; escrowOnly?: boolean }[] = [
   { key: 'all', label: 'ทั้งหมด' },
   { key: 'verify_slip', label: 'รอตรวจสลิป', apiStatus: 'WA', escrowOnly: true },
-  { key: 'pending', label: 'รอดำเนินการ', apiStatus: 'OP' },
+  { key: 'pending', label: 'รอดำเนินการ', apiStatus: 'PP' },
   { key: 'processing', label: 'กำลังดำเนินการ', apiStatus: 'PR' },
-  { key: 'completed', label: 'เสร็จสิ้น', apiStatus: 'CM' },
-  { key: 'cancelled', label: 'ยกเลิก', apiStatus: 'CL' },
+  { key: 'completed', label: 'เสร็จสิ้น', apiStatus: 'CP' },
+  { key: 'cancelled', label: 'ยกเลิกออเดอร์', apiStatus: 'CN' },
+  { key: 'refund', label: 'ขอคืนเงิน', apiStatus: 'RJ' },
 ];
-
-function inferTab(status: string): OrderStatusTab {
-  const s = pickScalarString(status).toUpperCase();
-  if (s === 'WA') return 'verify_slip';
-  if (s === 'CM' || s === 'DONE' || s === 'COMPLETED') return 'completed';
-  if (s === 'CL' || s === 'CANCELLED') return 'cancelled';
-  if (s === 'OP' || s === 'PENDING' || s === 'PD') return 'pending';
-  return 'processing';
-}
 
 function toRows(raw: unknown): IAdminOrderListResponse[] {
   if (Array.isArray(raw)) return raw as IAdminOrderListResponse[];
@@ -77,15 +67,17 @@ function mapOrder(row: IAdminOrderListResponse): AdminOrderView {
     order_id: pickScalarString(row.order_id),
     buyer: pickScalarString(row.customer_name, '-'),
     factory: pickScalarString(row.factory_name, '-'),
-    total_amount: pickScalarNumber(row.total_amount) ?? 0,
+    total_amount: pickScalarNumber(row.grand_total ?? row.total_amount) ?? 0,
     commission_amount: pickScalarNumber(row.platform_commission_amount) ?? 0,
+    factory_net: pickScalarNumber(row.factory_net_receivable) ?? 0,
     vat_amount: pickScalarNumber(row.vat_amount) ?? 0,
-    status: pickScalarString(row.status, 'OP'),
+    status: pickScalarString(row.status, 'PP'),
     created_at: pickScalarString(row.created_at),
   };
 }
 
 export function AdminOrdersPage() {
+  const navigate = useNavigate();
   const [statusTab, setStatusTab] = useState<OrderStatusTab>('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -113,7 +105,11 @@ export function AdminOrdersPage() {
       const raw = await adminApi.listOrders(baseParams);
       const mapped = toRows(raw).map(mapOrder);
       setCountRows(mapped);
-      setRows(statusTab === 'all' ? mapped : mapped.filter((row) => inferTab(row.status) === statusTab));
+      setRows(
+        statusTab === 'all'
+          ? mapped
+          : mapped.filter((row) => inferAdminOrderStatusTab(row.status) === statusTab),
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดข้อมูลคำสั่งซื้อไม่สำเร็จ');
       setRows([]);
@@ -138,9 +134,10 @@ export function AdminOrdersPage() {
       processing: 0,
       completed: 0,
       cancelled: 0,
+      refund: 0,
     };
     countRows.forEach((r) => {
-      result[inferTab(r.status)] += 1;
+      result[inferAdminOrderStatusTab(r.status)] += 1;
     });
     return result;
   }, [countRows]);
@@ -170,7 +167,7 @@ export function AdminOrdersPage() {
           labelCls='text-purple-600'
         />
         <SummaryCard
-          label='ค่าคอมมิชชัน'
+          label='ค่าคอมมิชชัน (Tryly)'
           value={formatCurrencyNoDecimals(summary.commission)}
           cls='border-emerald-200 bg-emerald-50'
           labelCls='text-emerald-600'
@@ -258,51 +255,40 @@ export function AdminOrdersPage() {
       ) : null}
 
       <AdminTableContainer>
-        <AdminTable className='min-w-[900px]'>
+        <AdminTable className='min-w-[980px]'>
           <AdminTableHeader>
             <AdminTableRow>
-                <AdminTableHead>
-                  Order ID
-                </AdminTableHead>
-                <AdminTableHead>
-                  ผู้ซื้อ
-                </AdminTableHead>
-                <AdminTableHead>
-                  โรงงาน
-                </AdminTableHead>
-                <AdminTableHead>
-                  ยอดรวม
-                </AdminTableHead>
-                <AdminTableHead>
-                  ค่าคอม
-                </AdminTableHead>
-                <AdminTableHead>
-                  VAT
-                </AdminTableHead>
-                <AdminTableHead>
-                  สถานะ
-                </AdminTableHead>
-                <AdminTableHead>
-                  วันที่
-                </AdminTableHead>
+                <AdminTableHead>Order ID</AdminTableHead>
+                <AdminTableHead>ผู้ซื้อ</AdminTableHead>
+                <AdminTableHead>โรงงาน</AdminTableHead>
+                <AdminTableHead>ยอดรวม</AdminTableHead>
+                <AdminTableHead>ค่าคอม (Tryly)</AdminTableHead>
+                <AdminTableHead>โรงงานได้</AdminTableHead>
+                <AdminTableHead>VAT</AdminTableHead>
+                <AdminTableHead>สถานะ</AdminTableHead>
+                <AdminTableHead>วันที่</AdminTableHead>
                 {isEscrow ? <AdminTableHead>สลิป</AdminTableHead> : null}
               </AdminTableRow>
             </AdminTableHeader>
             <AdminTableBody className='divide-y divide-slate-100'>
               {loading ? (
-                <TableSkeletonRows columns={isEscrow ? 9 : 8} rows={3} />
+                <TableSkeletonRows columns={isEscrow ? 10 : 9} rows={3} />
               ) : rows.length === 0 ? (
                 <AdminTableRow>
-                  <AdminTableCell colSpan={isEscrow ? 9 : 8} className='py-12 text-center text-sm text-slate-400'>
+                  <AdminTableCell colSpan={isEscrow ? 10 : 9} className='py-12 text-center text-sm text-slate-400'>
                     ไม่พบคำสั่งซื้อที่ตรงกับเงื่อนไข
                   </AdminTableCell>
                 </AdminTableRow>
               ) : (
                 rows.map((order) => {
-                  const tab = inferTab(order.status);
-                  const meta = STATUS_META[tab];
+                  const tab = inferAdminOrderStatusTab(order.status);
+                  const meta = getAdminOrderStatusMeta(order.status);
                   return (
-                    <AdminTableRow key={order.order_id} className='hover:bg-slate-50 transition-colors'>
+                    <AdminTableRow
+                      key={order.order_id}
+                      className='hover:bg-slate-50 transition-colors cursor-pointer'
+                      onClick={() => navigate(`/admin/orders/${order.order_id}`)}
+                    >
                       <AdminTableCell className='px-4 py-3 font-mono text-xs text-purple-600 font-semibold'>
                         #{order.order_id}
                       </AdminTableCell>
@@ -315,12 +301,15 @@ export function AdminOrdersPage() {
                       <AdminTableCell className='px-4 py-3 text-sm text-slate-900 font-semibold tabular-nums'>
                         {formatCurrencyNoDecimals(order.total_amount)}
                       </AdminTableCell>
-                      <AdminTableCell className='px-4 py-3 text-sm text-purple-700 font-semibold tabular-nums'>
+                      <AdminTableCell className='px-4 py-3 text-sm text-emerald-700 font-semibold tabular-nums'>
                         {order.commission_amount > 0 ? (
                           formatCurrencyNoDecimals(order.commission_amount)
                         ) : (
                           <span className='text-slate-300 font-normal text-xs'>ยกเว้น</span>
                         )}
+                      </AdminTableCell>
+                      <AdminTableCell className='px-4 py-3 text-sm text-amber-700 font-semibold tabular-nums'>
+                        {formatCurrencyNoDecimals(order.factory_net)}
                       </AdminTableCell>
                       <AdminTableCell className='px-4 py-3 text-sm text-violet-700 font-semibold tabular-nums'>
                         {formatCurrencyNoDecimals(order.vat_amount)}
@@ -339,7 +328,10 @@ export function AdminOrdersPage() {
                             <Button
                               variant='unstyled'
                               type='button'
-                              onClick={() => setSlipOrderId(order.order_id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSlipOrderId(order.order_id);
+                              }}
                               className='rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600'
                             >
                               ตรวจสลิป
@@ -348,7 +340,10 @@ export function AdminOrdersPage() {
                             <Button
                               variant='unstyled'
                               type='button'
-                              onClick={() => setSlipOrderId(order.order_id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSlipOrderId(order.order_id);
+                              }}
                               className='rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-50'
                             >
                               ดูสลิป
@@ -370,8 +365,11 @@ export function AdminOrdersPage() {
                   <AdminTableCell className='px-4 py-3 text-sm font-bold text-purple-900 tabular-nums'>
                     {formatCurrencyNoDecimals(summary.total)}
                   </AdminTableCell>
-                  <AdminTableCell className='px-4 py-3 text-sm font-bold text-purple-700 tabular-nums'>
+                  <AdminTableCell className='px-4 py-3 text-sm font-bold text-emerald-700 tabular-nums'>
                     {formatCurrencyNoDecimals(summary.commission)}
+                  </AdminTableCell>
+                  <AdminTableCell className='px-4 py-3 text-sm font-bold text-amber-700 tabular-nums'>
+                    {formatCurrencyNoDecimals(rows.reduce((s, r) => s + r.factory_net, 0))}
                   </AdminTableCell>
                   <AdminTableCell className='px-4 py-3 text-sm font-bold text-violet-700 tabular-nums'>
                     {formatCurrencyNoDecimals(summary.vat)}

@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import { adminCommissionApi } from '@/services/api/adminApi';
 import { usePaymentConfig } from '@/hooks/usePaymentConfig';
-import { WithdrawalQueueSection } from '@/components/features/admin/WithdrawalQueueSection';
 import { CommissionOrdersSection } from '@/components/features/admin/CommissionOrdersSection';
 import type {
   ICommissionInvoiceResponse,
@@ -358,44 +357,22 @@ export function AdminCommissionPage() {
     }
   };
 
-  // escrow mode: แสดง tab คำขอถอนเงินของโรงงาน (commission invoice ใช้เฉพาะ direct-pay)
+  // escrow mode: commission invoice ใช้เฉพาะ direct-pay — แสดงเฉพาะค่าคอมจากออเดอร์
   const { isEscrow } = usePaymentConfig();
-  const [pageTab, setPageTab] = useState<'invoices' | 'withdrawals'>('invoices');
-  useEffect(() => {
-    if (isEscrow) setPageTab('withdrawals');
-  }, [isEscrow]);
 
-  if (pageTab === 'withdrawals') {
+  if (isEscrow) {
     return (
       <div className='space-y-8 lg:space-y-10'>
         <div>
           <h2 className='text-2xl lg:text-3xl font-bold text-slate-900'>บัญชี & ค่าคอมมิชชัน</h2>
           <p className='text-xs text-slate-400 mt-0.5'>
-            ค่าคอมมิชชันที่ได้รับต่อออเดอร์ และคำขอถอนเงินของโรงงาน (โหมด Escrow)
+            ค่าคอมมิชชันที่ได้รับต่อออเดอร์ (โหมด Escrow)
           </p>
         </div>
-        {!isEscrow ? (
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => setPageTab('invoices')}
-            className='rounded-lg border border-purple-200 px-3 py-1.5 text-xs font-semibold text-purple-600 hover:bg-purple-50'
-          >
-            ← กลับไปหน้า Commission Invoice
-          </Button>
-        ) : null}
 
         <div>
           <h3 className='mb-3 text-lg font-bold text-slate-900'>ค่าคอมมิชชันจากออเดอร์</h3>
           <CommissionOrdersSection />
-        </div>
-
-        <div>
-          <h3 className='mb-3 text-lg font-bold text-slate-900'>คำขอถอนเงินโรงงาน</h3>
-          <p className='mb-3 text-xs text-slate-400'>
-            โอนเงินให้โรงงานพร้อมแนบสลิปภายใน 1-2 วันทำการ
-          </p>
-          <WithdrawalQueueSection />
         </div>
       </div>
     );
@@ -403,22 +380,12 @@ export function AdminCommissionPage() {
 
   return (
     <div className='space-y-6 lg:space-y-8'>
-      <div className='flex flex-wrap items-start justify-between gap-3'>
-        <div>
-          <h2 className='text-2xl lg:text-3xl font-bold text-slate-900'>สรุปค่า Commission</h2>
-          <p className='text-xs text-slate-400 mt-0.5 flex items-center gap-1'>
-            <Clock size={11} />
-            ระบบสร้าง Invoice และส่ง Email โรงงานอัตโนมัติวันที่ 1 ของทุกเดือน
-          </p>
-        </div>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => setPageTab('withdrawals')}
-          className='rounded-lg border border-purple-200 px-3 py-1.5 text-xs font-semibold text-purple-600 hover:bg-purple-50'
-        >
-          คำขอถอนเงินโรงงาน →
-        </Button>
+      <div>
+        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900'>สรุปค่า Commission</h2>
+        <p className='text-xs text-slate-400 mt-0.5 flex items-center gap-1'>
+          <Clock size={11} />
+          ระบบสร้าง Invoice และส่ง Email โรงงานอัตโนมัติวันที่ 1 ของทุกเดือน
+        </p>
       </div>
 
       {error && (

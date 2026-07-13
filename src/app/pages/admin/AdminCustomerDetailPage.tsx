@@ -37,12 +37,17 @@ const TX_STATUS: Record<string, { label: string; color: string }> = {
 };
 
 const ORDER_STATUS: Record<string, { label: string; color: string }> = {
-  PD: { label: 'รอดำเนินการ', color: 'amber' },
-  CF: { label: 'ยืนยันแล้ว', color: 'blue' },
+  WS: { label: 'รอแนบสลิป', color: 'amber' },
+  WA: { label: 'รอยืนยันสลิป', color: 'amber' },
+  PP: { label: 'รอชำระเงิน', color: 'amber' },
+  PD: { label: 'ชำระแล้ว', color: 'blue' },
   PR: { label: 'ผลิตอยู่', color: 'indigo' },
   SH: { label: 'จัดส่งแล้ว', color: 'purple' },
-  CM: { label: 'เสร็จสิ้น', color: 'emerald' },
-  CA: { label: 'ยกเลิก', color: 'red' },
+  CP: { label: 'เสร็จสิ้น', color: 'emerald' },
+  CN: { label: 'ยกเลิกออเดอร์', color: 'red' },
+  CC: { label: 'ยกเลิกออเดอร์', color: 'red' },
+  CL: { label: 'ยกเลิกออเดอร์', color: 'red' },
+  RJ: { label: 'ขอคืนเงิน', color: 'amber' },
 };
 
 function BadgeCustom({ label, color }: { label: string; color: string }) {

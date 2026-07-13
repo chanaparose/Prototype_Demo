@@ -13,6 +13,7 @@ import type {
   IAdminDashboardSummaryResponse,
   IAdminFactoryListResponse,
   IAdminOrderListResponse,
+  IAdminOrderDetailResponse,
   IAdminRevenueChartResponse,
   IAdminRfqListResponse,
   IAdminSettlementListItemResponse,
@@ -313,7 +314,7 @@ export const adminApi = {
     ),
 
   getOrder: (orderId: number | string) =>
-    httpClient.get<Record<string, unknown>>(`/admin/orders/${orderId}`),
+    httpClient.get<IAdminOrderDetailResponse>(`/admin/orders/${orderId}`),
 
   updateOrderStatus: (orderId: number | string, status: string) =>
     httpClient.patch<Record<string, unknown>>(`/admin/orders/${orderId}/status`, { status }),
