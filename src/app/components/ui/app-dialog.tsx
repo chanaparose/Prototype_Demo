@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { X } from 'lucide-react';
 import {
   Dialog,
@@ -24,6 +24,7 @@ type AppDialogProps = {
   dismissible?: boolean;
   className?: string;
   bodyClassName?: string;
+  bodyRef?: Ref<HTMLDivElement>;
   headerClassName?: string;
   footerClassName?: string;
   overlayClassName?: string;
@@ -49,6 +50,7 @@ export function AppDialog({
   dismissible = true,
   className,
   bodyClassName,
+  bodyRef,
   headerClassName,
   footerClassName,
   overlayClassName,
@@ -112,6 +114,7 @@ export function AppDialog({
         ) : null}
 
         <div
+          ref={bodyRef}
           className={cn(
             'min-h-0 flex-1 overflow-y-auto overscroll-contain',
             bodyClassName ?? 'p-4 sm:p-5',
