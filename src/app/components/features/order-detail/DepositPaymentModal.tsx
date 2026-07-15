@@ -16,6 +16,7 @@ import {
 } from '@/components/features/rfq-and-orders/constants';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
+import { PromptPayQR } from '@/components/features/order-detail/PromptPayQR';
 import type { IBankAccountResponse, ISlipInfoResponse } from '@/services/api/types/admin.types';
 
 type Props = {
@@ -176,29 +177,53 @@ export function DepositPaymentModal({
             </div>
           ) : (
             <>
-              <InfoRow label='ธนาคาร' value={trylyBank.bankName} />
-              <InfoRowCopy
-                label='เลขบัญชี'
-                value={trylyBank.accountNumber}
-                mono
-                copied={copiedField === 'num'}
-                onCopy={() => handleCopy(trylyBank.accountNumber, 'num')}
-              />
-              <InfoRowCopy
-                label='ชื่อบัญชี'
-                value={trylyBank.accountName}
-                copied={copiedField === 'name'}
-                onCopy={() => handleCopy(trylyBank.accountName, 'name')}
-              />
               {trylyBank.promptPay ? (
-                <InfoRowCopy
-                  label='พร้อมเพย์'
-                  value={trylyBank.promptPay}
-                  mono
-                  copied={copiedField === 'pp'}
-                  onCopy={() => handleCopy(trylyBank.promptPay, 'pp')}
-                />
-              ) : null}
+                <>
+                  <PromptPayQR
+                    promptPayId={trylyBank.promptPay}
+                    amount={amount}
+                    accountName={trylyBank.accountName}
+                  />
+                  <details className='group'>
+                    <summary className='cursor-pointer list-none text-[11px] font-medium text-slate-400 hover:text-slate-600 [&::-webkit-details-marker]:hidden'>
+                      หรือโอนด้วยเลขบัญชีธนาคาร
+                    </summary>
+                    <div className='mt-3 space-y-3'>
+                      <InfoRow label='ธนาคาร' value={trylyBank.bankName} />
+                      <InfoRowCopy
+                        label='เลขบัญชี'
+                        value={trylyBank.accountNumber}
+                        mono
+                        copied={copiedField === 'num'}
+                        onCopy={() => handleCopy(trylyBank.accountNumber, 'num')}
+                      />
+                      <InfoRowCopy
+                        label='ชื่อบัญชี'
+                        value={trylyBank.accountName}
+                        copied={copiedField === 'name'}
+                        onCopy={() => handleCopy(trylyBank.accountName, 'name')}
+                      />
+                    </div>
+                  </details>
+                </>
+              ) : (
+                <>
+                  <InfoRow label='ธนาคาร' value={trylyBank.bankName} />
+                  <InfoRowCopy
+                    label='เลขบัญชี'
+                    value={trylyBank.accountNumber}
+                    mono
+                    copied={copiedField === 'num'}
+                    onCopy={() => handleCopy(trylyBank.accountNumber, 'num')}
+                  />
+                  <InfoRowCopy
+                    label='ชื่อบัญชี'
+                    value={trylyBank.accountName}
+                    copied={copiedField === 'name'}
+                    onCopy={() => handleCopy(trylyBank.accountName, 'name')}
+                  />
+                </>
+              )}
               <p className='text-[11px] text-slate-400 leading-relaxed pt-1'>
                 ชำระผ่านบัญชีกลาง Tryly — ระบบจะถือเงินไว้ให้และโอนให้โรงงานเมื่อคุณยืนยันรับสินค้า
               </p>

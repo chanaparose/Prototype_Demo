@@ -263,6 +263,55 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       setFactoryNote(initialFactoryNote ?? '');
     }, [initialFactoryNote]);
 
+    const baselineFactoryQty = useMemo(
+      () => initialFactoryQty ?? rfqQuantity ?? null,
+      [initialFactoryQty, rfqQuantity],
+    );
+    const baselineFactoryUnitId = useMemo(
+      () =>
+        resolveInitialFactoryUnitId(
+          initialFactoryUnitId,
+          rfqUnitId,
+          Boolean(patchQuotationId),
+        ),
+      [initialFactoryUnitId, rfqUnitId, patchQuotationId],
+    );
+    const baselineImageUrls = useMemo(() => initialImageUrls ?? [], [initialImageUrls]);
+
+    useEffect(() => {
+      setFactoryQty(baselineFactoryQty);
+    }, [baselineFactoryQty]);
+    useEffect(() => {
+      setFactoryUnitId(baselineFactoryUnitId);
+    }, [baselineFactoryUnitId]);
+
+    const hasUnsavedChanges = useMemo(() => {
+      if (form.formState.isDirty) return true;
+      if ((factoryHighlight ?? '') !== (initialFactoryHighlight ?? '')) return true;
+      if ((factoryNote ?? '') !== (initialFactoryNote ?? '')) return true;
+      if (factoryQty !== baselineFactoryQty) return true;
+      if (factoryUnitId !== baselineFactoryUnitId) return true;
+      if (
+        imageUrls.length !== baselineImageUrls.length ||
+        imageUrls.some((url, i) => url !== baselineImageUrls[i])
+      ) {
+        return true;
+      }
+      return false;
+    }, [
+      form.formState.isDirty,
+      factoryHighlight,
+      initialFactoryHighlight,
+      factoryNote,
+      initialFactoryNote,
+      factoryQty,
+      baselineFactoryQty,
+      factoryUnitId,
+      baselineFactoryUnitId,
+      imageUrls,
+      baselineImageUrls,
+    ]);
+
     const highlightError = useMemo(() => {
       if ((factoryHighlight.trim().length ?? 0) > 200) return 'สูงสุด 200 ตัวอักษร';
       return null;
@@ -372,8 +421,13 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       onSubmitted,
       imageUrls,
       factoryHighlight,
+      // factoryQty / factoryUnitId / factoryNote ต้องอยู่ใน deps ด้วย ไม่งั้น submit
+      // จะจับค่าเก่า (stale closure) แล้วส่งจำนวนเดิมของลูกค้าแทนค่าที่โรงงานกรอกใหม่
+      factoryQty,
+      factoryUnitId,
+      factoryNote,
       highlightError,
-    ]); // eslint-disable-line react-hooks/exhaustive-deps
+    ]);
 
     return (
       <form
@@ -710,13 +764,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             <Button
               variant='unstyled'
               type='submit'
-              disabled={
-                saving ||
-                (!form.formState.isDirty &&
-                  (factoryHighlight ?? '') === (initialFactoryHighlight ?? '') &&
-                  (factoryNote ?? '') === (initialFactoryNote ?? '')) ||
-                Boolean(highlightError)
-              }
+              disabled={saving || !hasUnsavedChanges || Boolean(highlightError)}
               className={factoryButtonClass({
                 variant: 'submit',
                 size: 'md',

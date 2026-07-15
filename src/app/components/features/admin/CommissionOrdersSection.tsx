@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { AlertTriangle, Loader2, TrendingUp } from 'lucide-react';
 import { adminCommissionApi } from '@/services/api/adminApi';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +9,10 @@ type CommissionOrder = Awaited<
   ReturnType<typeof adminCommissionApi.escrowOrders>
 >['orders'][number];
 
-const ORDER_STATUS: Record<string, { label: string; variant: 'success' | 'info' | 'pending' | 'inactive' }> = {
+const ORDER_STATUS: Record<
+  string,
+  { label: string; variant: 'success' | 'info' | 'pending' | 'inactive' }
+> = {
   CP: { label: 'เสร็จสมบูรณ์', variant: 'success' },
   PD: { label: 'ชำระแล้ว', variant: 'info' },
   PR: { label: 'กำลังผลิต', variant: 'pending' },
@@ -20,6 +24,7 @@ const ORDER_STATUS: Record<string, { label: string; variant: 'success' | 'info' 
  * จาก order ไหนเท่าไหร่ (นับเฉพาะ order ที่ยืนยันสลิปแล้ว slip_status=AP)
  */
 export function CommissionOrdersSection() {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<CommissionOrder[]>([]);
   const [totalCommission, setTotalCommission] = useState(0);
   const [totalGross, setTotalGross] = useState(0);
@@ -108,9 +113,25 @@ export function CommissionOrdersSection() {
               </tr>
             ) : (
               orders.map((o) => {
-                const meta = ORDER_STATUS[o.status] ?? { label: o.status, variant: 'inactive' as const };
+                const meta = ORDER_STATUS[o.status] ?? {
+                  label: o.status,
+                  variant: 'inactive' as const,
+                };
                 return (
-                  <tr key={o.order_id} className='hover:bg-slate-50'>
+                  <tr
+                    key={o.order_id}
+                    role='button'
+                    tabIndex={0}
+                    className='cursor-pointer transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none'
+                    onClick={() => navigate(`/admin/orders/${o.order_id}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigate(`/admin/orders/${o.order_id}`);
+                      }
+                    }}
+                    aria-label={`เปิดรายละเอียด Order #${o.order_id}`}
+                  >
                     <td className='px-4 py-3 font-mono text-xs font-semibold text-purple-600'>
                       #{o.order_id}
                       <p className='mt-0.5 font-sans text-[11px] font-normal text-slate-400'>

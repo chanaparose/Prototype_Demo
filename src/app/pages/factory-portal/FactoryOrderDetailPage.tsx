@@ -1084,6 +1084,9 @@ function SlipVerificationCard({
   // ไม่แสดงอะไรเลยถ้ายังโหลดอยู่ หรือไม่มี slip data หรือสถานะว่าง
   if (loading || !slipData || !slipStatus) return null;
 
+  // escrow mode (config=0): Tryly เป็นผู้ตรวจสอบสลิป — ซ่อน card นี้ทั้งหมดจากฝั่งโรงงาน
+  if (isEscrow) return null;
+
   const cfg = slipStatusConfig(slipStatus);
   const isPending = slipStatus === 'ST';
   const isApproved = slipStatus === 'AP';
@@ -1174,17 +1177,8 @@ function SlipVerificationCard({
         </p>
       ) : null}
 
-      {/* Action buttons — only for ST (pending); escrow mode: Tryly ตรวจสอบแทน */}
-      {isPending && isEscrow ? (
-        <div className='rounded-md border border-brand-purple/15 bg-brand-lavender px-3 py-2.5'>
-          <p className='text-[12px] font-semibold text-brand-purple'>
-            Tryly กำลังตรวจสอบการชำระเงิน
-          </p>
-          <p className='text-[11px] text-brand-purple/80 leading-relaxed'>
-            ลูกค้าชำระผ่านบัญชีกลาง Tryly — เจ้าหน้าที่จะยืนยันสลิปและระบบจะโอนเงินให้เมื่อออเดอร์เสร็จสมบูรณ์
-          </p>
-        </div>
-      ) : isPending ? (
+      {/* Action buttons — only for ST (pending). escrow mode ซ่อน card ทั้งหมดไปแล้วด้านบน */}
+      {isPending ? (
         !showRejectInput ? (
           <div className='flex items-center gap-2'>
             <Button
