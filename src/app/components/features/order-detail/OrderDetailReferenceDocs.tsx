@@ -218,7 +218,34 @@ function mapOrderQuotationToOffer({
   };
 }
 
-type OrderQuoteLike = IQuoteNestedResponse & Partial<Quotation> & Record<string, unknown>;
+/** Order nested quote + optional RFQ-list enrichment fields (nullables differ from Quotation). */
+type OrderQuoteLike = Omit<IQuoteNestedResponse, 'valid_until'> &
+  Partial<Omit<Quotation, 'valid_until'>> & {
+    valid_until?: string | null;
+    factory_id?: number | string;
+    factory_name?: string;
+    factory_qty?: number | null;
+    factory_moq?: number | null;
+    factory_unit_id?: number | null;
+    factory_unit_name?: string | null;
+    unit_name?: string | null;
+    unit_name_th?: string | null;
+    shipping_method?: string | null;
+    shipping_method_name?: string | null;
+    material_detail?: string | null;
+    payment_condition?: string | null;
+    sample_cost?: number | null;
+    rating?: number | null;
+    factory_rating?: number | null;
+    completed_orders?: number | null;
+    factory_completed_orders?: number | null;
+    verified?: boolean | null;
+    factory_verified?: boolean | null;
+    certifications?: string[];
+    platform_commission_rate?: number | null;
+    platform_commission_amount?: number | null;
+    factory_net_receivable?: number | null;
+  };
 
 function firstPositiveNumber(...values: unknown[]): number {
   for (const value of values) {

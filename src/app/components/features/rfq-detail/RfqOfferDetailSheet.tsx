@@ -218,30 +218,22 @@ export function RfqOfferDetailSheet({
             <span>ค่าสินค้ารวม</span>
             <span className='font-semibold text-brand-navy'>{formatTHB(subtotal)}</span>
           </div>
-          {shippingCost > 0 ? (
-            <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
-              <span>ค่าขนส่ง</span>
-              <span className='font-semibold text-brand-navy'>{formatTHB(shippingCost)}</span>
-            </div>
-          ) : null}
-          {packagingCost > 0 ? (
-            <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
-              <span>ค่าบรรจุภัณฑ์</span>
-              <span className='font-semibold text-brand-navy'>{formatTHB(packagingCost)}</span>
-            </div>
-          ) : null}
-          {toolingMoldCost > 0 ? (
-            <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
-              <span>ค่าแม่พิมพ์</span>
-              <span className='font-semibold text-brand-navy'>{formatTHB(toolingMoldCost)}</span>
-            </div>
-          ) : null}
-          {discountAmount > 0 ? (
-            <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
-              <span>ส่วนลด</span>
-              <span className='font-semibold text-emerald-700'>-{formatTHB(discountAmount)}</span>
-            </div>
-          ) : null}
+          <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
+            <span>ค่าขนส่ง</span>
+            <span className='font-semibold text-brand-navy'>{formatTHB(shippingCost)}</span>
+          </div>
+          <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
+            <span>ค่าบรรจุภัณฑ์</span>
+            <span className='font-semibold text-brand-navy'>{formatTHB(packagingCost)}</span>
+          </div>
+          <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
+            <span>ค่าแม่พิมพ์</span>
+            <span className='font-semibold text-brand-navy'>{formatTHB(toolingMoldCost)}</span>
+          </div>
+          <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
+            <span>ส่วนลด</span>
+            <span className='font-semibold text-emerald-700'>-{formatTHB(discountAmount)}</span>
+          </div>
           <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
             <span>VAT {vatRate > 0 ? `${vatRate}%` : ''}</span>
             <span className='font-semibold text-brand-navy'>{formatTHB(vatAmount)}</span>
