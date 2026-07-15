@@ -63,6 +63,11 @@ export function DepositPaymentModal({
   const [note, setNote] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
   const [copiedField, setCopiedField] = React.useState('');
+  /** ผลตรวจสลิปอัตโนมัติจากการ attach ล่าสุด (step 4 — result screen) */
+  const [verifyResult, setVerifyResult] = React.useState<{
+    outcome: 'approved' | 'rejected' | 'pending';
+    reasons: string[];
+  } | null>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -70,6 +75,7 @@ export function DepositPaymentModal({
       setFile(null);
       setPreview(null);
       setNote('');
+      setVerifyResult(null);
     }
   }, [open]);
 
@@ -98,14 +104,37 @@ export function DepositPaymentModal({
   const handleSubmit = async () => {
     if (!file || submitting) return;
     setSubmitting(true);
+    setVerifyResult(null);
     try {
       const formData = new FormData();
       formData.append('file', file);
       if (note.trim()) formData.append('note', note.trim());
-      await slipApi.attach(Number(orderId), formData);
-      toast.success(isEscrow ? 'แนบสลิปสำเร็จ รอเจ้าหน้าที่ตรวจสอบ' : 'แนบสลิปสำเร็จ รอโรงงานตรวจสอบ');
-      await onSuccess?.();
-      onClose();
+      const res = await slipApi.attach(Number(orderId), formData);
+      await slip.refetch();
+      setFile(null);
+      setPreview(null);
+      if (fileRef.current) fileRef.current.value = '';
+
+      if (!isEscrow) {
+        toast.success('แนบสลิปสำเร็จ รอโรงงานตรวจสอบ');
+        await onSuccess?.();
+        onClose();
+        return;
+      }
+
+      // escrow: แสดงผลตรวจอัตโนมัติ (step 4) — ไม่ปิด modal ให้ผู้ใช้เห็นผลก่อน
+      const outcome = res.verify_outcome ?? 'pending';
+      const reasons = res.verify_reasons ?? [];
+      setVerifyResult({ outcome, reasons });
+      if (outcome === 'approved') {
+        toast.success('ตรวจสอบสลิปสำเร็จ — ยืนยันการชำระเงินแล้ว');
+        await onSuccess?.();
+      } else if (outcome === 'rejected') {
+        toast.error('ตรวจสอบสลิปไม่ผ่าน — กรุณาแนบสลิปใหม่');
+      } else {
+        toast.success('ส่งสลิปแล้ว — รอเจ้าหน้าที่ตรวจสอบ');
+        await onSuccess?.();
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'แนบสลิปไม่สำเร็จ';
       toast.error(msg);
@@ -136,7 +165,7 @@ export function DepositPaymentModal({
             layout='stack'
             primary={{
               label: `ส่งสลิปการโอนเงิน · ${formatCurrency(amount)}`,
-              loadingLabel: 'กำลังส่งสลิป…',
+              loadingLabel: isEscrow ? 'กำลังตรวจสอบสลิป…' : 'กำลังส่งสลิป…',
               loading: submitting,
               disabled: !file || submitting,
               onClick: handleSubmit,
@@ -259,8 +288,57 @@ export function DepositPaymentModal({
         )}
       </div>
 
+      {/* step 3: verifying — กำลังตรวจสอบสลิปกับธนาคาร */}
+      {submitting && isEscrow ? (
+        <div className='rounded-2xl border border-indigo-200 bg-indigo-50 p-4 mb-4 flex items-center gap-3'>
+          <Loader2 size={18} className='animate-spin text-indigo-500 shrink-0' />
+          <div>
+            <p className='text-sm font-semibold text-indigo-700'>กำลังตรวจสอบสลิปกับธนาคาร…</p>
+            <p className='text-[11px] text-indigo-500 mt-0.5'>
+              ระบบกำลังตรวจยอดเงิน บัญชีผู้รับ และความถูกต้องของสลิป
+            </p>
+          </div>
+        </div>
+      ) : null}
+
+      {/* step 4: verification result */}
+      {!submitting && verifyResult ? (
+        verifyResult.outcome === 'approved' ? (
+          <div className='rounded-2xl border border-emerald-200 bg-emerald-50 p-4 mb-4'>
+            <p className='text-sm font-semibold text-emerald-700'>
+              ✅ ตรวจสอบสลิปสำเร็จ — ยืนยันการชำระเงินแล้ว
+            </p>
+            <p className='text-[11px] text-emerald-600 mt-1'>
+              ระบบถือเงินไว้ให้และจะโอนให้โรงงานเมื่อคุณยืนยันรับสินค้า
+            </p>
+          </div>
+        ) : verifyResult.outcome === 'rejected' ? (
+          <div className='rounded-2xl border border-red-200 bg-red-50 p-4 mb-4'>
+            <p className='text-sm font-semibold text-red-700'>ตรวจสอบสลิปไม่ผ่าน</p>
+            {verifyResult.reasons.length > 0 ? (
+              <ul className='mt-1.5 space-y-1'>
+                {verifyResult.reasons.map((r, i) => (
+                  <li key={i} className='text-xs text-red-600 flex items-start gap-1.5'>
+                    <span className='mt-0.5 shrink-0'>•</span>
+                    <span>{r}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <p className='text-[11px] text-red-500 mt-2'>กรุณาแนบรูปสลิปใหม่ด้านล่าง</p>
+          </div>
+        ) : (
+          <div className='rounded-2xl border border-blue-200 bg-blue-50 p-4 mb-4'>
+            <p className='text-sm font-semibold text-blue-700'>ส่งสลิปแล้ว — รอเจ้าหน้าที่ตรวจสอบ</p>
+            {verifyResult.reasons.length > 0 ? (
+              <p className='text-xs text-blue-600 mt-1'>{verifyResult.reasons.join(' · ')}</p>
+            ) : null}
+          </div>
+        )
+      ) : null}
+
       {/* Slip status display */}
-      {alreadySubmitted && (
+      {alreadySubmitted && !verifyResult && (
         <div className='rounded-2xl border border-blue-200 bg-blue-50 p-4 mb-4'>
           <p className='text-sm font-semibold text-blue-700'>{isEscrow ? 'สลิปถูกส่งแล้ว — รอเจ้าหน้าที่ Tryly ตรวจสอบ' : 'สลิปถูกส่งแล้ว — รอโรงงานตรวจสอบ'}</p>
           {slip.data?.slip_url && (
@@ -273,13 +351,13 @@ export function DepositPaymentModal({
         </div>
       )}
 
-      {alreadyApproved && (
+      {alreadyApproved && !verifyResult && (
         <div className='rounded-2xl border border-emerald-200 bg-emerald-50 p-4 mb-4'>
           <p className='text-sm font-semibold text-emerald-700'>{isEscrow ? 'ยืนยันการชำระเงินแล้ว — ระบบถือเงินไว้จนกว่าจะรับสินค้า' : 'โรงงานยืนยันรับเงินแล้ว'}</p>
         </div>
       )}
 
-      {slipStatus === 'RJ' && (
+      {slipStatus === 'RJ' && !verifyResult && (
         <div className='rounded-2xl border border-red-200 bg-red-50 p-4 mb-4'>
           <p className='text-sm font-semibold text-red-700'>สลิปถูกปฏิเสธ — กรุณาแนบใหม่</p>
           {slip.data?.slip_note && (

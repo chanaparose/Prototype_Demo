@@ -305,6 +305,10 @@ export interface ISlipInfoResponse {
   verified_by?: number | null;
   verified_at?: string | null;
   uploaded_at?: string | null;
+  /** ผลตรวจสลิปอัตโนมัติ (SlipOK) — มีเฉพาะ response ของ attach: approved | rejected | pending */
+  verify_outcome?: 'approved' | 'rejected' | 'pending';
+  /** เหตุผลที่ไม่ผ่าน/รอตรวจ — backend ส่งมาครบทุกข้อ */
+  verify_reasons?: string[];
 }
 
 // ─── Commission Invoice ───────────────────────────────────────────────────────
