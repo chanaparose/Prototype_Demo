@@ -1,13 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import {
-  ArrowLeft,
-  MessageCircle,
-  Star,
-  AlertTriangle,
-  PackageCheck,
-  Clock,
-} from 'lucide-react';
+import { ArrowLeft, MessageCircle, Star, AlertTriangle, PackageCheck, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useData } from '@/stores/useDataStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -41,20 +34,18 @@ import {
   RFQ_DETAIL_SUB_HEADER_ROW_CLASS,
 } from '@/components/features/rfq-detail/rfqDetailTheme';
 
-function OrderDetailSubHeader({
-  onBack,
-  onChat,
-}: {
-  onBack: () => void;
-  onChat: () => void;
-}) {
+function OrderDetailSubHeader({ onBack, onChat }: { onBack: () => void; onChat: () => void }) {
   return (
     <div className={`${RFQ_DETAIL_SUB_HEADER_ROW_CLASS} justify-between`}>
-      <Button variant='unstyled' type='button' onClick={onBack} className={RFQ_DETAIL_BACK_BUTTON_CLASS}>
+      <Button
+        variant='unstyled'
+        type='button'
+        onClick={onBack}
+        className={RFQ_DETAIL_BACK_BUTTON_CLASS}
+      >
         <ArrowLeft size={15} strokeWidth={2.25} aria-hidden />
         กลับ
       </Button>
-       
     </div>
   );
 }
@@ -429,7 +420,9 @@ function OrderDetailMobileBody() {
                 </div>
                 <div className='flex-1 min-w-0'>
                   <p className='text-sm font-bold text-amber-900'>
-                    {reviewState?.already_reviewed ? 'ขอบคุณสำหรับการรีวิว' : 'ให้คะแนนและรีวิวโรงงาน'}
+                    {reviewState?.already_reviewed
+                      ? 'ขอบคุณสำหรับการรีวิว'
+                      : 'ให้คะแนนและรีวิวโรงงาน'}
                   </p>
                   <p className='text-xs text-amber-800/90 mt-1 leading-relaxed'>
                     {reviewState?.already_reviewed
@@ -446,8 +439,7 @@ function OrderDetailMobileBody() {
                   onClick={onOpenReview}
                   className='mt-3 w-full py-3.5 rounded-2xl text-[13px] font-bold text-amber-950 shadow-[0_12px_28px_rgba(251,191,36,0.25)] flex items-center justify-center gap-2 hover:brightness-[1.02] active:scale-[0.995]'
                   style={{
-                    background:
-                      'linear-gradient(135deg, #FDE68A 0%, #FBBF24 45%, #F59E0B 100%)',
+                    background: 'linear-gradient(135deg, #FDE68A 0%, #FBBF24 45%, #F59E0B 100%)',
                   }}
                 >
                   <Star size={17} className='text-amber-950' />
