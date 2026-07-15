@@ -1,13 +1,6 @@
 import type { MouseEvent } from 'react';
 import { Link } from 'react-router';
-import {
-  Award,
-  CheckCircle,
-  ExternalLink,
-  Factory,
-  MessageCircle,
-  Star,
-} from 'lucide-react';
+import { Award, CheckCircle, ExternalLink, Factory, MessageCircle, Star } from 'lucide-react';
 import { openImageLightbox } from '@/stores/useLightboxStore';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { TextWithLinks } from '@/components/shared/TextWithLinks';
@@ -30,7 +23,9 @@ export type RfqOfferDetailSheetProps = {
   isRequestClosed: boolean;
   acceptingId: string | null;
   onChatWithOffer?: (offer: OfferItem) => void;
-  onAcceptOffer: (offerId: string, e: MouseEvent) => void;
+  onAcceptOffer?: (offerId: string, e: MouseEvent) => void;
+  hideFooterActions?: boolean;
+  hideQuotationHistory?: boolean;
   quoteHistories?: Record<
     string,
     import('@/services/api/types/rfq.types').IQuotationHistoryEntry[]
@@ -52,6 +47,8 @@ export function RfqOfferDetailSheet({
   acceptingId,
   onChatWithOffer,
   onAcceptOffer,
+  hideFooterActions = false,
+  hideQuotationHistory = false,
   quoteHistories,
 }: RfqOfferDetailSheetProps) {
   if (!offer) return null;
@@ -81,81 +78,83 @@ export function RfqOfferDetailSheet({
       title={offer.factoryName}
       bodyClassName='max-h-[min(70vh,32rem)] overflow-y-auto px-4 py-3'
       footer={
-        <div className='flex w-full gap-2'>
-          {onChatWithOffer ? (
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => onChatWithOffer(offer)}
-              className='flex flex-1 items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-semibold'
-              style={{ borderColor: 'var(--brand-mauve)', color: 'var(--brand-mauve)' }}
-            >
-              <MessageCircle size={14} /> แชท
-            </Button>
-          ) : null}
-          {isAccepted ? (
-            offer.orderId ? (
-              <Link
-                to={`/orders/${offer.orderId}`}
-                className='flex flex-1 items-center justify-center gap-1.5 rounded-xl border-2 border-emerald-200 bg-emerald-50 py-2.5 text-xs font-semibold text-emerald-700'
+        hideFooterActions ? undefined : (
+          <div className='flex w-full gap-2'>
+            {onChatWithOffer ? (
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => onChatWithOffer(offer)}
+                className='flex flex-1 items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-semibold'
+                style={{ borderColor: 'var(--brand-mauve)', color: 'var(--brand-mauve)' }}
               >
-                <ExternalLink size={13} />
-                ดูคำสั่งซื้อ
-              </Link>
-            ) : (
+                <MessageCircle size={14} /> แชท
+              </Button>
+            ) : null}
+            {isAccepted ? (
+              offer.orderId ? (
+                <Link
+                  to={`/orders/${offer.orderId}`}
+                  className='flex flex-1 items-center justify-center gap-1.5 rounded-xl border-2 border-emerald-200 bg-emerald-50 py-2.5 text-xs font-semibold text-emerald-700'
+                >
+                  <ExternalLink size={13} />
+                  ดูคำสั่งซื้อ
+                </Link>
+              ) : (
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  disabled
+                  className='flex-1 rounded-xl py-2.5 text-xs font-semibold text-white disabled:opacity-60'
+                  style={{ background: 'var(--status-success)' }}
+                >
+                  ยอมรับแล้ว ✓
+                </Button>
+              )
+            ) : isExpired ? (
               <Button
                 variant='unstyled'
                 type='button'
                 disabled
-                className='flex-1 rounded-xl py-2.5 text-xs font-semibold text-white disabled:opacity-60'
-                style={{ background: 'var(--status-success)' }}
+                className='flex-1 rounded-xl bg-orange-500 py-2.5 text-xs font-semibold text-white disabled:opacity-70'
               >
-                ยอมรับแล้ว ✓
+                ใบเสนอราคาหมดอายุ
               </Button>
-            )
-          ) : isExpired ? (
-            <Button
-              variant='unstyled'
-              type='button'
-              disabled
-              className='flex-1 rounded-xl bg-orange-500 py-2.5 text-xs font-semibold text-white disabled:opacity-70'
-            >
-              ใบเสนอราคาหมดอายุ
-            </Button>
-          ) : isRequestClosed ? (
-            <Button
-              variant='unstyled'
-              type='button'
-              disabled
-              className='flex-1 rounded-xl bg-slate-400 py-2.5 text-xs font-semibold text-white disabled:opacity-70'
-            >
-              {rfqStatus === 'cancelled'
-                ? 'ยกเลิกคำขอแล้ว'
-                : rfqStatus === 'expired'
-                  ? 'หมดอายุ'
-                  : rfqStatus === 'closed'
-                    ? 'ปิดรับคำขอแล้ว'
-                    : 'ปิดคำขอแล้ว'}
-            </Button>
-          ) : (
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={(e) => onAcceptOffer(offer.id, e)}
-              disabled={!!acceptingId || isRejected}
-              className='flex-1 rounded-xl py-2.5 text-xs font-semibold text-white disabled:opacity-60'
-              style={{
-                background: isRejected ? '#94A3B8' : 'var(--brand-mauve)',
-              }}
-            >
-              {acceptingId === offer.id
-                ? 'กำลังส่ง...'
-                : isRejected
-                  ? 'ไม่ได้รับการเลือก'
-                  : 'ยอมรับข้อเสนอ'}
-            </Button>
-          )}
-        </div>
+            ) : isRequestClosed ? (
+              <Button
+                variant='unstyled'
+                type='button'
+                disabled
+                className='flex-1 rounded-xl bg-slate-400 py-2.5 text-xs font-semibold text-white disabled:opacity-70'
+              >
+                {rfqStatus === 'cancelled'
+                  ? 'ยกเลิกคำขอแล้ว'
+                  : rfqStatus === 'expired'
+                    ? 'หมดอายุ'
+                    : rfqStatus === 'closed'
+                      ? 'ปิดรับคำขอแล้ว'
+                      : 'ปิดคำขอแล้ว'}
+              </Button>
+            ) : (
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={(e) => onAcceptOffer?.(offer.id, e)}
+                disabled={!!acceptingId || isRejected}
+                className='flex-1 rounded-xl py-2.5 text-xs font-semibold text-white disabled:opacity-60'
+                style={{
+                  background: isRejected ? '#94A3B8' : 'var(--brand-mauve)',
+                }}
+              >
+                {acceptingId === offer.id
+                  ? 'กำลังส่ง...'
+                  : isRejected
+                    ? 'ไม่ได้รับการเลือก'
+                    : 'ยอมรับข้อเสนอ'}
+              </Button>
+            )}
+          </div>
+        )
       }
     >
       <div className='space-y-3'>
@@ -311,10 +310,12 @@ export function RfqOfferDetailSheet({
 
         <QuotationBOQDetailsPanel quotation={boq} className='border-t border-gray-100 pt-3' />
 
-        <QuotationHistoryPanel
-          quotationId={offer.id}
-          preloadedHistory={quoteHistories?.[offer.id]}
-        />
+        {hideQuotationHistory ? null : (
+          <QuotationHistoryPanel
+            quotationId={offer.id}
+            preloadedHistory={quoteHistories?.[offer.id]}
+          />
+        )}
       </div>
     </AppSheetDialog>
   );
