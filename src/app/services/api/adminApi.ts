@@ -413,4 +413,11 @@ export const adminCatalogApi = {
       `/admin/categories/${categoryId}/img`,
       { img },
     ),
+
+  /** Upload / replace hub cover image shown on /factory-ideas-hub. */
+  patchHubImg: (hubId: number, img: string) =>
+    httpClient.patch<{ ok: boolean; hub_id: number; img: string }>(
+      `/admin/hubs/${hubId}/img`,
+      { img },
+    ),
 };

@@ -49,7 +49,7 @@ const NAV_ITEMS = [
   { path: '/admin/withdrawals', icon: Banknote, label: 'คำขอถอนเงิน', minRank: 2 },
   { path: '/admin/disputes', icon: ShieldAlert, label: 'คำร้องคืนเงิน', minRank: 3 },
   { path: '/admin/config', icon: Settings, label: 'ตั้งค่า', minRank: 2 },
-  { path: '/admin/category-images', icon: ImageIcon, label: 'ภาพหมวดหมู่', minRank: 3 },
+  { path: '/admin/category-images', icon: ImageIcon, label: 'ภาพ Hub / หมวด', minRank: 3 },
 ];
 
 const sidebarTheme = {
@@ -68,7 +68,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/withdrawals': 'คำขอถอนเงิน',
   '/admin/disputes': 'คำร้อง / ขอคืนเงิน',
   '/admin/config': 'ตั้งค่าระบบ',
-  '/admin/category-images': 'ภาพหมวดหมู่',
+  '/admin/category-images': 'ภาพ Hub / หมวด',
 };
 
 function getPageTitle(pathname: string): string {

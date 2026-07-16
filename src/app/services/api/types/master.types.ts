@@ -26,6 +26,10 @@ export interface IHubResponse {
   hub_id: number;
   name: string;
   scope: string;
+  /** Hub cover image URL (admin upload via PATCH /admin/hubs/:id/img). */
+  img?: string | null;
+  image_url?: string | null;
+  image?: string | null;
   categories: ICategoryForHubResponse[];
 }
 
