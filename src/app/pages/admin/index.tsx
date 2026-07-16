@@ -11,4 +11,5 @@ export { AdminCustomersPage } from '@/pages/admin/AdminCustomersPage';
 export { AdminCustomerDetailPage } from '@/pages/admin/AdminCustomerDetailPage';
 export { AdminCommissionPage } from '@/pages/admin/AdminCommissionPage';
 export { AdminWithdrawalsPage } from '@/pages/admin/AdminWithdrawalsPage';
+export { AdminDisputesPage } from '@/pages/admin/AdminDisputesPage';
 export { AdminCategoryImagesPage } from '@/pages/admin/AdminCategoryImagesPage';

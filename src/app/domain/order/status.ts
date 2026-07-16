@@ -23,6 +23,8 @@ export function mapOrderStatusFromApi(code: string): string {
   if (u === 'CP') return 'completed';
   if (u === 'CC' || u === 'CN' || u === 'CL' || u === 'PE' || u === 'EX')
     return 'cancelled_expired';
+  if (u === 'DP') return 'disputed';
+  if (u === 'RF') return 'refunded';
   // Already-mapped strings from bootstrap (pass-through)
   const lower = raw.toLowerCase();
   if (lower === 'pending_payment' || lower === 'pp') return 'pending_payment';
@@ -32,6 +34,8 @@ export function mapOrderStatusFromApi(code: string): string {
   if (lower === 'shipped') return 'shipped';
   if (lower === 'completed') return 'completed';
   if (lower === 'cancelled_expired') return 'cancelled_expired';
+  if (lower === 'disputed') return 'disputed';
+  if (lower === 'refunded') return 'refunded';
   return lower || 'pending';
 }
 

@@ -42,3 +42,5 @@ docs/
 .pnpm-store/
 
 .claude/
+generated_hub_thumbnails/
+generated_category_thumbnails/

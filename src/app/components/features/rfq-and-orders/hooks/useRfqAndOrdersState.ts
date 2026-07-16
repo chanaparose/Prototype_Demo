@@ -38,7 +38,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
   };
   const [rfqFilter, setRfqFilter] = React.useState<RfqFilterId>(initial?.rfqFilter ?? 'pending');
 
-  const ORDER_FILTER_VALUES: OrderFilterId[] = ['pending_payment', 'in_production', 'shipped', 'completed', 'cancelled_expired'];
+  const ORDER_FILTER_VALUES: OrderFilterId[] = ['pending_payment', 'in_production', 'shipped', 'completed', 'disputed', 'cancelled_expired'];
   const orderFilterFromUrl = searchParams.get('order_filter') as OrderFilterId | null;
   const orderFilter: OrderFilterId = ORDER_FILTER_VALUES.includes(orderFilterFromUrl as OrderFilterId)
     ? (orderFilterFromUrl as OrderFilterId)
@@ -90,6 +90,9 @@ export function useRfqAndOrdersState(initial?: InitialState) {
       return orders.filter((o) => o.status === 'in_production' && !isShippingOrder(o));
     if (orderFilter === 'pending_payment')
       return orders.filter((o) => isPendingPaymentStatus(o.status));
+    // "ขอคืนเงิน" tab รวมทั้งคำขอที่เปิดอยู่ (disputed) และที่คืนเงินสำเร็จแล้ว (refunded)
+    if (orderFilter === 'disputed')
+      return orders.filter((o) => o.status === 'disputed' || o.status === 'refunded');
     return orders.filter((o) => o.status === orderFilter);
   }, [orderFilter, orders, isShippingOrder]);
 
@@ -111,6 +114,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
         .length,
       shipped: orders.filter(isShippingOrder).length,
       completed: orders.filter((o) => o.status === 'completed').length,
+      disputed: orders.filter((o) => o.status === 'disputed' || o.status === 'refunded').length,
       cancelledExpired: orders.filter((o) => o.status === 'cancelled_expired').length,
     }),
     [orders, isShippingOrder],

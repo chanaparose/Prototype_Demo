@@ -46,6 +46,7 @@ export type OrderFilterId =
   | 'in_production'
   | 'shipped'
   | 'completed'
+  | 'disputed'
   | 'cancelled_expired';
 
 /** ธีมแท็บคำสั่งซื้อ (มือถือ) — ใช้ active คู่สีเดียวกันเพื่อให้ segmented control นิ่ง */
@@ -72,6 +73,11 @@ export const ORDER_MOBILE_TAB_THEME: Record<
     activeBg: PEACH_MIST,
     activeColor: ACCENT_ORANGE_DEEP,
     badgeInactive: ORCHID,
+  },
+  disputed: {
+    activeBg: PEACH_MIST,
+    activeColor: ACCENT_ORANGE_DEEP,
+    badgeInactive: '#B45309',
   },
   cancelled_expired: {
     activeBg: PEACH_MIST,
@@ -135,6 +141,18 @@ export const ORDER_STATUS_CONFIG: Record<
     color: DEEP_PURPLE,
     bg: CREAM,
     dot: ORCHID,
+  },
+  disputed: {
+    label: 'ขอคืนเงิน',
+    color: '#B45309',
+    bg: '#FEF3C7',
+    dot: '#F59E0B',
+  },
+  refunded: {
+    label: 'คืนเงินแล้ว',
+    color: '#047857',
+    bg: '#D1FAE5',
+    dot: '#10B981',
   },
   cancelled_expired: {
     label: 'ยกเลิก/หมดอายุ',

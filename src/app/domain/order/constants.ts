@@ -9,7 +9,9 @@ const ORDER_API_STATUS_LABEL_TH: Record<string, string> = {
   SH: 'จัดส่งแล้ว',
   CP: 'เสร็จสิ้น',
   CN: 'ยกเลิก',
+  CC: 'ยกเลิก',
   WF: 'รอดำเนินการ',
+  DP: 'อยู่ระหว่างพิจารณาคำร้อง',
 };
 
 export function orderStatusLabelTh(apiStatus: string, statusLabelFromApi?: string): string {

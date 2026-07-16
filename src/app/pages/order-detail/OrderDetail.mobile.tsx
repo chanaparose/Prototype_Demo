@@ -12,6 +12,8 @@ import { ordersApi } from '@/services/api/ordersApi';
 import { Button } from '@/components/ui/button';
 import { OrderDetailStatusHero } from '@/components/features/order-detail/OrderDetailStatusHero';
 import { OrderDetailReferenceDocs } from '@/components/features/order-detail/OrderDetailReferenceDocs';
+import { DisputeSection } from '@/components/features/order-detail/DisputeSection';
+import { useOrderDispute } from '@/hooks/useOrderDispute';
 import { OrderDetailMetaSection } from '@/components/features/order-detail/OrderDetailMetaSection';
 import { formatDateTh } from '@/components/features/order-detail/utils';
 import { OrderPhotoGallery } from '@/components/features/order-detail/OrderPhotoGallery';
@@ -84,6 +86,11 @@ function OrderDetailMobileBody() {
 
   const canShowCancelButton = ['WS', 'WA', 'PP'].includes(apiStatus);
 
+  // มีคำร้องขอคืนเงินที่ยัง active อยู่ (OP/RT/RC) — กันไม่ให้กดยืนยันรับสินค้า
+  // ซ้อนระหว่างที่เจ้าหน้าที่กำลังตรวจสอบคำร้อง (order จะถูกย้ายไปสถานะ DP อยู่แล้ว
+  // แต่ step5IsIP มาจาก production data ที่ยังไม่เปลี่ยนตาม เลยต้องเช็คแยก)
+  const { hasActiveDispute } = useOrderDispute(order.id, user?.role === 'CT');
+
   // Show acceptance banner when production step 5 = IP (step 4 CD → awaiting customer confirmation)
   const step5IsIP = React.useMemo(
     () =>
@@ -93,7 +100,7 @@ function OrderDetailMobileBody() {
     [production.updates],
   );
   const showAcceptDeliveryBanner =
-    step5IsIP && order.status !== 'completed' && order.status !== 'shipped';
+    step5IsIP && order.status !== 'completed' && order.status !== 'shipped' && !hasActiveDispute;
 
   const depositAmount =
     nextAction?.amount ??
@@ -455,6 +462,17 @@ function OrderDetailMobileBody() {
             factoryName={order.factoryName}
             factoryId={order.factoryId}
             rfqId={order.rfqId}
+          />
+
+          <DisputeSection
+            orderId={order.id}
+            orderStatus={apiStatus}
+            totalAmount={order.totalAmount}
+            currentStepId={order.currentStepId}
+            completedAt={order.completedAt}
+            alreadyReviewed={reviewState?.already_reviewed}
+            isCustomer={user?.role === 'CT'}
+            onChanged={refetchAll}
           />
 
           <OrderDetailMetaSection

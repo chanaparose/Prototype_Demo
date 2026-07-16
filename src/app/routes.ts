@@ -39,6 +39,7 @@ import {
   AdminCustomerDetailPage,
   AdminCommissionPage,
   AdminWithdrawalsPage,
+  AdminDisputesPage,
   AdminCategoryImagesPage,
 } from '@/pages/admin';
 import { AuthGuard } from '@/components/AuthGuard';
@@ -186,6 +187,7 @@ export const router = createBrowserRouter([
               { path: 'config', Component: AdminConfigPage },
               { path: 'commission', Component: AdminCommissionPage },
               { path: 'withdrawals', Component: AdminWithdrawalsPage },
+              { path: 'disputes', Component: AdminDisputesPage },
               { path: 'commission-config', Component: CommissionConfig },
               { path: 'category-images', Component: AdminCategoryImagesPage },
             ],

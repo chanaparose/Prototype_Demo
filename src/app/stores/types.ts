@@ -205,6 +205,8 @@ export type BootstrapOrderModel = {
   timeline: OrderTimeline[];
   /** step_id ของขั้นตอนที่ active ล่าสุด (มาจาก production_updates) — ใช้แยก tab เช่น 4 = จัดส่ง */
   currentStepId?: number;
+  /** วันที่คำสั่งซื้อเสร็จสมบูรณ์ (ISO) — มีค่าเมื่อ status = completed เท่านั้น */
+  completedAt?: string | null;
 };
 
 export type Message = {

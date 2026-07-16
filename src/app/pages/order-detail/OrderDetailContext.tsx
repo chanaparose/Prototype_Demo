@@ -91,6 +91,7 @@ function mapApiOrderToOrder(
     estimatedDelivery: String(row.estimated_delivery ?? '').split('T')[0] ?? '',
     timeline: [],
     currentStepId,
+    completedAt: row.completed_at ? String(row.completed_at) : null,
   };
 }
 

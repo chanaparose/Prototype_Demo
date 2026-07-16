@@ -4,6 +4,7 @@ import {
   CircleDollarSign,
   Clock3,
   PackageCheck,
+  RotateCcw,
   ScanSearch,
   Settings,
   type LucideIcon,
@@ -30,6 +31,8 @@ export const ORDER_API_STATUS_DISPLAY: Record<string, OrderStatusDisplayMeta> = 
   CN: { label: 'ยกเลิก', icon: Ban },
   CC: { label: 'ยกเลิก', icon: Ban },
   CL: { label: 'ยกเลิก', icon: Ban },
+  DP: { label: 'ขอคืนเงิน', icon: RotateCcw },
+  RF: { label: 'คืนเงินแล้ว', icon: RotateCcw },
   waiting_slip: { label: 'รอแนบสลิป', icon: Clock3 },
   waiting_approval: { label: 'รอยืนยันสลิป', icon: ScanSearch },
   pending_payment: { label: 'รอชำระมัดจำ', icon: Clock3 },
@@ -37,6 +40,8 @@ export const ORDER_API_STATUS_DISPLAY: Record<string, OrderStatusDisplayMeta> = 
   shipped: { label: 'จัดส่งแล้ว', icon: PackageCheck },
   completed: { label: 'เสร็จสิ้น', icon: Check },
   cancelled_expired: { label: 'ยกเลิก', icon: Ban },
+  disputed: { label: 'ขอคืนเงิน', icon: RotateCcw },
+  refunded: { label: 'คืนเงินแล้ว', icon: RotateCcw },
 };
 
 export function getOrderStatusDisplayMeta(status: string): OrderStatusDisplayMeta | null {

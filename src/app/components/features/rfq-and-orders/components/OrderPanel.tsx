@@ -8,6 +8,7 @@ import {
   Banknote,
   Truck,
   OctagonX,
+  RotateCcw,
 } from 'lucide-react';
 import {
   ACCENT_ORANGE,
@@ -37,6 +38,7 @@ const ORDER_TABS: {
   { id: 'in_production', shortLabel: 'กำลังผลิต', fullLabel: 'กำลังผลิต', icon: Package },
   { id: 'shipped', shortLabel: 'จัดส่งแล้ว', fullLabel: 'จัดส่งแล้ว', icon: Truck },
   { id: 'completed', shortLabel: 'เสร็จสิ้น', fullLabel: 'เสร็จสิ้น', icon: CheckCircle2 },
+  { id: 'disputed', shortLabel: 'ขอคืนเงิน', fullLabel: 'คำขอคืนเงิน', icon: RotateCcw },
   { id: 'cancelled_expired', shortLabel: 'ยกเลิก', fullLabel: 'ยกเลิก/หมดอายุ', icon: OctagonX },
 ];
 

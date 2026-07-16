@@ -15,6 +15,7 @@ export type OrderTagCounts = {
   inProduction: number;
   shipped: number;
   completed: number;
+  disputed: number;
   cancelledExpired: number;
 };
 
@@ -44,6 +45,8 @@ export function getOrderTabCount(id: OrderFilterId, counts: OrderTagCounts): num
       return counts.shipped;
     case 'completed':
       return counts.completed;
+    case 'disputed':
+      return counts.disputed;
     case 'cancelled_expired':
       return counts.cancelledExpired;
     default:

@@ -95,6 +95,78 @@ export const ordersApi = {
   ) => httpClient.post<Record<string, unknown>>(`/orders/${orderId}/review`, data),
 };
 
+/** ─── Disputes / refund tickets ─────────────────────────────────────────── */
+export type DisputeCategory = 'NR' | 'ND' | 'OT'; // NR=ไม่ได้รับสินค้า, ND=สินค้าไม่ตรงปก, OT=อื่นๆ
+
+export type DisputeStatus = 'OP' | 'RT' | 'RC' | 'RF' | 'RJ';
+
+export interface IDisputeResponse {
+  dispute_id: number;
+  order_id: number;
+  category: DisputeCategory;
+  reason: string;
+  evidence_urls: string[];
+  status: DisputeStatus; // รอตรวจสอบ / รอส่งคืน / รอตรวจรับ / คืนเงินแล้ว / ปฏิเสธ
+  resolution?: string | null;
+  refund_amount?: string | null;
+  refund_slip_url?: string | null;
+  refund_account?: string | null;
+  refund_account_name?: string | null;
+  contact_phone?: string | null;
+  contact_email?: string | null;
+  return_tracking_no?: string | null;
+  return_courier?: string | null;
+  return_note?: string | null;
+  return_evidence_urls?: string[];
+  return_requested_at?: string | null;
+  return_submitted_at?: string | null;
+  resolved_at?: string | null;
+  created_at: string;
+}
+
+export const disputesApi = {
+  /** ลูกค้าเปิด ticket ร้องเรียน/ขอคืนเงินบน order ตัวเอง */
+  create: (
+    orderId: string | number,
+    data: {
+      category: DisputeCategory;
+      description: string;
+      image_urls: string[];
+      refund_account: string;
+      refund_account_name: string;
+      contact_email?: string;
+      contact_phone: string;
+    },
+  ) => httpClient.post<IDisputeResponse>(`/orders/${orderId}/disputes`, data),
+
+  /** ดู ticket ล่าสุดของ order (404 = ยังไม่มี) */
+  getByOrder: (orderId: string | number) =>
+    httpClient.get<IDisputeResponse>(`/orders/${orderId}/disputes`),
+
+  /** ลูกค้าแนบหลักฐานการส่งสินค้าคืน (RT → RC) */
+  submitReturn: (
+    orderId: string | number,
+    data: { tracking_no?: string; courier?: string; note?: string; image_urls: string[] },
+  ) => httpClient.post<IDisputeResponse>(`/orders/${orderId}/disputes/return`, data),
+
+  /** superadmin: รายการ ticket ทั้งหมด */
+  adminList: (status?: string) =>
+    httpClient.get<{ data: Record<string, unknown>[]; pagination?: Record<string, unknown> }>(
+      `/admin/disputes${status ? `?status=${status}` : ''}`,
+    ),
+
+  /** superadmin: ตัดสิน ticket — request_return / refund (เต็ม/บางส่วน+สลิป) / reject */
+  resolve: (
+    disputeId: string | number,
+    data: {
+      action: 'request_return' | 'refund' | 'reject';
+      resolution?: string;
+      refund_amount?: number;
+      refund_slip_url?: string;
+    },
+  ) => httpClient.patch<IDisputeResponse>(`/admin/disputes/${disputeId}`, data),
+};
+
 export const productionUpdatesApi = {
   list: (orderId: string | number) =>
     httpClient.get<unknown[]>(`/orders/${orderId}/production-updates`),
