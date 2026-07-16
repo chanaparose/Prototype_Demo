@@ -35,6 +35,15 @@ import {
   type PaymentScheduleItem,
 } from '@/pages/order-detail/orderDetailFromApi';
 import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
+import { slipApi } from '@/services/api/adminApi';
+import { pickScalarString } from '@/utils/pickScalarString';
+
+export type OrderTimelineMeta = {
+  orderCreatedAt: string | null;
+  /** When customer attached payment slip (`uploaded_at` from slip API). */
+  slipSubmittedAt: string | null;
+};
+
 function unwrapOrderPayload(raw: unknown): Record<string, unknown> {
   if (!raw || typeof raw !== 'object') return {};
   const r = raw as Record<string, unknown>;
@@ -112,6 +121,10 @@ export type OrderDetailContextValue = {
   mappedOrder: Order;
   apiStatus: string;
   statusLabelTh: string;
+  /** Full ISO from API — use for timelines (mappedOrder.createdAt is date-only). */
+  orderCreatedAt: string | null;
+  orderUpdatedAt: string | null;
+  orderTimelineMeta: OrderTimelineMeta;
   uiMode: OrderUiMode;
   nextAction: NextAction | null;
   paymentSchedule: PaymentScheduleItem[];
@@ -196,10 +209,21 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
     retry: false,
   });
 
+  const slipQ = useQuery({
+    queryKey: ['slip-info', orderId],
+    queryFn: () => slipApi.getInfo(Number(orderId)),
+    enabled: !!orderQ.data && Number.isFinite(Number(orderId)) && Number(orderId) > 0,
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
   const refetchAll = useCallback(async () => {
     await Promise.all([
       qc.refetchQueries({ queryKey: orderKeys.detail(orderId) }),
       qc.refetchQueries({ queryKey: ['orderReviewState', orderId] }),
+      qc.refetchQueries({ queryKey: ['slip-info', orderId] }),
       refetchRfqs(),
       refetchWallet(),
     ]);
@@ -286,6 +310,12 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
       mappedOrder,
       apiStatus,
       statusLabelTh,
+      orderCreatedAt: pickScalarString(row.created_at) || null,
+      orderUpdatedAt: pickScalarString(row.updated_at) || null,
+      orderTimelineMeta: {
+        orderCreatedAt: pickScalarString(row.created_at) || null,
+        slipSubmittedAt: pickScalarString(slipQ.data?.uploaded_at) || null,
+      },
       uiMode,
       nextAction,
       paymentSchedule,
@@ -308,7 +338,7 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
           : null,
       refetchAll,
     };
-  }, [orderQ.data, factories, orderId, embeddedReviewState, reviewStateQ.data]);
+  }, [orderQ.data, factories, orderId, embeddedReviewState, reviewStateQ.data, slipQ.data, refetchAll]);
 
   if (orderQ.isPending && !orderQ.data) {
     return (

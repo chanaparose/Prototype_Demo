@@ -30,7 +30,7 @@ export function OrderDetailMetaSection({
   showCancel,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const { paymentSchedule, refetchAll } = useOrderDetail();
+  const { paymentSchedule, orderTimelineMeta, refetchAll } = useOrderDetail();
   const showDepositPayment = isPendingPaymentStatus(order.status);
 
   const legacyQty =
@@ -54,7 +54,7 @@ export function OrderDetailMetaSection({
     <div className='space-y-4'>
        
 
-      <OrderPaymentScheduleCard schedule={paymentSchedule} />
+      <OrderPaymentScheduleCard schedule={paymentSchedule} timelineMeta={orderTimelineMeta} />
 
       {showDepositPayment ? (
         <OrderPendingPaymentSection

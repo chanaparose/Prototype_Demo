@@ -142,7 +142,7 @@ export function StepRow({
     </Button>
   ) : null;
 
-  const timestamp = update.last_updated_at;
+  const timestamp = update.last_updated_at || update.completed_at;
   const hasExpandableContent = Boolean(
     template.description?.trim() ||
       update.description?.trim() ||

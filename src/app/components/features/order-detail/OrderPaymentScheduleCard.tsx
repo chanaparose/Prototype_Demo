@@ -1,5 +1,6 @@
 import React from 'react';
 import type { PaymentScheduleItem } from '@/pages/order-detail/orderDetailFromApi';
+import type { OrderTimelineMeta } from '@/pages/order-detail/OrderDetailContext';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { WalletCards } from 'lucide-react';
 
@@ -35,11 +36,26 @@ function statusLabelTh(status: string): string {
 
 type Props = {
   schedule: PaymentScheduleItem[];
+  timelineMeta?: OrderTimelineMeta;
 };
 
-export function OrderPaymentScheduleCard({ schedule }: Props) {
+function formatDateTimeTh(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleString('th-TH', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+export function OrderPaymentScheduleCard({ schedule, timelineMeta }: Props) {
   if (!schedule.length) return null;
   const total = schedule.reduce((s, r) => s + (Number.isFinite(r.amount) ? r.amount : 0), 0);
+  const slipSubmittedAt = timelineMeta?.slipSubmittedAt;
 
   return (
     <div className='bg-white rounded-2xl p-4 shadow-sm border border-gray-100'>
@@ -47,6 +63,16 @@ export function OrderPaymentScheduleCard({ schedule }: Props) {
         <WalletCards size={14} className='text-brand-mauve' />
         การชำระเงิน
       </p>
+      {slipSubmittedAt ? (
+        <div className='mb-3 rounded-xl border border-blue-100 bg-blue-50/70 px-3 py-2'>
+          <div className='flex items-start justify-between gap-3 text-[11px]'>
+            <span className='text-slate-500'>แนบสลิปเมื่อ</span>
+            <span className='text-right font-semibold text-slate-700'>
+              {formatDateTimeTh(slipSubmittedAt)}
+            </span>
+          </div>
+        </div>
+      ) : null}
       <ul className='space-y-2.5'>
         {schedule.map((row) => (
           <li

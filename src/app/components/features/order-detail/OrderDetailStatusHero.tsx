@@ -8,6 +8,7 @@ import {
 } from '@/components/features/production/stepDerivedState';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
+import { formatDateTime } from '@/utils/formatting/formatDate';
 
 function formatRelativeTh(iso: string | null | undefined): string {
   if (!iso) return '';
@@ -21,6 +22,22 @@ function formatRelativeTh(iso: string | null | undefined): string {
   if (h < 24) return `${h} ชั่วโมงที่แล้ว`;
   const day = Math.floor(h / 24);
   return `${day} วันที่แล้ว`;
+}
+
+/** Compact day/time under each production step. */
+function formatStepUpdateTime(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${day}/${month} ${hh}:${mm}`;
+}
+
+function stepUpdatedAt(m: MergedProductionStep): string | null {
+  return m.update.last_updated_at || m.update.completed_at || null;
 }
 
 function segmentDone(state: StepDerivedState): boolean {
@@ -88,7 +105,7 @@ export function OrderDetailStatusHero({
   const lastIso = useMemo(() => {
     let best = '';
     for (const m of merged) {
-      const t = m.update.last_updated_at;
+      const t = stepUpdatedAt(m);
       if (!t) continue;
       if (!best || new Date(t) > new Date(best)) best = t;
     }
@@ -157,6 +174,8 @@ export function OrderDetailStatusHero({
               const label = m.template.step_name_th;
               const leftDone = i > 0 && segmentDone(derived[i - 1]);
               const rightDone = !isLast && segmentDone(state);
+              const timeText =
+                state !== 'upcoming' ? formatStepUpdateTime(stepUpdatedAt(m)) : '';
 
               return (
                 <div
@@ -182,7 +201,7 @@ export function OrderDetailStatusHero({
                     ) : null}
                     <span
                       className={`relative z-10 shrink-0 rounded-full transition-all ${stepDotClass(state)}`}
-                      title={label}
+                      title={timeText ? `${label} · อัปเดต ${timeText}` : label}
                     />
                   </div>
                   <p
@@ -190,6 +209,7 @@ export function OrderDetailStatusHero({
                   >
                     {label}
                   </p>
+                   
                 </div>
               );
             })}
@@ -199,7 +219,8 @@ export function OrderDetailStatusHero({
 
       {lastIso ? (
         <p className='border-t border-brand-purple/8 pt-2 text-xs text-slate-500'>
-          อัปเดตล่าสุด {formatRelativeTh(lastIso)}
+          อัปเดตล่าสุด {formatDateTime(lastIso)}
+          <span className='text-slate-400'> · {formatRelativeTh(lastIso)}</span>
         </p>
       ) : null}
     </div>

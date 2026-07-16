@@ -17,7 +17,7 @@ type OrderOverviewSectionProps = {
 
 /** Payment schedule + deposit UI only (RFQ/quote moved to OrderDetailReferenceDocs). */
 export function OrderOverviewSection({ order }: OrderOverviewSectionProps) {
-  const { paymentSchedule, mappedOrder, refetchAll } = useOrderDetail();
+  const { paymentSchedule, mappedOrder, orderTimelineMeta, refetchAll } = useOrderDetail();
   const showDepositPayment = isPendingPaymentStatus(mappedOrder.status);
   const payableAmount = React.useMemo(() => {
     const stagedAmount = paymentSchedule.find(
@@ -32,7 +32,7 @@ export function OrderOverviewSection({ order }: OrderOverviewSectionProps) {
 
   return (
     <div className='space-y-4'>
-      <OrderPaymentScheduleCard schedule={paymentSchedule} />
+      <OrderPaymentScheduleCard schedule={paymentSchedule} timelineMeta={orderTimelineMeta} />
 
       {showDepositPayment && (
         <OrderPendingPaymentSection

@@ -10,6 +10,8 @@ import { RfqOfferDetailSheet } from '@/components/features/rfq-detail/RfqOfferDe
 import type { OfferItem } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import type { Quotation } from '@/components/features/rfq-detail/QuotationBOQCard';
 import { rfqsApi } from '@/services/api/rfqApi';
+import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
+import { formatDateTime } from '@/utils/formatting/formatDate';
 
 type Props = {
   quotation?: IQuoteNestedResponse | null;
@@ -20,6 +22,7 @@ type Props = {
 };
 
 export function OrderDetailReferenceDocs({ quotation, rfq, factoryName, factoryId, rfqId }: Props) {
+  const { mappedOrder, orderCreatedAt } = useOrderDetail();
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [rfqOpen, setRfqOpen] = useState(false);
   const [enrichedQuotation, setEnrichedQuotation] = useState<OrderQuoteLike | null>(null);
@@ -61,10 +64,15 @@ export function OrderDetailReferenceDocs({ quotation, rfq, factoryName, factoryI
     };
   }, [quoteOpen, quotation, effectiveRfqId]);
 
-  if (!quotation && !rfq) return null;
+  if (!quotation && !rfq && !orderCreatedAt) return null;
 
-  const quoteSource = enrichedQuotation ?? quotation;
-  const grandTotal = quotation?.grand_total ?? 0;
+  const quoteSource = (enrichedQuotation ?? quotation) as OrderQuoteLike | null | undefined;
+  const grandTotal = firstPositiveNumber(
+    quoteSource?.grand_total,
+    quoteSource?.quote_total,
+    mappedOrder.totalAmount,
+    quotation?.grand_total,
+  );
   const rfqQty = rfq ? Math.max(0, pickScalarNumber(rfq.quantity) ?? 0) : 0;
   const rfqUnit = rfq?.unit_name ?? 'ชิ้น';
   const offerForSheet = quoteSource
@@ -84,6 +92,12 @@ export function OrderDetailReferenceDocs({ quotation, rfq, factoryName, factoryI
           <p className='text-sm font-bold text-brand-navy-ink'>เอกสารอ้างอิง</p>
         </div>
 
+        {orderCreatedAt ? (
+          <p className='text-xs text-slate-500'>
+            สร้างคำสั่งซื้อเมื่อ {formatDateTime(orderCreatedAt)}
+          </p>
+        ) : null}
+
         {quotation ? (
           <p className='text-xs text-slate-600 leading-relaxed'>
             ใบเสนอราคา {factoryName ?? 'โรงงาน'} · รวม {formatCurrency(grandTotal)}
@@ -92,7 +106,7 @@ export function OrderDetailReferenceDocs({ quotation, rfq, factoryName, factoryI
         {rfq ? (
           <p className='text-xs text-slate-600 leading-relaxed'>
             สเปก RFQ{effectiveRfqId ? ` #${effectiveRfqId}` : ''}
-            {rfqQty > 0 ? ` · ${rfqQty.toLocaleString('th-TH')} ${rfqUnit}` : ''}
+             
           </p>
         ) : null}
 
@@ -222,6 +236,8 @@ function mapOrderQuotationToOffer({
 type OrderQuoteLike = Omit<IQuoteNestedResponse, 'valid_until'> &
   Partial<Omit<Quotation, 'valid_until'>> & {
     valid_until?: string | null;
+    /** Legacy/alternate total field from RFQ quotation list enrichment. */
+    quote_total?: number | null;
     factory_id?: number | string;
     factory_name?: string;
     factory_qty?: number | null;
