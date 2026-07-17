@@ -1,3 +1,4 @@
+import { ChevronRight } from 'lucide-react';
 import { cn } from '@lib/utils';
 import type { IHubResponse } from '@/services/api/types/master.types';
 import {
@@ -50,21 +51,24 @@ export function HubCard({
         )}
       </div>
 
-      <div className='flex flex-1 flex-col px-2.5 py-2'>
-        <span className='line-clamp-2 text-[11px] font-bold leading-tight text-gray-800 group-hover:text-brand-purple lg:text-[12px]'>
-          {hub.name}
-        </span>
+      <div className='flex flex-1 items-center gap-1 px-2 py-1'>
+        <div className='min-w-0 flex-1'>
+          <span className='line-clamp-2 text-[11px] font-bold leading-tight text-gray-800 group-hover:text-brand-purple lg:text-[12px]'>
+            {hub.name}
+          </span>
+          <span className='mt-1 block text-[10px] font-medium leading-none text-gray-400 lg:text-[11px]'>
+            {totalFactories > 0
+              ? `${totalFactories.toLocaleString('th-TH')} โรงงาน`
+              : categoryCount > 0
+                ? `${categoryCount} หมวด`
+                : 'เร็วๆ นี้'}
+          </span>
+        </div>
         <span
-          className={cn(
-            'mt-1 text-[10px] font-medium leading-none lg:text-[11px]',
-            totalFactories > 0 ? 'text-brand-purple' : 'text-gray-400',
-          )}
+          className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-purple/10 transition-colors group-hover:bg-brand-purple/15'
+          aria-hidden
         >
-          {totalFactories > 0
-            ? `${totalFactories} โรงงาน`
-            : categoryCount > 0
-              ? `${categoryCount} หมวด`
-              : 'เร็วๆ นี้'}
+          <ChevronRight size={12} strokeWidth={2.5} className='text-brand-purple' />
         </span>
       </div>
     </button>
