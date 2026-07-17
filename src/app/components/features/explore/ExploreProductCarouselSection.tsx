@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router';
-import { ChevronRight, Leaf, MapPin, ShoppingBag, Star } from 'lucide-react';
+import { ChevronRight, Leaf, ShoppingBag } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
+import { ShowcaseCard } from '@/components/shared/ShowcaseCard';
 import {
   Carousel,
   CarouselContent,
@@ -129,66 +129,28 @@ export function ExploreProductCarouselSection({
                       '—';
                     return (
                       <CarouselItem key={product.id} className='basis-[180px]'>
-                        <div
-                          role='button'
-                          tabIndex={0}
-                          onClick={() => onItemClick?.(product.id)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              onItemClick?.(product.id);
-                            }
+                        <ShowcaseCard
+                          image={product.img}
+                          title={product.title}
+                          location={locationLabel}
+                          rating={product.factoryRating ?? 0}
+                          moqLabel={`ขั้นต่ำ ${product.minOrder ?? 0} ${product.minOrderUnit ?? ''}`.trim()}
+                          badge={{
+                            label: isMaterial ? 'วัตถุดิบ' : 'สินค้า',
+                            color: isMaterial ? 'var(--status-success)' : 'var(--brand-orange)',
                           }}
-                          className='h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'
-                        >
-                          <div className='aspect-[4/3] relative overflow-hidden bg-gray-100'>
-                            <ImageWithFallback
-                              src={product.img}
-                              alt={product.title}
-                              className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                            />
-                            <span
-                              className={`absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white ${
-                                isMaterial ? 'bg-status-success' : 'bg-brand-orange'
-                              }`}
-                            >
-                              {isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
-                            </span>
-                            {isLiked && onToggleFavorite && (
-                              <ShowcaseHeartButton
-                                showcaseId={product.id}
-                                isLiked={isLiked(product.id)}
-                                onToggle={onToggleFavorite}
-                                className='absolute top-1 right-1'
-                              />
-                            )}
-                          </div>
-                          <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                            <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                              {product.title}
-                            </p>
-                            <div className='flex items-center gap-0.5 mt-0.5'>
-                              <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                              <span className='text-gray-500 text-[10px] truncate'>
-                                {locationLabel}
-                              </span>
-                            </div>
-                            <div className='mt-auto pt-1 border-t border-gray-50'>
-                              <div className='flex items-center justify-between min-w-0'>
-                                <div className='flex items-center gap-0.5 min-w-0'>
-                                  <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                                  <span className='text-gray-700 text-[10px] font-semibold'>
-                                    {product.factoryRating ?? 0}
-                                  </span>
-                                </div>
-                                <span className='text-gray-400 text-[8px] shrink-0'>
-                                  ขั้นต่ำ {product.minOrder ?? 0}{' '}
-                                  {product.minOrderUnit}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                          heart={
+                            isLiked && onToggleFavorite
+                              ? {
+                                  showcaseId: product.id,
+                                  isLiked: isLiked(product.id),
+                                  onToggle: onToggleFavorite,
+                                }
+                              : undefined
+                          }
+                          onClick={() => onItemClick?.(product.id)}
+                          className='h-full'
+                        />
                       </CarouselItem>
                     );
                   })}

@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
-import { MapPin, Star } from 'lucide-react';
 import { cn } from '@lib/utils';
-import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { ShowcaseCard } from '@/components/shared/ShowcaseCard';
 import { ReviewPreviewSection } from '@/components/features/reviews/ReviewPreviewSection';
 import { normalizeFactoryReview } from '@/components/features/reviews/reviewBrowseUtils';
 import { formatThaiDate } from '@/components/features/factory-profile/utils';
@@ -100,7 +99,7 @@ export function FactoryProfileTabContent({
     ],
   );
 
-  const ShowcaseGridCard = ({
+  const ProfileShowcaseCard = ({
     item,
     onClick,
     badgeLabel,
@@ -111,43 +110,16 @@ export function FactoryProfileTabContent({
     badgeLabel: string;
     badgeColor: string;
   }) => (
-    <div
+    <ShowcaseCard
+      image={item.image}
+      title={item.title}
+      location={factory.location}
+      rating={factory.rating}
+      reviewsCount={factory.reviews}
+      moqLabel={`ขั้นต่ำ ${item.minOrder ?? 0}`}
+      badge={{ label: badgeLabel, color: badgeColor }}
       onClick={onClick}
-      className='group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-colors hover:border-brand-purple/25 active:scale-[0.98]'
-    >
-      <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
-        <ImageWithFallback
-          src={item.image}
-          alt={item.title}
-          className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
-        />
-        <span
-          className='absolute left-1 top-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold text-white'
-          style={{ backgroundColor: badgeColor }}
-        >
-          {badgeLabel}
-        </span>
-      </div>
-      <div className='flex flex-1 flex-col justify-between gap-0.5 p-2'>
-        <p className='mb-0.5 truncate text-xs font-medium leading-tight text-gray-700 transition-colors group-hover:text-brand-purple'>
-          {item.title}
-        </p>
-        <div className='mt-0.5 flex items-center gap-0.5'>
-          <MapPin size={10} className='shrink-0 text-gray-400' strokeWidth={2.25} />
-          <span className='truncate text-[10px] text-gray-500'>{factory.location || '—'}</span>
-        </div>
-        <div className='mt-auto border-t border-gray-50 pt-1'>
-          <div className='flex min-w-0 items-center justify-between'>
-            <div className='flex min-w-0 items-center gap-0.5'>
-              <Star size={10} className='shrink-0 fill-amber-400 text-amber-400' />
-              <span className='text-[10px] font-semibold text-gray-700'>{factory.rating}</span>
-              <span className='truncate text-[9px] text-gray-400'>({factory.reviews})</span>
-            </div>
-            <span className='shrink-0 text-[9px] text-gray-400'>ขั้นต่ำ {item.minOrder ?? 0}</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    />
   );
 
   return (
@@ -203,7 +175,7 @@ export function FactoryProfileTabContent({
             ) : (
               <div className='grid grid-cols-2 gap-2 lg:grid-cols-4 2xl:grid-cols-5 lg:gap-2.5'>
                 {productItems.map((item) => (
-                  <ShowcaseGridCard
+                  <ProfileShowcaseCard
                     key={item.id}
                     item={item}
                     onClick={() => onProductClick(item.id)}
@@ -225,7 +197,7 @@ export function FactoryProfileTabContent({
             ) : (
               <div className='grid grid-cols-2 gap-2 lg:grid-cols-4 2xl:grid-cols-5 lg:gap-2.5'>
                 {materialItems.map((item) => (
-                  <ShowcaseGridCard
+                  <ProfileShowcaseCard
                     key={item.id}
                     item={item}
                     onClick={() => onProductClick(item.id)}

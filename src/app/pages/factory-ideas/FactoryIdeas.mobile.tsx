@@ -34,6 +34,7 @@ import {
   factoryIdeasVisibleContentTypes,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { ShowcaseCard, VerifiedBadgeNode } from '@/components/shared/ShowcaseCard';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import { FactoryIdeasSearchBar } from '@/components/features/factory-ideas/FactoryIdeasSearchBar';
 import { FactoryIdeasMoqFilterChip } from '@/components/features/factory-ideas/FactoryIdeasMoqFilterChip';
@@ -327,55 +328,25 @@ export function FactoryIdeasMobile() {
             ) : (
               <div className='grid grid-cols-2 gap-2 md:grid-cols-3'>
                 {visibleFactories.map((factory) => (
-                  <article
+                  <ShowcaseCard
                     key={factory.id}
-                    className='group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-all active:scale-[0.98] hover:border-brand-purple/20'
+                    image={factory.image}
+                    title={factory.name}
+                    location={(factory.provinceName ?? factory.location).trim()}
+                    rating={factory.rating}
+                    reviewsCount={factory.reviews}
+                    moqLabel={`ขั้นต่ำ ${factory.minOrder} ${resolveUnitLabel(undefined, factory.minOrderUnit)}`}
+                    badgeNode={
+                      factory.verified ? (
+                        <VerifiedBadgeNode
+                          icon={
+                            <BadgeCheck className='h-2.5 w-2.5 shrink-0 text-[var(--brand-purple)]' />
+                          }
+                        />
+                      ) : undefined
+                    }
                     onClick={() => navigate(`/factories/${factory.id}`)}
-                  >
-                    <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
-                      <ImageWithFallback
-                        src={factory.image}
-                        alt={factory.name}
-                        className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
-                      />
-                      {factory.verified ? (
-                        <div className='absolute left-1 top-1 z-[1] flex items-center gap-0.5 rounded-full bg-white/90 px-1.5 py-0.5 backdrop-blur-sm'>
-                          <BadgeCheck className='h-2.5 w-2.5 shrink-0 text-[var(--brand-purple)]' />
-                          <span className='text-[8px] font-medium text-[var(--brand-purple)]'>
-                            ยืนยัน
-                          </span>
-                        </div>
-                      ) : null}
-                    </div>
-
-                    <div className='flex flex-1 flex-col justify-between gap-0.5 p-2'>
-                      <p className='mb-0.5 truncate text-xs font-medium leading-tight text-gray-700 transition-colors group-hover:text-brand-purple'>
-                        {factory.name}
-                      </p>
-                      <div className='flex items-center gap-0.5'>
-                        <MapPin className='h-2.5 w-2.5 shrink-0 text-gray-400' />
-                        <span className='truncate text-[10px] text-gray-500'>
-                          {(factory.provinceName ?? factory.location).trim() || '—'}
-                        </span>
-                      </div>
-
-                      <div className='mt-auto border-t border-gray-50 pt-1'>
-                        <div className='flex min-w-0 items-center justify-between'>
-                          <div className='flex shrink-0 items-center gap-0.5'>
-                            <Star className='h-2.5 w-2.5 shrink-0 fill-amber-400 text-amber-400' />
-                            <span className='text-[10px] font-semibold text-gray-700'>
-                              {factory.rating}
-                            </span>
-                            <span className='text-[9px] text-gray-400'>({factory.reviews})</span>
-                          </div>
-                          <span className='shrink-0 text-[8px] text-gray-400'>
-                            ขั้นต่ำ {factory.minOrder}{' '}
-                            {resolveUnitLabel(undefined, factory.minOrderUnit)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </article>
+                  />
                 ))}
               </div>
             )}

@@ -1,8 +1,4 @@
-import type { CSSProperties } from 'react';
-import { MapPin, Star } from 'lucide-react';
-import { cn } from '@lib/utils';
-import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
+import { ShowcaseCard } from '@/components/shared/ShowcaseCard';
 import {
   factoryIdeasContentTypeBadge,
   factoryIdeasContentTypeLabel,
@@ -46,6 +42,7 @@ type HubHighlightGridCardProps = {
   className?: string;
 };
 
+/** Wrapper ของ ShowcaseCard สำหรับ IHubShowcaseItem — layout จริงอยู่ที่ shared/ShowcaseCard */
 export function HubHighlightGridCard({
   item,
   rank,
@@ -54,82 +51,38 @@ export function HubHighlightGridCard({
   onClick,
   className,
 }: HubHighlightGridCardProps) {
-  const imageSrc = resolveShowcaseImage(item);
   const contentType = resolveContentType(item.content_type ?? '');
-  const badgeColor = factoryIdeasContentTypeBadge[contentType];
   const showRank = rank != null && rank >= 1 && rank <= 10;
-  const location = (item.factory_name ?? '').trim() || '—';
-  const rating = item.factory_rating ?? 0;
   const moq = item.moq != null && item.moq > 0 ? item.moq : null;
   const unit = (item.unit_name_th ?? '').trim();
 
   return (
-    <article
-      className={cn(
-        'group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-all active:scale-[0.98] hover:border-brand-purple/20',
-        className,
-      )}
-      onClick={onClick}
-    >
-      <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
-        {imageSrc ? (
-          <ImageWithFallback
-            src={imageSrc}
-            alt={item.title}
-            className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
-          />
-        ) : (
-          <div className='flex h-full w-full items-center justify-center text-2xl font-bold text-brand-purple/30'>
-            {(item.factory_name || 'T').slice(0, 1)}
-          </div>
-        )}
-
-        {showRank ? (
+    <ShowcaseCard
+      image={resolveShowcaseImage(item)}
+      imageFallbackChar={item.factory_name || 'T'}
+      title={item.title}
+      location={item.factory_name ?? ''}
+      rating={item.factory_rating ?? 0}
+      moqLabel={
+        moq != null
+          ? `ขั้นต่ำ ${moq.toLocaleString('th-TH')}${unit ? ` ${unit}` : ''}`
+          : 'สอบถามขั้นต่ำ'
+      }
+      badge={{
+        label: factoryIdeasContentTypeLabel[contentType],
+        color: factoryIdeasContentTypeBadge[contentType],
+      }}
+      heart={{ showcaseId: item.showcase_id, isLiked, onToggle: onToggleFavorite }}
+      imageOverlay={
+        showRank ? (
           <span className='pointer-events-none absolute bottom-0.5 left-1.5 z-[2] text-[22px] font-black italic leading-none tracking-tight text-brand-purple lg:text-[24px]'>
             {rank}
           </span>
-        ) : null}
-
-        <span
-          className='absolute left-1 top-1 z-[1] rounded-full bg-[var(--factory-idea-badge)] px-1.5 py-0.5 text-[8px] font-bold text-white'
-          style={{ '--factory-idea-badge': badgeColor } as CSSProperties}
-        >
-          {factoryIdeasContentTypeLabel[contentType]}
-        </span>
-
-        <ShowcaseHeartButton
-          showcaseId={item.showcase_id}
-          isLiked={isLiked}
-          onToggle={onToggleFavorite}
-          className='absolute right-1 top-1 z-[1]'
-        />
-      </div>
-
-      <div className='flex flex-1 flex-col justify-between gap-0.5 p-2'>
-        <h3 className='mb-0.5 truncate text-xs font-medium leading-tight text-gray-700 transition-colors group-hover:text-brand-purple'>
-          {item.title}
-        </h3>
-
-        <div className='mt-0.5 flex items-center gap-0.5'>
-          <MapPin className='h-2.5 w-2.5 shrink-0 text-gray-400' />
-          <span className='truncate text-[10px] text-gray-500'>{location}</span>
-        </div>
-
-        <div className='mt-auto border-t border-gray-50 pt-1'>
-          <div className='flex min-w-0 items-center justify-between'>
-            <div className='flex min-w-0 items-center gap-0.5'>
-              <Star className='h-2.5 w-2.5 shrink-0 fill-amber-400 text-amber-400' />
-              <span className='text-[10px] font-semibold text-gray-700'>{rating}</span>
-            </div>
-            <span className='shrink-0 text-[8px] text-gray-400'>
-              {moq != null
-                ? `ขั้นต่ำ ${moq.toLocaleString('th-TH')}${unit ? ` ${unit}` : ''}`
-                : 'สอบถามขั้นต่ำ'}
-            </span>
-          </div>
-        </div>
-      </div>
-    </article>
+        ) : undefined
+      }
+      onClick={onClick}
+      className={className}
+    />
   );
 }
 

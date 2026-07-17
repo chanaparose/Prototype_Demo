@@ -23,6 +23,7 @@ import {
   Star,
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { ShowcaseCard } from '@/components/shared/ShowcaseCard';
 import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
 import { ReviewPreviewSection } from '@/components/features/reviews/ReviewPreviewSection';
 import {
@@ -525,58 +526,21 @@ export function ProductDetailMobile() {
                 const province = (rf?.provinceName ?? rf?.location ?? rp.location ?? '').trim();
                 const isPromo = rp.contentType === 'promotion';
                 return (
-                  <Button
-                    variant='unstyled'
+                  <ShowcaseCard
                     key={rp.id}
-                    type='button'
+                    image={rp.image}
+                    title={rp.title}
+                    location={province}
+                    rating={rating}
+                    reviewsCount={reviews}
+                    moqLabel={`ขั้นต่ำ ${rp.minOrder}`}
+                    badge={{ label: isPromo ? 'โปรโมชัน' : 'สินค้า', color: BRAND.orange }}
                     onClick={() =>
                       navigate(
                         `/${isPromo ? 'promotion-detail' : 'product-detail'}?showcase_id=${rp.id}`,
                       )
                     }
-                    className='bg-white rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:border-gray-300 transition-all group flex flex-col h-full w-full text-left active:scale-[0.98]'
-                  >
-                    <div className='relative aspect-[4/3] overflow-hidden bg-gray-100 shrink-0'>
-                      <ImageWithFallback
-                        src={rp.image}
-                        alt={rp.title}
-                        className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                      />
-                      <span
-                        className='absolute top-1 left-1 z-[1] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white'
-                        style={{ backgroundColor: BRAND.orange }}
-                      >
-                        {isPromo ? 'โปรโมชัน' : 'สินค้า'}
-                      </span>
-                    </div>
-                    <div className='p-2 flex flex-col flex-1 justify-between gap-0.5 min-w-0'>
-                      <div>
-                        <h3 className='mb-0.5 truncate text-xs font-medium leading-tight text-gray-700 transition-colors group-hover:text-brand-purple'>
-                          {rp.title}
-                        </h3>
-                        <div className='mt-0.5 flex items-center gap-0.5'>
-                          <MapPin className='h-2.5 w-2.5 shrink-0 text-gray-400' />
-                          <span className='truncate text-[10px] text-gray-500'>
-                            {province || '—'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className='mt-auto pt-1 border-t border-gray-50'>
-                        <div className='flex items-center justify-between min-w-0'>
-                          <div className='flex items-center gap-0.5 min-w-0'>
-                            <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                            <span className='text-[10px] font-semibold text-gray-700'>
-                              {rating}
-                            </span>
-                            <span className='truncate text-[10px] text-gray-400'>({reviews})</span>
-                          </div>
-                          <span className='shrink-0 text-[8px] text-gray-400'>
-                            ขั้นต่ำ {rp.minOrder}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </Button>
+                  />
                 );
               })}
             </div>

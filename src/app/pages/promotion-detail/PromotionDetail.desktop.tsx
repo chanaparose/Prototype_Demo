@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { ShowcaseCard } from '@/components/shared/ShowcaseCard';
 import { usePromotionDetailShowcase } from '@/hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
@@ -538,60 +539,21 @@ export function PromotionDetailDesktop() {
                 const reviews = Number(rf?.reviews ?? 0);
                 const isPromo = rp.contentType === 'promotion';
                 return (
-                  <Button
-                    variant='unstyled'
+                  <ShowcaseCard
                     key={rp.id}
-                    type='button'
+                    image={rp.image}
+                    title={rp.title}
+                    location={(rf?.provinceName ?? rf?.location ?? '').trim()}
+                    rating={rating}
+                    reviewsCount={reviews}
+                    moqLabel={`ขั้นต่ำ ${rp.minOrder}`}
+                    badge={{ label: isPromo ? 'โปรโมชัน' : 'สินค้า', color: BRAND.orange }}
                     onClick={() =>
                       navigate(
                         `/${isPromo ? 'promotion-detail' : 'product-detail'}?showcase_id=${rp.id}`,
                       )
                     }
-                    className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col w-full text-left'
-                  >
-                    <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
-                      <ImageWithFallback
-                        src={rp.image}
-                        alt={rp.title}
-                        className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
-                      />
-                      <span
-                        className='absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white'
-                        style={{
-                          backgroundColor: BRAND.orange,
-                        }}
-                      >
-                        {isPromo ? 'โปรโมชัน' : 'สินค้า'}
-                      </span>
-                    </div>
-                    <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                      <div>
-                        <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                          {rp.title}
-                        </p>
-                        <div className='flex items-center gap-0.5 mt-0.5'>
-                          <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                          <span className='text-gray-500 text-[10px] truncate'>
-                            {(rf?.provinceName ?? rf?.location ?? '').trim() || '—'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className='mt-auto pt-1 border-t border-gray-50'>
-                        <div className='flex items-center justify-between min-w-0'>
-                          <div className='flex items-center gap-0.5 min-w-0'>
-                            <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                            <span className='text-gray-700 text-[10px] font-semibold'>
-                              {rating}
-                            </span>
-                            <span className='text-gray-400 text-[9px] truncate'>({reviews})</span>
-                          </div>
-                          <span className='text-gray-400 text-[8px] shrink-0'>
-                            ขั้นต่ำ {rp.minOrder}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </Button>
+                  />
                 );
               })}
             </div>
