@@ -43,6 +43,8 @@ function mapRowToExploreShowcase(row: IExploreShowcaseResponse): IExploreShowcas
     ...(s.unitId != null && s.unitId > 0 ? { unitId: s.unitId } : {}),
     ...(s.moqUnit ? { moqUnit: s.moqUnit } : {}),
     leadTime: s.leadTime,
+    ...(s.basePrice != null ? { basePrice: s.basePrice } : {}),
+    ...(s.promoPrice != null ? { promoPrice: s.promoPrice } : {}),
     tags: s.tags,
     ...(s.factoryRating != null ? { factoryRating: s.factoryRating } : {}),
     ...(pickScalarString(s.location) !== '' ? { location: pickScalarString(s.location) } : {}),

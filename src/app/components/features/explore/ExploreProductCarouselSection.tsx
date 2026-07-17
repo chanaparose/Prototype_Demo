@@ -132,8 +132,8 @@ export function ExploreProductCarouselSection({
                         <ShowcaseCard
                           image={product.img}
                           title={product.title}
+                          priceLabel={product.price || undefined}
                           location={locationLabel}
-                          rating={product.factoryRating ?? 0}
                           moqLabel={`ขั้นต่ำ ${product.minOrder ?? 0} ${product.minOrderUnit ?? ''}`.trim()}
                           badge={{
                             label: isMaterial ? 'วัตถุดิบ' : 'สินค้า',

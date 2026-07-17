@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { cn } from '@lib/utils';
 import { ShowcaseCard } from '@/components/shared/ShowcaseCard';
+import { resolvePriceLabel } from '@/components/features/factory-ideas/ShowcaseGridCard';
 import { ReviewPreviewSection } from '@/components/features/reviews/ReviewPreviewSection';
 import { normalizeFactoryReview } from '@/components/features/reviews/reviewBrowseUtils';
 import { formatThaiDate } from '@/components/features/factory-profile/utils';
@@ -113,9 +114,8 @@ export function FactoryProfileTabContent({
     <ShowcaseCard
       image={item.image}
       title={item.title}
+      priceLabel={resolvePriceLabel(item)}
       location={factory.location}
-      rating={factory.rating}
-      reviewsCount={factory.reviews}
       moqLabel={`ขั้นต่ำ ${item.minOrder ?? 0}`}
       badge={{ label: badgeLabel, color: badgeColor }}
       onClick={onClick}

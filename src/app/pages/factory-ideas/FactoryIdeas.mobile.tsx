@@ -35,6 +35,7 @@ import {
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseCard, VerifiedBadgeNode } from '@/components/shared/ShowcaseCard';
+import { ShowcaseGridCard } from '@/components/features/factory-ideas/ShowcaseGridCard';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import { FactoryIdeasSearchBar } from '@/components/features/factory-ideas/FactoryIdeasSearchBar';
 import { FactoryIdeasMoqFilterChip } from '@/components/features/factory-ideas/FactoryIdeasMoqFilterChip';
@@ -334,8 +335,6 @@ export function FactoryIdeasMobile() {
                     image={factory.image}
                     title={factory.name}
                     location={(factory.provinceName ?? factory.location).trim()}
-                    rating={factory.rating}
-                    reviewsCount={factory.reviews}
                     moqLabel={`ขั้นต่ำ ${factory.minOrder} ${resolveUnitLabel(undefined, factory.minOrderUnit)}`}
                     badgeNode={
                       factory.verified ? (
@@ -366,65 +365,15 @@ export function FactoryIdeasMobile() {
           </div>
         ) : viewMode === 'grid' ? (
           <div className='grid grid-cols-2 md:grid-cols-3 gap-2'>
-            {visibleItems.map((item) => {
-              const factory = data.factories.find((f) => f.id === item.factoryId);
-              const badgeColor = contentTypeBadge[item.contentType];
-              return (
-                <article
-                  key={item.id}
-                  className='group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-100 bg-white transition-all active:scale-[0.98] hover:border-brand-purple/20'
-                  onClick={() => navigate(getDetailPath(item.contentType, item.id))}
-                >
-                  <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
-                    <ImageWithFallback
-                      src={item.image}
-                      alt={item.title}
-                      className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                    />
-                    <span
-                      className='absolute left-1 top-1 z-[1] rounded-full bg-[var(--factory-idea-badge)] px-1.5 py-0.5 text-[8px] font-bold text-white'
-                      style={{ '--factory-idea-badge': badgeColor } as React.CSSProperties}
-                    >
-                      {contentTypeLabel[item.contentType]}
-                    </span>
-                    <ShowcaseHeartButton
-                      showcaseId={item.id}
-                      isLiked={isLiked(item.id)}
-                      onToggle={toggleFavorite}
-                      className='absolute top-1 right-1 z-[1]'
-                    />
-                  </div>
-
-                  <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                    <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                      {item.title}
-                    </h3>
-
-                    <div className='flex items-center gap-0.5 mt-0.5'>
-                      <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                      <span className='text-gray-500 text-[10px] truncate'>
-                        {(item.location ?? '').trim() || '—'}
-                      </span>
-                    </div>
-
-                    <div className='mt-auto pt-1 border-t border-gray-50'>
-                      <div className='flex items-center justify-between min-w-0'>
-                        <div className='flex items-center gap-0.5 min-w-0'>
-                          <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                          <span className='text-gray-700 text-[10px] font-semibold'>
-                            {item.factoryRating ?? 0}
-                          </span>
-                        </div>
-                        <span className='text-gray-400 text-[8px] shrink-0'>
-                          ขั้นต่ำ {item.minOrder}{' '}
-                          {resolveUnitLabel(item.unitId, item.moqUnit)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+            {visibleItems.map((item) => (
+              <ShowcaseGridCard
+                key={item.id}
+                item={item}
+                isLiked={isLiked(item.id)}
+                onToggleFavorite={toggleFavorite}
+                onClick={() => navigate(getDetailPath(item.contentType, item.id))}
+              />
+            ))}
           </div>
         ) : (
           <div className='space-y-3'>

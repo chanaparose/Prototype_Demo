@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseCard } from '@/components/shared/ShowcaseCard';
+import { resolvePriceLabel } from '@/components/features/factory-ideas/ShowcaseGridCard';
 import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
 import { ReviewPreviewSection } from '@/components/features/reviews/ReviewPreviewSection';
 import {
@@ -530,9 +531,8 @@ export function ProductDetailMobile() {
                     key={rp.id}
                     image={rp.image}
                     title={rp.title}
+                    priceLabel={resolvePriceLabel(rp)}
                     location={province}
-                    rating={rating}
-                    reviewsCount={reviews}
                     moqLabel={`ขั้นต่ำ ${rp.minOrder}`}
                     badge={{ label: isPromo ? 'โปรโมชัน' : 'สินค้า', color: BRAND.orange }}
                     onClick={() =>

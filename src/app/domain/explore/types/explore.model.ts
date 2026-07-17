@@ -25,6 +25,8 @@ export type IExploreShowcase = {
   unitId?: number;
   moqUnit?: string;
   leadTime: string;
+  basePrice?: number;
+  promoPrice?: number;
   tags: string[];
   factoryRating?: number;
   /** จังหวัดจาก API (province_name) — แสดงบนการ์ดเหมือน /factory-ideas */

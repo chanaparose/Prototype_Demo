@@ -11,6 +11,7 @@ import { useExploreHubFilteredContent } from '@/components/features/explore/useE
 import { useExploreHubSelection } from '@/components/features/explore/useExploreHubSelection';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseCard } from '@/components/shared/ShowcaseCard';
+import { resolvePriceLabel } from '@/components/features/factory-ideas/ShowcaseGridCard';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import { ExploreFactoryRegisterCta } from '@/components/features/explore/ExploreFactoryRegisterCta';
@@ -136,8 +137,8 @@ export function ExploreMobile({
                   key={item.id}
                   image={item.image}
                   title={item.title}
+                  priceLabel={resolvePriceLabel(item)}
                   location={item.location ?? ''}
-                  rating={item.factoryRating ?? 0}
                   moqLabel={`ขั้นต่ำ ${item.minOrder ?? 0} ${resolveUnitLabel(item.unitId, item.moqUnit)}`}
                   badge={{ label: 'สินค้า', color: 'var(--brand-orange)' }}
                   heart={{ showcaseId: item.id, isLiked: isLiked(item.id), onToggle: toggleFavorite }}
@@ -213,8 +214,8 @@ export function ExploreMobile({
                   key={item.id}
                   image={item.image}
                   title={item.title}
+                  priceLabel={resolvePriceLabel(item)}
                   location={item.location ?? ''}
-                  rating={item.factoryRating ?? 0}
                   moqLabel={`ขั้นต่ำ ${item.minOrder ?? 0} ${resolveUnitLabel(item.unitId, item.moqUnit)}`}
                   badge={{ label: 'วัตถุดิบ', color: 'var(--status-success)' }}
                   heart={{ showcaseId: item.id, isLiked: isLiked(item.id), onToggle: toggleFavorite }}

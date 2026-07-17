@@ -16,6 +16,7 @@ import { ExploreFactoryRegisterCta } from '@/components/features/explore/Explore
 import type { IExploreShowcase } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
+import { resolvePriceLabel } from '@/components/features/factory-ideas/ShowcaseGridCard';
 import {
   ProductCardSkeleton,
   FactoryCarouselCardSkeleton,
@@ -73,7 +74,7 @@ export function ExploreDesktop({
       (activeScope === 'PD' ? scopedShowcases : []).map((s) => ({
         id: s.id,
         title: s.title,
-        price: `MOQ ${s.minOrder}`,
+        price: resolvePriceLabel(s) ?? '',
         img: s.image,
         category: s.category,
         subCategoryName: s.subCategoryName,
@@ -92,7 +93,7 @@ export function ExploreDesktop({
       (activeScope === 'MT' ? scopedShowcases : []).map((s) => ({
         id: s.id,
         title: s.title,
-        price: `MOQ ${s.minOrder}`,
+        price: resolvePriceLabel(s) ?? '',
         img: s.image,
         category: s.category,
         subCategoryName: s.subCategoryName,

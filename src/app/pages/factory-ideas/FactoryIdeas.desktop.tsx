@@ -438,8 +438,6 @@ export function FactoryIdeasDesktop() {
                 image={factory.image}
                 title={factory.name}
                 location={(factory.provinceName ?? factory.location).trim()}
-                rating={factory.rating}
-                reviewsCount={factory.reviews}
                 moqLabel={`ขั้นต่ำ ${factory.minOrder} ${resolveUnitLabel(undefined, factory.minOrderUnit)}`}
                 badgeNode={
                   factory.verified ? (

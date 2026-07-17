@@ -5,7 +5,22 @@ import {
   factoryIdeasContentTypeLabel as contentTypeLabel,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
+import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import type { FactoryShowcase } from '@/stores/types';
+
+/** ราคาแสดงบนการ์ด: โปรโมชันก่อน → ราคาปกติ → ช่วงราคา (string) → ไม่แสดง */
+function resolvePriceLabel(item: {
+  promoPrice?: number;
+  basePrice?: number;
+  priceRange?: string;
+}): string | undefined {
+  const n = item.promoPrice ?? item.basePrice;
+  if (n != null && Number.isFinite(n) && n > 0) return formatCurrencyNoDecimals(n);
+  const range = (item.priceRange ?? '').trim();
+  return range || undefined;
+}
+
+export { resolvePriceLabel };
 
 type ShowcaseGridCardProps = {
   item: FactoryShowcase;
@@ -25,8 +40,8 @@ export function ShowcaseGridCard({
     <ShowcaseCard
       image={item.image}
       title={item.title}
+      priceLabel={resolvePriceLabel(item)}
       location={item.location ?? ''}
-      rating={item.factoryRating ?? 0}
       moqLabel={`ขั้นต่ำ ${item.minOrder} ${resolveUnitLabel(item.unitId, item.moqUnit)}`}
       badge={{
         label: contentTypeLabel[item.contentType],

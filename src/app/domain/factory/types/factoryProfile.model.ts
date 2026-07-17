@@ -5,6 +5,9 @@ export type IFactoryProfileShowcase = {
   excerpt: string;
   image: string;
   minOrder?: number;
+  basePrice?: number;
+  promoPrice?: number;
+  priceRange?: string;
   leadTime?: string;
   postedAt?: string;
 };

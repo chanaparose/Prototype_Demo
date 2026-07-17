@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Star } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { cn } from '@lib/utils';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
@@ -7,8 +7,12 @@ import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 /**
  * ShowcaseCard — การ์ดสินค้า/วัตถุดิบ/โรงงาน (PD card) มาตรฐานเดียวทั้งแอป
  *
- * โครงสร้าง: รูป 4:3 (badge ซ้ายบน / heart ขวาบน / overlay อิสระ)
- * + ชื่อ + ที่ตั้ง (MapPin) + แถวล่าง (Star rating (+reviews) | ป้าย MOQ)
+ * โครงสร้าง (ตาม marketplace layout):
+ *   รูป 4:3 (badge ซ้ายบน / heart ขวาบน / overlay อิสระ)
+ *   ชื่อ (สูงสุด 2 บรรทัด)
+ *   ราคา (ซ้าย, เน้นสีส้ม) | MOQ (ขวา)
+ *   ─────────────
+ *   ที่ตั้ง (MapPin)
  *
  * ใช้ plain props เพื่อให้ทุก data shape (FactoryShowcase, IHubShowcaseItem,
  * factory row ฯลฯ) map เข้ามาได้ — แก้หน้าตา card ที่ไฟล์นี้ไฟล์เดียว
@@ -18,12 +22,11 @@ import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 export type ShowcaseCardProps = {
   image: string;
   title: string;
-  /** ที่ตั้ง/ชื่อโรงงาน ใต้ชื่อการ์ด — ค่าว่างจะแสดง '—' */
+  /** ราคา format มาแล้ว เช่น "฿552" — ไม่ระบุ = ไม่แสดง (เช่นการ์ดโรงงาน) */
+  priceLabel?: string;
+  /** ที่ตั้ง/จังหวัด/ชื่อโรงงาน แถวล่างสุด — ค่าว่างจะแสดง '—' */
   location?: string;
-  rating?: number | string;
-  /** จำนวนรีวิว — แสดงเป็น "(n)" ต่อท้าย rating เมื่อระบุ */
-  reviewsCount?: number | string;
-  /** ป้ายมุมขวาล่าง format มาแล้ว เช่น "ขั้นต่ำ 100 ชิ้น" / "สอบถามขั้นต่ำ" */
+  /** ป้าย MOQ format มาแล้ว เช่น "ขั้นต่ำ 100 ชิ้น" / "สอบถามขั้นต่ำ" */
   moqLabel: string;
   /** ป้ายมุมซ้ายบนแบบมาตรฐาน (pill สีทึบ ตัวอักษรขาว) */
   badge?: { label: string; color: string };
@@ -46,9 +49,8 @@ export type ShowcaseCardProps = {
 export function ShowcaseCard({
   image,
   title,
+  priceLabel,
   location,
-  rating,
-  reviewsCount,
   moqLabel,
   badge,
   badgeNode,
@@ -109,29 +111,29 @@ export function ShowcaseCard({
         {imageOverlay}
       </div>
 
-      <div className='flex min-w-0 flex-1 flex-col justify-between gap-0.5 p-2'>
-        <div className='min-w-0'>
-          <h3 className='mb-0.5 truncate text-xs font-medium leading-tight text-gray-700 transition-colors group-hover:text-brand-purple'>
-            {title}
-          </h3>
-          <div className='mt-0.5 flex items-center gap-0.5'>
+      <div className='flex min-w-0 flex-1 flex-col gap-0.5 p-2'>
+        <h3 className='line-clamp-2 text-xs font-medium leading-tight text-gray-700 transition-colors group-hover:text-brand-purple'>
+          {title}
+        </h3>
+
+        {/* ราคา (ซ้าย) | MOQ (ขวา) */}
+        <div className='mt-1 flex min-w-0 items-end justify-between gap-2'>
+          {priceLabel ? (
+            <span className='truncate text-sm font-bold leading-none text-brand-orange'>
+              {priceLabel}
+            </span>
+          ) : (
+            <span />
+          )}
+          <span className='shrink-0 text-[10px] text-gray-500'>{moqLabel}</span>
+        </div>
+
+        <div className='mt-auto border-t border-gray-50 pt-1'>
+          <div className='flex items-center gap-0.5'>
             <MapPin className='h-2.5 w-2.5 shrink-0 text-gray-400' />
             <span className='truncate text-[10px] text-gray-500'>
               {(location ?? '').trim() || '—'}
             </span>
-          </div>
-        </div>
-
-        <div className='mt-auto border-t border-gray-50 pt-1'>
-          <div className='flex min-w-0 items-center justify-between'>
-            <div className='flex min-w-0 items-center gap-0.5'>
-              <Star className='h-2.5 w-2.5 shrink-0 fill-amber-400 text-amber-400' />
-              <span className='text-[10px] font-semibold text-gray-700'>{rating ?? 0}</span>
-              {reviewsCount != null ? (
-                <span className='truncate text-[9px] text-gray-400'>({reviewsCount})</span>
-              ) : null}
-            </div>
-            <span className='shrink-0 text-[9px] text-gray-400'>{moqLabel}</span>
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { ShowcaseCard } from '@/components/shared/ShowcaseCard';
+import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import {
   factoryIdeasContentTypeBadge,
   factoryIdeasContentTypeLabel,
@@ -55,14 +56,15 @@ export function HubHighlightGridCard({
   const showRank = rank != null && rank >= 1 && rank <= 10;
   const moq = item.moq != null && item.moq > 0 ? item.moq : null;
   const unit = (item.unit_name_th ?? '').trim();
+  const price = resolvePrice(item);
 
   return (
     <ShowcaseCard
       image={resolveShowcaseImage(item)}
       imageFallbackChar={item.factory_name || 'T'}
       title={item.title}
+      priceLabel={price != null ? formatCurrencyNoDecimals(price) : undefined}
       location={item.factory_name ?? ''}
-      rating={item.factory_rating ?? 0}
       moqLabel={
         moq != null
           ? `ขั้นต่ำ ${moq.toLocaleString('th-TH')}${unit ? ` ${unit}` : ''}`

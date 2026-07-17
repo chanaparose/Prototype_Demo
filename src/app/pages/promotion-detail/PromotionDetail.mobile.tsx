@@ -24,6 +24,7 @@ import {
 
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseCard } from '@/components/shared/ShowcaseCard';
+import { resolvePriceLabel } from '@/components/features/factory-ideas/ShowcaseGridCard';
 import { usePromotionDetailShowcase } from '@/hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
@@ -522,9 +523,8 @@ export function PromotionDetailMobile() {
                     key={rp.id}
                     image={rp.image}
                     title={rp.title}
+                    priceLabel={resolvePriceLabel(rp)}
                     location={(rf?.provinceName ?? rf?.location ?? '').trim()}
-                    rating={rating}
-                    reviewsCount={reviews}
                     moqLabel={`ขั้นต่ำ ${rp.minOrder}`}
                     badge={{ label: isPromo ? 'โปรโมชัน' : 'สินค้า', color: BRAND.orange }}
                     onClick={() =>
