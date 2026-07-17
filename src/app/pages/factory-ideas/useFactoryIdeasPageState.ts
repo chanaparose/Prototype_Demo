@@ -128,7 +128,6 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   const apiFactoryScope = factoryScope === 'all' ? undefined : factoryScope;
   const factoriesQ = useFactoryIdeasFactoryListQuery(loadFactories, hubId ? undefined : apiFactoryScope, hubId);
   const factoryList = factoriesQ.data ?? [];
-  const factoriesLoading = factoriesQ.isLoading;
 
   const { effectiveCategoryId, applyCategory } = useFactoryIdeasCategorySelection(
     data.categories,
@@ -193,17 +192,31 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   const showcasesQ = useFactoryIdeasShowcasesPaginatedQuery(showcaseParams, !isFactoryTab);
   const pageShowcases = showcasesQ.data?.items ?? [];
   const totalShowcases = showcasesQ.data?.total ?? 0;
-  // Show skeleton only on the very first load (no cached data yet).
-  // Subsequent fetches (page change, tab switch) keep stale content visible
-  // thanks to placeholderData in the query hook.
-  const showcasesLoading = showcasesQ.isLoading && !showcasesQ.isPlaceholderData;
+
+  // Hub tag switch: force skeleton instead of keeping stale placeholder content.
+  const [trackedHubId, setTrackedHubId] = useState(hubId);
+  const [hubSwitchPending, setHubSwitchPending] = useState(false);
+  if (hubId !== trackedHubId) {
+    setTrackedHubId(hubId);
+    setHubSwitchPending(true);
+  }
+  useEffect(() => {
+    if (!hubSwitchPending) return;
+    const waiting = isFactoryTab ? factoriesQ.isFetching : showcasesQ.isFetching;
+    if (!waiting) setHubSwitchPending(false);
+  }, [hubSwitchPending, isFactoryTab, factoriesQ.isFetching, showcasesQ.isFetching]);
+
+  // Show skeleton on first load, or while switching hub tags.
+  const showcasesLoading =
+    hubSwitchPending || (showcasesQ.isLoading && !showcasesQ.isPlaceholderData);
   // Subtle indicator (opacity / progress bar) while background-refetching
   const showcasesFetching = showcasesQ.isFetching && !showcasesLoading;
+  const factoriesLoading = factoriesQ.isLoading || (hubSwitchPending && isFactoryTab);
 
   // Reset page to 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [selectedType, effectiveCategoryId, selectedSubCategoryId, debouncedSearchText, moqFilter]);
+  }, [selectedType, effectiveCategoryId, selectedSubCategoryId, debouncedSearchText, moqFilter, hubId]);
 
 
   const categoryFilters = useMemo(() => {
