@@ -33,6 +33,36 @@ export interface IHubResponse {
   categories: ICategoryForHubResponse[];
 }
 
+/** Showcase preview item from GET /hubs/showcases */
+export interface IHubShowcaseItem {
+  showcase_id: number;
+  factory_id: number;
+  content_type: string;
+  title: string;
+  factory_name: string;
+  factory_rating?: number;
+  factory_verified?: boolean;
+  factory_image_url?: string;
+  base_price?: number | null;
+  promo_price?: number | null;
+  linked_showcases?: string[];
+  likes_count?: number;
+  moq?: number;
+  unit_name_th?: string;
+}
+
+/** Hub + top showcases from GET /hubs/showcases */
+export interface IHubWithShowcases {
+  hub_id: number;
+  hub_name: string;
+  hub_img?: string | null;
+  showcases: IHubShowcaseItem[];
+}
+
+export interface IHubShowcasesResponse {
+  hubs: IHubWithShowcases[];
+}
+
 export interface ISubCategoryResponse {
   id?: number;
   sub_category_id?: number;

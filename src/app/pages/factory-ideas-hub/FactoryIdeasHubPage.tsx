@@ -10,29 +10,14 @@ import {
 import { PageHeader } from '@/components/ui/PageHeader';
 import { HubCard } from '@/components/features/hub/HubCard';
 import { HubSectionSkeleton } from '@/components/features/hub/HubSectionSkeleton';
+import { HubShowcasesFeed } from '@/components/features/hub/HubShowcasesFeed';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useFavorites } from '@/hooks/useFavorites';
 import type { IHubResponse } from '@/services/api/types/master.types';
 
 const HUB_SCOPE_ORDER: HubScope[] = ['PD', 'MT'];
-
-function ComingSoonStrip() {
-  return (
-    <div
-      className='pointer-events-none select-none rounded-2xl border border-gray-100 bg-white px-3.5 py-3 text-left'
-      aria-hidden
-    >
-      <div className='mb-1 flex flex-wrap items-center gap-2'>
-        <span className='text-[13px] font-semibold text-gray-600'>หมวดอื่นๆ</span>
-        <span className='rounded-md bg-[#EEEDFE] px-2 py-0.5 text-[9px] font-semibold text-brand-purple'>
-          เร็วๆ นี้
-        </span>
-      </div>
-      <p className='text-[11px] leading-relaxed text-gray-400'>กำลังเปิดให้บริการเร็วๆ นี้</p>
-    </div>
-  );
-}
 
 function filterHubs(hubs: IHubResponse[], search: string): IHubResponse[] {
   if (!search.trim()) return hubs;
@@ -121,6 +106,7 @@ function HubSection({
 export function FactoryIdeasHubPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const { isLiked, toggleFavorite } = useFavorites();
 
   const hubsQ = useLbiHubsQuery();
   const allHubs = hubsQ.data ?? [];
@@ -189,7 +175,11 @@ export function FactoryIdeasHubPage() {
           ))
         : null}
 
-        
+      <HubShowcasesFeed
+        search={search}
+        isLiked={isLiked}
+        onToggleFavorite={(id) => void toggleFavorite(id)}
+      />
     </div>
   );
 

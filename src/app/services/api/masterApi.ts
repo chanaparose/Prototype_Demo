@@ -3,6 +3,7 @@ import type {
   ICategoryResponse,
   ICertificationResponse,
   IHubResponse,
+  IHubShowcasesResponse,
   IMaterialResponse,
   IShippingMethodResponse,
   ISubCategoryResponse,
@@ -48,6 +49,16 @@ export function getLbiCategoriesByHub(hubId: number) {
 export function getLbiHubs(scope?: 'PD' | 'MT') {
   const params = scope ? `?scope=${scope}` : '';
   return httpClient.get<{ hubs: IHubResponse[] }>(`/lbi/hubs${params}`);
+}
+
+/** GET /hubs/showcases — all hubs with top showcases (feed preview). */
+export function getHubShowcases(limit = 4) {
+  return httpClient.get<IHubShowcasesResponse>(`/hubs/showcases?limit=${limit}`);
+}
+
+/** GET /hubs/:hub_id/showcases — single hub with its showcases. */
+export function getHubShowcasesById(hubId: number, limit = 8) {
+  return httpClient.get<IHubShowcasesResponse>(`/hubs/${hubId}/showcases?limit=${limit}`);
 }
 
 export function getLbiSubCategories(scope: 'PD' | 'MT' | 'ALL' = 'ALL') {
