@@ -18,7 +18,7 @@ export type HubFilterOption = {
   hub_name: string;
 };
 
-function resolveHubIcon(name: string): LucideIcon {
+export function resolveHubIcon(name: string): LucideIcon {
   const n = name.toLowerCase();
   if (/อาหาร|เครื่องดื่ม|food|beverage/.test(n)) return Utensils;
   if (/ความงาม|สกิน|beauty|cosmetic|skincare/.test(n)) return Sparkles;

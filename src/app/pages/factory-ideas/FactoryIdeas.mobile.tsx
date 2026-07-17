@@ -103,10 +103,11 @@ export function FactoryIdeasMobile() {
     hubId,
   } = useFactoryIdeasPageState({ layout: 'mobile' });
 
-  const handleHubChange = (newHubId: number, scope: 'PD' | 'MT' | undefined) => {
+  const handleHubChange = (newHubId: number | null, scope: 'PD' | 'MT' | undefined) => {
     setSearchParams((prev) => {
       const p = new URLSearchParams(prev);
-      p.set('hub_id', String(newHubId));
+      if (newHubId == null) p.delete('hub_id');
+      else p.set('hub_id', String(newHubId));
       if (scope) p.set('hub_scope', scope);
       else p.delete('hub_scope');
       p.delete('category_id');

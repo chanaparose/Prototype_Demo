@@ -197,7 +197,7 @@ export function FactoryIdeasHubPage() {
           />
         </div>
 
-        <main className={`flex-1 px-4 pt-5 ${factoryIdeasContentSurfaceClass}`}>{content}</main>
+        <main className={`flex-1 px-4 ${factoryIdeasContentSurfaceClass}`}>{content}</main>
       </div>
 
       <div className='hidden min-h-[100dvh] flex-col bg-[var(--brand-page)] pb-8 lg:flex'>
