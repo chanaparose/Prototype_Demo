@@ -12,7 +12,7 @@ function decodeCategoryParam(raw: string): string {
 }
 
 /**
- * URL เป็น single source of truth สำหรับ category ที่เลือก
+ * URL เป็น single source of truth สำหรับ category / sub-category ที่เลือก
  *
  * - ไม่มี useState แยก — อ่าน/เขียนผ่าน searchParams โดยตรง
  * - ไม่มี useEffect ที่ sync state ⟵ แก้ race-condition ที่ dropdown
@@ -33,6 +33,13 @@ export function useFactoryIdeasCategorySelection(
   /** ถ้า URL มี category_id ใช้ค่านั้น ไม่งั้นแสดงทุกหมวด */
   const effectiveCategoryId = categoryIdFromUrl !== '' ? categoryIdFromUrl : 'all';
 
+  /** sub-category id จาก ?sub_category_id= — null ถ้าไม่มี */
+  const selectedSubCategoryId = useMemo(() => {
+    const raw =
+      searchParams.get('sub_category_id') ?? searchParams.get('subCategoryId') ?? '';
+    return raw === '' ? null : decodeCategoryParam(raw);
+  }, [searchParams]);
+
   const applyCategory = useCallback(
     (catId: string) => {
       setSearchParams(
@@ -47,6 +54,59 @@ export function useFactoryIdeasCategorySelection(
             next.delete('categoryId');
             next.delete('category');
           }
+          // Changing category clears sub-filter
+          next.delete('sub_category_id');
+          next.delete('subCategoryId');
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
+  const setSelectedSubCategoryId = useCallback(
+    (subId: string | null) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (subId) {
+            next.set('sub_category_id', subId);
+            next.delete('subCategoryId');
+          } else {
+            next.delete('sub_category_id');
+            next.delete('subCategoryId');
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
+  /** Set category + sub in one URL update (avoids race when picking a sub under a new category). */
+  const applyCategoryAndSub = useCallback(
+    (catId: string, subId: string | null) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (catId === 'all') {
+            next.delete('category_id');
+            next.delete('categoryId');
+            next.delete('category');
+          } else {
+            next.set('category_id', catId);
+            next.delete('categoryId');
+            next.delete('category');
+          }
+          if (subId) {
+            next.set('sub_category_id', subId);
+            next.delete('subCategoryId');
+          } else {
+            next.delete('sub_category_id');
+            next.delete('subCategoryId');
+          }
           return next;
         },
         { replace: true },
@@ -59,6 +119,9 @@ export function useFactoryIdeasCategorySelection(
     selectedCategory: effectiveCategoryId,
     effectiveCategoryId,
     applyCategory,
+    applyCategoryAndSub,
     categoryIdFromUrl,
+    selectedSubCategoryId,
+    setSelectedSubCategoryId,
   };
 }

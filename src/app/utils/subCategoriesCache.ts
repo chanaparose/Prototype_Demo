@@ -16,7 +16,8 @@ export function mapSubCategoryRows(raw: unknown): SubCategoryRow[] {
       name: String(r.name ?? ''),
       sortOrder: Number(r.sort_order ?? 0),
     }))
-    .filter((r) => r.id && r.name)
+    // sort_order 99 = sentinel "ทั้งหมด" — hide from browse / filter UIs
+    .filter((r) => r.id && r.name && r.sortOrder !== 99)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 

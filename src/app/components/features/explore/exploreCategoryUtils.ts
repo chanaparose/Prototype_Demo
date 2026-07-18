@@ -82,3 +82,22 @@ export function buildFactoryIdeasCategoryUrl(item: ExploreCategoryItem): string 
   });
   return `/factory-ideas?${params.toString()}`;
 }
+
+/** Navigate to factory-ideas filtered by category + sub-category. */
+export function buildFactoryIdeasSubCategoryUrl(opts: {
+  categoryId: number;
+  subCategoryId: number;
+  scope: HubScope;
+  hubId?: number | null;
+}): string {
+  const params = new URLSearchParams({
+    category_id: String(opts.categoryId),
+    sub_category_id: String(opts.subCategoryId),
+    hub_scope: opts.scope,
+    type: opts.scope === 'MT' ? 'material' : 'product',
+  });
+  if (opts.hubId != null && Number.isFinite(opts.hubId) && opts.hubId > 0) {
+    params.set('hub_id', String(opts.hubId));
+  }
+  return `/factory-ideas?${params.toString()}`;
+}

@@ -35,7 +35,8 @@ export function useFactoryIdeasCategoriesQuery() {
               name: String(s.name ?? ''),
               sortOrder: Number(s.sort_order ?? 0),
             }))
-            .filter((s) => s.id && s.name)
+            // sort_order 99 = sentinel "ทั้งหมด" — hide from browse / filter UIs
+            .filter((s) => s.id && s.name && s.sortOrder !== 99)
             .sort((a, b) => a.sortOrder - b.sortOrder),
         }))
         .filter((r) => r.name);

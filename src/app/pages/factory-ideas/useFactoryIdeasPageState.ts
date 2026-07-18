@@ -59,9 +59,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [categoryMenuStep, setCategoryMenuStep] = useState<'categories' | 'subs'>('categories');
   const categoryMenuRef = useRef<HTMLDivElement>(null);
-  const skipSubResetOnNextCategoryChangeRef = useRef(false);
   const [menuHighlightCategoryId, setMenuHighlightCategoryId] = useState<string | null>(null);
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string | null>(null);
   const [factoryScope, setFactoryScope] = useState<'PD' | 'MT' | 'all'>('all');
   const [page, setPage] = useState(1);
 
@@ -129,10 +127,13 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   const factoriesQ = useFactoryIdeasFactoryListQuery(loadFactories, hubId ? undefined : apiFactoryScope, hubId);
   const factoryList = factoriesQ.data ?? [];
 
-  const { effectiveCategoryId, applyCategory } = useFactoryIdeasCategorySelection(
-    data.categories,
-    apiCategoriesAll,
-  );
+  const {
+    effectiveCategoryId,
+    applyCategory,
+    applyCategoryAndSub,
+    selectedSubCategoryId,
+    setSelectedSubCategoryId,
+  } = useFactoryIdeasCategorySelection(data.categories, apiCategoriesAll);
 
   // Sub-categories are now embedded in the categories response — no separate queries
   const panelSubs = useMemo(() => {
@@ -235,7 +236,6 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
       const stillValid = apiCategoriesAll.some((c) => c.id === effectiveCategoryId);
       if (!stillValid) {
         applyCategory('all');
-        setSelectedSubCategoryId(null);
       }
     }
   }, [selectedType]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -265,14 +265,6 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
       document.removeEventListener('touchstart', close);
     };
   }, [categoryMenuOpen, layout]);
-
-  useEffect(() => {
-    if (skipSubResetOnNextCategoryChangeRef.current) {
-      skipSubResetOnNextCategoryChangeRef.current = false;
-    } else {
-      setSelectedSubCategoryId(null);
-    }
-  }, [effectiveCategoryId]);
 
   const categoryMenuTriggerLabel = useMemo(() => {
     if (effectiveCategoryId === 'all') return 'ทุกหมวดหมู่';
@@ -393,17 +385,11 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   };
 
   const pickSubCategory = (subId: string | null, categoryIdForApply: string) => {
-    if (
-      categoryIdForApply &&
-      categoryIdForApply !== 'all' &&
-      categoryIdForApply !== effectiveCategoryId
-    ) {
-      skipSubResetOnNextCategoryChangeRef.current = true;
-    }
     if (categoryIdForApply && categoryIdForApply !== 'all') {
-      applyCategory(categoryIdForApply);
+      applyCategoryAndSub(categoryIdForApply, subId);
+    } else {
+      setSelectedSubCategoryId(subId);
     }
-    setSelectedSubCategoryId(subId);
     closeCategoryMenu();
   };
 
