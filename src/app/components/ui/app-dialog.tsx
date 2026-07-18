@@ -73,6 +73,7 @@ export function AppDialog({
           isSheet
             ? cn(
                 'fixed bottom-0 left-0 right-0 top-auto w-full translate-x-0 translate-y-0 rounded-t-2xl',
+                'max-h-[75dvh] sm:max-h-[90vh]',
                 'sm:bottom-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-2xl',
                 sizeClass[size],
               )
