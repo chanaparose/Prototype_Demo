@@ -13,8 +13,6 @@ export function Explore() {
   const { isAuthenticated } = useAuth();
   const {
     exploreFactories,
-    productShowcases,
-    materialShowcases,
     promoSlides,
     isLoading,
   } = useExploreData({ enablePageApis: pageApisReady });
@@ -29,8 +27,6 @@ export function Explore() {
     return (
       <ExploreDesktop
         factories={exploreFactories}
-        exploreProducts={productShowcases}
-        exploreMatrials={materialShowcases}
         isLoading={isLoading}
       />
     );
@@ -39,8 +35,6 @@ export function Explore() {
   return (
     <ExploreMobile
       factories={exploreFactories}
-      exploreProducts={productShowcases}
-      exploreMatrials={materialShowcases}
       explorePromoCodes={[]}
       promoSlides={promoSlides}
       isLoading={isLoading || guestConnecting}

@@ -2,18 +2,12 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ShowcaseCard } from '@/components/shared/ShowcaseCard';
-import { resolvePriceLabel } from '@/components/features/factory-ideas/ShowcaseGridCard';
+import { HubHighlightGridCard } from '@/components/features/hub/HubHighlightGridCard';
 import { resolveHubIcon } from '@/components/features/hub/HubFilterChips';
-import {
-  buildFactoryIdeasHubUrl,
-  getHubCategoryIds,
-  pickRandomHubShowcases,
-} from '@/components/features/explore/exploreHubFilter';
+import { useHubShowcasesQuery } from '@/components/features/hub/useHubShowcasesQuery';
+import { buildFactoryIdeasHubUrl } from '@/components/features/explore/exploreHubFilter';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
-import type { IExploreShowcase } from '@/domain/explore/types/explore.model';
-import type { IHubResponse } from '@/services/api/types/master.types';
-import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
+import type { IHubResponse, IHubShowcaseItem } from '@/services/api/types/master.types';
 import { ProductCardSkeleton } from '@/components/skeletons/PageSkeletons';
 import { cn } from '@lib/utils';
 
@@ -21,14 +15,13 @@ const SHOWCASES_PER_HUB = 10;
 
 type HubShowcaseRow = {
   hub: IHubResponse;
-  items: IExploreShowcase[];
+  items: IHubShowcaseItem[];
 };
 
 type ExploreHubShowcaseSectionsProps = {
   activeScope: HubScope;
+  /** All hubs for the active scope — every hub is rendered as a section. */
   hubs: IHubResponse[];
-  showcases: IExploreShowcase[];
-  isLoading?: boolean;
   hubsLoading?: boolean;
   isLiked: (id: string | number) => boolean;
   onToggleFavorite: (id: string | number) => void;
@@ -40,8 +33,6 @@ type ExploreHubShowcaseSectionsProps = {
 export function ExploreHubShowcaseSections({
   activeScope,
   hubs,
-  showcases,
-  isLoading = false,
   hubsLoading = false,
   isLiked,
   onToggleFavorite,
@@ -50,31 +41,34 @@ export function ExploreHubShowcaseSections({
 }: ExploreHubShowcaseSectionsProps) {
   const navigate = useNavigate();
   const isMaterial = activeScope === 'MT';
-  const badgeLabel = isMaterial ? 'วัตถุดิบ' : 'สินค้า';
-  const badgeColor = isMaterial ? 'var(--status-success)' : 'var(--brand-orange)';
   const accentClass = isMaterial ? 'text-status-success' : 'text-brand-orange';
   const prefix = isMaterial ? 'วัตถุดิบแนะนำ' : 'สินค้าแนะนำ';
 
+  const hubShowcasesQ = useHubShowcasesQuery(SHOWCASES_PER_HUB);
+
+  const showcasesByHubId = useMemo(() => {
+    const map = new Map<number, IHubShowcaseItem[]>();
+    for (const hub of hubShowcasesQ.data ?? []) {
+      map.set(hub.hub_id, hub.showcases ?? []);
+    }
+    return map;
+  }, [hubShowcasesQ.data]);
+
   const rows = useMemo<HubShowcaseRow[]>(() => {
-    return hubs
-      .map((hub) => ({
-        hub,
-        items: pickRandomHubShowcases(
-          showcases,
-          getHubCategoryIds(hub),
-          hub.hub_id,
-          SHOWCASES_PER_HUB,
-        ),
-      }))
-      .filter((row) => row.items.length > 0);
-  }, [hubs, showcases]);
+    return hubs.map((hub) => ({
+      hub,
+      items: (showcasesByHubId.get(hub.hub_id) ?? []).slice(0, SHOWCASES_PER_HUB),
+    }));
+  }, [hubs, showcasesByHubId]);
 
   const titleClass =
     variant === 'desktop'
       ? 'text-[15px] font-bold text-brand-navy-ink'
       : 'text-[14px] font-bold text-brand-navy-ink';
 
-  if (isLoading || hubsLoading) {
+  const isLoading = hubsLoading || hubShowcasesQ.isLoading;
+
+  if (isLoading) {
     return (
       <div className={cn('space-y-6', className)} data-tour='products'>
         {[0, 1, 2].map((section) => (
@@ -151,35 +145,35 @@ export function ExploreHubShowcaseSections({
               </Button>
             </div>
 
-            <div
-              className='flex gap-2 overflow-x-auto pb-2 pl-3 md:gap-3 md:pl-0'
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {items.map((item) => (
-                <ShowcaseCard
-                  key={item.id}
-                  image={item.image}
-                  title={item.title}
-                  priceLabel={resolvePriceLabel(item)}
-                  location={item.location ?? ''}
-                  moqLabel={`ขั้นต่ำ ${item.minOrder ?? 0} ${resolveUnitLabel(item.unitId, item.moqUnit)}`}
-                  badge={{ label: badgeLabel, color: badgeColor }}
-                  heart={{
-                    showcaseId: item.id,
-                    isLiked: isLiked(item.id),
-                    onToggle: onToggleFavorite,
-                  }}
-                  onClick={() =>
-                    navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
-                  }
-                  className={cn(
-                    'w-[155px] shrink-0',
-                    variant === 'desktop' && 'w-[170px]',
-                  )}
-                />
-              ))}
-              <div className='w-3 shrink-0' aria-hidden />
-            </div>
+            {items.length > 0 ? (
+              <div
+                className='flex gap-2 overflow-x-auto pb-2 pl-3 md:gap-3 md:pl-0'
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {items.map((item) => (
+                  <HubHighlightGridCard
+                    key={item.showcase_id}
+                    item={item}
+                    isLiked={isLiked(item.showcase_id)}
+                    onToggleFavorite={onToggleFavorite}
+                    onClick={() =>
+                      navigate(
+                        `/product-detail?showcase_id=${encodeURIComponent(String(item.showcase_id))}`,
+                      )
+                    }
+                    className={cn(
+                      'w-[155px] shrink-0',
+                      variant === 'desktop' && 'w-[170px]',
+                    )}
+                  />
+                ))}
+                <div className='w-3 shrink-0' aria-hidden />
+              </div>
+            ) : (
+              <p className='px-4 text-xs text-gray-400 md:px-0'>
+                {isMaterial ? 'ยังไม่มีวัตถุดิบในหมวดนี้' : 'ยังไม่มีสินค้าในหมวดนี้'}
+              </p>
+            )}
           </section>
         );
       })}

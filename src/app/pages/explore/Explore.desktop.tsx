@@ -13,21 +13,16 @@ import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import { ExploreFactoryRegisterCta } from '@/components/features/explore/ExploreFactoryRegisterCta';
-import type { IExploreShowcase } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
 import { FactoryCarouselCardSkeleton } from '@/components/skeletons/PageSkeletons';
 
 type ExploreDesktopProps = {
   factories: FactoryItem[];
-  exploreProducts: IExploreShowcase[];
-  exploreMatrials?: IExploreShowcase[];
   isLoading?: boolean;
 };
 
 export function ExploreDesktop({
   factories,
-  exploreProducts,
-  exploreMatrials,
   isLoading = false,
 }: Readonly<ExploreDesktopProps>) {
   const navigate = useNavigate();
@@ -45,7 +40,6 @@ export function ExploreDesktop({
     [hubs, activeScope],
   );
 
-  const sourceShowcases = activeScope === 'PD' ? exploreProducts : (exploreMatrials ?? []);
   const factoryPreview = useMemo(() => factories.slice(0, 6), [factories]);
 
   return (
@@ -88,8 +82,6 @@ export function ExploreDesktop({
         <ExploreHubShowcaseSections
           activeScope={activeScope}
           hubs={hubs}
-          showcases={sourceShowcases}
-          isLoading={isLoading}
           hubsLoading={hubsQ.isLoading}
           isLiked={isLiked}
           onToggleFavorite={toggleFavorite}

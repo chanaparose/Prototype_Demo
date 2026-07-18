@@ -13,14 +13,12 @@ import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import { ExploreFactoryRegisterCta } from '@/components/features/explore/ExploreFactoryRegisterCta';
-import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
+import type { IExploreSlide } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
 import { FactoryCarouselCardSkeleton } from '@/components/skeletons/PageSkeletons';
 
 type ExploreMobileProps = {
   factories: FactoryItem[];
-  exploreProducts: IExploreShowcase[];
-  exploreMatrials?: IExploreShowcase[];
   explorePromoCodes: IExploreSlide[];
   promoSlides: IExploreSlide[];
   isLoading?: boolean;
@@ -28,8 +26,6 @@ type ExploreMobileProps = {
 
 export function ExploreMobile({
   factories,
-  exploreProducts,
-  exploreMatrials,
   explorePromoCodes,
   promoSlides,
   isLoading = false,
@@ -49,7 +45,6 @@ export function ExploreMobile({
     [hubs, activeScope],
   );
 
-  const sourceShowcases = activeScope === 'PD' ? exploreProducts : (exploreMatrials ?? []);
   const factoryPreview = useMemo(() => factories.slice(0, 8), [factories]);
 
   return (
@@ -69,8 +64,6 @@ export function ExploreMobile({
       <ExploreHubShowcaseSections
         activeScope={activeScope}
         hubs={hubs}
-        showcases={sourceShowcases}
-        isLoading={isLoading}
         hubsLoading={hubsQ.isLoading}
         isLiked={isLiked}
         onToggleFavorite={toggleFavorite}
