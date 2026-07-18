@@ -6,7 +6,9 @@ import { HowToOrderSection } from '@/components/features/explore/HowToOrderSecti
 import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFactoryShowcase';
 import { ExploreScopeTabs } from '@/components/features/explore/ExploreScopeTabs';
 import { ExploreHubShowcaseSections } from '@/components/features/explore/ExploreHubShowcaseSections';
+import { ExploreCategoryChipsSection } from '@/components/features/explore/ExploreCategoryChipsSection';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
+import { flattenHubCategories } from '@/components/features/explore/exploreCategoryUtils';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
@@ -36,6 +38,11 @@ export function ExploreDesktop({
   const hubs = useMemo(
     () => (hubsQ.data ?? []).filter((hub) => hub.scope === activeScope),
     [activeScope, hubsQ.data],
+  );
+
+  const categories = useMemo(
+    () => flattenHubCategories(hubs, activeScope),
+    [hubs, activeScope],
   );
 
   const sourceShowcases = activeScope === 'PD' ? exploreProducts : (exploreMatrials ?? []);
@@ -87,6 +94,12 @@ export function ExploreDesktop({
           isLiked={isLiked}
           onToggleFavorite={toggleFavorite}
           variant='desktop'
+        />
+
+        <ExploreCategoryChipsSection
+          activeScope={activeScope}
+          categories={categories}
+          isLoading={hubsQ.isLoading}
         />
 
         <HowToOrderSection className='mx-0' variant='desktop' />

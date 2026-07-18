@@ -1,6 +1,6 @@
 import { createBrowserRouter, redirect } from 'react-router';
 import { Layout } from '@/components/layout/Layout';
-import { Explore } from '@/pages/explore';
+import { ExploreCategoriesAllPage } from '@/pages/explore/ExploreCategoriesAllPage';
 import { FactoryIdeas } from '@/pages/factory-ideas';
 import { FactoryIdeasHubPage } from '@/pages/factory-ideas-hub/FactoryIdeasHubPage';
 import { FactoryDetail } from '@/pages/factories/FactoryDetail';
@@ -89,6 +89,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, Component: RoleRedirectIndex },
           { path: 'explore', loader: () => redirect('/') },
+          { path: 'explore/categories', Component: ExploreCategoriesAllPage },
           { path: 'product-detail', Component: ProductDetail },
           { path: 'product-detail/reviews', Component: ReviewsBrowsePage },
           { path: 'promotion-detail', Component: PromotionDetail },

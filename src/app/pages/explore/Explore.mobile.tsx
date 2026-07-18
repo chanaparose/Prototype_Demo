@@ -1,14 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { ExplorePromoCarousel } from '@/components/features/explore/ExplorePromoCarousel';
 import { ExploreScopeTabs } from '@/components/features/explore/ExploreScopeTabs';
 import { ExploreHubShowcaseSections } from '@/components/features/explore/ExploreHubShowcaseSections';
+import { ExploreCategoryChipsSection } from '@/components/features/explore/ExploreCategoryChipsSection';
 import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFactoryShowcase';
 import { ExploreFooter } from '@/components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '@/components/features/explore/HowToOrderSection';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
+import { flattenHubCategories } from '@/components/features/explore/exploreCategoryUtils';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
@@ -44,6 +44,11 @@ export function ExploreMobile({
     [activeScope, hubsQ.data],
   );
 
+  const categories = useMemo(
+    () => flattenHubCategories(hubs, activeScope),
+    [hubs, activeScope],
+  );
+
   const sourceShowcases = activeScope === 'PD' ? exploreProducts : (exploreMatrials ?? []);
   const factoryPreview = useMemo(() => factories.slice(0, 8), [factories]);
 
@@ -70,6 +75,12 @@ export function ExploreMobile({
         isLiked={isLiked}
         onToggleFavorite={toggleFavorite}
         variant='mobile'
+      />
+
+      <ExploreCategoryChipsSection
+        activeScope={activeScope}
+        categories={categories}
+        isLoading={hubsQ.isLoading}
       />
 
       <HowToOrderSection className='mx-4 mt-7' variant='mobile' />

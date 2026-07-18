@@ -160,6 +160,7 @@ export function Layout() {
     /^\/orders\/[^/]+$/.test(location.pathname) ||
     location.pathname === '/create-rfq' ||
     location.pathname === '/product-detail/reviews' ||
+    location.pathname === '/explore/categories' ||
     /\/factories\/[^/]+\/reviews$/.test(location.pathname) ||
     /\/factory-ideas\/products\/[^/]+\/reviews$/.test(location.pathname);
   const wideContentPaths = [

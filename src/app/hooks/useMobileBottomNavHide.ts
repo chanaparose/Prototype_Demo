@@ -25,6 +25,7 @@ export function isMobileCustomBottomBarRoute(pathname: string): boolean {
     pathname === '/product-detail' ||
     pathname === '/idea-detail' ||
     pathname === '/create-rfq' ||
+    pathname === '/explore/categories' ||
     isMobileFullScreenChatRoute(pathname)
   );
 }
