@@ -9,27 +9,45 @@ import {
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { HubCard } from '@/components/features/hub/HubCard';
+import { HubCategoriesSheet } from '@/components/features/hub/HubCategoriesSheet';
+import { HubCategoryCard } from '@/components/features/hub/HubCategoryCard';
 import { HubSectionSkeleton } from '@/components/features/hub/HubSectionSkeleton';
 import { HubShowcasesFeed } from '@/components/features/hub/HubShowcasesFeed';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
+import { useFactoryIdeasCategoriesQuery } from '@/domain/factory/queries/useFactoryIdeasQueries';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
-import type { IHubResponse } from '@/services/api/types/master.types';
+import type { ICategoryForHubResponse, IHubResponse } from '@/services/api/types/master.types';
 
 const HUB_SCOPE_ORDER: HubScope[] = ['PD', 'MT'];
 
-function filterHubs(hubs: IHubResponse[], search: string): IHubResponse[] {
+/** category_id → full list of sub-category names (from the categories-with-subs API). */
+type SubNamesByCatId = Map<number, string[]>;
+
+/** True if the category name, its sub-preview, or any full sub-category name matches. */
+function categoryMatchesSearch(
+  cat: ICategoryForHubResponse,
+  q: string,
+  subNamesByCatId: SubNamesByCatId,
+): boolean {
+  if (cat.name.toLowerCase().includes(q)) return true;
+  if ((cat.sub_preview ?? []).some((s) => s.toLowerCase().includes(q))) return true;
+  const fullSubs = subNamesByCatId.get(cat.category_id);
+  return fullSubs ? fullSubs.some((s) => s.toLowerCase().includes(q)) : false;
+}
+
+function filterHubs(
+  hubs: IHubResponse[],
+  search: string,
+  subNamesByCatId: SubNamesByCatId,
+): IHubResponse[] {
   if (!search.trim()) return hubs;
   const q = search.trim().toLowerCase();
   return hubs.filter(
     (hub) =>
       hub.name.toLowerCase().includes(q) ||
-      hub.categories.some(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          (c.sub_preview ?? []).some((s) => s.toLowerCase().includes(q)),
-      ),
+      hub.categories.some((c) => categoryMatchesSearch(c, q, subNamesByCatId)),
   );
 }
 
@@ -106,28 +124,65 @@ function HubSection({
 export function FactoryIdeasHubPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [sheetHub, setSheetHub] = useState<IHubResponse | null>(null);
   const { isLiked, toggleFavorite } = useFavorites();
 
   const hubsQ = useLbiHubsQuery();
   const allHubs = hubsQ.data ?? [];
   const isLoading = hubsQ.isLoading;
 
+  // Full sub-category names per category — hub payload only ships the first 3
+  // (sub_preview), so we pull the complete list to search every sub-category.
+  const categoriesQ = useFactoryIdeasCategoriesQuery();
+  const subNamesByCatId = useMemo<SubNamesByCatId>(() => {
+    const map: SubNamesByCatId = new Map();
+    for (const c of categoriesQ.data ?? []) {
+      map.set(Number(c.id), c.subCategories.map((s) => s.name));
+    }
+    return map;
+  }, [categoriesQ.data]);
+
   const filteredByScope = useMemo(() => {
-    const filtered = filterHubs(allHubs, search);
+    const filtered = filterHubs(allHubs, search, subNamesByCatId);
     return {
       PD: filtered.filter((h) => h.scope === 'PD'),
       MT: filtered.filter((h) => h.scope === 'MT'),
       popular: sortHubsByPopularity(filtered).slice(0, 8),
     };
-  }, [allHubs, search]);
+  }, [allHubs, search, subNamesByCatId]);
+
+  // Phase 2: categories (across all hubs) whose name or any sub-category name
+  // matches the search — surfaced as category cards so the user lands on the
+  // matching category instead of only the parent hub.
+  const matchedCategories = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [] as { cat: ICategoryForHubResponse; hubId: number; scope: string }[];
+    const seen = new Set<number>();
+    const out: { cat: ICategoryForHubResponse; hubId: number; scope: string }[] = [];
+    for (const hub of allHubs) {
+      for (const cat of hub.categories) {
+        if (seen.has(cat.category_id)) continue;
+        if (categoryMatchesSearch(cat, q, subNamesByCatId)) {
+          seen.add(cat.category_id);
+          out.push({ cat, hubId: hub.hub_id, scope: hub.scope });
+        }
+      }
+    }
+    return out;
+  }, [allHubs, search, subNamesByCatId]);
 
   const hasAny =
+    matchedCategories.length > 0 ||
     filteredByScope.PD.length > 0 ||
     filteredByScope.MT.length > 0 ||
     filteredByScope.popular.length > 0;
 
   const openHub = (hub: IHubResponse) => {
-    navigate(`/factory-ideas?hub_id=${hub.hub_id}&hub_scope=${hub.scope}`);
+    setSheetHub(hub);
+  };
+
+  const openCategory = (hubId: number, scope: string, categoryId: number) => {
+    navigate(`/factory-ideas?hub_id=${hubId}&hub_scope=${scope}&category_id=${categoryId}`);
   };
 
   const content = (
@@ -156,6 +211,31 @@ export function FactoryIdeasHubPage() {
             {search ? `ไม่พบหมวดหมู่ที่ตรงกับ "${search}"` : 'ไม่พบข้อมูลหมวดหมู่'}
           </p>
         </div>
+      ) : null}
+
+      {!isLoading && search.trim() && matchedCategories.length > 0 ? (
+        <section className='space-y-2.5'>
+          <div className='flex items-center gap-2.5'>
+            <span className='h-8 w-1 shrink-0 rounded-full bg-gradient-to-b from-brand-purple/85 to-brand-purple/35' />
+            <div className='min-w-0'>
+              <h2 className='truncate text-[14px] font-bold text-[var(--brand-navy)] lg:text-[15px]'>
+                หมวดหมู่ที่ตรงกับการค้นหา
+              </h2>
+              <p className='mt-0.5 truncate text-[11px] text-gray-500'>
+                {matchedCategories.length} หมวดหมู่
+              </p>
+            </div>
+          </div>
+          <div className='flex flex-nowrap items-stretch gap-2 overflow-x-auto pb-2 scrollbar-hide lg:gap-2.5'>
+            {matchedCategories.map(({ cat, hubId, scope }) => (
+              <HubCategoryCard
+                key={cat.category_id}
+                cat={cat}
+                onClick={() => openCategory(hubId, scope, cat.category_id)}
+              />
+            ))}
+          </div>
+        </section>
       ) : null}
 
       {!isLoading
@@ -214,6 +294,14 @@ export function FactoryIdeasHubPage() {
 
         <main className='flex-1 px-8 py-6 2xl:px-10'>{content}</main>
       </div>
+
+      <HubCategoriesSheet
+        hub={sheetHub}
+        open={sheetHub != null}
+        onOpenChange={(next) => {
+          if (!next) setSheetHub(null);
+        }}
+      />
     </>
   );
 }
