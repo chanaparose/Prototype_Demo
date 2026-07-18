@@ -280,7 +280,7 @@ export function FactoryIdeasMobile() {
                     onClick={() => navigate(`/factories/${factory.id}`)}
                   >
                     <div className='flex h-full gap-3 p-3'>
-                      <div className='relative w-[100px] shrink-0 overflow-hidden rounded-xl bg-gray-100'>
+                      <div className='relative aspect-[4/3] w-[100px] shrink-0 self-center overflow-hidden rounded-xl bg-gray-100'>
                         <ImageWithFallback
                           src={factory.image}
                           alt={factory.name}
@@ -384,11 +384,11 @@ export function FactoryIdeasMobile() {
               return (
                 <article
                   key={item.id}
-                  className='min-h-[118px] cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white transition-transform active:scale-[0.99]'
+                  className='min-h-[100px] cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white transition-transform active:scale-[0.99]'
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
                   <div className='flex gap-3 p-3'>
-                    <div className='relative w-[100px] shrink-0 rounded-xl overflow-hidden bg-gray-100'>
+                    <div className='relative aspect-[4/3] w-[100px] shrink-0 self-center rounded-xl overflow-hidden bg-gray-100'>
                       <ImageWithFallback
                         src={item.image}
                         alt={item.title}
@@ -413,7 +413,7 @@ export function FactoryIdeasMobile() {
                         {item.category ? (
                           <p className='truncate text-[9px] text-gray-400'>{item.category}</p>
                         ) : null}
-                        <h3 className='line-clamp-2 min-w-0 text-[12px] font-bold leading-snug text-[var(--brand-navy)]'>
+                        <h3 className='min-w-0 truncate text-[12px] font-bold leading-snug text-[var(--brand-navy)]'>
                           {item.title}
                         </h3>
                         {listExcerpt ? (
@@ -423,7 +423,7 @@ export function FactoryIdeasMobile() {
                         ) : null}
                       </div>
 
-                      <div className='mt-5 flex min-w-0 items-center justify-between gap-2 border-t border-gray-50 pt-1'>
+                      <div className='mt-1 flex min-w-0 items-center justify-between gap-2 border-t border-gray-50 pt-1'>
                         <Button
                           variant='unstyled'
                           type='button'
