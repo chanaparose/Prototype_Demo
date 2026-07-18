@@ -5,6 +5,7 @@ import {
   HeartPulse,
   LayoutGrid,
   Package,
+  PawPrint,
   Shirt,
   Sparkles,
   Utensils,
@@ -24,6 +25,7 @@ export function resolveHubIcon(name: string): LucideIcon {
   if (/ความงาม|สกิน|beauty|cosmetic|skincare/.test(n)) return Sparkles;
   if (/สุขภาพ|เวช|health|medical|pharma/.test(n)) return HeartPulse;
   if (/แฟชั่น|ผ้า|สิ่งทอ|fashion|textile|apparel/.test(n)) return Shirt;
+  if (/สัตว์เลี้ยง|pet/.test(n)) return PawPrint;
   if (/อิเล็ก|electronic|gadget/.test(n)) return Cpu;
   if (/เคมี|chemical|สาร/.test(n)) return FlaskConical;
   return Package;

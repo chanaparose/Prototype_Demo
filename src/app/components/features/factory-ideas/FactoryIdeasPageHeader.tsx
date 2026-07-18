@@ -1,4 +1,12 @@
-import { ArrowLeft, ChevronDown, Layers, LayoutGrid } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  ChevronDown,
+  Factory,
+  Layers,
+  LayoutGrid,
+  Package,
+} from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
@@ -7,7 +15,7 @@ import { factoryBadgeClass } from '@/pages/factory-portal/factoryUi';
 import { type HubScope } from '@/components/features/hub/hubRowShared';
 import { resolveHubIcon } from '@/components/features/hub/HubFilterChips';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, type ComponentType } from 'react';
 import { createPortal } from 'react-dom';
 
 type ScopeOption = HubScope | 'all';
@@ -16,6 +24,16 @@ const SCOPE_LABELS: Record<ScopeOption, string> = {
   all: 'ทั้งหมด',
   PD: 'โรงงานรับผลิต',
   MT: 'วัตถุดิบ',
+};
+const SCOPE_ICONS: Record<ScopeOption, ComponentType<{ size?: number; strokeWidth?: number; className?: string }>> = {
+  all: LayoutGrid,
+  PD: Factory,
+  MT: Package,
+};
+const SCOPE_HINTS: Record<ScopeOption, string> = {
+  all: 'ดูทุกประเภท',
+  PD: 'สินค้าจากโรงงานรับผลิต',
+  MT: 'วัตถุดิบและชิ้นส่วน',
 };
 
 type FactoryIdeasPageHeaderProps = {
@@ -95,11 +113,12 @@ export function FactoryIdeasPageHeader({
   const canSwitchHub = !!(onHubChange && scopedHubs.length > 0);
   const canSwitchScope = !!onScopeChange;
   const selectedHubId = currentHubId ?? null;
+  const ActiveScopeIcon = SCOPE_ICONS[activeScope];
 
   return (
     <div className={cn('space-y-2.5', className)}>
       <div className='flex items-start justify-between gap-3'>
-        <div className='mb-0 flex min-w-0 items-center gap-1.5 text-[11px] font-medium text-slate-400'>
+        <div className='mb-0 flex min-w-0 flex-wrap items-center gap-2'>
           {showBack ? (
             <>
               <Button
@@ -108,15 +127,15 @@ export function FactoryIdeasPageHeader({
                 onClick={() =>
                   navigate(getFactoryIdeasHubPath(activeScope === 'all' ? undefined : activeScope))
                 }
-                className='-ml-1 inline-flex h-6 shrink-0 items-center gap-1 rounded-md px-1 text-[12px] font-medium text-slate-500 transition-colors hover:text-brand-purple'
+                className='-ml-1 inline-flex h-7 shrink-0 items-center gap-1 rounded-md px-1 text-[12px] font-medium text-slate-500 transition-colors hover:text-brand-purple'
               >
                 <ArrowLeft size={15} strokeWidth={2.25} aria-hidden />
                 กลับหมวดหมู่
               </Button>
-              <span className='h-3 w-px shrink-0 bg-slate-200/80' aria-hidden />
+              <span className='h-3.5 w-px shrink-0 bg-slate-200/80' aria-hidden />
             </>
           ) : null}
-          <Layers size={14} className='shrink-0 text-brand-purple/60' strokeWidth={2.25} />
+
           {canSwitchScope ? (
             <div className='relative min-w-0'>
               <button
@@ -125,15 +144,33 @@ export function FactoryIdeasPageHeader({
                 onClick={handleScopeToggle}
                 aria-haspopup='listbox'
                 aria-expanded={scopeOpen}
-                className='inline-flex max-w-full items-center gap-0.5 rounded-md px-0.5 text-[11px] font-medium text-slate-500 transition-colors hover:text-brand-purple'
+                aria-label={`ประเภทหมวดหมู่: ${activeScopeLabel} — กดเพื่อเปลี่ยน`}
+                className={cn(
+                  'group inline-flex max-w-full items-center gap-2 rounded-full border bg-white/90 py-1 pl-1.5 pr-1.5 shadow-[0_1px_3px_rgba(91,33,182,0.08)] backdrop-blur-sm transition-all',
+                  scopeOpen
+                    ? 'border-brand-purple/45 ring-2 ring-brand-purple/15'
+                    : 'border-brand-purple/25 hover:border-brand-purple/40 hover:shadow-[0_2px_8px_rgba(91,33,182,0.12)]',
+                )}
               >
-                <span className='truncate'>{activeScopeLabel}</span>
-                <ChevronDown
-                  size={12}
-                  strokeWidth={2.25}
-                  className={cn('shrink-0 transition-transform', scopeOpen && 'rotate-180')}
-                  aria-hidden
-                />
+                <span className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-purple/12 text-brand-purple'>
+                  <ActiveScopeIcon size={13} strokeWidth={2.25} />
+                </span>
+                <span className='min-w-0 truncate text-[12px] font-semibold text-brand-navy-ink sm:text-[13px]'>
+                  {activeScopeLabel}
+                </span>
+                <span
+                  className={cn(
+                    'flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-purple/10 text-brand-purple transition-colors group-hover:bg-brand-purple/15',
+                    scopeOpen && 'bg-brand-purple/15',
+                  )}
+                >
+                  <ChevronDown
+                    size={12}
+                    strokeWidth={2.5}
+                    className={cn('transition-transform duration-200', scopeOpen && 'rotate-180')}
+                    aria-hidden
+                  />
+                </span>
               </button>
 
               {scopeOpen
@@ -142,41 +179,78 @@ export function FactoryIdeasPageHeader({
                       ref={scopeDropdownRef}
                       role='listbox'
                       aria-label='เลือกประเภทหมวดหมู่'
-                      className='fixed z-[9999] w-44 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg'
+                      className='fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-brand-purple/15 bg-white p-1.5 shadow-[0_8px_28px_rgba(15,23,42,0.12)]'
                       style={{ top: scopeDropdownPos.top, left: scopeDropdownPos.left }}
                     >
-                      {HUB_SCOPES.map((scope) => (
-                        <button
-                          key={scope}
-                          type='button'
-                          role='option'
-                          aria-selected={scope === activeScope}
-                          onClick={() => {
-                            onScopeChange(scope === 'all' ? null : scope);
-                            setScopeOpen(false);
-                          }}
-                          className={cn(
-                            'flex w-full items-center gap-2 px-3.5 py-2.5 text-left text-[13px] transition-colors hover:bg-brand-lavender-chip',
-                            scope === activeScope
-                              ? 'font-semibold text-brand-purple'
-                              : 'font-medium text-slate-700',
-                          )}
-                        >
-                          {scope === activeScope ? (
-                            <span className='h-1.5 w-1.5 shrink-0 rounded-full bg-brand-purple' />
-                          ) : (
-                            <span className='h-1.5 w-1.5 shrink-0' aria-hidden />
-                          )}
-                          <span>{SCOPE_LABELS[scope] ?? scope}</span>
-                        </button>
-                      ))}
+                      <p className='px-2.5 pb-1.5 pt-1 text-[10px] font-medium uppercase tracking-wide text-slate-400'>
+                        เปลี่ยนประเภท
+                      </p>
+                      {HUB_SCOPES.map((scope) => {
+                        const selected = scope === activeScope;
+                        const ScopeIcon = SCOPE_ICONS[scope];
+                        return (
+                          <button
+                            key={scope}
+                            type='button'
+                            role='option'
+                            aria-selected={selected}
+                            onClick={() => {
+                              onScopeChange(scope === 'all' ? null : scope);
+                              setScopeOpen(false);
+                            }}
+                            className={cn(
+                              'flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors',
+                              selected
+                                ? 'bg-brand-purple/10'
+                                : 'hover:bg-brand-lavender-chip/80',
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+                                selected
+                                  ? 'bg-brand-purple text-white'
+                                  : 'bg-brand-purple/8 text-brand-purple',
+                              )}
+                            >
+                              <ScopeIcon size={14} strokeWidth={2.25} />
+                            </span>
+                            <span className='min-w-0 flex-1'>
+                              <span
+                                className={cn(
+                                  'block text-[13px] leading-tight',
+                                  selected
+                                    ? 'font-semibold text-brand-purple'
+                                    : 'font-medium text-slate-700',
+                                )}
+                              >
+                                {SCOPE_LABELS[scope]}
+                              </span>
+                              <span className='mt-0.5 block text-[10px] leading-tight text-slate-400'>
+                                {SCOPE_HINTS[scope]}
+                              </span>
+                            </span>
+                            {selected ? (
+                              <Check
+                                size={14}
+                                strokeWidth={2.5}
+                                className='shrink-0 text-brand-purple'
+                                aria-hidden
+                              />
+                            ) : null}
+                          </button>
+                        );
+                      })}
                     </div>,
                     document.body,
                   )
                 : null}
             </div>
           ) : (
-            <span className='truncate'>{activeScopeLabel}</span>
+            <span className='inline-flex max-w-full items-center gap-1.5 truncate text-[12px] font-medium text-slate-500'>
+              <Layers size={14} className='shrink-0 text-brand-purple/60' strokeWidth={2.25} />
+              {activeScopeLabel}
+            </span>
           )}
         </div>
 

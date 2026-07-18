@@ -1,27 +1,21 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ShoppingBag, ChevronRight, Leaf } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExplorePromoCarousel } from '@/components/features/explore/ExplorePromoCarousel';
-import { ExploreHubPreview } from '@/components/features/explore/ExploreHubPreview';
+import { ExploreScopeTabs } from '@/components/features/explore/ExploreScopeTabs';
+import { ExploreHubShowcaseSections } from '@/components/features/explore/ExploreHubShowcaseSections';
 import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFactoryShowcase';
 import { ExploreFooter } from '@/components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '@/components/features/explore/HowToOrderSection';
-import { useExploreHubFilteredContent } from '@/components/features/explore/useExploreHubFilteredContent';
-import { useExploreHubSelection } from '@/components/features/explore/useExploreHubSelection';
+import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import { ShowcaseCard } from '@/components/shared/ShowcaseCard';
-import { resolvePriceLabel } from '@/components/features/factory-ideas/ShowcaseGridCard';
 import type { HubScope } from '@/components/features/hub/hubRowShared';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import { ExploreFactoryRegisterCta } from '@/components/features/explore/ExploreFactoryRegisterCta';
 import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
-import {
-  ProductCardSkeleton,
-  FactoryCarouselCardSkeleton,
-} from '@/components/skeletons/PageSkeletons';
-import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
+import { FactoryCarouselCardSkeleton } from '@/components/skeletons/PageSkeletons';
 
 type ExploreMobileProps = {
   factories: FactoryItem[];
@@ -43,41 +37,15 @@ export function ExploreMobile({
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
   const [activeScope, setActiveScope] = useState<HubScope>('PD');
-  const {
-    hubs,
-    selectedHub,
-    selectedHubId,
-    setSelectedHubId,
-    categoryIds,
-    isLoading: hubsLoading,
-  } = useExploreHubSelection(activeScope);
+  const hubsQ = useLbiHubsQuery();
 
-  const {
-    showcases: scopedShowcases,
-    factories: scopedFactories,
-    isHubScoped,
-    hasHubFactories,
-    factoriesLoading,
-    showcaseTitle,
-    factoryTitle,
-    factorySubtitle,
-    seeMoreShowcaseHref,
-    seeMoreFactoryHref,
-  } = useExploreHubFilteredContent({
-    activeScope,
-    exploreProducts,
-    exploreMatrials,
-    factories,
-    selectedHub,
-    categoryIds,
-  });
+  const hubs = useMemo(
+    () => (hubsQ.data ?? []).filter((hub) => hub.scope === activeScope),
+    [activeScope, hubsQ.data],
+  );
 
-  const productShowcases = activeScope === 'PD' ? scopedShowcases : [];
-  const materialShowcases = activeScope === 'MT' ? scopedShowcases : [];
-
-  const hasProductShowcases = productShowcases.length > 0;
-  // const hasPromoShowcases = promoShowcases.length > 0;
-  const hasMaterialShowcases = materialShowcases.length > 0;
+  const sourceShowcases = activeScope === 'PD' ? exploreProducts : (exploreMatrials ?? []);
+  const factoryPreview = useMemo(() => factories.slice(0, 8), [factories]);
 
   return (
     <div className='md:hidden pt-4 space-y-5'>
@@ -91,175 +59,23 @@ export function ExploreMobile({
 
       <ExplorePromoCarousel promoSlides={promoSlides} promoCodes={explorePromoCodes} />
 
-      <ExploreHubPreview
+      <ExploreScopeTabs activeScope={activeScope} onScopeChange={setActiveScope} />
+
+      <ExploreHubShowcaseSections
         activeScope={activeScope}
-        onScopeChange={setActiveScope}
         hubs={hubs}
-        selectedHub={selectedHub}
-        selectedHubId={selectedHubId}
-        onSelectedHubChange={setSelectedHubId}
-        isLoading={hubsLoading}
+        showcases={sourceShowcases}
+        isLoading={isLoading}
+        hubsLoading={hubsQ.isLoading}
+        isLiked={isLiked}
+        onToggleFavorite={toggleFavorite}
+        variant='mobile'
       />
-
-      {activeScope === 'PD' ? (
-        <div data-tour='products' className='mb-5'>
-          <div className='mt-7 flex items-center justify-between px-4 mb-2.5'>
-            <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
-              <ShoppingBag size={15} className='text-brand-orange' /> {showcaseTitle}
-            </h3>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => navigate(seeMoreShowcaseHref)}
-              className='text-brand-orange text-[12px] font-medium flex items-center gap-0.5'
-            >
-              ดูเพิ่มเติม <ChevronRight size={13} />
-            </Button>
-          </div>
-
-          {isLoading ? (
-            <div
-              className='flex gap-2 overflow-x-auto pb-2 pl-3'
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {[...Array(4)].map((_, i) => (
-                <ProductCardSkeleton key={i} />
-              ))}
-              <div className='flex-shrink-0 w-3' aria-hidden />
-            </div>
-          ) : hasProductShowcases ? (
-            <div
-              className='flex gap-2 overflow-x-auto pb-2 pl-3'
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {productShowcases.map((item) => (
-                <ShowcaseCard
-                  key={item.id}
-                  image={item.image}
-                  title={item.title}
-                  priceLabel={resolvePriceLabel(item)}
-                  location={item.location ?? ''}
-                  moqLabel={`ขั้นต่ำ ${item.minOrder ?? 0} ${resolveUnitLabel(item.unitId, item.moqUnit)}`}
-                  badge={{ label: 'สินค้า', color: 'var(--brand-orange)' }}
-                  heart={{ showcaseId: item.id, isLiked: isLiked(item.id), onToggle: toggleFavorite }}
-                  onClick={() =>
-                    navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
-                  }
-                  className='w-[155px] flex-shrink-0'
-                />
-              ))}
-
-              <div className='flex-shrink-0 w-3' aria-hidden />
-            </div>
-          ) : (
-            <div className='px-4'>
-              <div className='rounded-xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-5 text-center'>
-                <p className='text-sm font-medium text-gray-600'>
-                  {isHubScoped
-                    ? `ยังไม่มีสินค้าแนะนำในหมวด ${selectedHub?.name ?? ''}`
-                    : 'ยังไม่มีสินค้าแนะนำในขณะนี้'}
-                </p>
-                <p className='mt-1 text-xs text-gray-400'>
-                  {isHubScoped
-                    ? 'ลองดูสินค้าทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง'
-                    : 'ดูไอเดียสินค้าและโรงงานได้จากปุ่มด้านล่าง'}
-                </p>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  onClick={() => navigate(seeMoreShowcaseHref)}
-                  className='mt-3 w-full rounded-full border border-brand-magenta/40 bg-white py-2 text-sm font-medium text-brand-magenta hover:bg-brand-panel-hover transition-colors'
-                >
-                  {isHubScoped ? `ดูสินค้าใน ${selectedHub?.name ?? 'หมวดนี้'}` : 'ดูสินค้าแนะนำ'}
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      ) : null}
-
-      {activeScope === 'MT' ? (
-        <div className='mb-5'>
-          <div className='mt-7 flex items-center justify-between px-4 mb-2.5'>
-            <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
-              <Leaf size={15} className='text-status-success' /> {showcaseTitle}
-            </h3>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => navigate(seeMoreShowcaseHref)}
-              className='text-status-success text-[12px] font-medium flex items-center gap-0.5'
-            >
-              ดูเพิ่มเติม <ChevronRight size={13} />
-            </Button>
-          </div>
-
-          {isLoading ? (
-            <div
-              className='flex gap-2 overflow-x-auto pb-2 pl-3'
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {[...Array(4)].map((_, i) => (
-                <ProductCardSkeleton key={i} />
-              ))}
-              <div className='flex-shrink-0 w-3' aria-hidden />
-            </div>
-          ) : hasMaterialShowcases ? (
-            <div
-              className='flex gap-2 overflow-x-auto pb-2 pl-3'
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {materialShowcases.map((item) => (
-                <ShowcaseCard
-                  key={item.id}
-                  image={item.image}
-                  title={item.title}
-                  priceLabel={resolvePriceLabel(item)}
-                  location={item.location ?? ''}
-                  moqLabel={`ขั้นต่ำ ${item.minOrder ?? 0} ${resolveUnitLabel(item.unitId, item.moqUnit)}`}
-                  badge={{ label: 'วัตถุดิบ', color: 'var(--status-success)' }}
-                  heart={{ showcaseId: item.id, isLiked: isLiked(item.id), onToggle: toggleFavorite }}
-                  onClick={() =>
-                    navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
-                  }
-                  className='w-[155px] flex-shrink-0'
-                />
-              ))}
-              <div className='flex-shrink-0 w-3' aria-hidden />
-            </div>
-          ) : (
-            <div className='px-4'>
-              <div className='rounded-xl border border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-white px-4 py-5 text-center'>
-                <p className='text-sm font-medium text-gray-600'>
-                  {isHubScoped
-                    ? `ยังไม่มีวัตถุดิบแนะนำในหมวด ${selectedHub?.name ?? ''}`
-                    : 'ยังไม่มีวัตถุดิบแนะนำในขณะนี้'}
-                </p>
-                <p className='mt-1 text-xs text-gray-400'>
-                  {isHubScoped
-                    ? 'ลองดูวัตถุดิบทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง'
-                    : 'จะมีวัตถุดิบเพิ่มเร็วๆนี้'}
-                </p>
-                {isHubScoped ? (
-                  <Button
-                    variant='unstyled'
-                    type='button'
-                    onClick={() => navigate(seeMoreShowcaseHref)}
-                    className='mt-3 w-full rounded-full border border-emerald-300 bg-white py-2 text-sm font-medium text-status-success hover:bg-emerald-50 transition-colors'
-                  >
-                    {`ดูวัตถุดิบใน ${selectedHub?.name ?? 'หมวดนี้'}`}
-                  </Button>
-                ) : null}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : null}
 
       <HowToOrderSection className='mx-4 mt-7' variant='mobile' />
 
       <div className='mt-7'>
-        {isLoading || factoriesLoading ? (
+        {isLoading ? (
           <section className='mx-4 mb-5 mt-7'>
             <div className='flex items-end justify-between mb-3 px-1'>
               <div>
@@ -273,38 +89,15 @@ export function ExploreMobile({
               ))}
             </div>
           </section>
-        ) : hasHubFactories ? (
+        ) : factoryPreview.length > 0 ? (
           <ExploreFactoryShowcase
-            factories={scopedFactories}
-            title={factoryTitle}
-            subtitle={factorySubtitle}
+            factories={factoryPreview}
+            title='โรงงานแนะนำ'
+            subtitle='โรงงานที่ผ่านการยืนยัน พร้อมรับผลิตสินค้าคุณภาพสูง'
             onFactoryClick={(id) => navigate(`/factories/${id}`)}
-            onSeeAll={() => navigate(seeMoreFactoryHref)}
+            onSeeAll={() => navigate('/factory-ideas?type=factory')}
             variant='mobile'
           />
-        ) : isHubScoped ? (
-          <section className='mx-4 mb-5 mt-7'>
-            <div className='mb-2 px-1'>
-              <h3 className='text-[14px] font-bold text-brand-navy-ink'>{factoryTitle}</h3>
-              <p className='mt-0.5 text-[11px] text-gray-500'>{factorySubtitle}</p>
-            </div>
-            <div className='rounded-xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-5 text-center'>
-              <p className='text-sm font-medium text-gray-600'>
-                ยังไม่มีโรงงานแนะนำในหมวด {selectedHub?.name ?? ''}
-              </p>
-              <p className='mt-1 text-xs text-gray-400'>
-                ลองดูโรงงานทั้งหมดในหมวดนี้ได้จากปุ่มด้านล่าง
-              </p>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => navigate(seeMoreFactoryHref)}
-                className='mt-3 w-full rounded-full border border-brand-purple/30 bg-white py-2 text-sm font-medium text-brand-purple hover:bg-brand-panel-hover transition-colors'
-              >
-                ดูโรงงานใน {selectedHub?.name ?? 'หมวดนี้'}
-              </Button>
-            </div>
-          </section>
         ) : null}
       </div>
 

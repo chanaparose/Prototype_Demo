@@ -41,6 +41,35 @@ export function filterShowcasesByHub(
   });
 }
 
+/** Deterministic shuffle so hub rows stay stable across re-renders of the same data. */
+function seededShuffle<T>(items: T[], seed: number): T[] {
+  const copy = [...items];
+  let s = seed >>> 0 || 1;
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    const j = s % (i + 1);
+    const tmp = copy[i];
+    copy[i] = copy[j];
+    copy[j] = tmp;
+  }
+  return copy;
+}
+
+/** Pick up to `limit` showcases for a hub, randomly ordered (stable per hub_id + data). */
+export function pickRandomHubShowcases(
+  showcases: IExploreShowcase[],
+  categoryIds: Set<number>,
+  hubId: number,
+  limit = 10,
+): IExploreShowcase[] {
+  if (categoryIds.size === 0) return [];
+  const filtered = filterShowcasesByHub(showcases, categoryIds);
+  if (filtered.length <= limit) {
+    return seededShuffle(filtered, hubId * 31 + filtered.length);
+  }
+  return seededShuffle(filtered, hubId * 31 + filtered.length).slice(0, limit);
+}
+
 export function filterFactoriesByHubCategoryIds(
   factories: ExploreFactoryWithCategories[],
   categoryIds: Set<number>,
