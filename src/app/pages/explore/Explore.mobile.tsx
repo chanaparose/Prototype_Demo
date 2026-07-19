@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router';
 import { ExplorePromoCarousel } from '@/components/features/explore/ExplorePromoCarousel';
 import { ExploreScopeTabs } from '@/components/features/explore/ExploreScopeTabs';
@@ -33,7 +34,35 @@ export function ExploreMobile({
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
   const [activeScope, setActiveScope] = useState<HubScope>('PD');
+  const [scopeTabsPinned, setScopeTabsPinned] = useState(false);
+  const scopeTabsAnchorRef = useRef<HTMLDivElement>(null);
   const hubsQ = useLbiHubsQuery();
+
+  useEffect(() => {
+    let frame = 0;
+
+    const updatePinnedState = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const anchorTop = scopeTabsAnchorRef.current?.getBoundingClientRect().top;
+        if (anchorTop == null) return;
+        const nextPinned = anchorTop <= 56;
+        setScopeTabsPinned((current) => (current === nextPinned ? current : nextPinned));
+      });
+    };
+
+    updatePinnedState();
+    window.addEventListener('scroll', updatePinnedState, { passive: true });
+    window.addEventListener('resize', updatePinnedState, { passive: true });
+    window.visualViewport?.addEventListener('resize', updatePinnedState, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', updatePinnedState);
+      window.removeEventListener('resize', updatePinnedState);
+      window.visualViewport?.removeEventListener('resize', updatePinnedState);
+    };
+  }, []);
 
   const hubs = useMemo(
     () => (hubsQ.data ?? []).filter((hub) => hub.scope === activeScope),
@@ -59,8 +88,21 @@ export function ExploreMobile({
 
       <ExplorePromoCarousel promoSlides={promoSlides} promoCodes={explorePromoCodes} />
 
-      <div className='sticky top-14 z-30 bg-white'>
-        <ExploreScopeTabs activeScope={activeScope} onScopeChange={setActiveScope} />
+      <div className='relative'>
+        <div ref={scopeTabsAnchorRef} className='absolute inset-x-0 top-0 h-0' aria-hidden='true' />
+        <div className='h-11 bg-white'>
+          {!scopeTabsPinned ? (
+            <ExploreScopeTabs activeScope={activeScope} onScopeChange={setActiveScope} />
+          ) : null}
+        </div>
+        {scopeTabsPinned
+          ? createPortal(
+              <div className='fixed inset-x-0 top-14 z-40 h-11 bg-white shadow-[0_1px_0_rgba(148,163,184,0.22)] [backface-visibility:hidden] [transform:translateZ(0)]'>
+                <ExploreScopeTabs activeScope={activeScope} onScopeChange={setActiveScope} />
+              </div>,
+              document.body,
+            )
+          : null}
       </div>
 
       <ExploreHubShowcaseSections
