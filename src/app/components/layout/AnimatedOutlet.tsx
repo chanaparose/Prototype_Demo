@@ -29,6 +29,7 @@ export function AnimatedOutlet({ className }: AnimatedOutletProps) {
 
   /** `transform` on this wrapper breaks `position: fixed/sticky` for page chrome. */
   const skipYMotion =
+    routeKey === '/' ||
     routeKey === '/create-rfq' ||
     routeKey === '/product-detail' ||
     routeKey === '/idea-detail' ||
