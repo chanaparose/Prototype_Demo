@@ -219,7 +219,7 @@ export function MyReviewsPage() {
 
       {editOpen ? (
         <div className='fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4'>
-          <div className='w-full max-w-md rounded-2xl bg-white border border-slate-200 shadow-xl p-4 space-y-3'>
+          <div className='w-full max-w-md !max-h-[70dvh] overflow-y-auto overscroll-contain rounded-2xl bg-white border border-slate-200 shadow-xl p-4 space-y-3 [-webkit-overflow-scrolling:touch] sm:!max-h-[90vh]'>
             <div className='flex items-center justify-between'>
               <p className='text-sm font-bold text-slate-900'>แก้ไขรีวิว</p>
               <Button

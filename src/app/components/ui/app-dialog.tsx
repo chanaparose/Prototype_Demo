@@ -69,11 +69,11 @@ export function AppDialog({
         showCloseButton={false}
         overlayClassName={overlayClassName}
         className={cn(
-          'flex flex-col gap-0 overflow-hidden border-gray-100 p-0 max-h-[50dvh]',
+          'flex max-h-[90vh] flex-col gap-0 overflow-hidden border-gray-100 p-0',
           isSheet
             ? cn(
                 'fixed bottom-0 left-0 right-0 top-auto w-full translate-x-0 translate-y-0 rounded-t-2xl',
-                'max-h-[50dvh] sm:max-h-[90vh]',
+                '!max-h-[70dvh] sm:!max-h-[90vh]',
                 'sm:bottom-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-2xl',
                 sizeClass[size],
               )

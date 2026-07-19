@@ -175,7 +175,7 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
         className={`
           relative bg-white w-full flex flex-col shadow-2xl
           ${isMobile
-            ? 'rounded-t-3xl max-h-[92vh]'
+            ? 'rounded-t-3xl !max-h-[70dvh]'
             : 'rounded-2xl sm:max-w-lg sm:mx-4 max-h-[90vh]'
           }
         `}
