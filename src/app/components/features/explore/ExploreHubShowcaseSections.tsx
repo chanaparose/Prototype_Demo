@@ -116,13 +116,13 @@ export function ExploreHubShowcaseSections({
   }
 
   return (
-    <div className={cn('space-y-6', className)} data-tour='products'>
+    <div className={cn('divide-y divide-slate-100', className)} data-tour='products'>
       {rows.map(({ hub, items }) => {
         const Icon = resolveHubIcon(hub.name);
         const seeMoreHref = buildFactoryIdeasHubUrl(isMaterial ? 'material' : 'product', hub);
 
         return (
-          <section key={hub.hub_id}>
+          <section key={hub.hub_id} className='py-3 first:pt-0 last:pb-0'>
             <div className='mb-2.5 flex items-center justify-between gap-3 px-4 md:px-0'>
               <h3 className={cn(titleClass, 'flex min-w-0 items-center gap-1.5')}>
                 <Icon size={15} className={cn('shrink-0', accentClass)} strokeWidth={2.25} />

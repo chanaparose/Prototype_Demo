@@ -67,8 +67,8 @@ export function HubHighlightGridCard({
       location={item.factory_name ?? ''}
       moqLabel={
         moq != null
-          ? `ขั้นต่ำ ${moq.toLocaleString('th-TH')}${unit ? ` ${unit}` : ''}`
-          : 'สอบถามขั้นต่ำ'
+          ? `${moq.toLocaleString('th-TH')}${unit ? ` ${unit}` : ''}`
+          : 'สอบถาม'
       }
       badge={{
         label: factoryIdeasContentTypeLabel[contentType],

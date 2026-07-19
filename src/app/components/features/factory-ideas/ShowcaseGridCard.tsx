@@ -42,7 +42,7 @@ export function ShowcaseGridCard({
       title={item.title}
       priceLabel={resolvePriceLabel(item)}
       location={item.location ?? ''}
-      moqLabel={`ขั้นต่ำ ${item.minOrder} ${resolveUnitLabel(item.unitId, item.moqUnit)}`}
+      moqLabel={`${item.minOrder} ${resolveUnitLabel(item.unitId, item.moqUnit)}`.trim()}
       badge={{
         label: contentTypeLabel[item.contentType],
         color: contentTypeBadge[item.contentType],

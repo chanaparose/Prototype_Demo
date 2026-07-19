@@ -10,7 +10,7 @@ import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
  * โครงสร้าง (ตาม marketplace layout):
  *   รูป 4:3 (badge ซ้ายบน / heart ขวาบน / overlay อิสระ)
  *   ชื่อ (สูงสุด 2 บรรทัด)
- *   ราคา (ซ้าย, เน้นสีส้ม) | MOQ (ขวา)
+ *   ราคา (ซ้าย, เน้นสีส้ม — ไม่มีราคา = "สอบถามเพิ่มเติม") | MOQ (ขวา)
  *   ─────────────
  *   ที่ตั้ง (MapPin)
  *
@@ -22,11 +22,11 @@ import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 export type ShowcaseCardProps = {
   image: string;
   title: string;
-  /** ราคา format มาแล้ว เช่น "฿552" — ไม่ระบุ = ไม่แสดง (เช่นการ์ดโรงงาน) */
+  /** ราคา format มาแล้ว เช่น "฿552" — ไม่ระบุ = แสดง "สอบถามเพิ่มเติม" */
   priceLabel?: string;
   /** ที่ตั้ง/จังหวัด/ชื่อโรงงาน แถวล่างสุด — ค่าว่างจะแสดง '—' */
   location?: string;
-  /** ป้าย MOQ format มาแล้ว เช่น "ขั้นต่ำ 100 ชิ้น" / "สอบถามขั้นต่ำ" */
+  /** ป้าย MOQ format มาแล้ว เช่น "100 ชิ้น" / "สอบถาม" */
   moqLabel: string;
   /** ป้ายมุมซ้ายบนแบบมาตรฐาน (pill สีทึบ ตัวอักษรขาว) */
   badge?: { label: string; color: string };
@@ -118,13 +118,14 @@ export function ShowcaseCard({
 
         {/* ราคา (ซ้าย) | MOQ (ขวา) */}
         <div className='mt-1 flex min-w-0 items-end justify-between gap-2'>
-          {priceLabel ? (
-            <span className='truncate text-sm font-bold leading-none text-brand-orange'>
-              {priceLabel}
-            </span>
-          ) : (
-            <span />
-          )}
+          <span
+            className={cn(
+              'truncate text-sm font-bold leading-none',
+              priceLabel ? 'text-brand-orange' : 'text-gray-400',
+            )}
+          >
+            {priceLabel || 'สอบถาม'}
+          </span>
           <span className='shrink-0 text-[10px] text-gray-500'>{moqLabel}</span>
         </div>
 

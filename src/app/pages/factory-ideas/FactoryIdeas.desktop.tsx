@@ -438,7 +438,7 @@ export function FactoryIdeasDesktop() {
                 image={factory.image}
                 title={factory.name}
                 location={(factory.provinceName ?? factory.location).trim()}
-                moqLabel={`ขั้นต่ำ ${factory.minOrder} ${resolveUnitLabel(undefined, factory.minOrderUnit)}`}
+                moqLabel={`${factory.minOrder} ${resolveUnitLabel(undefined, factory.minOrderUnit)}`.trim()}
                 badgeNode={
                   factory.verified ? (
                     <VerifiedBadgeNode

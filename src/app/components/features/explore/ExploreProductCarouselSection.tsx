@@ -134,7 +134,7 @@ export function ExploreProductCarouselSection({
                           title={product.title}
                           priceLabel={product.price || undefined}
                           location={locationLabel}
-                          moqLabel={`ขั้นต่ำ ${product.minOrder ?? 0} ${product.minOrderUnit ?? ''}`.trim()}
+                          moqLabel={`${product.minOrder ?? 0} ${product.minOrderUnit ?? ''}`.trim()}
                           badge={{
                             label: isMaterial ? 'วัตถุดิบ' : 'สินค้า',
                             color: isMaterial ? 'var(--status-success)' : 'var(--brand-orange)',

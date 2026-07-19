@@ -116,7 +116,7 @@ export function FactoryProfileTabContent({
       title={item.title}
       priceLabel={resolvePriceLabel(item)}
       location={factory.location}
-      moqLabel={`ขั้นต่ำ ${item.minOrder ?? 0}`}
+      moqLabel={`${item.minOrder ?? 0}`}
       badge={{ label: badgeLabel, color: badgeColor }}
       onClick={onClick}
     />

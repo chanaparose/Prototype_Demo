@@ -533,7 +533,7 @@ export function ProductDetailMobile() {
                     title={rp.title}
                     priceLabel={resolvePriceLabel(rp)}
                     location={province}
-                    moqLabel={`ขั้นต่ำ ${rp.minOrder}`}
+                    moqLabel={`${rp.minOrder}`}
                     badge={{ label: isPromo ? 'โปรโมชัน' : 'สินค้า', color: BRAND.orange }}
                     onClick={() =>
                       navigate(
