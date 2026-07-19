@@ -69,11 +69,11 @@ export function AppDialog({
         showCloseButton={false}
         overlayClassName={overlayClassName}
         className={cn(
-          'flex flex-col gap-0 border-gray-100 p-0 overflow-hidden max-h-[90vh]',
+          'flex flex-col gap-0 overflow-hidden border-gray-100 p-0 max-h-[calc(100dvh-5rem)]',
           isSheet
             ? cn(
                 'fixed bottom-0 left-0 right-0 top-auto w-full translate-x-0 translate-y-0 rounded-t-2xl',
-                'max-h-[75dvh] sm:max-h-[90vh]',
+                'max-h-[calc(100dvh-5rem)] sm:max-h-[90vh]',
                 'sm:bottom-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-2xl',
                 sizeClass[size],
               )
@@ -90,7 +90,7 @@ export function AppDialog({
         {showHeader ? (
           <DialogHeader
             className={cn(
-              'flex flex-row items-center justify-between border-b border-gray-100 px-4 py-3 text-left',
+              'flex shrink-0 flex-row items-center justify-between border-b border-gray-100 bg-white px-4 py-3 text-left',
               headerClassName,
             )}
           >
@@ -117,7 +117,7 @@ export function AppDialog({
         <div
           ref={bodyRef}
           className={cn(
-            'min-h-0 flex-1 overflow-y-auto overscroll-contain',
+            'min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]',
             bodyClassName ?? 'p-4 sm:p-5',
           )}
         >
