@@ -214,7 +214,7 @@ export function Layout() {
     (createRfqFabPaths as readonly string[]).includes(location.pathname);
 
   return (
-    <div className='min-h-screen flex bg-white w-full max-w-full overflow-x-hidden'>
+    <div className='min-h-screen flex bg-white w-full max-w-full overflow-x-clip'>
       <ImageLightbox />
       <DesktopSidebar />
 
@@ -289,7 +289,7 @@ export function Layout() {
 
         {/* ── Main content ────────────────────────────────────────────────── */}
         <main
-          className={`flex-1 min-w-0 overflow-x-hidden bg-[var(--brand-page)]${isWideFactoryPortal ? ' lg:pb-0' : ''}`}
+          className={`flex-1 min-w-0 overflow-x-clip bg-[var(--brand-page)]${isWideFactoryPortal ? ' lg:pb-0' : ''}`}
           style={
             isWideFactoryPortal && !hideMobileBottomNav
               ? {

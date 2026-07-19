@@ -59,7 +59,9 @@ export function ExploreMobile({
 
       <ExplorePromoCarousel promoSlides={promoSlides} promoCodes={explorePromoCodes} />
 
-      <ExploreScopeTabs activeScope={activeScope} onScopeChange={setActiveScope} />
+      <div className='sticky top-14 z-30 bg-white'>
+        <ExploreScopeTabs activeScope={activeScope} onScopeChange={setActiveScope} />
+      </div>
 
       <ExploreHubShowcaseSections
         activeScope={activeScope}
