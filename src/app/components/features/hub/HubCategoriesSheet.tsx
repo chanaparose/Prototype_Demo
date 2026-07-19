@@ -96,7 +96,7 @@ export function HubCategoriesSheet({ hub, open, onOpenChange }: HubCategoriesShe
       title={hub ? hub.name : 'หมวดหมู่'}
       variant='sheet'
       size='lg'
-      className='max-h-[calc(100dvh-5rem)] sm:max-h-[85vh]'
+      className='max-h-[50dvh] sm:max-h-[85vh]'
       bodyClassName='bg-white p-3 sm:p-4 [-webkit-overflow-scrolling:touch]'
     >
       {!hub ? null : (
