@@ -40,6 +40,7 @@ export interface IHubShowcaseItem {
   content_type: string;
   title: string;
   factory_name: string;
+  province_name?: string;
   factory_rating?: number;
   factory_verified?: boolean;
   factory_image_url?: string;

@@ -64,7 +64,7 @@ export function HubHighlightGridCard({
       imageFallbackChar={item.factory_name || 'T'}
       title={item.title}
       priceLabel={price != null ? formatCurrencyNoDecimals(price) : undefined}
-      location={item.factory_name ?? ''}
+      location={(item.province_name ?? '').trim() || (item.factory_name ?? '')}
       moqLabel={
         moq != null
           ? `${moq.toLocaleString('th-TH')}${unit ? ` ${unit}` : ''}`
