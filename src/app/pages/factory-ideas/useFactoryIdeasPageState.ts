@@ -14,10 +14,7 @@ import {
   useFactoryIdeasShowcasesPaginatedQuery,
   type ShowcasePaginatedParams,
 } from '@/domain/factory/queries/useFactoryIdeasQueries';
-import {
-  factoryIdeasCategoryOptionSelected,
-  showcaseMatchesSelectedCategoryId,
-} from '@/utils/exploreToFactoryIdeasCategory';
+import { showcaseMatchesSelectedCategoryId } from '@/utils/exploreToFactoryIdeasCategory';
 import {
   getDefaultFactoryIdeasContentType,
   getFactoryIdeaDetailPath,
@@ -45,7 +42,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
-export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdeasPageStateOptions) {
+export function useFactoryIdeasPageState({ initialType }: UseFactoryIdeasPageStateOptions) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const hubScope = (searchParams.get('hub_scope') as 'PD' | 'MT' | null) ?? undefined;
@@ -56,10 +53,6 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     initialType ?? getDefaultFactoryIdeasContentType(hubScope),
   );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
-  const [categoryMenuStep, setCategoryMenuStep] = useState<'categories' | 'subs'>('categories');
-  const categoryMenuRef = useRef<HTMLDivElement>(null);
-  const [menuHighlightCategoryId, setMenuHighlightCategoryId] = useState<string | null>(null);
   const [factoryScope, setFactoryScope] = useState<'PD' | 'MT' | 'all'>('all');
   const [page, setPage] = useState(1);
 
@@ -130,33 +123,13 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   const {
     effectiveCategoryId,
     applyCategory,
-    applyCategoryAndSub,
     selectedSubCategoryId,
-    setSelectedSubCategoryId,
   } = useFactoryIdeasCategorySelection(data.categories, apiCategoriesAll);
-
-  // Sub-categories are now embedded in the categories response — no separate queries
-  const panelSubs = useMemo(() => {
-    if (!menuHighlightCategoryId || menuHighlightCategoryId === 'all') return [];
-    return apiCategoriesAll.find((c) => c.id === menuHighlightCategoryId)?.subCategories ?? [];
-  }, [menuHighlightCategoryId, apiCategoriesAll]);
 
   const subCategories = useMemo(() => {
     if (!effectiveCategoryId || effectiveCategoryId === 'all') return [];
     return apiCategoriesAll.find((c) => c.id === effectiveCategoryId)?.subCategories ?? [];
   }, [effectiveCategoryId, apiCategoriesAll]);
-
-  const panelSubsLoading = false;
-  const subCategoriesLoading = false;
-
-  /** Category IDs that have ≥1 sub-category — used to show/hide chevron & subs panel */
-  const categoriesWithSubs = useMemo(() => {
-    const s = new Set<string>();
-    for (const c of apiCategoriesRaw) {
-      if (c.subCategories && c.subCategories.length > 0) s.add(c.id);
-    }
-    return s as ReadonlySet<string>;
-  }, [apiCategoriesRaw]);
 
   // เมื่อมี hubScope ให้ดึงเฉพาะ content_type ที่ตรงกับ scope นั้น
   const showcaseTypes = useMemo((): ('PD' | 'PM' | 'ID' | 'MT')[] => {
@@ -220,12 +193,6 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   }, [selectedType, effectiveCategoryId, selectedSubCategoryId, debouncedSearchText, moqFilter, hubId]);
 
 
-  const categoryFilters = useMemo(() => {
-    // Keep API order as-is (do not resort on frontend)
-    const rest = [...apiCategoriesAll];
-    return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
-  }, [apiCategoriesAll]);
-
   // Keep the category filter when switching tabs — only clear it if the selected
   // category isn't valid in the new tab (e.g. non-hub mode where PD/MT scopes differ).
   const prevSelectedTypeRef = useRef(selectedType);
@@ -240,40 +207,13 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     }
   }, [selectedType]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (!categoryMenuOpen) return;
-    setMenuHighlightCategoryId(effectiveCategoryId !== 'all' ? effectiveCategoryId : null);
-  }, [categoryMenuOpen, effectiveCategoryId]);
-
-  useEffect(() => {
-    if (categoryMenuOpen && layout === 'mobile') setCategoryMenuStep('categories');
-  }, [categoryMenuOpen, layout]);
-
-  useEffect(() => {
-    if (!categoryMenuOpen) return;
-    const close = (e: MouseEvent | TouchEvent) => {
-      const el = categoryMenuRef.current;
-      if (el && !el.contains(e.target as Node)) {
-        setCategoryMenuOpen(false);
-        if (layout === 'mobile') setCategoryMenuStep('categories');
-      }
-    };
-    document.addEventListener('mousedown', close);
-    document.addEventListener('touchstart', close, { passive: true });
-    return () => {
-      document.removeEventListener('mousedown', close);
-      document.removeEventListener('touchstart', close);
-    };
-  }, [categoryMenuOpen, layout]);
-
-  const categoryMenuTriggerLabel = useMemo(() => {
+  const categoryBrowseLabel = useMemo(() => {
     if (effectiveCategoryId === 'all') return 'ทุกหมวดหมู่';
-    const catName = categoryFilters.find((c) => c.id === effectiveCategoryId)?.name ?? 'หมวด';
-    if (subCategories.length === 0) return catName;
-    if (!selectedSubCategoryId) return `${catName} › ทุกหมวดย่อย`;
+    const catName = apiCategoriesAll.find((c) => c.id === effectiveCategoryId)?.name ?? 'หมวด';
+    if (!selectedSubCategoryId) return catName;
     const subName = subCategories.find((s) => s.id === selectedSubCategoryId)?.name;
-    return subName ? `${catName} › ${subName}` : `${catName} › หมวดย่อย`;
-  }, [effectiveCategoryId, selectedSubCategoryId, categoryFilters, subCategories]);
+    return subName ? `${catName} › ${subName}` : catName;
+  }, [effectiveCategoryId, selectedSubCategoryId, apiCategoriesAll, subCategories]);
 
   // Client-side filter fallback (in case the server doesn't honour category/keyword params)
   const filteredShowcases = useMemo(() => {
@@ -379,20 +319,6 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
       (isFactoryTab && factoryScope !== 'all'),
   );
 
-  const closeCategoryMenu = () => {
-    setCategoryMenuOpen(false);
-    if (layout === 'mobile') setCategoryMenuStep('categories');
-  };
-
-  const pickSubCategory = (subId: string | null, categoryIdForApply: string) => {
-    if (categoryIdForApply && categoryIdForApply !== 'all') {
-      applyCategoryAndSub(categoryIdForApply, subId);
-    } else {
-      setSelectedSubCategoryId(subId);
-    }
-    closeCategoryMenu();
-  };
-
   return {
     data,
     ...favorites,
@@ -404,21 +330,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     setSelectedType,
     viewMode,
     setViewMode,
-    categoryMenuOpen,
-    setCategoryMenuOpen,
-    categoryMenuStep,
-    setCategoryMenuStep,
-    categoryMenuRef,
-    menuHighlightCategoryId,
-    setMenuHighlightCategoryId,
-    panelSubs,
-    panelSubsLoading,
-    subCategories,
-    subCategoriesLoading,
     selectedSubCategoryId,
-    setSelectedSubCategoryId,
-    categoryFilters,
-    categoriesWithSubs,
     effectiveCategoryId,
     applyCategory,
     isFactoryTab,
@@ -439,14 +351,11 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     page,
     setPage,
     pageLimit: PAGE_LIMIT,
-    categoryMenuTriggerLabel,
-    closeCategoryMenu,
-    pickSubCategory,
+    categoryBrowseLabel,
     hubId,
     hubScope,
     hubName,
     visibleTabIds,
-    categoryOptionSelected: factoryIdeasCategoryOptionSelected,
     getDetailPath: getFactoryIdeaDetailPath,
   };
 }

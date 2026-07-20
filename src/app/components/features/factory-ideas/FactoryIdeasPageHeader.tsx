@@ -1,13 +1,12 @@
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
-import { ExploreCategoryBrowseSheet } from '@/components/features/explore/ExploreCategoryBrowseSheet';
 import { getFactoryIdeasHubPath } from '@/components/features/factory-ideas/factoryIdeasHubNav';
 import { factoryBadgeClass } from '@/pages/factory-portal/factoryUi';
 import { type HubScope } from '@/components/features/hub/hubRowShared';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { IHubResponse } from '@/services/api/types/master.types';
 
 type ScopeOption = HubScope | 'all';
@@ -89,7 +88,6 @@ export function FactoryIdeasPageHeader({
 }: FactoryIdeasPageHeaderProps) {
   const navigate = useNavigate();
   const { data: allHubs = [] } = useLbiHubsQuery();
-  const [hubSheetOpen, setHubSheetOpen] = useState(false);
   const activeTabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   const activeScope: ScopeOption = hubScope ?? 'all';
@@ -117,7 +115,6 @@ export function FactoryIdeasPageHeader({
     } else {
       onHubChange(hub.hub_id, (hub.scope as HubScope | undefined) ?? undefined);
     }
-    setHubSheetOpen(false);
   };
 
   return (
@@ -189,57 +186,35 @@ export function FactoryIdeasPageHeader({
         </span>
       </div>
 
-      {/* Row 2 — hub text tabs + V → grid sheet */}
+      {/* Row 2 — hub text tabs */}
       {canSwitchHub ? (
-        <div className='flex items-stretch gap-0'>
-          <div
-            className='min-w-0 flex-1 overflow-x-auto scrollbar-hide'
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            <div className='flex items-end gap-4 pr-2'>
-              <HubTabButton
-                label='ทั้งหมด'
-                active={selectedHubId === null}
-                onClick={() => pickHub(null)}
-                tabRef={(el) => {
-                  if (el) activeTabRefs.current.set('all', el);
-                  else activeTabRefs.current.delete('all');
-                }}
-              />
-              {scopedHubs.map((hub) => {
-                const active = selectedHubId === hub.hub_id;
-                const key = String(hub.hub_id);
-                return (
-                  <HubTabButton
-                    key={hub.hub_id}
-                    label={hub.name}
-                    active={active}
-                    onClick={() => pickHub(hub)}
-                    tabRef={(el) => {
-                      if (el) activeTabRefs.current.set(key, el);
-                      else activeTabRefs.current.delete(key);
-                    }}
-                  />
-                );
-              })}
-            </div>
-          </div>
-
-          <div className='relative flex shrink-0 items-center pl-2'>
-            <span className='absolute left-0 top-1 bottom-2 w-px bg-slate-200/90' aria-hidden />
-            <button
-              type='button'
-              onClick={() => setHubSheetOpen(true)}
-              aria-label='ดูหมวดหมู่ทั้งหมด'
-              aria-expanded={hubSheetOpen}
-              className='flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-white/80 hover:text-brand-purple'
-            >
-              <ChevronDown
-                size={18}
-                strokeWidth={2.25}
-                className={cn('transition-transform duration-200', hubSheetOpen && 'rotate-180')}
-              />
-            </button>
+        <div className='min-w-0 overflow-x-auto scrollbar-hide' style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className='flex items-end gap-4 pr-2'>
+            <HubTabButton
+              label='ทั้งหมด'
+              active={selectedHubId === null}
+              onClick={() => pickHub(null)}
+              tabRef={(el) => {
+                if (el) activeTabRefs.current.set('all', el);
+                else activeTabRefs.current.delete('all');
+              }}
+            />
+            {scopedHubs.map((hub) => {
+              const active = selectedHubId === hub.hub_id;
+              const key = String(hub.hub_id);
+              return (
+                <HubTabButton
+                  key={hub.hub_id}
+                  label={hub.name}
+                  active={active}
+                  onClick={() => pickHub(hub)}
+                  tabRef={(el) => {
+                    if (el) activeTabRefs.current.set(key, el);
+                    else activeTabRefs.current.delete(key);
+                  }}
+                />
+              );
+            })}
           </div>
         </div>
       ) : !canSwitchScope ? null : (
@@ -247,13 +222,6 @@ export function FactoryIdeasPageHeader({
           {title}
         </h1>
       )}
-
-      <ExploreCategoryBrowseSheet
-        open={hubSheetOpen}
-        onOpenChange={setHubSheetOpen}
-        activeScope={activeScope === 'MT' ? 'MT' : 'PD'}
-        initialHubId={selectedHubId ?? undefined}
-      />
     </div>
   );
 }

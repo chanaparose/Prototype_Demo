@@ -19,7 +19,7 @@ import {
   FactoryGridCardSkeleton,
   FactoryListRowSkeleton,
 } from '@/components/skeletons/PageSkeletons';
-import { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
+import { FactoryIdeasCategoryBrowseButton } from '@/components/features/factory-ideas/FactoryIdeasCategoryBrowseButton';
 import { IdeaPostCard } from '@/components/features/factory-ideas/IdeaPostCard';
 import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasPageState';
 import {
@@ -64,24 +64,8 @@ export function FactoryIdeasMobile() {
     setSelectedType,
     viewMode,
     setViewMode,
-    categoryMenuOpen,
-    setCategoryMenuOpen,
-    categoryMenuStep,
-    setCategoryMenuStep,
-    categoryMenuRef,
-    menuHighlightCategoryId,
-    setMenuHighlightCategoryId,
-    panelSubs,
-    panelSubsLoading,
-    selectedSubCategoryId,
-    setSelectedSubCategoryId,
-    categoryFilters,
-    categoriesWithSubs,
     effectiveCategoryId,
-    applyCategory,
     isFactoryTab,
-    isMaterialTab,
-    isMtCategoryScope,
     factoryScope,
     setFactoryScope,
     showcasesLoading,
@@ -93,10 +77,7 @@ export function FactoryIdeasMobile() {
     visibleFactories,
     totalCount,
     isListFiltered,
-    categoryMenuTriggerLabel,
-    closeCategoryMenu,
-    pickSubCategory,
-    categoryOptionSelected,
+    categoryBrowseLabel,
     getDetailPath,
     visibleTabIds,
     hubScope,
@@ -163,30 +144,13 @@ export function FactoryIdeasMobile() {
           <div className='px-4 pt-3 pb-2'>
             <div className={factoryIdeasToolbarCardClass}>
             <div className='flex items-center gap-1.5'>
-              <FactoryIdeasCategoryDropdown
+              <FactoryIdeasCategoryBrowseButton
                 variant='mobile'
-                triggerVariant='filter'
                 className='min-w-0 flex-1'
-                categoryMenuRef={categoryMenuRef}
-                categoryMenuOpen={categoryMenuOpen}
-                setCategoryMenuOpen={setCategoryMenuOpen}
-                categoryMenuStep={categoryMenuStep}
-                setCategoryMenuStep={setCategoryMenuStep}
-                categoryFilters={categoryFilters}
-                effectiveCategoryId={effectiveCategoryId}
-                selectedSubCategoryId={selectedSubCategoryId}
-                setSelectedSubCategoryId={setSelectedSubCategoryId}
-                isMaterialTab={isMtCategoryScope}
-                categoryMenuTriggerLabel={categoryMenuTriggerLabel}
-                menuHighlightCategoryId={menuHighlightCategoryId}
-                setMenuHighlightCategoryId={setMenuHighlightCategoryId}
-                panelSubs={panelSubs}
-                panelSubsLoading={panelSubsLoading}
-                applyCategory={applyCategory}
-                closeCategoryMenu={closeCategoryMenu}
-                pickSubCategory={pickSubCategory}
-                categoryOptionSelected={categoryOptionSelected}
-                categoriesWithSubs={categoriesWithSubs}
+                label={categoryBrowseLabel}
+                categoryActive={effectiveCategoryId !== 'all'}
+                activeScope={hubScope === 'MT' ? 'MT' : 'PD'}
+                initialHubId={hubId}
               />
 
               {!isFactoryTab ? (

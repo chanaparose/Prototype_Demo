@@ -10,7 +10,7 @@ import {
   SearchX,
   Star,
 } from 'lucide-react';
-import { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
+import { FactoryIdeasCategoryBrowseButton } from '@/components/features/factory-ideas/FactoryIdeasCategoryBrowseButton';
 import { isFromFactoryIdeasHub, applyFactoryIdeasScopeChange } from '@/components/features/factory-ideas/factoryIdeasHubNav';
 import { FactoryIdeasPageHeader, FactoryIdeasHeaderBackdrop } from '@/components/features/factory-ideas/FactoryIdeasPageHeader';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
@@ -196,22 +196,8 @@ export function FactoryIdeasDesktop() {
     setSelectedType,
     viewMode,
     setViewMode,
-    categoryMenuOpen,
-    setCategoryMenuOpen,
-    categoryMenuRef,
-    menuHighlightCategoryId,
-    setMenuHighlightCategoryId,
-    panelSubs,
-    panelSubsLoading,
-    selectedSubCategoryId,
-    setSelectedSubCategoryId,
-    categoryFilters,
-    categoriesWithSubs,
     effectiveCategoryId,
-    applyCategory,
     isFactoryTab,
-    isMaterialTab,
-    isMtCategoryScope,
     showcasesLoading,
     showcasesFetching,
     factoriesLoading,
@@ -220,10 +206,7 @@ export function FactoryIdeasDesktop() {
     visibleFactories,
     totalCount,
     isListFiltered,
-    categoryMenuTriggerLabel,
-    closeCategoryMenu,
-    pickSubCategory,
-    categoryOptionSelected,
+    categoryBrowseLabel,
     getDetailPath,
     hubScope,
     hubName,
@@ -288,26 +271,12 @@ export function FactoryIdeasDesktop() {
               <>
                 <div className='h-5 w-px shrink-0 bg-gray-200' />
 
-                <FactoryIdeasCategoryDropdown
+                <FactoryIdeasCategoryBrowseButton
                   variant='desktop'
-                  categoryMenuRef={categoryMenuRef}
-                  categoryMenuOpen={categoryMenuOpen}
-                  setCategoryMenuOpen={setCategoryMenuOpen}
-                  categoryFilters={categoryFilters}
-                  effectiveCategoryId={effectiveCategoryId}
-                  selectedSubCategoryId={selectedSubCategoryId}
-                  setSelectedSubCategoryId={setSelectedSubCategoryId}
-                  isMaterialTab={isMtCategoryScope}
-                  categoryMenuTriggerLabel={categoryMenuTriggerLabel}
-                  menuHighlightCategoryId={menuHighlightCategoryId}
-                  setMenuHighlightCategoryId={setMenuHighlightCategoryId}
-                  panelSubs={panelSubs}
-                  panelSubsLoading={panelSubsLoading}
-                  applyCategory={applyCategory}
-                  closeCategoryMenu={closeCategoryMenu}
-                  pickSubCategory={pickSubCategory}
-                  categoryOptionSelected={categoryOptionSelected}
-                  categoriesWithSubs={categoriesWithSubs}
+                  label={categoryBrowseLabel}
+                  categoryActive={effectiveCategoryId !== 'all'}
+                  activeScope={hubScope === 'MT' ? 'MT' : 'PD'}
+                  initialHubId={hubId}
                 />
               </>
             )}
