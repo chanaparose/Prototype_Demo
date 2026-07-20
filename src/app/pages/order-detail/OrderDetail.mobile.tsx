@@ -410,13 +410,15 @@ function OrderDetailMobileBody() {
             </div>
           ) : null}
 
-          <OrderProductionTab
-            orderId={order.id}
-            hideHeader
-            onPhotoClick={setSelectedPhoto}
-            onPayDeposit={uiMode.lockReason === 'PENDING_DEPOSIT' ? openDepositModal : undefined}
-            onContactFactory={openOrderChat}
-          />
+          <div data-tour='order-production'>
+            <OrderProductionTab
+              orderId={order.id}
+              hideHeader
+              onPhotoClick={setSelectedPhoto}
+              onPayDeposit={uiMode.lockReason === 'PENDING_DEPOSIT' ? openDepositModal : undefined}
+              onContactFactory={openOrderChat}
+            />
+          </div>
 
           {/* Review CTA — show right after production progress */}
           {order.status === 'completed' ? (

@@ -595,6 +595,25 @@ const RFQ_MOCKS: MockEntry[] = [
 //           GET /wallet/me     (prefetch wallet balance)
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Production timeline steps — all completed (order delivered, awaiting review).
+const ORDER_17_STEPS = [
+  { step_id: 1, step_code: 'CONFIRM', step_name_th: 'ยืนยันคำสั่งซื้อ', sort_order: 1 },
+  { step_id: 2, step_code: 'MATERIAL', step_name_th: 'จัดซื้อวัตถุดิบ', sort_order: 2 },
+  { step_id: 3, step_code: 'PRODUCTION', step_name_th: 'เริ่มกระบวนการผลิต', sort_order: 3 },
+  { step_id: 4, step_code: 'QC1', step_name_th: 'Quality Check ครั้งที่ 1', sort_order: 4 },
+  { step_id: 5, step_code: 'PACKAGING', step_name_th: 'บรรจุและติดฉลาก', sort_order: 5 },
+  { step_id: 6, step_code: 'QC_FINAL', step_name_th: 'QC ขั้นสุดท้ายและจัดส่ง', sort_order: 6 },
+];
+
+const ORDER_17_UPDATES = [
+  { step_id: 1, step_code: 'CONFIRM', status: 'CD', completed_at: '2026-01-15T10:00:00Z', description: 'ชำระมัดจำและยืนยันแล้ว' },
+  { step_id: 2, step_code: 'MATERIAL', status: 'CD', completed_at: '2026-01-18T14:00:00Z', description: 'ไนลอนและหนังสังเคราะห์พร้อมแล้ว' },
+  { step_id: 3, step_code: 'PRODUCTION', status: 'CD', completed_at: '2026-01-22T08:00:00Z', description: 'ตัดเย็บและประกอบตามแบบ' },
+  { step_id: 4, step_code: 'QC1', status: 'CD', completed_at: '2026-01-28T11:00:00Z', description: 'ผ่านการตรวจสอบความแข็งแรง' },
+  { step_id: 5, step_code: 'PACKAGING', status: 'CD', completed_at: '2026-02-02T09:00:00Z', description: 'บรรจุและติดฉลากเรียบร้อย' },
+  { step_id: 6, step_code: 'QC_FINAL', status: 'CD', completed_at: '2026-02-05T15:00:00Z', description: 'QC ขั้นสุดท้ายผ่าน จัดส่งแล้ว' },
+];
+
 const ORDER_17 = {
   order_id: 17,
   customer_id: TOUR_CUSTOMER.user_id,
@@ -605,12 +624,12 @@ const ORDER_17 = {
   quantity: 500,
   total_amount: 42000,
   deposit_amount: 21000,
-  remaining_amount: 21000,
+  remaining_amount: 0,
   deposit_paid: 21000,
-  status: 'PR',
-  status_label: 'กำลังผลิต',
-  progress_percent: 65,
-  estimated_delivery: '2026-05-20',
+  status: 'CP',
+  status_label: 'เสร็จสิ้น',
+  progress_percent: 100,
+  estimated_delivery: '2026-02-05',
   created_at: '2026-01-15T09:00:00Z',
   rfq: {
     rfq_id: 28,
@@ -628,48 +647,31 @@ const ORDER_17 = {
   },
   payment_schedule: [
     { stage: 'DEPOSIT', amount: 21000, paid_at: '2026-01-15T09:30:00Z', status: 'PAID' },
-    { stage: 'FINAL', amount: 21000, paid_at: null, status: 'PENDING', due_date: '2026-05-20' },
+    { stage: 'FINAL', amount: 21000, paid_at: '2026-02-05T16:00:00Z', status: 'PAID' },
   ],
-  production_updates: [
-    {
-      step_code: 'CONFIRM',
-      step_name: 'ยืนยันคำสั่งซื้อ',
-      status: 'CD',
-      completed_at: '2026-01-15T10:00:00Z',
-      description: 'ชำระมัดจำและยืนยันแล้ว',
-    },
-    {
-      step_code: 'MATERIAL',
-      step_name: 'จัดซื้อวัตถุดิบ',
-      status: 'CD',
-      completed_at: '2026-01-18T14:00:00Z',
-      description: 'ไนลอนและหนังสังเคราะห์พร้อมแล้ว',
-    },
-    {
-      step_code: 'PRODUCTION',
-      step_name: 'เริ่มกระบวนการผลิต',
-      status: 'CD',
-      completed_at: '2026-01-22T08:00:00Z',
-      description: 'ตัดเย็บและประกอบตามแบบ',
-    },
-    {
-      step_code: 'QC1',
-      step_name: 'Quality Check ครั้งที่ 1',
-      status: 'IP',
-      description: 'ตรวจสอบความแข็งแรงของชิ้นงาน',
-    },
-    { step_code: 'PACKAGING', step_name: 'บรรจุและติดฉลาก', status: 'PD' },
-    { step_code: 'QC_FINAL', step_name: 'QC ขั้นสุดท้ายและจัดส่ง', status: 'PD' },
-  ],
+  // Embedded production bundle (GET /orders/:id includes it) — drives the timeline.
+  production: {
+    order_id: 17,
+    order_status: 'CP',
+    production_locked: false,
+    template_preview: ORDER_17_STEPS,
+    updates: ORDER_17_UPDATES,
+  },
+  // Delivered & awaiting the customer's review (not refunded).
   review_state: {
-    eligible: false,
-    has_review: false,
+    order_id: 17,
+    factory_id: TOUR_FACTORY.factory_id,
+    factory_name: TOUR_FACTORY.factory_name,
+    eligible: true,
+    already_reviewed: false,
   },
 };
 
 const ORDER_MOCKS: MockEntry[] = [
-  // GET /orders/17 — order detail with nested production, rfq, quotation
+  // GET /orders/17 — order detail with embedded production, review_state, rfq, quotation
   { match: '/orders/17', body: ORDER_17 },
+  // GET /orders/17/disputes — no dispute (demo order is awaiting review, not refunded)
+  { match: new RegExp('^/orders/17/disputes$'), body: null },
   // GET /wallet/me — prefetch for payment modal
   { match: '/wallet/me', body: { good_fund: 5000, pending_fund: 0 } },
 ];

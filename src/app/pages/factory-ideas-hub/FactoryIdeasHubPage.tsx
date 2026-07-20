@@ -66,6 +66,7 @@ function HubSection({
   accent = 'purple',
   seeAllHref,
   onHubClick,
+  markFirstCard = false,
 }: {
   title: string;
   subtitle?: string;
@@ -73,6 +74,8 @@ function HubSection({
   accent?: 'purple' | 'orange';
   seeAllHref?: string;
   onHubClick: (hub: IHubResponse) => void;
+  /** Tag the first card with data-tour="hub-first-card" for the product tour. */
+  markFirstCard?: boolean;
 }) {
   const navigate = useNavigate();
   if (hubs.length === 0) return null;
@@ -113,8 +116,13 @@ function HubSection({
       </div>
 
       <div className='flex flex-nowrap items-stretch gap-2 overflow-x-auto pb-2 scrollbar-hide lg:gap-2.5'>
-        {hubs.map((hub) => (
-          <HubCard key={hub.hub_id} hub={hub} onClick={() => onHubClick(hub)} />
+        {hubs.map((hub, i) => (
+          <HubCard
+            key={hub.hub_id}
+            hub={hub}
+            onClick={() => onHubClick(hub)}
+            dataTour={markFirstCard && i === 0 ? 'hub-first-card' : undefined}
+          />
         ))}
       </div>
     </section>
@@ -239,20 +247,28 @@ export function FactoryIdeasHubPage() {
       ) : null}
 
       {!isLoading
-        ? HUB_SCOPE_ORDER.map((scope) => (
-            <HubSection
-              key={scope}
-              title={`หมวดแนะนำ · ${HUB_SCOPE_LABELS[scope]}`}
-              subtitle={
-                filteredByScope[scope].length > 0
-                  ? `${filteredByScope[scope].length} กลุ่มธุรกิจ`
-                  : undefined
-              }
-              hubs={filteredByScope[scope]}
-              seeAllHref={`/factory-ideas?hub_scope=${scope}`}
-              onHubClick={openHub}
-            />
-          ))
+        ? (() => {
+            // First non-empty scope owns the product-tour's first-card target,
+            // so step 1 lands on the top card without scrolling to find one.
+            const firstFilledScope = HUB_SCOPE_ORDER.find(
+              (scope) => filteredByScope[scope].length > 0,
+            );
+            return HUB_SCOPE_ORDER.map((scope) => (
+              <HubSection
+                key={scope}
+                title={`หมวดแนะนำ · ${HUB_SCOPE_LABELS[scope]}`}
+                subtitle={
+                  filteredByScope[scope].length > 0
+                    ? `${filteredByScope[scope].length} กลุ่มธุรกิจ`
+                    : undefined
+                }
+                hubs={filteredByScope[scope]}
+                seeAllHref={`/factory-ideas?hub_scope=${scope}`}
+                onHubClick={openHub}
+                markFirstCard={scope === firstFilledScope}
+              />
+            ));
+          })()
         : null}
 
       <HubShowcasesFeed

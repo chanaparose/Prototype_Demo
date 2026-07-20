@@ -5,12 +5,14 @@ export function SpotlightOverlay({
   color,
   radius,
   pad = 10,
+  transitioning,
   onClickOutside,
 }: {
   rect: DOMRect | null;
   color: string;
   radius: number;
   pad?: number;
+  transitioning: boolean;
   onClickOutside: () => void;
 }) {
   const PAD = pad;
@@ -29,6 +31,8 @@ export function SpotlightOverlay({
         cursor: 'default',
         width: '100%',
         height: '100%',
+        opacity: transitioning ? 0.72 : 1,
+        transition: 'opacity 180ms ease',
       }}
     >
       <defs>
@@ -36,6 +40,7 @@ export function SpotlightOverlay({
           <rect width='100%' height='100%' fill='white' />
           {rect && (
             <rect
+              className='tour-spot'
               x={rect.left - PAD}
               y={rect.top - PAD}
               width={rect.width + PAD * 2}
@@ -65,6 +70,7 @@ export function SpotlightOverlay({
 
           {/* Outer contrast ring */}
           <rect
+            className='tour-spot'
             x={rect.left - PAD - 1}
             y={rect.top - PAD - 1}
             width={rect.width + PAD * 2 + 2}
@@ -78,6 +84,7 @@ export function SpotlightOverlay({
 
           {/* Accent glow */}
           <rect
+            className='tour-spot'
             x={rect.left - PAD}
             y={rect.top - PAD}
             width={rect.width + PAD * 2}
@@ -92,7 +99,7 @@ export function SpotlightOverlay({
 
           {/* Crisp accent ring */}
           <rect
-            className='tour-ring'
+            className='tour-ring tour-spot'
             x={rect.left - PAD}
             y={rect.top - PAD}
             width={rect.width + PAD * 2}

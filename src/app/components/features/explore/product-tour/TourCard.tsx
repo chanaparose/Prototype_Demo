@@ -10,6 +10,7 @@ export function TourCard({
   total,
   rect,
   isMock,
+  transitioning,
   onPrev,
   onNext,
   onClose,
@@ -19,6 +20,7 @@ export function TourCard({
   total: number;
   rect: DOMRect | null;
   isMock: boolean;
+  transitioning: boolean;
   onPrev: () => void;
   onNext: () => void;
   onClose: () => void;
@@ -38,12 +40,13 @@ export function TourCard({
     <LiquidGlassSurface
       filterId='tour-card-glass'
       tone='tour'
-      key={stepIdx}
       onClick={(e) => e.stopPropagation()}
       className='fixed left-3 right-3 z-[100001] mx-auto max-w-[440px] rounded-[22px] px-4 pb-4 pt-3.5'
       style={{
         ...(placeAtTop ? { top: 16 } : { bottom: 16 }),
-        animation: 'tour-card-in 0.26s cubic-bezier(0.22, 1, 0.36, 1) both',
+        opacity: transitioning ? 0.82 : 1,
+        transform: transitioning ? 'translateY(4px) scale(0.992)' : 'translateY(0) scale(1)',
+        transition: 'opacity 160ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1)',
         boxShadow: placeAtTop ? TOUR_THEME.cardShadow : TOUR_THEME.cardShadowUp,
       }}
     >
@@ -112,6 +115,7 @@ export function TourCard({
             size='icon'
             filterId='tour-prev-glass'
             onClick={onPrev}
+            disabled={transitioning}
             aria-label='ย้อนกลับ'
             className='text-slate-600'
           >
@@ -126,6 +130,7 @@ export function TourCard({
           tint={accent}
           filterId='tour-next-glass'
           onClick={onNext}
+          disabled={transitioning}
           className='min-w-[7.5rem] px-5 shadow-none'
         >
           {isLast ? (

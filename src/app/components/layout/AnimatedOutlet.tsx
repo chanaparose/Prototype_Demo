@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { useLocation, useOutlet } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
 import { cn } from '@lib/utils';
 
 /**
@@ -35,10 +36,20 @@ export function AnimatedOutlet({ className }: AnimatedOutletProps) {
     routeKey === '/idea-detail' ||
     routeKey === '/orders';
 
+  // Product tour navigates a new route on every step. Page enter/exit motion
+  // (and its transform) delays each step and shifts the tour's rect measurement
+  // mid-animation → the spotlight pops in at the wrong spot. Swap pages
+  // instantly while the tour is walking so each step lands smoothly.
+  const tourActive = useSyncExternalStore(subscribeTourActive, isTourActive, () => false);
+
   // Scroll to top on every route change so new pages start at the top.
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, [routeKey]);
+
+  if (tourActive) {
+    return <div className={cn('min-h-0', className)}>{outlet}</div>;
+  }
 
   /* ── Reduced-motion: fade only, no movement ─────────────────────────── */
   if (reduceMotion) {

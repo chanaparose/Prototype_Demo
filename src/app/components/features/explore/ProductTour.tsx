@@ -44,6 +44,7 @@ export function ProductTour() {
   const [activeSteps, setActiveSteps] = useState<TourStepDef[]>(TOUR_STEPS);
   const [step, setStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const originPath = useRef('/');
   /** page tour นี้อนุญาตให้ navigate ข้ามหน้า (messages-list, orders-journey) */
   const [allowNav, setAllowNav] = useState(false);
@@ -71,6 +72,7 @@ export function ProductTour() {
       setAllowNav(isNavTour);
       setActiveSteps(steps);
       setStep(0);
+      setIsTransitioning(true);
       setTourActive(true);
       setOpen(true);
     }, 900);
@@ -85,12 +87,20 @@ export function ProductTour() {
       setAllowNav(true);
       setActiveSteps(TOUR_STEPS);
       setStep(0);
+      setIsTransitioning(true);
       setTourActive(true);
       setOpen(true);
+      // Navigate to the first step's page in the SAME batch as opening, so the
+      // tour overlay's first render lands on the target page instead of briefly
+      // flashing over the current (origin) page.
+      const firstRoute = TOUR_STEPS[0]?.route;
+      if (firstRoute && `${location.pathname}${location.search}` !== firstRoute) {
+        navigate(firstRoute);
+      }
     };
     window.addEventListener('tryly-open-tour', handler);
     return () => window.removeEventListener('tryly-open-tour', handler);
-  }, [location.pathname]);
+  }, [location.pathname, location.search, navigate]);
 
   // ── Activate mock scenario per step ────────────────────────────────────────
   useEffect(() => {
@@ -134,7 +144,6 @@ export function ProductTour() {
       if (def.route) {
         const current = `${location.pathname}${location.search}`;
         if (current !== def.route) {
-          setTargetRect(null);
           return;
         }
       }
@@ -142,7 +151,7 @@ export function ProductTour() {
 
     let cancelled = false;
     let rafId: ReturnType<typeof requestAnimationFrame> | null = null;
-    let innerTimer: ReturnType<typeof setTimeout> | null = null;
+    let measureTimer: ReturnType<typeof setTimeout> | null = null;
     let touchFollowUpTimer: ReturnType<typeof setTimeout> | null = null;
     let vvCleanup: (() => void) | null = null;
     const isTouchDevice =
@@ -156,10 +165,18 @@ export function ProductTour() {
         if (preEl) preEl.click();
       }
 
-      const measure = () => {
+      const measure = (attempt = 0) => {
         if (cancelled) return;
         const el = findTarget(def);
-        if (!el) { setTargetRect(null); return; }
+        if (!el) {
+          if (attempt < 18) {
+            measureTimer = setTimeout(() => measure(attempt + 1), 70);
+            return;
+          }
+          setTargetRect(null);
+          setIsTransitioning(false);
+          return;
+        }
         if (!isTourTargetMostlyVisible(el)) {
           el.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'nearest' });
         }
@@ -168,13 +185,14 @@ export function ProductTour() {
           requestAnimationFrame(() => {
             if (cancelled) return;
             setTargetRect(getTourTargetRect(el));
+            setIsTransitioning(false);
           });
         });
       };
 
-      innerTimer = setTimeout(measure, def.preActionSelector ? 500 : (isTouchDevice ? 450 : 280));
+      measureTimer = setTimeout(() => measure(), def.preActionSelector ? 180 : 16);
       if (isTouchDevice) {
-        touchFollowUpTimer = window.setTimeout(measure, 850);
+        touchFollowUpTimer = window.setTimeout(() => measure(), 420);
       }
 
       const vv = window.visualViewport;
@@ -195,12 +213,12 @@ export function ProductTour() {
         window.removeEventListener('resize', onViewportChange);
         window.removeEventListener('scroll', onViewportChange);
       };
-    }, isTouchDevice ? 800 : 700);
+    }, isTouchDevice ? 80 : 40);
 
     return () => {
       cancelled = true;
       clearTimeout(outerTimer);
-      if (innerTimer != null) clearTimeout(innerTimer);
+      if (measureTimer != null) clearTimeout(measureTimer);
       if (touchFollowUpTimer != null) clearTimeout(touchFollowUpTimer);
       if (rafId != null) cancelAnimationFrame(rafId);
       vvCleanup?.();
@@ -247,6 +265,7 @@ export function ProductTour() {
       endTourSession();
       setOpen(false);
       setTargetRect(null);
+      setIsTransitioning(false);
 
       if (location.pathname !== target) {
         navigate(target, { replace: true });
@@ -266,6 +285,7 @@ export function ProductTour() {
       endTourSession();
       setOpen(false);
       setTargetRect(null);
+      setIsTransitioning(false);
       // navigating page tour: กลับไปหน้าเดิมที่เริ่ม tour
       if (allowNav && location.pathname !== originPath.current) {
         navigate(originPath.current, { replace: true });
@@ -301,14 +321,16 @@ export function ProductTour() {
   }, []);
 
   const handleNext = useCallback(() => {
-    setTargetRect(null);
+    if (isTransitioning) return;
+    setIsTransitioning(true);
     setStep((s) => Math.min(s + 1, activeSteps.length - 1));
-  }, [activeSteps.length]);
+  }, [activeSteps.length, isTransitioning]);
 
   const handlePrev = useCallback(() => {
-    setTargetRect(null);
+    if (isTransitioning) return;
+    setIsTransitioning(true);
     setStep((s) => Math.max(s - 1, 0));
-  }, []);
+  }, [isTransitioning]);
 
   if (!open) return null;
 
@@ -323,6 +345,7 @@ export function ProductTour() {
         color={def.badgeColor}
         radius={def.spotlightRadius ?? 12}
         pad={def.spotlightPad ?? 10}
+        transitioning={isTransitioning}
         onClickOutside={handleClose}
       />
       <TourCard
@@ -331,6 +354,7 @@ export function ProductTour() {
         total={activeSteps.length}
         rect={targetRect}
         isMock={false}
+        transitioning={isTransitioning}
         onPrev={handlePrev}
         onNext={isLast ? handleFinish : handleNext}
         onClose={handleClose}

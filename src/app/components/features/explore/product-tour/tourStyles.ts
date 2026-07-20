@@ -15,9 +15,19 @@ const TOUR_CSS = `
   0%,100% { box-shadow: 0 0 0 0 var(--tour-glow,rgba(162,56,255,0.5)), 0 4px 12px var(--tour-glow-soft,rgba(162,56,255,0.3)); }
   50%      { box-shadow: 0 0 0 9px rgba(0,0,0,0), 0 4px 12px var(--tour-glow-soft,rgba(162,56,255,0.3)); }
 }
+.tour-spot {
+  transition: x 0.34s cubic-bezier(0.22,1,0.36,1),
+              y 0.34s cubic-bezier(0.22,1,0.36,1),
+              width 0.34s cubic-bezier(0.22,1,0.36,1),
+              height 0.34s cubic-bezier(0.22,1,0.36,1);
+}
 .tour-ring { animation: tour-ring-pulse 1.6s ease-in-out infinite; }
 .tour-mock-frame { animation: tour-mock-in 0.22s ease-out both; }
 .tour-btn-glow { animation: tour-btn-glow 2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .tour-ring, .tour-mock-frame, .tour-btn-glow { animation: none !important; }
+  .tour-spot { transition: none !important; }
+}
 `;
 
 let cssInjected = false;

@@ -15,10 +15,12 @@ export function HubCard({
   hub,
   onClick,
   className,
+  dataTour,
 }: {
   hub: IHubResponse;
   onClick: () => void;
   className?: string;
+  dataTour?: string;
 }) {
   const palette = getPalette(hub.hub_id);
   const imgSrc = resolveHubImg(hub);
@@ -28,6 +30,7 @@ export function HubCard({
   return (
     <button
       type='button'
+      data-tour={dataTour}
       onClick={onClick}
       className={cn(
         'group flex w-[140px] shrink-0 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white text-left shadow-[0_1px_4px_rgba(0,0,0,0.06)] transition-all hover:shadow-[0_2px_8px_rgba(0,0,0,0.10)] active:scale-[0.97] lg:w-[160px]',
