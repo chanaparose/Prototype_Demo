@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Button } from '@/components/ui/button';
 import { ExploreFooter } from '@/components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '@/components/features/explore/HowToOrderSection';
 import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFactoryShowcase';
@@ -57,25 +56,6 @@ export function ExploreDesktop({
             className='hidden xl:block h-full w-full object-cover object-[center_53%]'
           />
         </section>
-
-        <div className='flex flex-wrap items-center justify-end gap-2'>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => navigate('/create-rfq')}
-            className='rounded-xl border border-brand-orange/30 bg-white px-4 py-2 text-xs font-semibold text-brand-orange shadow-sm hover:bg-orange-50 transition-colors'
-          >
-            สร้าง RFQ
-          </Button>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => navigate(`/factory-ideas-hub?scope=${activeScope}`)}
-            className='rounded-xl border border-brand-purple/25 bg-white px-4 py-2 text-xs font-semibold text-brand-purple shadow-sm hover:bg-[var(--brand-lavender-chip)] transition-colors'
-          >
-            ดูหมวดทั้งหมด
-          </Button>
-        </div>
 
         <ExploreScopeTabs activeScope={activeScope} onScopeChange={setActiveScope} />
 

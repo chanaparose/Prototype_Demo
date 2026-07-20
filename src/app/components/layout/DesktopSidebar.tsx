@@ -33,8 +33,6 @@ import { resolveCustomerAvatarSrc } from '@/utils/customerAvatar';
 import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
 import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
 import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
@@ -145,10 +143,7 @@ export function DesktopSidebar() {
   const factoryApproved = factoryVerifyStatus(authUser) === 'AP';
   const { isEscrow } = usePaymentConfig();
   const factoryNavItems = filterFactoryNavByPaymentMode(FACTORY_SIDEBAR_NAV, isEscrow);
-  // Tour state persisted with localStorage and synchronized via subscription
-  const { value: tourOn, setValue: setTourOn } = useLocalStorage('tourActive', isTourActive());
   const { open: openLoginModal } = useAuthModalStore();
-  React.useEffect(() => subscribeTourActive((active) => setTourOn(active)), [setTourOn]);
 
   const isActivePath = (path: string) => isCustomerNavLinkActive(location.pathname, path);
 
@@ -288,57 +283,58 @@ export function DesktopSidebar() {
             })}
       </nav>
 
-      {!isFactory && !isAuthenticated ? (
-        <div
-          className='relative mx-3 mb-3 overflow-hidden rounded-2xl border p-3.5'
-          style={{
-            background: 'var(--brand-panel-hover)',
-            borderColor: 'rgba(162,56,255,0.20)',
-          }}
-        >
-          <div
-            className='pointer-events-none absolute -right-4 -top-4 h-16 w-16 rounded-full blur-xl'
-            style={{ background: 'rgba(162,56,255,0.10)' }}
-          />
-          <div className='relative'>
-            <div className='mb-1.5 flex items-center gap-1.5'>
-              <UserPlus size={13} style={{ color: 'var(--brand-orange)' }} />
-              <span className='text-[11px] font-medium text-gray-500'>สมาชิกใหม่</span>
-            </div>
-            <p
-              className='mb-0.5 text-sm font-bold leading-snug'
-              style={{ color: 'var(--brand-navy-deep)' }}
+      {!isFactory ? (
+        <div className='space-y-2.5 px-3 pb-3'>
+          
+          {!isAuthenticated ? (
+            <div
+              className='relative w-full overflow-hidden rounded-xl border p-3.5'
+              style={{
+                background: 'var(--brand-panel-hover)',
+                borderColor: 'rgba(162,56,255,0.20)',
+              }}
             >
-              เริ่มต้นใช้งานฟรี
-            </p>
-            <p className='mb-3 text-[10px] leading-relaxed text-gray-500'>
-              สมัครเพื่อสร้างคำขอราคา ติดตามงาน และแชทกับโรงงาน
-            </p>
-            <div className='flex gap-2'>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => openLoginModal()}
-                className='flex-1 rounded-lg border border-brand-purple/25 bg-white px-2 py-2 text-[11px] font-semibold transition-colors hover:bg-brand-lavender-muted/40'
-                style={{ color: 'var(--brand-purple)' }}
-              >
-                เข้าสู่ระบบ
-              </Button>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => navigate('/register')}
-                className='flex-1 rounded-lg bg-brand-purple px-2 py-2 text-[11px] font-semibold text-white shadow-[0_2px_8px_rgba(162,56,255,0.18)] transition-colors hover:bg-brand-violet-deep'
-              >
-                สมัครสมาชิก
-              </Button>
+              <div
+                className='pointer-events-none absolute -right-4 -top-4 h-16 w-16 rounded-full blur-xl'
+                style={{ background: 'rgba(162,56,255,0.10)' }}
+              />
+              <div className='relative'>
+                <div className='mb-1.5 flex items-center gap-1.5'>
+                  <UserPlus size={13} style={{ color: 'var(--brand-orange)' }} />
+                  <span className='text-[11px] font-medium text-gray-500'>สมาชิกใหม่</span>
+                </div>
+                <p
+                  className='mb-0.5 text-sm font-bold leading-snug'
+                  style={{ color: 'var(--brand-navy-deep)' }}
+                >
+                  เริ่มต้นใช้งานฟรี
+                </p>
+                <p className='mb-3 text-[10px] leading-relaxed text-gray-500'>
+                  สมัครเพื่อติดตามงาน และแชทกับโรงงาน
+                </p>
+                <div className='flex gap-2'>
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={() => openLoginModal()}
+                    className='flex-1 rounded-lg border border-brand-purple/25 bg-white px-2 py-2 text-[11px] font-semibold transition-colors hover:bg-brand-lavender-muted/40'
+                    style={{ color: 'var(--brand-purple)' }}
+                  >
+                    เข้าสู่ระบบ
+                  </Button>
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={() => navigate('/register')}
+                    className='flex-1 rounded-lg bg-brand-purple px-2 py-2 text-[11px] font-semibold text-white shadow-[0_2px_8px_rgba(162,56,255,0.18)] transition-colors hover:bg-brand-violet-deep'
+                  >
+                    สมัครสมาชิก
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      ) : null}
+          ) : null}
 
-      {!isFactory && (isAuthenticated || tourOn === true) ? (
-        <div className='px-3 pb-3'>
           <Button
             variant='unstyled'
             type='button'
@@ -350,7 +346,7 @@ export function DesktopSidebar() {
               size={18}
               className='text-white/90 transition-transform duration-200 group-hover:rotate-90'
             />
-            <span>สร้างคำขอราคา</span>
+            <span>สร้าง RFQ</span>
             <span
               aria-hidden
               className='pointer-events-none absolute inset-0 rounded-xl bg-white/0 transition-colors group-hover:bg-white/10'
