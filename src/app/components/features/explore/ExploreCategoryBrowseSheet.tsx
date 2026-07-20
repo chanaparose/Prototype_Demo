@@ -61,7 +61,7 @@ function HubTabButton({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        'relative shrink-0 pb-2.5 pt-1 text-[13px] transition-colors',
+        'relative shrink-0 pb-3 pt-3 text-[13px] transition-colors',
         active
           ? 'font-bold text-brand-navy-ink'
           : 'font-medium text-slate-400 hover:text-slate-600',
