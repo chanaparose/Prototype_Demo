@@ -1,16 +1,13 @@
-import { ArrowLeft, ChevronDown, LayoutGrid } from 'lucide-react';
+import { ArrowLeft, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
-import { AppDialog } from '@/components/ui/app-dialog';
-import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { ExploreCategoryBrowseSheet } from '@/components/features/explore/ExploreCategoryBrowseSheet';
 import { getFactoryIdeasHubPath } from '@/components/features/factory-ideas/factoryIdeasHubNav';
 import { factoryBadgeClass } from '@/pages/factory-portal/factoryUi';
 import { type HubScope } from '@/components/features/hub/hubRowShared';
-import { getPalette } from '@/components/features/hub/HubCategoryCard';
-import { resolveHubImg } from '@/components/features/hub/HubCard';
 import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { IHubResponse } from '@/services/api/types/master.types';
 
 type ScopeOption = HubScope | 'all';
@@ -19,29 +16,6 @@ const SCOPE_TAB_OPTIONS: { id: HubScope; label: string }[] = [
   { id: 'PD', label: 'ผลิตสินค้า' },
   { id: 'MT', label: 'วัตถุดิบ' },
 ];
-
-function resolveHubListImg(hub: IHubResponse): string {
-  const hubImg = resolveHubImg(hub);
-  if (hubImg) return hubImg;
-  for (const cat of hub.categories ?? []) {
-    const catImg = String(cat.img || cat.image_url || cat.image || '').trim();
-    if (catImg) return catImg;
-  }
-  return '';
-}
-
-function hubListDescription(hub: IHubResponse): string {
-  const catCount = hub.categories?.length ?? 0;
-  const factoryCount = (hub.categories ?? []).reduce(
-    (sum, c) => sum + (c.factory_count ?? 0),
-    0,
-  );
-  if (factoryCount > 0) {
-    return `${factoryCount.toLocaleString('th-TH')} โรงงาน · ${catCount} หมวด`;
-  }
-  if (catCount > 0) return `${catCount} หมวดในกลุ่มนี้`;
-  return 'ดูไอเดียในกลุ่มนี้';
-}
 
 type FactoryIdeasPageHeaderProps = {
   title: string;
@@ -100,75 +74,6 @@ function HubTabButton({
         />
       ) : null}
     </button>
-  );
-}
-
-function HubListRow({
-  label,
-  description,
-  active,
-  onClick,
-  imgSrc,
-  fallbackId = 0,
-  leading,
-}: {
-  label: string;
-  description: string;
-  active: boolean;
-  onClick: () => void;
-  imgSrc?: string;
-  fallbackId?: number;
-  leading?: ReactNode;
-}) {
-  const palette = getPalette(fallbackId);
-
-  return (
-    <li>
-      <button
-        type='button'
-        onClick={onClick}
-        className={cn(
-          'flex w-full items-center gap-3.5 rounded-2xl px-1.5 py-2.5 text-left transition-colors',
-          active
-            ? 'bg-brand-lavender-chip/80'
-            : 'hover:bg-brand-lavender-chip/50 active:bg-brand-lavender-chip/80',
-        )}
-      >
-        <div
-          className={cn(
-            'flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-100',
-            imgSrc || leading ? 'bg-white' : palette.bg,
-          )}
-        >
-          {imgSrc ? (
-            <ImageWithFallback
-              src={imgSrc}
-              alt={label}
-              className='h-full w-full object-cover'
-            />
-          ) : leading ? (
-            leading
-          ) : (
-            <span className={cn('text-lg font-bold opacity-50', palette.text)}>
-              {label.slice(0, 1)}
-            </span>
-          )}
-        </div>
-        <div className='min-w-0 flex-1'>
-          <p
-            className={cn(
-              'truncate text-[14px] font-bold leading-tight',
-              active ? 'text-brand-purple' : 'text-brand-navy-ink',
-            )}
-          >
-            {label}
-          </p>
-          <p className='mt-1 line-clamp-1 text-[12px] leading-tight text-slate-400'>
-            {description}
-          </p>
-        </div>
-      </button>
-    </li>
   );
 }
 
@@ -343,46 +248,12 @@ export function FactoryIdeasPageHeader({
         </h1>
       )}
 
-      <AppDialog
+      <ExploreCategoryBrowseSheet
         open={hubSheetOpen}
         onOpenChange={setHubSheetOpen}
-        title='เลือกหมวดหมู่'
-        variant='sheet'
-        size='lg'
-        className='max-h-[85vh] sm:max-h-[80vh]'
-        bodyClassName='bg-white px-3 pb-5 pt-1 sm:px-4'
-      >
-        <ul className='space-y-1'>
-          <HubListRow
-            label='ทั้งหมด'
-            description='ไอเดียทุกหมวดในประเภทนี้'
-            active={selectedHubId === null}
-            onClick={() => pickHub(null)}
-            leading={
-              <LayoutGrid
-                size={22}
-                strokeWidth={2}
-                className={selectedHubId === null ? 'text-brand-purple' : 'text-slate-400'}
-              />
-            }
-          />
-
-          {scopedHubs.map((hub) => {
-            const imgSrc = resolveHubListImg(hub);
-            return (
-              <HubListRow
-                key={hub.hub_id}
-                label={hub.name}
-                description={hubListDescription(hub)}
-                active={selectedHubId === hub.hub_id}
-                imgSrc={imgSrc || undefined}
-                fallbackId={hub.hub_id}
-                onClick={() => pickHub(hub)}
-              />
-            );
-          })}
-        </ul>
-      </AppDialog>
+        activeScope={activeScope === 'MT' ? 'MT' : 'PD'}
+        initialHubId={selectedHubId ?? undefined}
+      />
     </div>
   );
 }
