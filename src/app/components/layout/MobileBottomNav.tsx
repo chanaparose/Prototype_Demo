@@ -22,6 +22,7 @@ type MobileBottomNavProps = {
   factoryApproved: boolean;
   factoryBottomLinks: FactorySidebarNavItem[];
   unreadMessages: number;
+  factoryOrdersBadge?: number;
   brandActive: string;
   isAuthenticated: boolean;
   onProfileGuest: () => void;
@@ -96,6 +97,7 @@ export function MobileBottomNav({
   factoryApproved,
   factoryBottomLinks,
   unreadMessages,
+  factoryOrdersBadge = 0,
   brandActive,
   isAuthenticated,
   onProfileGuest,
@@ -119,7 +121,12 @@ export function MobileBottomNav({
           ? factoryBottomLinks.map((item) => {
               const active = isFactorySidebarNavActive(location.pathname, item);
               const locked = Boolean(item.requiresApproval && !factoryApproved);
-              const badge = item.key === 'messages' ? unreadMessages : undefined;
+              const badge =
+                item.key === 'messages'
+                  ? unreadMessages
+                  : item.key === 'factory-orders'
+                    ? factoryOrdersBadge
+                    : undefined;
               return (
                 <NavItem
                   key={item.key}

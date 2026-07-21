@@ -127,7 +127,7 @@ function parseRfqRows(board: { rfqs: unknown; factory_category_ids?: unknown }):
   return bases;
 }
 
-export function useFactoryRfqBoard() {
+export function useFactoryRfqBoard(enabled = true) {
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
   const [rows, setRows] = useState<FactoryBoardRow[]>([]);
@@ -141,6 +141,7 @@ export function useFactoryRfqBoard() {
   const [dismissedLoaded, setDismissedLoaded] = useState(false);
 
   const load = useCallback(async () => {
+    if (!enabled) return;
     setLoading(true);
     setError('');
     try {
@@ -164,7 +165,7 @@ export function useFactoryRfqBoard() {
     } finally {
       setLoading(false);
     }
-  }, [fid]);
+  }, [fid, enabled]);
 
   const loadDismissed = useCallback(async () => {
     setDismissedLoading(true);

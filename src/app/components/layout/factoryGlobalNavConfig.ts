@@ -16,7 +16,7 @@ export type FactorySidebarNavItem = {
   label: string;
   icon: LucideIcon;
   href: string;
-  badge?: 'unread-messages';
+  badge?: 'unread-messages' | 'new-rfqs' | 'orders-need-action';
   activeMatch: 'exact' | 'prefix' | 'pathname';
   activePath: string;
   /** เส้นทางเพิ่มเติมที่ถือว่า active ในเมนูเดียวกัน */
@@ -99,6 +99,7 @@ export const FACTORY_SIDEBAR_NAV_GROUPS: FactorySidebarNavGroup[] = [
         label: 'RFQ & ใบเสนอราคา',
         icon: ClipboardList,
         href: '/factory/rfqs',
+        badge: 'new-rfqs',
         activeMatch: 'prefix',
         activePath: '/factory/rfqs',
         extraActivePaths: ['/factory/quotations'],
@@ -109,6 +110,7 @@ export const FACTORY_SIDEBAR_NAV_GROUPS: FactorySidebarNavGroup[] = [
         label: 'ออเดอร์',
         icon: Package,
         href: '/factory/orders',
+        badge: 'orders-need-action',
         activeMatch: 'prefix',
         activePath: '/factory/orders',
         requiresApproval: true,

@@ -103,7 +103,7 @@ function normalizeRow(raw: Record<string, unknown>): FactoryOrderRow | null {
   };
 }
 
-export function useFactoryOrdersData() {
+export function useFactoryOrdersData(enabled = true) {
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
   return useQuery({
@@ -116,6 +116,7 @@ export function useFactoryOrdersData() {
         .filter((r): r is FactoryOrderRow => r != null)
         .filter((r) => (fid ? r.factory_id === fid : true));
     },
+    enabled,
     staleTime: 30000,
     refetchOnWindowFocus: true,
   });

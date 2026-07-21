@@ -32,6 +32,7 @@ import { usePaymentConfig } from '@/hooks/usePaymentConfig';
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
 import { resolveCustomerAvatarSrc } from '@/utils/customerAvatar';
 import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
+import { useFactoryPendingCounts } from '@/hooks/factory/useFactoryPendingCounts';
 import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
 import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
 import { Button } from '@/components/ui/button';
@@ -178,6 +179,13 @@ export function DesktopSidebar() {
 
   const unreadMessages = useConversationUnreadCount();
   const unreadNotifications = useNotificationUnreadCount(isAuthenticated);
+  const factoryPending = useFactoryPendingCounts(isAuthenticated && isFactory);
+  const factoryOrdersBadgeCount = factoryPending.ordersNeedAction + factoryPending.verifySlip;
+  const factoryBadgeCounts: Record<string, number> = {
+    'unread-messages': unreadMessages,
+    'new-rfqs': factoryPending.newRfqs,
+    'orders-need-action': factoryOrdersBadgeCount,
+  };
   const { data: rfqListResult } = useRfqListQuery();
   const factoryProfileQ = useQuery({
     queryKey: profileInitKey,
@@ -260,14 +268,18 @@ export function DesktopSidebar() {
                         aria-hidden
                       />
                     ) : null}
-                    {item.badge === 'unread-messages' && unreadMessages > 0 ? (
-                      <span
-                        className='flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white'
-                        style={{ background: 'var(--brand-orange)' }}
-                      >
-                        {unreadMessages > 99 ? '99+' : unreadMessages}
-                      </span>
-                    ) : null}
+                    {(() => {
+                      const badgeCount = item.badge ? factoryBadgeCounts[item.badge] ?? 0 : 0;
+                      if (badgeCount <= 0) return null;
+                      return (
+                        <span
+                          className='flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white'
+                          style={{ background: 'var(--brand-orange)' }}
+                        >
+                          {badgeCount > 99 ? '99+' : badgeCount}
+                        </span>
+                      );
+                    })()}
                   </Button>
                 );
               };
@@ -285,9 +297,10 @@ export function DesktopSidebar() {
               );
               const isOpen = groupHasActive || !collapsedFactoryGroups[group.label];
               const GroupIcon = FACTORY_GROUP_ICONS[group.label] ?? Factory;
-              const groupUnread = group.items.some((item) => item.badge === 'unread-messages')
-                ? unreadMessages
-                : 0;
+              const groupUnread = group.items.reduce(
+                (sum, item) => sum + (item.badge ? factoryBadgeCounts[item.badge] ?? 0 : 0),
+                0,
+              );
 
               return (
                 <div key={group.label} className='mt-1.5'>

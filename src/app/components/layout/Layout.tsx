@@ -28,6 +28,7 @@ import {
 import { MobileCreateRfqFab } from '@/components/layout/MobileCreateRfqFab';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
+import { useFactoryPendingCounts } from '@/hooks/factory/useFactoryPendingCounts';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
 import { ImageLightbox } from '@/components/common/ImageLightbox';
@@ -149,6 +150,8 @@ export function Layout() {
   const bottomNavCompact = useMobileBottomNavHide();
   const hideMobileBottomNav = isMobileCustomBottomBarRoute(location.pathname);
   const unreadMessages = useConversationUnreadCount();
+  const factoryPending = useFactoryPendingCounts(isAuthenticated && isFactory);
+  const factoryOrdersBadge = factoryPending.ordersNeedAction + factoryPending.verifySlip;
   const { likedIds } = useFavorites();
   const { open: openLoginModal } = useAuthModalStore();
   const showCustomerFavorites = !isFactory && !isAdminRole;
@@ -313,6 +316,7 @@ export function Layout() {
           factoryApproved={factoryApproved}
           factoryBottomLinks={factoryBottomLinks}
           unreadMessages={unreadMessages}
+          factoryOrdersBadge={factoryOrdersBadge}
           brandActive={brandActive}
           isAuthenticated={isAuthenticated}
           onProfileGuest={() => openLoginModal('/profile')}
