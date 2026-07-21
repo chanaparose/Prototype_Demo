@@ -34,7 +34,7 @@ export function AppSheetDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          'fixed bottom-0 left-0 right-0 top-auto flex !max-h-[70dvh] w-full max-w-lg translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-t-2xl border-gray-100 p-0 sm:bottom-auto sm:left-[50%] sm:top-[50%] sm:!max-h-[90vh] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-2xl',
+          'fixed bottom-0 left-0 right-0 top-auto flex h-[75dvh] !max-h-[75dvh] w-full max-w-lg translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-t-2xl border-gray-100 p-0 sm:bottom-auto sm:left-[50%] sm:top-[50%] sm:h-auto sm:!max-h-[90vh] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-2xl',
           className,
         )}
         showCloseButton={false}

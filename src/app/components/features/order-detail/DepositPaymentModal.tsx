@@ -82,8 +82,6 @@ export function DepositPaymentModal({
     outcome: 'approved' | 'rejected' | 'pending';
     reasons: string[];
   } | null>(null);
-  /** Lock body min-height to step 1 viewport so later steps stay same size without scrolling. */
-  const [lockedBodyMinHeight, setLockedBodyMinHeight] = React.useState<number | null>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
   const bodyRef = React.useRef<HTMLDivElement>(null);
 
@@ -94,7 +92,6 @@ export function DepositPaymentModal({
       setNote('');
       setVerifyResult(null);
       setStep('upload');
-      setLockedBodyMinHeight(null);
     }
   }, [open]);
 
@@ -122,9 +119,6 @@ export function DepositPaymentModal({
 
   const handleSubmit = async () => {
     if (!file || submitting) return;
-    // Capture visible body height before leaving step 1 (not scrollHeight — avoids empty scroll).
-    const body = bodyRef.current;
-    if (body) setLockedBodyMinHeight(body.clientHeight);
     setSubmitting(true);
     setVerifyResult(null);
     setStep('checking');
@@ -196,17 +190,6 @@ export function DepositPaymentModal({
   const compactStep = step !== 'upload';
 
   React.useLayoutEffect(() => {
-    if (!open || step !== 'upload') return;
-    const body = bodyRef.current;
-    if (!body) return;
-    const sync = () => setLockedBodyMinHeight(body.clientHeight);
-    sync();
-    const ro = new ResizeObserver(sync);
-    ro.observe(body);
-    return () => ro.disconnect();
-  }, [open, step, canUpload, preview, isEscrow, bank.isPending, bankData, trylyBank]);
-
-  React.useLayoutEffect(() => {
     if (!compactStep) return;
     // Sheet stays bottom-anchored; reset scroll so step content + footer are both in view.
     bodyRef.current?.scrollTo({ top: 0 });
@@ -221,12 +204,7 @@ export function DepositPaymentModal({
       title='ชำระเงิน — โอนผ่านธนาคาร'
       variant='sheet'
       bodyRef={bodyRef}
-      bodyClassName={[
-        'p-4 sm:p-5 pb-2',
-        compactStep ? 'overflow-hidden flex flex-col' : null,
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      bodyClassName='p-4 pb-2 sm:p-5 sm:pb-2'
       footer={
         showUploadStep && canUpload ? (
           <ModalFooter
@@ -267,22 +245,15 @@ export function DepositPaymentModal({
         ) : undefined
       }
     >
-      <div
-        className={compactStep ? 'flex h-full flex-col' : undefined}
-        style={
-          compactStep && lockedBodyMinHeight
-            ? { minHeight: lockedBodyMinHeight }
-            : undefined
-        }
-      >
+      <div className='min-h-0'>
         <StepIndicator step={step} />
 
         {showCheckingStep ? (
-          <div className='flex flex-1 items-center justify-center'>
+          <div className='flex min-h-[18rem] items-center justify-center py-2'>
             <CheckingSlipStep />
           </div>
         ) : showResultStep ? (
-          <div className='flex flex-1 items-center justify-center'>
+          <div className='flex min-h-[18rem] items-center justify-center py-2'>
             <SlipResultStep
               result={verifyResult}
               isEscrow={isEscrow}

@@ -99,7 +99,7 @@ export function RFQPicker({ conversationId, receiverId, onSelect, onCancel }: Pr
       title='แนบ RFQ'
       variant='sheet'
       size='md'
-      bodyClassName='px-0 py-0 flex flex-col max-h-[min(80vh,100dvh)]'
+      bodyClassName='px-0 py-0 flex flex-col'
       className='overflow-hidden flex flex-col'
     >
       <div className='w-10 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-4 lg:hidden' />

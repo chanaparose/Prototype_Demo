@@ -175,7 +175,7 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
         className={`
           relative bg-white w-full flex flex-col shadow-2xl
           ${isMobile
-            ? 'rounded-t-3xl !max-h-[70dvh]'
+            ? 'h-[75dvh] max-h-[75dvh] overflow-hidden rounded-t-3xl'
             : 'rounded-2xl sm:max-w-lg sm:mx-4 max-h-[90vh]'
           }
         `}
@@ -215,7 +215,7 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
         </div>
 
         {/* ── Scrollable body ── */}
-        <div className='flex-1 overflow-y-auto'>
+        <div className='min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]'>
           <div className='px-5 py-4 space-y-5'>
 
             {/* Error */}

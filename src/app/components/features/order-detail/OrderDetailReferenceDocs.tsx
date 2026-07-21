@@ -156,7 +156,7 @@ export function OrderDetailReferenceDocs({ quotation, rfq, factoryName, factoryI
           open={rfqOpen}
           onOpenChange={setRfqOpen}
           title='รายละเอียดใบขอราคา (RFQ)'
-          bodyClassName='p-4 max-h-[75vh]'
+          bodyClassName='p-4'
         >
           <RfqReferenceCard rfq={rfq} bare />
         </AppSheetDialog>

@@ -76,7 +76,7 @@ export function RfqOfferDetailSheet({
       open={open}
       onOpenChange={onOpenChange}
       title={offer.factoryName}
-      bodyClassName='max-h-[min(70vh,32rem)] overflow-y-auto px-4 py-3'
+      bodyClassName='px-4 py-3'
       footer={
         hideFooterActions ? undefined : (
           <div className='flex w-full gap-2'>
