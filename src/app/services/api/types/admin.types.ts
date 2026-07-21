@@ -311,6 +311,22 @@ export interface ISlipInfoResponse {
   verify_reasons?: string[];
 }
 
+/** หนึ่งครั้งที่ลูกค้าแนบสลิป (transaction type='BU') */
+export interface ISlipHistoryItem {
+  tx_id: number;
+  status: string; // PT = รอตรวจ | RJ = ถูกปฏิเสธ | ST = อนุมัติแล้ว
+  amount: number;
+  slip_url?: string | null;
+  slip_note?: string | null;
+  bank_ref?: string | null;
+  uploaded_at?: string | null;
+  verified_at?: string | null;
+}
+
+export interface ISlipHistoryResponse {
+  items: ISlipHistoryItem[];
+}
+
 // ─── Commission Invoice ───────────────────────────────────────────────────────
 
 export interface ICommissionInvoiceResponse {

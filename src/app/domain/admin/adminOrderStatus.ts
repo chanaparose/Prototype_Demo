@@ -8,6 +8,7 @@ export type AdminOrderStatusBadge = {
 export type AdminOrderStatusTab =
   | 'all'
   | 'verify_slip'
+  | 'slip_rejected'
   | 'pending'
   | 'processing'
   | 'completed'

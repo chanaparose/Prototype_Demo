@@ -26,6 +26,7 @@ import type {
   IPlatformConfigResponse,
   IUpdatePlatformConfigRequest,
   ISlipInfoResponse,
+  ISlipHistoryResponse,
   ICommissionInvoiceResponse,
   ICommissionInvoiceItemResponse,
   ICommissionSummaryResponse,
@@ -113,6 +114,10 @@ export const slipApi = {
   /** escrow mode: superadmin ตรวจสอบสลิปแทนโรงงาน */
   verifyAsAdmin: (orderId: number, action: 'approve' | 'reject', reason?: string) =>
     httpClient.patch<ISlipInfoResponse>(`/admin/orders/${orderId}/verify-slip`, { action, reason }),
+
+  /** ประวัติการแนบสลิปทั้งหมดของ order (admin) — เห็นทุกภาพที่แนบ + เหตุผลที่ถูกปฏิเสธ */
+  getHistory: (orderId: number) =>
+    httpClient.get<ISlipHistoryResponse>(`/admin/orders/${orderId}/slip-history`),
 };
 
 // ─── Withdrawal Admin API (escrow mode) ─────────────────────────────────────

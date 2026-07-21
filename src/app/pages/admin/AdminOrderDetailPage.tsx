@@ -154,10 +154,10 @@ export function AdminOrderDetailPage() {
         <Button
           variant='unstyled'
           type='button'
-          onClick={() => navigate('/admin/orders')}
+          onClick={() => navigate(-1)}
           className='inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800'
         >
-          <ChevronLeft size={16} /> กลับรายการออเดอร์
+          <ChevronLeft size={16} /> กลับ
         </Button>
         <div className='rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2'>
           <AlertTriangle className='w-4 h-4 mt-0.5 shrink-0' />
@@ -195,10 +195,10 @@ export function AdminOrderDetailPage() {
           <Button
             variant='unstyled'
             type='button'
-            onClick={() => navigate('/admin/orders')}
+            onClick={() => navigate(-1)}
             className='inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 mb-2'
           >
-            <ChevronLeft size={16} /> กลับรายการออเดอร์
+            <ChevronLeft size={16} /> กลับ
           </Button>
           <div className='flex flex-wrap items-center gap-3'>
             <h2 className='text-2xl lg:text-3xl font-bold text-slate-900 font-mono'>

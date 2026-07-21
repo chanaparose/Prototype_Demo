@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router';
 import { Search, AlertTriangle, Loader2, X } from 'lucide-react';
 import { adminApi, slipApi } from '@/services/api/adminApi';
 import { usePaymentConfig } from '@/hooks/usePaymentConfig';
-import type { IAdminOrderListResponse } from '@/services/api/types/admin.types';
+import type { IAdminOrderListResponse, ISlipHistoryItem } from '@/services/api/types/admin.types';
 import {
   getAdminOrderStatusMeta,
   inferAdminOrderStatusTab,
+  normalizeAdminOrderStatus,
   type AdminOrderStatusTab,
 } from '@/domain/admin/adminOrderStatus';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
@@ -38,18 +39,48 @@ interface AdminOrderView {
   factory_net: number;
   vat_amount: number;
   status: string;
+  slip_status: string;
   created_at: string;
 }
 
-const STATUS_TABS: { key: OrderStatusTab; label: string; apiStatus?: string; escrowOnly?: boolean }[] = [
+const STATUS_TABS: {
+  key: OrderStatusTab;
+  label: string;
+  apiStatus?: string;
+  escrowOnly?: boolean;
+}[] = [
   { key: 'all', label: 'ทั้งหมด' },
   { key: 'verify_slip', label: 'รอตรวจสลิป', apiStatus: 'WA', escrowOnly: true },
+  { key: 'slip_rejected', label: 'รอลูกค้าแนบใหม่', escrowOnly: true },
   { key: 'pending', label: 'รอดำเนินการ', apiStatus: 'PP' },
   { key: 'processing', label: 'กำลังดำเนินการ', apiStatus: 'PR' },
   { key: 'completed', label: 'เสร็จสิ้น', apiStatus: 'CP' },
   { key: 'cancelled', label: 'ยกเลิกออเดอร์', apiStatus: 'CN' },
   { key: 'refund', label: 'ขอคืนเงิน', apiStatus: 'RJ' },
 ];
+
+/**
+ * จับคู่ order เข้ากับแท็บ — แท็บ slip_rejected ต้องดู slip_status ประกอบ
+ * (order.status='WS' + slip_status='RJ' = admin reject แล้วรอลูกค้าแนบสลิปใหม่)
+ * แท็บอื่นอิงจาก order.status ตามเดิม
+ */
+function matchesTab(row: AdminOrderView, tab: OrderStatusTab): boolean {
+  if (tab === 'slip_rejected') {
+    return (
+      normalizeAdminOrderStatus(row.status) === 'WS' &&
+      normalizeAdminOrderStatus(row.slip_status) === 'RJ'
+    );
+  }
+  // WS+RJ ถูกจัดให้แท็บ slip_rejected แล้ว ไม่ให้ไปนับซ้ำในแท็บ pending
+  if (
+    tab === 'pending' &&
+    normalizeAdminOrderStatus(row.status) === 'WS' &&
+    normalizeAdminOrderStatus(row.slip_status) === 'RJ'
+  ) {
+    return false;
+  }
+  return inferAdminOrderStatusTab(row.status) === tab;
+}
 
 function toRows(raw: unknown): IAdminOrderListResponse[] {
   if (Array.isArray(raw)) return raw as IAdminOrderListResponse[];
@@ -72,13 +103,25 @@ function mapOrder(row: IAdminOrderListResponse): AdminOrderView {
     factory_net: pickScalarNumber(row.factory_net_receivable) ?? 0,
     vat_amount: pickScalarNumber(row.vat_amount) ?? 0,
     status: pickScalarString(row.status, 'PP'),
+    slip_status: pickScalarString(row.slip_status, 'PE'),
     created_at: pickScalarString(row.created_at),
   };
 }
 
-export function AdminOrdersPage({ lockedTab, title }: { lockedTab?: OrderStatusTab; title?: string } = {}) {
+export function AdminOrdersPage({
+  lockedTab,
+  tabScope,
+  title,
+}: {
+  lockedTab?: OrderStatusTab;
+  /** จำกัดแท็บที่แสดง (เช่นหน้า /admin/slips แสดงเฉพาะแท็บที่เกี่ยวกับสลิป) */
+  tabScope?: OrderStatusTab[];
+  title?: string;
+} = {}) {
   const navigate = useNavigate();
-  const [statusTab, setStatusTab] = useState<OrderStatusTab>(lockedTab ?? 'all');
+  const [statusTab, setStatusTab] = useState<OrderStatusTab>(
+    lockedTab ?? tabScope?.[0] ?? 'all',
+  );
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [search, setSearch] = useState('');
@@ -89,7 +132,9 @@ export function AdminOrdersPage({ lockedTab, title }: { lockedTab?: OrderStatusT
   // escrow mode: superadmin ตรวจสอบสลิปการชำระเงินแทนโรงงาน
   const { isEscrow } = usePaymentConfig();
   const [slipOrderId, setSlipOrderId] = useState<string | null>(null);
-  const visibleTabs = STATUS_TABS.filter((t) => !t.escrowOnly || isEscrow);
+  const visibleTabs = STATUS_TABS.filter((t) => !t.escrowOnly || isEscrow).filter(
+    (t) => !tabScope || tabScope.includes(t.key),
+  );
 
   const loadOrders = async () => {
     setLoading(true);
@@ -106,9 +151,7 @@ export function AdminOrdersPage({ lockedTab, title }: { lockedTab?: OrderStatusT
       const mapped = toRows(raw).map(mapOrder);
       setCountRows(mapped);
       setRows(
-        statusTab === 'all'
-          ? mapped
-          : mapped.filter((row) => inferAdminOrderStatusTab(row.status) === statusTab),
+        statusTab === 'all' ? mapped : mapped.filter((row) => matchesTab(row, statusTab)),
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดข้อมูลคำสั่งซื้อไม่สำเร็จ');
@@ -130,6 +173,7 @@ export function AdminOrdersPage({ lockedTab, title }: { lockedTab?: OrderStatusT
     const result: Record<OrderStatusTab, number> = {
       all: countRows.length,
       verify_slip: 0,
+      slip_rejected: 0,
       pending: 0,
       processing: 0,
       completed: 0,
@@ -137,6 +181,11 @@ export function AdminOrdersPage({ lockedTab, title }: { lockedTab?: OrderStatusT
       refund: 0,
     };
     countRows.forEach((r) => {
+      // slip_rejected แยกนับต่างหาก (ต้องดู slip_status) แล้วกันไม่ให้ซ้ำกับ pending
+      if (matchesTab(r, 'slip_rejected')) {
+        result.slip_rejected += 1;
+        return;
+      }
       result[inferAdminOrderStatusTab(r.status)] += 1;
     });
     return result;
@@ -217,7 +266,7 @@ export function AdminOrdersPage({ lockedTab, title }: { lockedTab?: OrderStatusT
           </div>
         </div>
 
-        <div className={`flex gap-1 flex-wrap ${lockedTab ? 'hidden' : ''}`}>
+        <div className={`flex gap-1 flex-wrap ${visibleTabs.length <= 1 ? 'hidden' : ''}`}>
           {visibleTabs.map((tab) => {
             const active = statusTab === tab.key;
             const count = counts[tab.key] ?? 0;
@@ -406,6 +455,7 @@ function AdminSlipVerifyModal({
   onVerified: () => void;
 }) {
   const [slip, setSlip] = useState<Record<string, unknown> | null>(null);
+  const [history, setHistory] = useState<ISlipHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
   const [error, setError] = useState('');
@@ -415,13 +465,17 @@ function AdminSlipVerifyModal({
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    slipApi
-      .getInfo(Number(orderId))
-      .then((res) => {
-        if (!cancelled) setSlip(res as unknown as Record<string, unknown>);
-      })
-      .catch(() => {
-        if (!cancelled) setSlip(null);
+    Promise.all([
+      slipApi.getInfo(Number(orderId)).catch(() => null),
+      slipApi
+        .getHistory(Number(orderId))
+        .then((res) => res.items ?? [])
+        .catch(() => [] as ISlipHistoryItem[]),
+    ])
+      .then(([info, items]) => {
+        if (cancelled) return;
+        setSlip(info as unknown as Record<string, unknown> | null);
+        setHistory(items);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -430,6 +484,8 @@ function AdminSlipVerifyModal({
       cancelled = true;
     };
   }, [orderId]);
+
+  const rejectedCount = history.filter((h) => h.status === 'RJ').length;
 
   const slipStatus = String(slip?.slip_status ?? '').trim().toUpperCase();
   const canVerify = slipStatus === 'ST';
@@ -500,6 +556,8 @@ function AdminSlipVerifyModal({
                 </p>
               ) : null}
 
+              <SlipHistoryList history={history} rejectedCount={rejectedCount} />
+
               {error ? <p className='text-xs text-red-600'>{error}</p> : null}
 
               {canVerify ? (
@@ -560,6 +618,94 @@ function AdminSlipVerifyModal({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+const SLIP_HISTORY_META: Record<string, { label: string; cls: string }> = {
+  PT: { label: 'รอตรวจ', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+  ST: { label: 'อนุมัติแล้ว', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  RJ: { label: 'ถูกปฏิเสธ', cls: 'bg-red-50 text-red-700 border-red-200' },
+};
+
+/** ประวัติการแนบสลิปทั้งหมด — เห็นทุกภาพที่แนบ + เหตุผลที่ถูกปฏิเสธแต่ละครั้ง */
+function SlipHistoryList({
+  history,
+  rejectedCount,
+}: {
+  history: ISlipHistoryItem[];
+  rejectedCount: number;
+}) {
+  // แสดงเมื่อมีการแนบหลายครั้ง หรือมีอย่างน้อย 1 ครั้งที่ถูกปฏิเสธ (จะได้เห็น error)
+  if (history.length <= 1 && rejectedCount === 0) return null;
+
+  return (
+    <div className='space-y-2 border-t border-slate-100 pt-3'>
+      <div className='flex items-center justify-between'>
+        <p className='text-xs font-bold text-slate-700'>
+          ประวัติการแนบสลิป ({history.length} ครั้ง)
+        </p>
+        {rejectedCount > 0 ? (
+          <span className='rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-600'>
+            ถูกปฏิเสธ {rejectedCount} ครั้ง
+          </span>
+        ) : null}
+      </div>
+
+      <ol className='space-y-2'>
+        {history.map((item, idx) => {
+          const meta = SLIP_HISTORY_META[item.status] ?? {
+            label: item.status,
+            cls: 'bg-slate-50 text-slate-600 border-slate-200',
+          };
+          // slip_note ของรายการ RJ จะมี "ปฏิเสธ: <เหตุผล>" ต่อท้าย — แสดงให้เห็น error
+          const note = (item.slip_note ?? '').trim();
+          return (
+            <li
+              key={item.tx_id}
+              className='flex gap-3 rounded-lg border border-slate-100 bg-slate-50/60 p-2'
+            >
+              <div className='shrink-0'>
+                {item.slip_url ? (
+                  <a href={item.slip_url} target='_blank' rel='noreferrer'>
+                    <img
+                      src={item.slip_url}
+                      alt={`สลิปครั้งที่ ${idx + 1}`}
+                      className='h-16 w-16 rounded-md border border-slate-200 object-cover hover:opacity-80'
+                    />
+                  </a>
+                ) : (
+                  <div className='flex h-16 w-16 items-center justify-center rounded-md border border-dashed border-slate-200 text-[10px] text-slate-400'>
+                    ไม่มีภาพ
+                  </div>
+                )}
+              </div>
+              <div className='min-w-0 flex-1'>
+                <div className='flex items-center gap-2'>
+                  <span className='text-xs font-semibold text-slate-600'>ครั้งที่ {idx + 1}</span>
+                  <span
+                    className={`rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${meta.cls}`}
+                  >
+                    {meta.label}
+                  </span>
+                  {item.uploaded_at ? (
+                    <span className='text-[10px] text-slate-400 tabular-nums'>
+                      {item.uploaded_at.slice(0, 16).replace('T', ' ')}
+                    </span>
+                  ) : null}
+                </div>
+                {note ? (
+                  <p className='mt-1 whitespace-pre-line break-words text-[11px] leading-snug text-slate-600'>
+                    {note}
+                  </p>
+                ) : (
+                  <p className='mt-1 text-[11px] text-slate-400'>—</p>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }
