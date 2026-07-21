@@ -216,31 +216,58 @@ export function RfqOfferDetailSheet({
         <div className='rounded-xl border border-gray-100 bg-gray-50/40 px-3 py-2'>
           <div className='flex items-center justify-between text-[11px] text-gray-600'>
             <span>ค่าสินค้ารวม</span>
-            <span className='font-semibold text-brand-navy'>{formatTHB(subtotal)}</span>
+            <span className={`font-semibold ${subtotal === 0 ? 'text-gray-500' : 'text-brand-navy'}`}>
+              {formatTHB(subtotal)}
+            </span>
           </div>
           <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
             <span>ค่าขนส่ง</span>
-            <span className='font-semibold text-brand-navy'>{formatTHB(shippingCost)}</span>
+            <span
+              className={`font-semibold ${
+                shippingCost === 0 ? 'text-gray-500' : 'text-brand-navy'
+              }`}
+            >
+              {formatTHB(shippingCost)}
+            </span>
           </div>
           <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
             <span>ค่าบรรจุภัณฑ์</span>
-            <span className='font-semibold text-brand-navy'>{formatTHB(packagingCost)}</span>
+            <span
+              className={`font-semibold ${
+                packagingCost === 0 ? 'text-gray-500' : 'text-brand-navy'
+              }`}
+            >
+              {formatTHB(packagingCost)}
+            </span>
           </div>
           <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
             <span>ค่าแม่พิมพ์</span>
-            <span className='font-semibold text-brand-navy'>{formatTHB(toolingMoldCost)}</span>
+            <span
+              className={`font-semibold ${
+                toolingMoldCost === 0 ? 'text-gray-500' : 'text-brand-navy'
+              }`}
+            >
+              {formatTHB(toolingMoldCost)}
+            </span>
           </div>
-          <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
-            <span>ส่วนลด</span>
-            <span className='font-semibold text-emerald-700'>-{formatTHB(discountAmount)}</span>
-          </div>
+
           <div className='mt-1 flex items-center justify-between text-[11px] text-gray-600'>
             <span>VAT {vatRate > 0 ? `${vatRate}%` : ''}</span>
-            <span className='font-semibold text-brand-navy'>{formatTHB(vatAmount)}</span>
+            <span
+              className={`font-semibold ${
+                vatAmount === 0 ? 'text-gray-500' : 'text-brand-navy'
+              }`}
+            >
+              {formatTHB(vatAmount)}
+            </span>
           </div>
           <div className='mt-2 flex items-center justify-between border-t border-gray-200 pt-2 text-[12px]'>
             <span className='font-semibold text-brand-navy'>รวมทั้งหมด</span>
-            <span className='font-bold text-brand-mauve'>{formatTHB(grandTotal)}</span>
+            <span
+              className={`font-bold ${grandTotal === 0 ? 'text-gray-500' : 'text-brand-mauve'}`}
+            >
+              {formatTHB(grandTotal)}
+            </span>
           </div>
         </div>
 
