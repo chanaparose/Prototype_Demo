@@ -14,6 +14,7 @@ import {
   User,
   UserPlus,
   Loader2,
+  ChevronDown,
 } from 'lucide-react';
 import { useData } from '@/stores/useDataStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -23,7 +24,7 @@ import { httpClient } from '@/services/api/httpClient';
 import { isFactoryRole } from '@/utils/factoryUser';
 import { profileInitKey } from '@/hooks/factory/useProfileInit';
 import {
-  FACTORY_SIDEBAR_NAV,
+  FACTORY_SIDEBAR_NAV_GROUPS,
   filterFactoryNavByPaymentMode,
   isFactorySidebarNavActive,
 } from '@/components/layout/factoryGlobalNavConfig';
@@ -49,6 +50,13 @@ const DEFAULT_USER_AVATAR_SRC =
       <ellipse cx="32" cy="48" rx="18" ry="14" fill="var(--brand-purple)" opacity="0.25"/>
     </svg>`,
   );
+
+const FACTORY_NAV_COLLAPSE_KEY = 'tryly_factory_nav_collapsed_v1';
+
+const FACTORY_GROUP_ICONS: Record<string, typeof Factory> = {
+  หน้าร้านโรงงาน: Factory,
+  งานขาย: ClipboardList,
+};
 
 function pickString(...values: unknown[]): string {
   for (const value of values) {
@@ -142,8 +150,29 @@ export function DesktopSidebar() {
   const isFactory = isFactoryRole(authUser);
   const factoryApproved = factoryVerifyStatus(authUser) === 'AP';
   const { isEscrow } = usePaymentConfig();
-  const factoryNavItems = filterFactoryNavByPaymentMode(FACTORY_SIDEBAR_NAV, isEscrow);
+  const factoryNavGroups = FACTORY_SIDEBAR_NAV_GROUPS.map((group) => ({
+    ...group,
+    items: filterFactoryNavByPaymentMode(group.items, isEscrow),
+  })).filter((group) => group.items.length > 0);
   const { open: openLoginModal } = useAuthModalStore();
+  const [collapsedFactoryGroups, setCollapsedFactoryGroups] = React.useState<
+    Record<string, boolean>
+  >(() => {
+    try {
+      const raw = localStorage.getItem(FACTORY_NAV_COLLAPSE_KEY);
+      return raw ? (JSON.parse(raw) as Record<string, boolean>) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(FACTORY_NAV_COLLAPSE_KEY, JSON.stringify(collapsedFactoryGroups));
+    } catch {
+      // Ignore storage failures, such as private browsing restrictions.
+    }
+  }, [collapsedFactoryGroups]);
 
   const isActivePath = (path: string) => isCustomerNavLinkActive(location.pathname, path);
 
@@ -196,49 +225,125 @@ export function DesktopSidebar() {
 
       <nav className='flex-1 px-3 pt-4 space-y-0.5 overflow-y-auto' aria-label='เมนูหลัก'>
         {isFactory
-          ? factoryNavItems.map((item) => {
-              const active = isFactorySidebarNavActive(location.pathname, item);
-              const Icon = item.icon;
-              const locked = Boolean(item.requiresApproval && !factoryApproved);
+          ? factoryNavGroups.map((group, groupIndex) => {
+              const renderItem = (item: (typeof group.items)[number], nested: boolean) => {
+                const active = isFactorySidebarNavActive(location.pathname, item);
+                const Icon = item.icon;
+                const locked = Boolean(item.requiresApproval && !factoryApproved);
+                return (
+                  <Button
+                    variant='unstyled'
+                    key={item.key}
+                    type='button'
+                    title={locked ? 'โรงงานอยู่ระหว่างตรวจสอบ' : undefined}
+                    onClick={() => {
+                      if (locked) return;
+                      navigate(item.href);
+                    }}
+                    className={`flex w-full items-center gap-3 rounded-xl py-2.5 pr-3 text-sm transition-all duration-150 hover:bg-slate-50 ${
+                      nested ? 'pl-3' : 'pl-4'
+                    } ${locked ? 'cursor-not-allowed opacity-60' : ''}`}
+                    style={{
+                      color: active ? sidebarTheme.activeText : sidebarTheme.inactiveText,
+                      background: active ? sidebarTheme.activeBg : 'transparent',
+                      fontWeight: active ? 600 : 500,
+                    }}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    <Icon size={nested ? 18 : 20} strokeWidth={active ? 2.2 : 1.8} />
+                    <span className='flex-1 text-left'>{item.label}</span>
+                    {locked ? (
+                      <Lock
+                        size={15}
+                        className='shrink-0 text-brand-muted-purple'
+                        strokeWidth={2}
+                        aria-hidden
+                      />
+                    ) : null}
+                    {item.badge === 'unread-messages' && unreadMessages > 0 ? (
+                      <span
+                        className='flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white'
+                        style={{ background: 'var(--brand-orange)' }}
+                      >
+                        {unreadMessages > 99 ? '99+' : unreadMessages}
+                      </span>
+                    ) : null}
+                  </Button>
+                );
+              };
+
+              if (!group.label) {
+                return (
+                  <React.Fragment key={`factory-top-${groupIndex}`}>
+                    {group.items.map((item) => renderItem(item, false))}
+                  </React.Fragment>
+                );
+              }
+
+              const groupHasActive = group.items.some((item) =>
+                isFactorySidebarNavActive(location.pathname, item),
+              );
+              const isOpen = groupHasActive || !collapsedFactoryGroups[group.label];
+              const GroupIcon = FACTORY_GROUP_ICONS[group.label] ?? Factory;
+              const groupUnread = group.items.some((item) => item.badge === 'unread-messages')
+                ? unreadMessages
+                : 0;
+
               return (
-                <Button
-                  variant='unstyled'
-                  key={item.key}
-                  type='button'
-                  title={locked ? 'โรงงานอยู่ระหว่างตรวจสอบ' : undefined}
-                  onClick={() => {
-                    if (locked) return;
-                    navigate(item.href);
-                  }}
-                  className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all duration-150 hover:bg-slate-50 ${
-                    locked ? 'cursor-not-allowed opacity-60' : ''
-                  }`}
-                  style={{
-                    color: active ? sidebarTheme.activeText : sidebarTheme.inactiveText,
-                    background: active ? sidebarTheme.activeBg : 'transparent',
-                    fontWeight: active ? 600 : 500,
-                  }}
-                  aria-current={active ? 'page' : undefined}
-                >
-                  <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
-                  <span className='flex-1 text-left'>{item.label}</span>
-                  {locked ? (
-                    <Lock
-                      size={16}
-                      className='shrink-0 text-brand-muted-purple'
-                      strokeWidth={2}
-                      aria-hidden
-                    />
-                  ) : null}
-                  {item.badge === 'unread-messages' && unreadMessages > 0 ? (
+                <div key={group.label} className='mt-1.5'>
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={() =>
+                      setCollapsedFactoryGroups((current) => ({
+                        ...current,
+                        [group.label!]: isOpen,
+                      }))
+                    }
+                    className={`flex w-full items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-all duration-150 ${
+                      groupHasActive
+                        ? 'border-brand-purple/20 bg-brand-lavender-chip/65 shadow-sm'
+                        : isOpen
+                          ? 'border-slate-200/80 bg-slate-50/90 hover:bg-slate-100'
+                          : 'border-transparent hover:border-slate-200/80 hover:bg-slate-50'
+                    }`}
+                    aria-expanded={isOpen}
+                  >
                     <span
-                      className='w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center'
-                      style={{ background: 'var(--brand-orange)' }}
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                        groupHasActive
+                          ? 'bg-white text-brand-purple shadow-sm'
+                          : 'bg-white text-slate-500 ring-1 ring-slate-200/80'
+                      }`}
+                      aria-hidden
                     >
-                      {unreadMessages}
+                      <GroupIcon size={17} strokeWidth={2} />
                     </span>
+                    <span
+                      className={`flex-1 text-[13px] font-bold ${
+                        groupHasActive ? 'text-brand-navy-ink' : 'text-slate-700'
+                      }`}
+                    >
+                      {group.label}
+                    </span>
+                    {groupUnread > 0 ? (
+                      <span className='inline-flex min-w-[18px] items-center justify-center rounded-full bg-brand-orange px-1.5 text-[10px] font-bold leading-[16px] text-white'>
+                        {groupUnread > 99 ? '99+' : groupUnread}
+                      </span>
+                    ) : null}
+                    <ChevronDown
+                      size={16}
+                      className={`shrink-0 text-slate-500 transition-transform duration-200 ${
+                        isOpen ? '' : '-rotate-90'
+                      }`}
+                    />
+                  </Button>
+                  {isOpen ? (
+                    <div className='ml-4 mt-1.5 space-y-0.5 border-l border-slate-200 pl-2'>
+                      {group.items.map((item) => renderItem(item, true))}
+                    </div>
                   ) : null}
-                </Button>
+                </div>
               );
             })
           : customerNavLinks.map(({ path, icon: Icon, label }) => {

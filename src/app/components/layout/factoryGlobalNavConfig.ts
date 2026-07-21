@@ -29,6 +29,12 @@ export type FactorySidebarNavItem = {
   escrowOnly?: boolean;
 };
 
+export type FactorySidebarNavGroup = {
+  /** ไม่ใส่ label สำหรับเมนูระดับบน เช่น แดชบอร์ด */
+  label?: string;
+  items: FactorySidebarNavItem[];
+};
+
 /** กรองเมนูตาม payment mode — ใช้ทั้ง DesktopSidebar และ MobileBottomNav */
 export function filterFactoryNavByPaymentMode(
   items: FactorySidebarNavItem[],
@@ -41,90 +47,116 @@ export function filterFactoryNavByPaymentMode(
   });
 }
 
-export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
+export const FACTORY_SIDEBAR_NAV_GROUPS: FactorySidebarNavGroup[] = [
   {
-    key: 'factory-dash',
-    label: 'แดชบอร์ด',
-    icon: LayoutDashboard,
-    href: '/factory',
-    activeMatch: 'exact',
-    activePath: '/factory',
+    items: [
+      {
+        key: 'factory-dash',
+        label: 'แดชบอร์ด',
+        icon: LayoutDashboard,
+        href: '/factory',
+        activeMatch: 'exact',
+        activePath: '/factory',
+      },
+    ],
   },
   {
-    key: 'factory-info',
-    label: 'ข้อมูลโรงงาน',
-    icon: IdCard,
-    href: '/factory/info',
-    activeMatch: 'prefix',
-    activePath: '/factory/info',
+    label: 'หน้าร้านโรงงาน',
+    items: [
+      {
+        key: 'factory-info',
+        label: 'ข้อมูลโรงงาน',
+        icon: IdCard,
+        href: '/factory/info',
+        activeMatch: 'prefix',
+        activePath: '/factory/info',
+      },
+      {
+        key: 'factory-showcases',
+        label: 'สินค้าและผลงาน',
+        icon: Images,
+        href: '/factory/showcases?type=PD',
+        activeMatch: 'prefix',
+        activePath: '/factory/showcases',
+        requiresApproval: true,
+      },
+      {
+        key: 'factory-reviews',
+        label: 'รีวิว',
+        icon: Star,
+        href: '/factory/reviews',
+        activeMatch: 'prefix',
+        activePath: '/factory/reviews',
+        requiresApproval: true,
+      },
+    ],
   },
   {
-    key: 'factory-showcases',
-    label: 'สินค้าและผลงาน',
-    icon: Images,
-    href: '/factory/showcases?type=PD',
-    activeMatch: 'prefix',
-    activePath: '/factory/showcases',
-    requiresApproval: true,
+    label: 'งานขาย',
+    items: [
+      {
+        key: 'factory-rfqs',
+        label: 'RFQ & ใบเสนอราคา',
+        icon: ClipboardList,
+        href: '/factory/rfqs',
+        activeMatch: 'prefix',
+        activePath: '/factory/rfqs',
+        extraActivePaths: ['/factory/quotations'],
+        requiresApproval: true,
+      },
+      {
+        key: 'factory-orders',
+        label: 'ออเดอร์',
+        icon: Package,
+        href: '/factory/orders',
+        activeMatch: 'prefix',
+        activePath: '/factory/orders',
+        requiresApproval: true,
+      },
+    ],
   },
   {
-    key: 'factory-rfqs',
-    label: 'RFQ & ใบเสนอราคา',
-    icon: ClipboardList,
-    href: '/factory/rfqs',
-    activeMatch: 'prefix',
-    activePath: '/factory/rfqs',
-    extraActivePaths: ['/factory/quotations'],
-    requiresApproval: true,
+    items: [
+      {
+        key: 'factory-invoices',
+        label: 'สรุปค่าบริการ',
+        icon: Receipt,
+        href: '/factory/invoices',
+        activeMatch: 'prefix',
+        activePath: '/factory/invoices',
+        requiresApproval: true,
+        hideInEscrow: true,
+      },
+      {
+        key: 'factory-wallet',
+        label: 'กระเป๋าเงิน',
+        icon: Wallet,
+        href: '/factory/wallet',
+        activeMatch: 'prefix',
+        activePath: '/factory/wallet',
+        requiresApproval: true,
+        escrowOnly: true,
+      },
+    ],
   },
   {
-    key: 'factory-orders',
-    label: 'ออเดอร์',
-    icon: Package,
-    href: '/factory/orders',
-    activeMatch: 'prefix',
-    activePath: '/factory/orders',
-    requiresApproval: true,
-  },
-  {
-    key: 'factory-invoices',
-    label: 'สรุปค่าบริการ',
-    icon: Receipt,
-    href: '/factory/invoices',
-    activeMatch: 'prefix',
-    activePath: '/factory/invoices',
-    requiresApproval: true,
-    hideInEscrow: true,
-  },
-  {
-    key: 'factory-reviews',
-    label: 'รีวิว',
-    icon: Star,
-    href: '/factory/reviews',
-    activeMatch: 'prefix',
-    activePath: '/factory/reviews',
-    requiresApproval: true,
-  },
-  {
-    key: 'messages',
-    label: 'ข้อความ',
-    icon: MessageCircle,
-    href: '/messages',
-    badge: 'unread-messages',
-    activeMatch: 'prefix',
-    activePath: '/messages',
-  },
-  {
-    key: 'factory-wallet',
-    label: 'กระเป๋าเงิน',
-    icon: Wallet,
-    href: '/factory/wallet',
-    activeMatch: 'prefix',
-    activePath: '/factory/wallet',
-    requiresApproval: true,
-    escrowOnly: true,
+    items: [
+      {
+        key: 'messages',
+        label: 'ข้อความ',
+        icon: MessageCircle,
+        href: '/messages',
+        badge: 'unread-messages',
+        activeMatch: 'prefix',
+        activePath: '/messages',
+      },
+    ],
   },
 ];
+
+/** Flat list kept for consumers that do not render grouped navigation. */
+export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] =
+  FACTORY_SIDEBAR_NAV_GROUPS.flatMap((group) => group.items);
 
 function normalizePath(path: string): string {
   if (path === '/') return path;
