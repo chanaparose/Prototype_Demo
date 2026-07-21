@@ -102,6 +102,10 @@ export function RFQCreateWizard() {
   const [collapsibleHeight, setCollapsibleHeight] = React.useState(0);
 
   React.useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [step]);
+
+  React.useLayoutEffect(() => {
     const backRow = backRowRef.current;
     const collapsibleInner = collapsibleInnerRef.current;
     if (!backRow || !collapsibleInner) return;
