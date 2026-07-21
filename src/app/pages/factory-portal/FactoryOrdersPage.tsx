@@ -17,6 +17,7 @@ import {
   FileCheck2,
 } from 'lucide-react';
 import { ordersApi } from '@/services/api/ordersApi';
+import { usePaymentConfig } from '@/hooks/usePaymentConfig';
 import { useFactoryOrdersData } from '@/pages/factory-portal/factory-orders/useFactoryOrdersData';
 import { deriveOrderCardState } from '@/pages/factory-portal/factory-orders/deriveOrderCardState';
 import { computeKpi, countByTab } from '@/pages/factory-portal/factory-orders/factoryOrderKpi';
@@ -211,6 +212,12 @@ const TAB_DEFS: {
 export function FactoryOrdersPage() {
   const { data: rows = [], isLoading, isError, refetch, error } = useFactoryOrdersData();
   const navigate = useNavigate();
+  // config_payment = escrow → superadmin ยืนยันสลิปแทนโรงงาน ซ่อน tab "ยืนยันสลิป" ในหน้านี้
+  const { isEscrow } = usePaymentConfig();
+  const visibleTabDefs = useMemo(
+    () => (isEscrow ? TAB_DEFS.filter((t) => t.id !== 'verify_slip') : TAB_DEFS),
+    [isEscrow],
+  );
   const [statusTab, setStatusTab] = useState<TabId>('needs_action');
   const [search, setSearch] = useState('');
   const [kindFilter, setKindFilter] = useState<'sample' | ''>('');
@@ -261,6 +268,11 @@ export function FactoryOrdersPage() {
   useEffect(() => {
     setPage(1);
   }, [filteredRows]);
+
+  // เผื่อ config เปลี่ยนเป็น escrow ระหว่างที่ค้างอยู่ที่ tab ยืนยันสลิป — สลับไป needs_action
+  useEffect(() => {
+    if (isEscrow && statusTab === 'verify_slip') setStatusTab('needs_action');
+  }, [isEscrow, statusTab]);
 
   if (isLoading) {
     return (
@@ -320,7 +332,7 @@ export function FactoryOrdersPage() {
       />
 
       <FactoryWorklistCard
-        tabs={TAB_DEFS.map((t) => ({
+        tabs={visibleTabDefs.map((t) => ({
           key: t.id,
           label: t.label,
           shortLabel: t.shortLabel,
