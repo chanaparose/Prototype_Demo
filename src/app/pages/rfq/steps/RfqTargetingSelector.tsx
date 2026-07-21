@@ -1,5 +1,4 @@
 import React from 'react';
-import { createPortal } from 'react-dom';
 import { AlertTriangle, Building2, Users, Search, X } from 'lucide-react';
 import type { TargetFactory } from '@/pages/rfq/useRFQDraft';
 import { RFQ_BORDER, RFQ_RADIUS, rfqChoiceClass } from '@/pages/rfq/rfqCreateWizardUi';
@@ -36,27 +35,6 @@ export function RfqTargetingSelector({
       .filter((f) => f.name.toLowerCase().includes(q))
       .slice(0, 8);
   }, [searchQuery, allFactories]);
-  const anchorRef = React.useRef<HTMLDivElement>(null);
-  const [dropdownRect, setDropdownRect] = React.useState<DOMRect | null>(null);
-
-  // Recompute position whenever the dropdown opens or window scrolls/resizes.
-  React.useEffect(() => {
-    if (!showDropdown || !anchorRef.current) {
-      setDropdownRect(null);
-      return;
-    }
-    const update = () => {
-      if (anchorRef.current) setDropdownRect(anchorRef.current.getBoundingClientRect());
-    };
-    update();
-    window.addEventListener('scroll', update, true);
-    window.addEventListener('resize', update);
-    return () => {
-      window.removeEventListener('scroll', update, true);
-      window.removeEventListener('resize', update);
-    };
-  }, [showDropdown]);
-
   const addFactory = React.useCallback(
     (f: TargetFactory) => {
       if (targetFactories.some((tf) => tf.id === f.id)) return;
@@ -145,7 +123,7 @@ export function RfqTargetingSelector({
           )}
 
           {/* Search input */}
-          <div ref={anchorRef}>
+          <div>
             <div
               className={`flex items-center gap-2 bg-white px-3 py-2.5 transition-all focus-within:border-brand-violet-deep focus-within:ring-1 focus-within:ring-brand-purple/20 ${RFQ_RADIUS} ${RFQ_BORDER}`}
             >
@@ -166,18 +144,11 @@ export function RfqTargetingSelector({
             </div>
           </div>
 
-          {/* Dropdown — rendered via portal to escape overflow:hidden ancestors */}
-          {showDropdown && searchQuery.trim().length >= 1 && dropdownRect &&
-            createPortal(
+          {/* Normal flow keeps the list below its input when iOS resizes the
+              visual viewport while opening the keyboard. */}
+          {showDropdown && searchQuery.trim().length >= 1 && (
               <div
-                style={{
-                  position: 'fixed',
-                  top: dropdownRect.bottom + 4,
-                  left: dropdownRect.left,
-                  width: dropdownRect.width,
-                  zIndex: 9999,
-                }}
-                className={`overflow-hidden bg-white shadow-lg ${RFQ_RADIUS} border-[0.5px] border-gray-100`}
+                className={`mt-1 max-h-[min(20rem,40dvh)] overscroll-contain overflow-y-auto bg-white shadow-lg ${RFQ_RADIUS} border-[0.5px] border-gray-100`}
               >
                 {results.length === 0 ? (
                   <p className='px-4 py-3 text-[12px] text-gray-400 xl:text-sm'>ไม่พบโรงงานที่ค้นหา</p>
@@ -205,10 +176,8 @@ export function RfqTargetingSelector({
                     );
                   })
                 )}
-              </div>,
-              document.body,
-            )
-          }
+              </div>
+            )}
 
           {/* Warning when no factories selected */}
           {targetFactories.length === 0 && (
