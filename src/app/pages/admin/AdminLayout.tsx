@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { AnimatedOutlet } from '@/components/layout/AnimatedOutlet';
 import {
@@ -15,8 +15,12 @@ import {
   ImageIcon,
   Banknote,
   ShieldAlert,
+  ReceiptText,
+  ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
+import { usePaymentConfig } from '@/hooks/usePaymentConfig';
+import { useAdminPendingCounts } from '@/hooks/admin/useAdminPendingCounts';
 import { Navigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
@@ -39,18 +43,88 @@ const ROLE_COLORS: Record<string, string> = {
 
 const ROLE_RANK: Record<string, number> = { AM: 1, AD: 2, SA: 3 };
 
-const NAV_ITEMS = [
-  { path: '/admin/dashboard', icon: LayoutDashboard, label: 'แดชบอร์ด', minRank: 1 },
-  { path: '/admin/factories', icon: Building2, label: 'โรงงาน', minRank: 1 },
-  { path: '/admin/customers', icon: Users, label: 'ลูกค้า', minRank: 2 },
-  { path: '/admin/rfqs', icon: ClipboardList, label: 'RFQ', minRank: 1 },
-  { path: '/admin/orders', icon: ShoppingCart, label: 'คำสั่งซื้อ', minRank: 1 },
-  { path: '/admin/commission', icon: ClipboardList, label: 'Commission', minRank: 2 },
-  { path: '/admin/withdrawals', icon: Banknote, label: 'คำขอถอนเงิน', minRank: 2 },
-  { path: '/admin/disputes', icon: ShieldAlert, label: 'คำร้องคืนเงิน', minRank: 3 },
-  { path: '/admin/config', icon: Settings, label: 'ตั้งค่า', minRank: 2 },
-  { path: '/admin/category-images', icon: ImageIcon, label: 'ภาพ Hub / หมวด', minRank: 3 },
+type NavBadgeKey = 'slips' | 'disputes' | 'withdrawals';
+
+type NavItem = {
+  path: string;
+  icon: typeof LayoutDashboard;
+  label: string;
+  minRank: number;
+  /** Which pending-count badge to show next to this item, if any. */
+  badge?: NavBadgeKey;
+  /** Only show while escrow payment mode is active. */
+  escrowOnly?: boolean;
+};
+
+type NavGroup = {
+  /** Section header; omit for the top-level group (dashboard). */
+  label?: string;
+  items: NavItem[];
+};
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    items: [{ path: '/admin/dashboard', icon: LayoutDashboard, label: 'แดชบอร์ด', minRank: 1 }],
+  },
+  {
+    label: 'จัดการข้อมูล',
+    items: [
+      { path: '/admin/factories', icon: Building2, label: 'โรงงาน', minRank: 1 },
+      { path: '/admin/customers', icon: Users, label: 'ลูกค้า', minRank: 2 },
+    ],
+  },
+  {
+    label: 'การซื้อขาย',
+    items: [
+      { path: '/admin/rfqs', icon: ClipboardList, label: 'RFQ', minRank: 1 },
+      { path: '/admin/orders', icon: ShoppingCart, label: 'คำสั่งซื้อ', minRank: 1 },
+    ],
+  },
+  {
+    label: 'ตรวจสอบการเงิน',
+    items: [
+      {
+        path: '/admin/slips',
+        icon: ReceiptText,
+        label: 'ยืนยันสลิป',
+        minRank: 3,
+        badge: 'slips',
+        escrowOnly: true,
+      },
+      {
+        path: '/admin/disputes',
+        icon: ShieldAlert,
+        label: 'คำร้องคืนเงิน',
+        minRank: 3,
+        badge: 'disputes',
+      },
+      {
+        path: '/admin/withdrawals',
+        icon: Banknote,
+        label: 'คำขอถอนเงิน',
+        minRank: 2,
+        badge: 'withdrawals',
+      },
+      { path: '/admin/commission', icon: ClipboardList, label: 'Commission', minRank: 2 },
+    ],
+  },
+  {
+    label: 'ระบบ',
+    items: [
+      { path: '/admin/config', icon: Settings, label: 'ตั้งค่า', minRank: 2 },
+      { path: '/admin/category-images', icon: ImageIcon, label: 'ภาพ Hub / หมวด', minRank: 3 },
+    ],
+  },
 ];
+
+const NAV_COLLAPSE_KEY = 'tryly_admin_nav_collapsed_v1';
+
+const NAV_GROUP_ICONS: Record<string, typeof LayoutDashboard> = {
+  จัดการข้อมูล: Users,
+  การซื้อขาย: ShoppingCart,
+  'ตรวจสอบการเงิน': Banknote,
+  ระบบ: Settings,
+};
 
 const sidebarTheme = {
   activeText: 'var(--brand-purple)',
@@ -64,6 +138,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/customers': 'จัดการลูกค้า',
   '/admin/rfqs': 'จัดการ RFQ',
   '/admin/orders': 'จัดการคำสั่งซื้อ',
+  '/admin/slips': 'ยืนยันสลิปการชำระเงิน',
   '/admin/commission': 'Commission',
   '/admin/withdrawals': 'คำขอถอนเงิน',
   '/admin/disputes': 'คำร้อง / ขอคืนเงิน',
@@ -93,6 +168,49 @@ function getBreadcrumb(pathname: string): string {
   return ['Admin', ...labels].join(' / ');
 }
 
+function NavLink({
+  item,
+  active,
+  count,
+  onNavigate,
+  nested = false,
+}: {
+  item: NavItem;
+  active: boolean;
+  count: number;
+  onNavigate: () => void;
+  nested?: boolean;
+}) {
+  const Icon = item.icon;
+  return (
+    <Button
+      variant='unstyled'
+      type='button'
+      onClick={onNavigate}
+      className={`flex w-full items-center gap-3 rounded-xl py-2.5 pr-3 text-sm transition-all duration-150 hover:bg-slate-50 ${
+        nested ? 'pl-5' : 'pl-4'
+      }`}
+      style={{
+        color: active ? sidebarTheme.activeText : sidebarTheme.inactiveText,
+        background: active ? sidebarTheme.activeBg : 'transparent',
+        fontWeight: active ? 600 : 500,
+      }}
+      aria-current={active ? 'page' : undefined}
+    >
+      <Icon size={nested ? 18 : 20} strokeWidth={active ? 2.2 : 1.8} />
+      <span className='flex-1 text-left'>{item.label}</span>
+      {count > 0 ? (
+        <span
+          className='inline-flex min-w-[20px] items-center justify-center rounded-full bg-brand-orange px-1.5 text-[11px] font-bold leading-[18px] text-white'
+          aria-label={`${count} รายการรอดำเนินการ`}
+        >
+          {count > 99 ? '99+' : count}
+        </span>
+      ) : null}
+    </Button>
+  );
+}
+
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -102,9 +220,42 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   const roleLabel = ROLE_LABELS[role] ?? role;
   const roleCls = ROLE_COLORS[role] ?? 'bg-slate-100 text-slate-600';
   const displayName = pickScalarString(user?.name, 'Admin');
+  const roleRank = ROLE_RANK[role] ?? 0;
+
+  const { isEscrow } = usePaymentConfig();
+  const pendingCounts = useAdminPendingCounts(roleRank);
+
+  const visibleGroups = NAV_GROUPS.map((group) => ({
+    label: group.label,
+    items: group.items.filter(
+      (item) => roleRank >= item.minRank && (!item.escrowOnly || isEscrow),
+    ),
+  })).filter((group) => group.items.length > 0);
 
   const isActivePath = (path: string) =>
     location.pathname === path || location.pathname.startsWith(`${path}/`);
+
+  // เปิด/ปิดแต่ละหมวดได้ — จำสถานะไว้ใน localStorage และเปิดหมวดที่มีหน้าที่ active อยู่เสมอ
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    try {
+      const raw = localStorage.getItem(NAV_COLLAPSE_KEY);
+      return raw ? (JSON.parse(raw) as Record<string, boolean>) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(NAV_COLLAPSE_KEY, JSON.stringify(collapsed));
+    } catch {
+      // ignore storage errors (e.g. private mode)
+    }
+  }, [collapsed]);
+
+  const toggleGroup = (label: string) => {
+    setCollapsed((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
 
   return (
     <div className='flex flex-col h-full'>
@@ -129,33 +280,104 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         )}
       </div>
 
-      <nav className='flex-1 px-3 pt-4 space-y-0.5 overflow-y-auto' aria-label='เมนูแอดมิน'>
-        {NAV_ITEMS.filter((item) => (ROLE_RANK[role] ?? 0) >= item.minRank).map(
-          ({ path, icon: Icon, label }) => {
-            const active = isActivePath(path);
+      <nav className='flex-1 px-3 pt-4 pb-2 overflow-y-auto' aria-label='เมนูแอดมิน'>
+        {visibleGroups.map((group, gi) => {
+          if (!group.label) {
+            // Top-level group with no header (dashboard) — always shown, never collapsible.
             return (
+              <div key={`group-${gi}`} className={gi > 0 ? 'mt-4' : ''}>
+                <div className='space-y-0.5'>
+                  {group.items.map((item) => (
+                    <NavLink
+                      key={item.path}
+                      item={item}
+                      active={isActivePath(item.path)}
+                      count={item.badge ? pendingCounts[item.badge] : 0}
+                      onNavigate={() => {
+                        navigate(item.path);
+                        onClose?.();
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          }
+
+          const groupHasActive = group.items.some((item) => isActivePath(item.path));
+          const groupCount = group.items.reduce(
+            (sum, item) => sum + (item.badge ? pendingCounts[item.badge] : 0),
+            0,
+          );
+          // เปิดค้างถ้าอยู่ในหมวดนี้ ไม่ว่าผู้ใช้จะเคยปิดไว้หรือไม่
+          const isOpen = groupHasActive || !collapsed[group.label];
+          const GroupIcon = NAV_GROUP_ICONS[group.label] ?? LayoutDashboard;
+
+          return (
+            <div key={group.label} className={gi > 0 ? 'mt-2' : ''}>
               <Button
                 variant='unstyled'
-                key={path}
                 type='button'
-                onClick={() => {
-                  navigate(path);
-                  onClose?.();
-                }}
-                className='flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all duration-150 hover:bg-slate-50'
-                style={{
-                  color: active ? sidebarTheme.activeText : sidebarTheme.inactiveText,
-                  background: active ? sidebarTheme.activeBg : 'transparent',
-                  fontWeight: active ? 600 : 500,
-                }}
-                aria-current={active ? 'page' : undefined}
+                onClick={() => toggleGroup(group.label!)}
+                className={`flex w-full items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-all duration-150 ${
+                  groupHasActive
+                    ? 'border-brand-purple/20 bg-brand-lavender-chip/65 shadow-sm'
+                    : isOpen
+                      ? 'border-slate-200/80 bg-slate-50/90 hover:bg-slate-100'
+                      : 'border-transparent bg-transparent hover:border-slate-200/80 hover:bg-slate-50'
+                }`}
+                aria-expanded={isOpen}
               >
-                <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
-                <span className='flex-1 text-left'>{label}</span>
+                <span
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                    groupHasActive
+                      ? 'bg-white text-brand-purple shadow-sm'
+                      : 'bg-white text-slate-500 ring-1 ring-slate-200/80'
+                  }`}
+                  aria-hidden
+                >
+                  <GroupIcon size={17} strokeWidth={2} />
+                </span>
+                <span
+                  className={`flex-1 text-[13px] font-bold tracking-normal ${
+                    groupHasActive ? 'text-brand-navy-ink' : 'text-slate-700'
+                  }`}
+                >
+                  {group.label}
+                </span>
+                {groupCount > 0 ? (
+                  <span
+                    className='inline-flex min-w-[18px] items-center justify-center rounded-full bg-brand-orange px-1.5 text-[10px] font-bold leading-[16px] text-white'
+                    aria-label={`${groupCount} รายการรอดำเนินการในหมวด ${group.label}`}
+                  >
+                    {groupCount > 99 ? '99+' : groupCount}
+                  </span>
+                ) : null}
+                <ChevronDown
+                  size={16}
+                  className={`shrink-0 text-slate-500 transition-transform duration-200 ${isOpen ? '' : '-rotate-90'}`}
+                />
               </Button>
-            );
-          },
-        )}
+              {isOpen ? (
+                <div className='ml-4 mt-1.5 space-y-0.5 border-l border-slate-200 pl-2'>
+                  {group.items.map((item) => (
+                    <NavLink
+                      key={item.path}
+                      item={item}
+                      active={isActivePath(item.path)}
+                      count={item.badge ? pendingCounts[item.badge] : 0}
+                      nested
+                      onNavigate={() => {
+                        navigate(item.path);
+                        onClose?.();
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
       </nav>
 
       <div className='border-t border-gray-100 px-3 py-3 shrink-0'>

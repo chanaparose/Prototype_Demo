@@ -76,9 +76,9 @@ function mapOrder(row: IAdminOrderListResponse): AdminOrderView {
   };
 }
 
-export function AdminOrdersPage() {
+export function AdminOrdersPage({ lockedTab, title }: { lockedTab?: OrderStatusTab; title?: string } = {}) {
   const navigate = useNavigate();
-  const [statusTab, setStatusTab] = useState<OrderStatusTab>('all');
+  const [statusTab, setStatusTab] = useState<OrderStatusTab>(lockedTab ?? 'all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [search, setSearch] = useState('');
@@ -156,7 +156,7 @@ export function AdminOrdersPage() {
   return (
     <div className='space-y-6 lg:space-y-8'>
       <div>
-        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900'>จัดการคำสั่งซื้อ</h2>
+        <h2 className='text-2xl lg:text-3xl font-bold text-slate-900'>{title ?? 'จัดการคำสั่งซื้อ'}</h2>
       </div>
 
       <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6'>
@@ -217,7 +217,7 @@ export function AdminOrdersPage() {
           </div>
         </div>
 
-        <div className='flex gap-1 flex-wrap'>
+        <div className={`flex gap-1 flex-wrap ${lockedTab ? 'hidden' : ''}`}>
           {visibleTabs.map((tab) => {
             const active = statusTab === tab.key;
             const count = counts[tab.key] ?? 0;
