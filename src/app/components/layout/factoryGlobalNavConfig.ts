@@ -118,6 +118,7 @@ export const FACTORY_SIDEBAR_NAV_GROUPS: FactorySidebarNavGroup[] = [
     ],
   },
   {
+    label: 'การเงิน',
     items: [
       {
         key: 'factory-invoices',
@@ -142,6 +143,7 @@ export const FACTORY_SIDEBAR_NAV_GROUPS: FactorySidebarNavGroup[] = [
     ],
   },
   {
+    label: 'การสื่อสาร',
     items: [
       {
         key: 'messages',

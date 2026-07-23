@@ -14,7 +14,6 @@ import {
   User,
   UserPlus,
   Loader2,
-  ChevronDown,
 } from 'lucide-react';
 import { useData } from '@/stores/useDataStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -51,13 +50,6 @@ const DEFAULT_USER_AVATAR_SRC =
       <ellipse cx="32" cy="48" rx="18" ry="14" fill="var(--brand-purple)" opacity="0.25"/>
     </svg>`,
   );
-
-const FACTORY_NAV_COLLAPSE_KEY = 'tryly_factory_nav_collapsed_v1';
-
-const FACTORY_GROUP_ICONS: Record<string, typeof Factory> = {
-  หน้าร้านโรงงาน: Factory,
-  งานขาย: ClipboardList,
-};
 
 function pickString(...values: unknown[]): string {
   for (const value of values) {
@@ -156,25 +148,6 @@ export function DesktopSidebar() {
     items: filterFactoryNavByPaymentMode(group.items, isEscrow),
   })).filter((group) => group.items.length > 0);
   const { open: openLoginModal } = useAuthModalStore();
-  const [collapsedFactoryGroups, setCollapsedFactoryGroups] = React.useState<
-    Record<string, boolean>
-  >(() => {
-    try {
-      const raw = localStorage.getItem(FACTORY_NAV_COLLAPSE_KEY);
-      return raw ? (JSON.parse(raw) as Record<string, boolean>) : {};
-    } catch {
-      return {};
-    }
-  });
-
-  React.useEffect(() => {
-    try {
-      localStorage.setItem(FACTORY_NAV_COLLAPSE_KEY, JSON.stringify(collapsedFactoryGroups));
-    } catch {
-      // Ignore storage failures, such as private browsing restrictions.
-    }
-  }, [collapsedFactoryGroups]);
-
   const isActivePath = (path: string) => isCustomerNavLinkActive(location.pathname, path);
 
   const unreadMessages = useConversationUnreadCount();
@@ -221,20 +194,23 @@ export function DesktopSidebar() {
 
   return (
     <aside className='hidden lg:flex flex-col fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-40'>
-      <div className='flex items-center h-16 px-5 border-b border-gray-100 shrink-0'>
-        <Link to='/' className='flex items-center w-full'>
+      <div className='flex h-16 shrink-0 items-center border-b border-gray-100 px-4'>
+        <Link to={isFactory ? '/factory' : '/'} className='flex min-w-0 items-center gap-2.5'>
           <Image
             src='/assets/tryly-logo.png'
             alt='Tryly'
-            className='h-20 w-auto shrink-0 object-contain -ml-[10px]'
+            className='h-14 w-auto shrink-0 object-contain -ml-1'
           />
+          {isFactory ? (
+            <span className='sr-only'>Factory Portal</span>
+          ) : null}
         </Link>
       </div>
 
       <nav className='flex-1 px-3 pt-4 space-y-0.5 overflow-y-auto' aria-label='เมนูหลัก'>
         {isFactory
           ? factoryNavGroups.map((group, groupIndex) => {
-              const renderItem = (item: (typeof group.items)[number], nested: boolean) => {
+              const renderItem = (item: (typeof group.items)[number]) => {
                 const active = isFactorySidebarNavActive(location.pathname, item);
                 const Icon = item.icon;
                 const locked = Boolean(item.requiresApproval && !factoryApproved);
@@ -248,9 +224,9 @@ export function DesktopSidebar() {
                       if (locked) return;
                       navigate(item.href);
                     }}
-                    className={`flex w-full items-center gap-3 rounded-xl py-2.5 pr-3 text-sm transition-all duration-150 hover:bg-slate-50 ${
-                      nested ? 'pl-3' : 'pl-4'
-                    } ${locked ? 'cursor-not-allowed opacity-60' : ''}`}
+                    className={`group relative flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors hover:bg-slate-50 ${
+                      locked ? 'cursor-not-allowed opacity-60' : ''
+                    }`}
                     style={{
                       color: active ? sidebarTheme.activeText : sidebarTheme.inactiveText,
                       background: active ? sidebarTheme.activeBg : 'transparent',
@@ -258,7 +234,19 @@ export function DesktopSidebar() {
                     }}
                     aria-current={active ? 'page' : undefined}
                   >
-                    <Icon size={nested ? 18 : 20} strokeWidth={active ? 2.2 : 1.8} />
+                    {active ? (
+                      <span className='absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-brand-purple' />
+                    ) : null}
+                    <span
+                      className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                        active
+                          ? 'bg-white text-brand-purple shadow-sm ring-1 ring-brand-purple/10'
+                          : 'bg-slate-50 text-slate-500 ring-1 ring-slate-200/70 group-hover:bg-white'
+                      }`}
+                      aria-hidden
+                    >
+                      <Icon size={17} strokeWidth={active ? 2.2 : 1.8} />
+                    </span>
                     <span className='flex-1 text-left'>{item.label}</span>
                     {locked ? (
                       <Lock
@@ -286,76 +274,20 @@ export function DesktopSidebar() {
 
               if (!group.label) {
                 return (
-                  <React.Fragment key={`factory-top-${groupIndex}`}>
-                    {group.items.map((item) => renderItem(item, false))}
-                  </React.Fragment>
+                  <div key={`factory-top-${groupIndex}`} className='space-y-1'>
+                    {group.items.map((item) => renderItem(item))}
+                  </div>
                 );
               }
 
-              const groupHasActive = group.items.some((item) =>
-                isFactorySidebarNavActive(location.pathname, item),
-              );
-              const isOpen = groupHasActive || !collapsedFactoryGroups[group.label];
-              const GroupIcon = FACTORY_GROUP_ICONS[group.label] ?? Factory;
-              const groupUnread = group.items.reduce(
-                (sum, item) => sum + (item.badge ? factoryBadgeCounts[item.badge] ?? 0 : 0),
-                0,
-              );
-
               return (
-                <div key={group.label} className='mt-1.5'>
-                  <Button
-                    variant='unstyled'
-                    type='button'
-                    onClick={() =>
-                      setCollapsedFactoryGroups((current) => ({
-                        ...current,
-                        [group.label!]: isOpen,
-                      }))
-                    }
-                    className={`flex w-full items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-all duration-150 ${
-                      groupHasActive
-                        ? 'border-brand-purple/20 bg-brand-lavender-chip/65 shadow-sm'
-                        : isOpen
-                          ? 'border-slate-200/80 bg-slate-50/90 hover:bg-slate-100'
-                          : 'border-transparent hover:border-slate-200/80 hover:bg-slate-50'
-                    }`}
-                    aria-expanded={isOpen}
-                  >
-                    <span
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                        groupHasActive
-                          ? 'bg-white text-brand-purple shadow-sm'
-                          : 'bg-white text-slate-500 ring-1 ring-slate-200/80'
-                      }`}
-                      aria-hidden
-                    >
-                      <GroupIcon size={17} strokeWidth={2} />
-                    </span>
-                    <span
-                      className={`flex-1 text-[13px] font-bold ${
-                        groupHasActive ? 'text-brand-navy-ink' : 'text-slate-700'
-                      }`}
-                    >
+                <div key={group.label} className={groupIndex === 0 ? 'space-y-1' : 'mt-5 space-y-1'}>
+                  <div className='flex items-center px-2.5 pb-1'>
+                    <p className='text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400'>
                       {group.label}
-                    </span>
-                    {groupUnread > 0 ? (
-                      <span className='inline-flex min-w-[18px] items-center justify-center rounded-full bg-brand-orange px-1.5 text-[10px] font-bold leading-[16px] text-white'>
-                        {groupUnread > 99 ? '99+' : groupUnread}
-                      </span>
-                    ) : null}
-                    <ChevronDown
-                      size={16}
-                      className={`shrink-0 text-slate-500 transition-transform duration-200 ${
-                        isOpen ? '' : '-rotate-90'
-                      }`}
-                    />
-                  </Button>
-                  {isOpen ? (
-                    <div className='ml-4 mt-1.5 space-y-0.5 border-l border-slate-200 pl-2'>
-                      {group.items.map((item) => renderItem(item, true))}
-                    </div>
-                  ) : null}
+                    </p>
+                  </div>
+                  {group.items.map((item) => renderItem(item))}
                 </div>
               );
             })
