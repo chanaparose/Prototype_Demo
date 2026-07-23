@@ -42,7 +42,6 @@ import { ImageCropModal } from '@/components/common/ImageCropModal';
 import { VerifyStatusBanner } from '@/components/factory/profile/VerifyStatusBanner';
 import { BusinessInfoSection } from '@/components/factory/profile/BusinessInfoSection';
 import { CategoriesSection } from '@/components/factory/profile/CategoriesSection';
-import { useLbiHubsQuery } from '@/components/features/hub/useLbiHubsQuery';
 import { AddressesSection } from '@/components/factory/profile/AddressesSection';
 import { CertificatesSection } from '@/components/factory/profile/CertificatesSection';
 import { FactoryBankSettingsPage } from '@/pages/factory-portal/FactoryBankSettingsPage';
@@ -267,193 +266,6 @@ function AvatarUploader({
   );
 }
 
-// ─── CategoryViewCard — view-mode card for categories (no edit) ───────────────
-type SubEntryView = { id: number; name: string; categoryName?: string };
-type CatCardView = { id: number; name: string; subs: SubEntryView[] };
-type HubCardView = { id: number; name: string; scope: string; cats: CatCardView[] };
-
-function CategoryViewCard({ cat, isMT = false }: { cat: CatCardView; isMT?: boolean }) {
-  // Group subs by categoryName to show the intermediate category level
-  const subsByCategory = useMemo(() => {
-    const groups = new Map<string, SubEntryView[]>();
-    for (const s of cat.subs) {
-      const key = s.categoryName ?? '';
-      const bucket = groups.get(key) ?? [];
-      bucket.push(s);
-      groups.set(key, bucket);
-    }
-    return groups;
-  }, [cat.subs]);
-
-  const hasCategories = cat.subs.some((s) => s.categoryName);
-
-  return (
-    <div className={factoryCardClass({ variant: 'list', className: 'space-y-2' })}>
-      <h3 className='text-sm font-bold text-gray-900'>{cat.name}</h3>
-
-      {!isMT &&
-        (cat.subs.length > 0 ? (
-          hasCategories ? (
-            <div className='space-y-2'>
-              {[...subsByCategory.entries()].map(([catName, subs]) => (
-                <div key={catName} className='space-y-1'>
-                  {catName && <p className='text-[11px] font-semibold text-gray-500'>{catName}</p>}
-                  <ul className='flex flex-wrap gap-1.5'>
-                    {subs.map((s) => (
-                      <li key={s.id}>
-                        <span className={factoryBadgeClass({ variant: 'status' })}>{s.name}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <ul className='flex flex-wrap gap-1.5'>
-              {cat.subs.map((s) => (
-                <li key={s.id}>
-                  <span className={factoryBadgeClass({ variant: 'status' })}>{s.name}</span>
-                </li>
-              ))}
-            </ul>
-          )
-        ) : (
-          <p className='text-xs text-gray-400'>ยังไม่ได้เลือกหมวดย่อย</p>
-        ))}
-    </div>
-  );
-}
-
-function CategorySheetView({
-  hubCards,
-}: {
-  hubCards: { hubs: HubCardView[]; other: CatCardView[] };
-}) {
-  const renderRows = (cats: CatCardView[], scope?: string) =>
-    cats.map((cat) => {
-      const isMT = scope === 'MT';
-      return (
-        <tr key={`${scope ?? 'other'}-${cat.id}`} className='hover:bg-slate-50/70'>
-          <td className='border-b border-slate-100 px-3 py-3 align-top'>
-            <p className='text-sm font-bold text-slate-900'>{cat.name}</p>
-            <span
-              className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                isMT ? 'bg-emerald-50 text-emerald-700' : 'bg-violet-50 text-brand-purple'
-              }`}
-            >
-              {isMT ? 'วัตถุดิบ (MT)' : 'รับผลิต (PD)'}
-            </span>
-          </td>
-          <td className='border-b border-slate-100 px-3 py-3 align-top'>
-            {isMT ? (
-              <span className='text-xs font-medium text-slate-400'>ไม่ต้องเลือกหมวดย่อย</span>
-            ) : cat.subs.length > 0 ? (
-              <div className='flex flex-wrap gap-1.5'>
-                {cat.subs.map((s) => (
-                  <span
-                    key={s.id}
-                    className='inline-flex rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-800'
-                  >
-                    {s.name}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <span className='text-xs text-slate-400'>ยังไม่ได้เลือกหมวดย่อย</span>
-            )}
-          </td>
-        </tr>
-      );
-    });
-
-  const renderTable = (title: string, scope: 'PD' | 'MT', hubs: HubCardView[]) => {
-    const isMT = scope === 'MT';
-    const hasRows = hubs.length > 0;
-
-    return (
-      <div className='overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm'>
-        <div
-          className={`flex items-center justify-between gap-3 border-b border-slate-100 px-3 py-2.5 ${
-            isMT ? 'bg-emerald-50/70' : 'bg-violet-50/70'
-          }`}
-        >
-          <div>
-            <p
-              className={`text-sm font-extrabold ${isMT ? 'text-emerald-700' : 'text-brand-purple'}`}
-            >
-              {title}
-            </p>
-            <p className='text-[11px] font-medium text-slate-500'>
-              {hasRows
-                ? `${hubs.reduce((sum, h) => sum + h.cats.length, 0)} หมวดหลัก`
-                : 'ยังไม่มีข้อมูล'}
-            </p>
-          </div>
-        </div>
-        {hasRows ? (
-          <div className='overflow-x-auto'>
-            <table className='w-full min-w-[560px] border-collapse'>
-              <thead>
-                <tr className='bg-slate-50 text-left'>
-                  <th className='border-b border-slate-200 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-slate-500'>
-                    Hub / หมวดหลัก
-                  </th>
-                  <th className='border-b border-slate-200 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-slate-500'>
-                    หมวดย่อยที่รับงาน
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {hubs.map((hub) => (
-                  <React.Fragment key={hub.id}>
-                    <tr>
-                      <td
-                        colSpan={2}
-                        className={`border-b border-slate-100 px-3 py-2 text-xs font-extrabold ${
-                          isMT
-                            ? 'bg-emerald-50/40 text-emerald-700'
-                            : 'bg-violet-50/40 text-brand-purple'
-                        }`}
-                      >
-                        {hub.name}
-                      </td>
-                    </tr>
-                    {renderRows(hub.cats, hub.scope)}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className='px-3 py-5 text-sm text-slate-400'>ยังไม่ได้เลือกหมวดใน scope นี้</div>
-        )}
-      </div>
-    );
-  };
-
-  const pdHubs = hubCards.hubs.filter((h) => h.scope !== 'MT');
-  const mtHubs = hubCards.hubs.filter((h) => h.scope === 'MT');
-
-  return (
-    <div className='space-y-4'>
-      {renderTable('หมวดสินค้า / รับผลิต (PD)', 'PD', pdHubs)}
-      {renderTable('หมวดวัตถุดิบ (MT)', 'MT', mtHubs)}
-      {hubCards.other.length > 0 ? (
-        <div className='overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm'>
-          <div className='border-b border-slate-100 bg-slate-50 px-3 py-2.5'>
-            <p className='text-sm font-extrabold text-slate-600'>หมวดอื่นๆ</p>
-          </div>
-          <div className='overflow-x-auto'>
-            <table className='w-full min-w-[560px] border-collapse'>
-              <tbody>{renderRows(hubCards.other)}</tbody>
-            </table>
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 // ─── Main page ────────────────────────────────────────────────────────────────
 export function FactoryInfoPage() {
   const { user, refreshUser } = useAuth();
@@ -635,52 +447,6 @@ export function FactoryInfoPage() {
   const imageUrl = String(watched.image_url ?? '').trim();
   const busy = uploadingImage || saving;
 
-  // ── View-mode labels ───────────────────────────────────────────────────────
-  const rawCats = (factoryQ.data?.categories as Array<Record<string, unknown>> | undefined) ?? [];
-  const rawSubs =
-    (factoryQ.data?.sub_categories as Array<Record<string, unknown>> | undefined) ?? [];
-  const { data: hubs = [] } = useLbiHubsQuery();
-  type SubEntry = { id: number; name: string; categoryName?: string };
-  type CatCard = { id: number; name: string; subs: SubEntry[] };
-  const categoryCardsById = useMemo(() => {
-    const map = new Map<number, CatCard>();
-    const subByCat = new Map<number, SubEntry[]>();
-    rawSubs.forEach((s) => {
-      const catId = Number(s.category_id);
-      const id = Number(s.sub_category_id);
-      const name = String(s.sub_category_name ?? s.name ?? '').trim();
-      const categoryName = String(s.category_name ?? '').trim() || undefined;
-      if (!Number.isFinite(catId) || !Number.isFinite(id) || !name) return;
-      const bucket = subByCat.get(catId) ?? [];
-      if (!bucket.some((x) => x.id === id)) bucket.push({ id, name, categoryName });
-      subByCat.set(catId, bucket);
-    });
-    rawCats.forEach((c) => {
-      const id = Number(c.category_id);
-      const name = String(c.category_name ?? c.name ?? '').trim();
-      if (!Number.isFinite(id) || !name) return;
-      map.set(id, { id, name, subs: subByCat.get(id) ?? [] });
-    });
-    return map;
-  }, [rawCats, rawSubs]);
-
-  // hub -> category -> subcategory, จัดกลุ่มตาม hub ที่แต่ละหมวดหมู่ที่โรงงานเลือกไว้สังกัดอยู่
-  const hubCards = useMemo(() => {
-    const out: HubCardView[] = [];
-    const usedCategoryIds = new Set<number>();
-    hubs.forEach((h) => {
-      const cats = h.categories
-        .map((c) => categoryCardsById.get(c.category_id))
-        .filter((c): c is CatCard => c != null);
-      if (cats.length === 0) return;
-      cats.forEach((c) => usedCategoryIds.add(c.id));
-      out.push({ id: h.hub_id, name: h.name, scope: h.scope, cats });
-    });
-    out.sort((a, b) => a.name.localeCompare(b.name, 'th'));
-    const otherCats = [...categoryCardsById.values()].filter((c) => !usedCategoryIds.has(c.id));
-    return { hubs: out, other: otherCats };
-  }, [hubs, categoryCardsById]);
-
   // ── Guards ─────────────────────────────────────────────────────────────────
   if (fid == null) return <p className='text-sm text-red-600'>บัญชีนี้ไม่ใช่โรงงาน</p>;
   if (isError)
@@ -843,35 +609,27 @@ export function FactoryInfoPage() {
           </div>
         }
       >
-        {editSection === 'categories' ? (
-          <CategoriesSection
-            form={form}
-            factoryId={fid}
-            onRegisterAdd={(h) => {
-              openCategoryPickerRef.current = h;
-            }}
-            apiCategories={
-              (factoryQ.data?.categories ?? []) as Parameters<
-                typeof CategoriesSection
-              >[0]['apiCategories']
-            }
-            apiSubCategories={
-              (factoryQ.data?.sub_categories ?? []) as Parameters<
-                typeof CategoriesSection
-              >[0]['apiSubCategories']
-            }
-            onPdSubValidation={(invalidIds) => {
-              pdSubErrorsRef.current = invalidIds;
-            }}
-          />
-        ) : hubCards.hubs.length > 0 || hubCards.other.length > 0 ? (
-          <CategorySheetView hubCards={hubCards} />
-        ) : (
-          <div className='rounded-lg border border-dashed border-gray-300 p-6 text-center'>
-            <p className='text-sm text-gray-500'>ยังไม่ได้เลือกหมวดหมู่</p>
-            <p className='text-xs text-gray-400 mt-1'>กด [แก้ไข] เพื่อเพิ่มหมวดหมู่แรก</p>
-          </div>
-        )}
+        <CategoriesSection
+          form={form}
+          factoryId={fid}
+          editable={editSection === 'categories'}
+          onRegisterAdd={(h) => {
+            openCategoryPickerRef.current = h;
+          }}
+          apiCategories={
+            (factoryQ.data?.categories ?? []) as Parameters<
+              typeof CategoriesSection
+            >[0]['apiCategories']
+          }
+          apiSubCategories={
+            (factoryQ.data?.sub_categories ?? []) as Parameters<
+              typeof CategoriesSection
+            >[0]['apiSubCategories']
+          }
+          onPdSubValidation={(invalidIds) => {
+            pdSubErrorsRef.current = invalidIds;
+          }}
+        />
       </InfoCard>
 
       {/* Crop modal for avatar */}

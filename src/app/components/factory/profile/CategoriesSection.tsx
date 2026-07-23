@@ -27,6 +27,8 @@ interface ApiSubCategory {
 interface Props {
   form: UseFormReturn<ProfileFormValues>;
   factoryId: number | string;
+  /** Preview and edit share the same table. Actions only appear in edit mode. */
+  editable?: boolean;
   /** Called by parent to register the "open category manager" handler */
   onRegisterAdd?: (handler: () => void) => void;
   /** Raw categories from /factories/me — used as fallback when master data is unavailable */
@@ -44,6 +46,7 @@ interface Props {
 
 export function CategoriesSection({
   form,
+  editable = true,
   onRegisterAdd,
   apiCategories = [],
   apiSubCategories = [],
@@ -87,9 +90,9 @@ export function CategoriesSection({
   };
 
   useEffect(() => {
-    onRegisterAdd?.(() => openManageModal(null));
+    if (editable) onRegisterAdd?.(() => openManageModal(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [editable]);
 
   const apiCategoryMap = useMemo(() => {
     const map = new Map<number, string>();
@@ -174,8 +177,9 @@ export function CategoriesSection({
   };
 
   const thClass =
-    'border border-gray-300 bg-gray-100 px-2.5 py-2 text-left text-[11px] font-semibold text-gray-600 whitespace-nowrap';
-  const tdClass = 'border border-gray-200 px-2.5 py-2 text-xs text-gray-800 align-top';
+    'border-b border-r border-slate-200 bg-slate-50 px-3 py-2.5 text-left text-[11px] font-bold text-slate-500 whitespace-nowrap last:border-r-0';
+  const tdClass =
+    'border-b border-r border-slate-100 px-3 py-3 text-xs text-slate-700 align-top last:border-r-0';
 
   const renderScopeTable = (
     title: string,
@@ -186,18 +190,29 @@ export function CategoriesSection({
     const rowCount = groups.reduce((sum, item) => sum + item.categories.length, 0);
 
     return (
-      <div className='overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm'>
+      <div className='overflow-hidden rounded-xl border border-slate-200 bg-white'>
         <div
           className={cn(
-            'flex items-center justify-between gap-3 border-b border-slate-100 px-3 py-2.5',
-            isMTScope ? 'bg-emerald-50/70' : 'bg-violet-50/70',
+            'flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3',
+            isMTScope ? 'bg-emerald-50/60' : 'bg-indigo-50/60',
           )}
         >
-          <div>
+          <div className='flex items-center gap-3'>
+            <span
+              className={cn(
+                'inline-flex h-7 min-w-9 items-center justify-center rounded-md px-2 text-[11px] font-extrabold',
+                isMTScope
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-indigo-100 text-indigo-700',
+              )}
+            >
+              {scope}
+            </span>
+            <div>
             <p
               className={cn(
-                'text-sm font-extrabold',
-                isMTScope ? 'text-emerald-700' : 'text-brand-purple',
+                'text-sm font-bold',
+                isMTScope ? 'text-emerald-800' : 'text-indigo-900',
               )}
             >
               {title}
@@ -205,7 +220,13 @@ export function CategoriesSection({
             <p className='text-[11px] font-medium text-slate-500'>
               {rowCount > 0 ? `${rowCount} หมวดหลัก` : 'ยังไม่มีข้อมูล'}
             </p>
+            </div>
           </div>
+          {editable ? (
+            <span className='rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-500'>
+              โหมดแก้ไข
+            </span>
+          ) : null}
         </div>
 
         {rowCount > 0 ? (
@@ -219,9 +240,11 @@ export function CategoriesSection({
               <thead>
                 <tr>
                   <th className={thClass}>Hub</th>
-                  <th className={thClass}>หมวดหมู่</th>
-                  {!isMTScope ? <th className={cn(thClass, 'min-w-[140px]')}>หมวดย่อย</th> : null}
-                  <th className={cn(thClass, 'w-16 text-center')}>จัดการ</th>
+                  <th className={thClass}>หมวดหลัก</th>
+                  {!isMTScope ? (
+                    <th className={cn(thClass, 'min-w-[220px]')}>หมวดย่อยที่รับงาน</th>
+                  ) : null}
+                  {editable ? <th className={cn(thClass, 'w-20 text-center')}>จัดการ</th> : null}
                 </tr>
               </thead>
               <tbody>
@@ -238,24 +261,36 @@ export function CategoriesSection({
                         className={cn(hasSubError && 'bg-red-50/50', 'hover:bg-slate-50/50')}
                       >
                         {isFirstInHub ? (
-                          <td className={cn(tdClass, 'font-medium')} rowSpan={categories.length}>
+                          <td
+                            className={cn(tdClass, 'w-[24%] bg-slate-50/40 font-medium')}
+                            rowSpan={categories.length}
+                          >
                             <span
                               className={cn(
-                                'font-semibold',
-                                isMTScope ? 'text-emerald-700' : 'text-brand-purple',
+                                'font-bold',
+                                isMTScope ? 'text-emerald-700' : 'text-indigo-700',
                               )}
                             >
                               {hub.name}
                             </span>
                           </td>
                         ) : null}
-                        <td className={cn(tdClass, 'font-medium')}>{c.name}</td>
+                        <td className={cn(tdClass, 'w-[28%] font-semibold text-slate-900')}>
+                          {c.name}
+                        </td>
                         {!isMTScope ? (
                           <td className={tdClass}>
                             {names.length > 0 ? (
-                              <span className='text-[11px] leading-relaxed text-gray-700'>
-                                {names.join(', ')}
-                              </span>
+                              <div className='flex flex-wrap gap-1.5'>
+                                {names.map((name) => (
+                                  <span
+                                    key={name}
+                                    className='inline-flex rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600'
+                                  >
+                                    {name}
+                                  </span>
+                                ))}
+                              </div>
                             ) : (byCategory.get(c.id) ?? []).length > 0 ? (
                               <span className='text-[11px] font-medium text-red-500'>
                                 ยังไม่ได้เลือก
@@ -265,7 +300,7 @@ export function CategoriesSection({
                             )}
                           </td>
                         ) : null}
-                        <td className={cn(tdClass, 'text-center')}>
+                        {editable ? <td className={cn(tdClass, 'text-center')}>
                           <div className='inline-flex items-center gap-0.5'>
                             {!isMT ? (
                               <Button
@@ -288,7 +323,7 @@ export function CategoriesSection({
                               <Trash2 size={13} />
                             </Button>
                           </div>
-                        </td>
+                        </td> : null}
                       </tr>
                     );
                   }),
@@ -318,7 +353,7 @@ export function CategoriesSection({
           {renderScopeTable('หมวดสินค้า / รับผลิต (PD)', 'PD', pdGroups)}
           {renderScopeTable('หมวดวัตถุดิบ (MT)', 'MT', mtGroups)}
           {groupedByHub.unknown.length > 0 ? (
-            <div className='overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm'>
+            <div className='overflow-hidden rounded-xl border border-slate-200 bg-white'>
               <div className='border-b border-slate-100 bg-slate-50 px-3 py-2.5'>
                 <p className='text-sm font-extrabold text-slate-600'>หมวดอื่นๆ</p>
               </div>
@@ -328,7 +363,9 @@ export function CategoriesSection({
                     <tr>
                       <th className={thClass}>หมวดหมู่</th>
                       <th className={cn(thClass, 'min-w-[140px]')}>หมวดย่อย</th>
-                      <th className={cn(thClass, 'w-16 text-center')}>จัดการ</th>
+                      {editable ? (
+                        <th className={cn(thClass, 'w-20 text-center')}>จัดการ</th>
+                      ) : null}
                     </tr>
                   </thead>
                   <tbody>
@@ -352,7 +389,7 @@ export function CategoriesSection({
                                 </span>
                               )}
                             </td>
-                            <td className={cn(tdClass, 'text-center')}>
+                            {editable ? <td className={cn(tdClass, 'text-center')}>
                               <div className='inline-flex items-center gap-0.5'>
                                 {!isMT ? (
                                   <Button
@@ -373,7 +410,7 @@ export function CategoriesSection({
                                   <Trash2 size={13} />
                                 </Button>
                               </div>
-                            </td>
+                            </td> : null}
                           </tr>
                         </Fragment>
                       );
@@ -386,35 +423,39 @@ export function CategoriesSection({
         </div>
       )}
 
-      <Controller
-        control={control}
-        name='category_ids'
-        render={({ field }) => <input type='hidden' name={field.name} />}
-      />
-      <Controller
-        control={control}
-        name='sub_category_ids'
-        render={({ field }) => <input type='hidden' name={field.name} />}
-      />
+      {editable ? (
+        <>
+          <Controller
+            control={control}
+            name='category_ids'
+            render={({ field }) => <input type='hidden' name={field.name} />}
+          />
+          <Controller
+            control={control}
+            name='sub_category_ids'
+            render={({ field }) => <input type='hidden' name={field.name} />}
+          />
 
-      <CategoryManageModal
-        open={manageModalOpen}
-        initialCategoryIds={categoryIds}
-        initialSubCategoryIds={subCategoryIds}
-        focusCategoryId={focusCategoryId}
-        onClose={() => {
-          setManageModalOpen(false);
-          setFocusCategoryId(null);
-        }}
-        onConfirm={(nextCategoryIds, nextSubCategoryIds) => {
-          form.setValue('category_ids', nextCategoryIds, { shouldDirty: true });
-          form.setValue('sub_category_ids', nextSubCategoryIds, { shouldDirty: true });
-          return Promise.resolve(onSaved?.(nextCategoryIds, nextSubCategoryIds)).then(() => {
-            setManageModalOpen(false);
-            setFocusCategoryId(null);
-          });
-        }}
-      />
+          <CategoryManageModal
+            open={manageModalOpen}
+            initialCategoryIds={categoryIds}
+            initialSubCategoryIds={subCategoryIds}
+            focusCategoryId={focusCategoryId}
+            onClose={() => {
+              setManageModalOpen(false);
+              setFocusCategoryId(null);
+            }}
+            onConfirm={(nextCategoryIds, nextSubCategoryIds) => {
+              form.setValue('category_ids', nextCategoryIds, { shouldDirty: true });
+              form.setValue('sub_category_ids', nextSubCategoryIds, { shouldDirty: true });
+              return Promise.resolve(onSaved?.(nextCategoryIds, nextSubCategoryIds)).then(() => {
+                setManageModalOpen(false);
+                setFocusCategoryId(null);
+              });
+            }}
+          />
+        </>
+      ) : null}
     </div>
   );
 }
