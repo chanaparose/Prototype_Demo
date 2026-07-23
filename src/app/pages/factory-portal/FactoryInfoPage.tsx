@@ -61,7 +61,7 @@ import {
   factoryCardClass,
 } from '@/pages/factory-portal/factoryUi';
 
-type EditSection = 'info' | null;
+type EditSection = 'info' | 'categories' | null;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function normalizeIds(ids: number[]): number[] {
@@ -523,7 +523,9 @@ export function FactoryInfoPage() {
   const isDirty = form.formState.isDirty;
   useBeforeUnload(isDirty);
 
-  // ── Save info section ──────────────────────────────────────────────────────
+  // ── Save "ข้อมูลพื้นฐาน" — factory_name / tax_id / description / lead_time / รูป ──
+  // หมวดหมู่แยกบันทึกเป็นของตัวเองใน handleSaveCategories ด้านล่าง จึงส่ง
+  // category_ids/sub_category_ids ปัจจุบัน (ไม่ถูกแก้ไข) ไปเฉยๆ เพราะ endpoint นี้ต้องการ field นี้
   const handleSaveInfo = useCallback(async () => {
     if (!fid) return;
     const valid = await form.trigger(['factory_name', 'tax_id', 'lead_time_desc', 'description']);
@@ -531,7 +533,36 @@ export function FactoryInfoPage() {
       setError('กรุณาตรวจสอบข้อมูลในฟอร์ม');
       return;
     }
-    // ตรวจสอบว่า PD categories ทุกอันมี sub-category เลือกไว้
+    setSaving(true);
+    setError('');
+    setOkMsg('');
+    const v = form.getValues();
+    try {
+      await factoriesApi.saveProfile(fid, {
+        factory_name: v.factory_name.trim(),
+        tax_id: v.tax_id.trim() || undefined,
+        description: v.description.trim() || undefined,
+        lead_time_desc: v.lead_time_desc.trim() || undefined,
+        image_url: String(v.image_url ?? ''),
+        background_image_url: String(v.cover_image_url ?? ''),
+        category_ids: normalizeIds(v.category_ids),
+        sub_category_ids: normalizeIds(v.sub_category_ids),
+      });
+      form.reset(v);
+      setOkMsg('บันทึกข้อมูลพื้นฐานเรียบร้อย');
+      setEditSection(null);
+      await refreshUser();
+      await qc.invalidateQueries({ queryKey: profileInitKey });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ');
+    } finally {
+      setSaving(false);
+    }
+  }, [fid, form, qc, refreshUser]);
+
+  // ── Save "ข้อมูลการผลิตและหมวดหมู่" — category_ids / sub_category_ids ──────────
+  const handleSaveCategories = useCallback(async () => {
+    if (!fid) return;
     if (pdSubErrorsRef.current.size > 0) {
       setError('กรุณาเลือกหมวดย่อยอย่างน้อย 1 รายการสำหรับทุก "หมวดสินค้า (PD)" ที่เลือกไว้');
       return;
@@ -543,29 +574,15 @@ export function FactoryInfoPage() {
     const catIds = normalizeIds(v.category_ids);
     const subIds = normalizeIds(v.sub_category_ids);
     try {
-      await factoriesApi.saveProfile(fid, {
-        factory_name: v.factory_name.trim(),
-        tax_id: v.tax_id.trim() || undefined,
-        description: v.description.trim() || undefined,
-        lead_time_desc: v.lead_time_desc.trim() || undefined,
-        image_url: String(v.image_url ?? ''),
-        background_image_url: String(v.cover_image_url ?? ''),
-        category_ids: catIds,
-        sub_category_ids: subIds,
-      });
-      if (catIds.length > 0) {
-        await factoriesApi.setCategories(fid, catIds);
-      }
-      if (subIds.length > 0) {
-        await factoriesApi.setSubCategories(fid, subIds);
-      }
+      await factoriesApi.setCategories(fid, catIds);
+      await factoriesApi.setSubCategories(fid, subIds);
       form.reset({ ...v, category_ids: catIds, sub_category_ids: subIds });
-      setOkMsg('บันทึกข้อมูลพื้นฐานเรียบร้อย');
+      setOkMsg('บันทึกหมวดหมู่เรียบร้อย');
       setEditSection(null);
       await refreshUser();
       await qc.invalidateQueries({ queryKey: profileInitKey });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ');
+      setError(e instanceof Error ? e.message : 'บันทึกหมวดหมู่ไม่สำเร็จ');
     } finally {
       setSaving(false);
     }
@@ -716,7 +733,7 @@ export function FactoryInfoPage() {
         </div>
       )}
 
-      {/* ── 1+2. Profile + หมวดหมู่ — same API (PUT /factories/:id/profile) ─── */}
+      {/* ── 1. ข้อมูลพื้นฐาน — PUT /factories/:id/profile ──────────────────── */}
       <InfoCard
         title={<VerifyStatusBanner status={verifyStatus} />}
         action={
@@ -776,109 +793,83 @@ export function FactoryInfoPage() {
         <div className='-mx-4 mb-5 border-t border-slate-100 sm:-mx-5' />
 
         {editSection === 'info' ? (
-          /* ── Edit mode: business info + categories in one form ── */
-          <div className='space-y-6'>
-            <BusinessInfoSection form={form} />
-            <div className='-mx-4 border-t border-slate-100 sm:-mx-5' />
-            <div>
-              <div className='flex items-center justify-between gap-2 mb-3'>
-                <p className='text-xs font-semibold text-gray-500'>ข้อมูลการผลิตและหมวดหมู่</p>
-                <div className='flex items-center gap-2'>
-                  <Button
-                    variant='unstyled'
-                    type='button'
-                    onClick={() => openCategoryPickerRef.current?.()}
-                    className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
-                  >
-                    <Plus size={11} /> จัดการหมวดหมู่
-                  </Button>
-                </div>
-              </div>
-              <CategoriesSection
-                form={form}
-                factoryId={fid}
-                onRegisterAdd={(h) => {
-                  openCategoryPickerRef.current = h;
-                }}
-                apiCategories={
-                  (factoryQ.data?.categories ?? []) as Parameters<
-                    typeof CategoriesSection
-                  >[0]['apiCategories']
-                }
-                apiSubCategories={
-                  (factoryQ.data?.sub_categories ?? []) as Parameters<
-                    typeof CategoriesSection
-                  >[0]['apiSubCategories']
-                }
-                onPdSubValidation={(invalidIds) => {
-                  pdSubErrorsRef.current = invalidIds;
-                }}
-                onSaved={async (nextCategoryIds, nextSubCategoryIds) => {
-                  if (!fid) return;
-                  const current = form.getValues();
-                  const catIds = normalizeIds(nextCategoryIds);
-                  const subIds = normalizeIds(nextSubCategoryIds);
-                  setSaving(true);
-                  setError('');
-                  setOkMsg('');
-                  try {
-                    await factoriesApi.saveProfile(fid, {
-                      factory_name: current.factory_name.trim(),
-                      tax_id: current.tax_id.trim() || undefined,
-                      description: current.description.trim() || undefined,
-                      lead_time_desc: current.lead_time_desc.trim() || undefined,
-                      image_url: String(current.image_url ?? ''),
-                      background_image_url: String(current.cover_image_url ?? ''),
-                      category_ids: catIds,
-                      sub_category_ids: subIds,
-                    });
-                    await factoriesApi.setCategories(fid, catIds);
-                    await factoriesApi.setSubCategories(fid, subIds);
-                    form.reset({
-                      ...current,
-                      category_ids: catIds,
-                      sub_category_ids: subIds,
-                    });
-                    setOkMsg('บันทึกหมวดหมู่เรียบร้อย');
-                    setEditSection(null);
-                    await refreshUser();
-                    await qc.invalidateQueries({ queryKey: profileInitKey });
-                  } catch (e) {
-                    const message = e instanceof Error ? e.message : 'บันทึกหมวดหมู่ไม่สำเร็จ';
-                    setError(message);
-                    throw new Error(message);
-                  } finally {
-                    setSaving(false);
-                  }
-                }}
-              />
-            </div>
-          </div>
+          /* ── Edit mode: ข้อมูลพื้นฐานเท่านั้น ── */
+          <BusinessInfoSection form={form} />
         ) : (
-          /* ── View mode: data grid + category tags ── */
-          <div className='space-y-6'>
-            <div className='grid grid-cols-2 sm:grid-cols-4 2xl:grid-cols-6 gap-x-8 gap-y-6'>
-              <Field label='ชื่อโรงงาน' value={initialValues.factory_name} className='col-span-2' />
-              <Field label='เลขประจำตัวผู้เสียภาษี' value={initialValues.tax_id} />
-              <Field label='Lead Time' value={initialValues.lead_time_desc} />
-              <Field
-                label='รายละเอียด'
-                value={initialValues.description}
-                className='col-span-2 sm:col-span-4 2xl:col-span-6'
-              />
-            </div>
+          /* ── View mode: data grid ── */
+          <div className='grid grid-cols-2 sm:grid-cols-4 2xl:grid-cols-6 gap-x-8 gap-y-6'>
+            <Field label='ชื่อโรงงาน' value={initialValues.factory_name} className='col-span-2' />
+            <Field label='เลขประจำตัวผู้เสียภาษี' value={initialValues.tax_id} />
+            <Field label='Lead Time' value={initialValues.lead_time_desc} />
+            <Field
+              label='รายละเอียด'
+              value={initialValues.description}
+              className='col-span-2 sm:col-span-4 2xl:col-span-6'
+            />
+          </div>
+        )}
+      </InfoCard>
 
-            {/* Categories sub-section */}
-            <div className='-mx-4 border-t border-slate-100 sm:-mx-5' />
-            <div className='space-y-4'>
-              <p className='text-xs font-semibold text-gray-500'>ข้อมูลการผลิตและหมวดหมู่</p>
-
-              {hubCards.hubs.length > 0 || hubCards.other.length > 0 ? (
-                <CategorySheetView hubCards={hubCards} />
-              ) : (
-                <p className='text-sm text-gray-300 font-normal'>—</p>
-              )}
-            </div>
+      {/* ── 2. ข้อมูลการผลิตและหมวดหมู่ — แยกบันทึกอิสระจากข้อมูลพื้นฐาน ─────── */}
+      <InfoCard
+        title='ข้อมูลการผลิตและหมวดหมู่'
+        action={
+          <div className='flex items-center gap-2'>
+            {editSection === 'categories' ? (
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => openCategoryPickerRef.current?.()}
+                className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
+              >
+                <Plus size={11} /> จัดการหมวดหมู่
+              </Button>
+            ) : null}
+            <SectionEditActions
+              isEditing={editSection === 'categories'}
+              saving={saving}
+              onEdit={() => {
+                setEditSection('categories');
+                setError('');
+                setOkMsg('');
+              }}
+              onCancel={() => {
+                form.reset(initialValues);
+                setEditSection(null);
+                setError('');
+              }}
+              onSave={() => void handleSaveCategories()}
+            />
+          </div>
+        }
+      >
+        {editSection === 'categories' ? (
+          <CategoriesSection
+            form={form}
+            factoryId={fid}
+            onRegisterAdd={(h) => {
+              openCategoryPickerRef.current = h;
+            }}
+            apiCategories={
+              (factoryQ.data?.categories ?? []) as Parameters<
+                typeof CategoriesSection
+              >[0]['apiCategories']
+            }
+            apiSubCategories={
+              (factoryQ.data?.sub_categories ?? []) as Parameters<
+                typeof CategoriesSection
+              >[0]['apiSubCategories']
+            }
+            onPdSubValidation={(invalidIds) => {
+              pdSubErrorsRef.current = invalidIds;
+            }}
+          />
+        ) : hubCards.hubs.length > 0 || hubCards.other.length > 0 ? (
+          <CategorySheetView hubCards={hubCards} />
+        ) : (
+          <div className='rounded-lg border border-dashed border-gray-300 p-6 text-center'>
+            <p className='text-sm text-gray-500'>ยังไม่ได้เลือกหมวดหมู่</p>
+            <p className='text-xs text-gray-400 mt-1'>กด [แก้ไข] เพื่อเพิ่มหมวดหมู่แรก</p>
           </div>
         )}
       </InfoCard>
