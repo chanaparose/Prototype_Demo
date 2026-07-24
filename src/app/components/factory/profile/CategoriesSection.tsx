@@ -9,7 +9,7 @@ import { selectedSubNames, subsForDisplay } from '@/components/factory/profile/s
 import { SubCategoryPickerField } from '@/components/factory/profile/SubCategoryPickerField';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Check, ChevronDown, Plus, Trash2, X } from 'lucide-react';
+import { ChevronDown, Plus, Trash2, X } from 'lucide-react';
 import { cn } from '@lib/utils';
 import type { ProfileFormValues } from '@/components/factory/profile/ProfileFormTypes';
 import type { IHubResponse } from '@/services/api/types/master.types';
@@ -225,27 +225,27 @@ export function CategoriesSection({
     () => (draft?.hubId != null ? hubs.find((h) => h.hub_id === draft.hubId) ?? null : null),
     [hubs, draft?.hubId],
   );
-  const draftCatSubs = draft?.categoryId != null ? byCategory.get(draft.categoryId) ?? [] : [];
-  const draftNeedsSub = draft?.scope === 'PD' && draftCatSubs.length > 0;
-  const draftValid = draft?.categoryId != null && (!draftNeedsSub || draft.subIds.length > 0);
 
-  const commitAdd = () => {
-    if (!draft || draft.categoryId == null || !draftValid) return;
+  // auto-add: พอเลือกหมวดหลัก → เพิ่มเข้าตารางทันที (หมวดย่อยไปเลือกในเซลล์ของแถวต่อ)
+  // - hub ล็อก (เพิ่มในกลุ่ม): เปิดแถวร่างค้างไว้ให้เพิ่มหมวดถัดไปในกลุ่มเดิมได้เรื่อยๆ
+  // - hub ใหม่: ปิดแถวร่าง (hub กลายเป็นกลุ่มแล้ว → เพิ่มต่อผ่าน "+ เพิ่มหมวด" ในกลุ่ม)
+  const autoAddCategory = (categoryId: number) => {
+    if (!draft || !Number.isFinite(categoryId) || categoryId <= 0) return;
     form.setValue(
       'category_ids',
-      [...new Set([...categoryIds, draft.categoryId])].sort((a, b) => a - b),
+      [...new Set([...categoryIds, categoryId])].sort((a, b) => a - b),
       { shouldDirty: true },
     );
-    if (draft.scope === 'PD' && draft.subIds.length > 0) {
-      // guard: ถ้าเลือก "ทั้งหมด" ให้ตัด sub เฉพาะทิ้ง (บังคับ exclusive อีกชั้นตอน commit)
-      const cleanDraftSubs = subsForDisplay(draft.subIds, draftCatSubs);
-      form.setValue(
-        'sub_category_ids',
-        [...new Set([...subCategoryIds, ...cleanDraftSubs])].sort((a, b) => a - b),
-        { shouldDirty: true },
-      );
+    if (draft.lockedHub && draft.hubId != null) {
+      const hub = hubs.find((h) => h.hub_id === draft.hubId);
+      const nextSelected = new Set([...categoryIds, categoryId]);
+      const remaining = hub
+        ? hub.categories.filter((c) => !nextSelected.has(c.category_id)).length
+        : 0;
+      setDraft(remaining > 0 ? { ...draft, categoryId: null, subIds: [] } : null);
+    } else {
+      setDraft(null);
     }
-    setDraft(null);
   };
 
   useEffect(() => {
@@ -391,10 +391,7 @@ export function CategoriesSection({
                         hubsForScope={hubsForScope(scope)}
                         availableCatsInHub={availableCatsInHub}
                         draftHub={draftHub}
-                        draftCatSubs={draftCatSubs}
-                        draftValid={!!draftValid}
-                        subsLoading={subsLoading}
-                        onCommit={commitAdd}
+                        onPickCategory={autoAddCategory}
                         onCancel={cancelAdd}
                       />
                     ) : null}
@@ -432,10 +429,7 @@ export function CategoriesSection({
                   hubsForScope={newHubsForScope(scope)}
                   availableCatsInHub={availableCatsInHub}
                   draftHub={draftHub}
-                  draftCatSubs={draftCatSubs}
-                  draftValid={!!draftValid}
-                  subsLoading={subsLoading}
-                  onCommit={commitAdd}
+                  onPickCategory={autoAddCategory}
                   onCancel={cancelAdd}
                   showHubSelect
                 />
@@ -495,10 +489,7 @@ function DraftRowEditor({
   hubsForScope,
   availableCatsInHub,
   draftHub,
-  draftCatSubs,
-  draftValid,
-  subsLoading,
-  onCommit,
+  onPickCategory,
   onCancel,
   showHubSelect = false,
 }: {
@@ -508,10 +499,8 @@ function DraftRowEditor({
   hubsForScope: IHubResponse[];
   availableCatsInHub: (hub: IHubResponse) => { category_id: number; name: string }[];
   draftHub: IHubResponse | null;
-  draftCatSubs: SubCategoryOption[];
-  draftValid: boolean;
-  subsLoading: boolean;
-  onCommit: () => void;
+  /** เลือกหมวดหลัก → เพิ่มเข้าตารางทันที (ไม่มีปุ่ม "เพิ่ม") */
+  onPickCategory: (categoryId: number) => void;
   onCancel: () => void;
   /** true = แถวเพิ่ม Hub ใหม่ (โชว์ dropdown เลือก hub); false = เพิ่มใน hub ที่ล็อกไว้ (rowSpan ครอบ) */
   showHubSelect?: boolean;
@@ -524,87 +513,61 @@ function DraftRowEditor({
     (isMT ? 'focus:border-emerald-400 focus:ring-emerald-300' : 'focus:border-indigo-400 focus:ring-indigo-300');
 
   return (
-    <>
-      <tr className={isMT ? 'bg-emerald-50/40' : 'bg-indigo-50/40'}>
-        {showHubSelect ? (
-          <td className='border-b border-slate-100 px-3 py-2 align-top'>
-            <select
-              value={draftHub?.hub_id ?? ''}
-              onChange={(e) => {
-                const id = Number(e.target.value);
-                setDraft({ ...draft, hubId: Number.isFinite(id) ? id : null, categoryId: null, subIds: [] });
-              }}
-              className={selectClass}
-            >
-              {availableHubs.length === 0 ? <option value=''>ไม่มี Hub ให้เพิ่ม</option> : null}
-              {availableHubs.map((h) => (
-                <option key={h.hub_id} value={h.hub_id}>
-                  {h.name}
-                </option>
-              ))}
-            </select>
-          </td>
-        ) : null}
+    <tr className={isMT ? 'bg-emerald-50/40' : 'bg-indigo-50/40'}>
+      {showHubSelect ? (
         <td className='border-b border-slate-100 px-3 py-2 align-top'>
           <select
-            value={draft.categoryId ?? ''}
+            value={draftHub?.hub_id ?? ''}
             onChange={(e) => {
               const id = Number(e.target.value);
-              setDraft({ ...draft, categoryId: Number.isFinite(id) && id > 0 ? id : null, subIds: [] });
+              setDraft({ ...draft, hubId: Number.isFinite(id) ? id : null, categoryId: null, subIds: [] });
             }}
             className={selectClass}
-            disabled={!draftHub}
           >
-            <option value=''>— เลือกหมวดหลัก —</option>
-            {cats.map((c) => (
-              <option key={c.category_id} value={c.category_id}>
-                {c.name}
+            {availableHubs.length === 0 ? <option value=''>ไม่มี Hub ให้เพิ่ม</option> : null}
+            {availableHubs.map((h) => (
+              <option key={h.hub_id} value={h.hub_id}>
+                {h.name}
               </option>
             ))}
           </select>
         </td>
-        {!isMT ? (
-          <td className='border-b border-slate-100 px-3 py-2 align-top'>
-            {draft.categoryId == null ? (
-              <span className='text-[11px] text-slate-400'>เลือกหมวดหลักก่อน</span>
-            ) : (
-              <SubCategoryCellPicker
-                subs={draftCatSubs}
-                selectedIds={draft.subIds}
-                onChange={(next) => setDraft({ ...draft, subIds: next })}
-                isLoading={subsLoading}
-                invalid={draftCatSubs.length > 0 && draft.subIds.length === 0}
-              />
-            )}
-          </td>
-        ) : null}
-        <td className='border-b border-slate-100 px-3 py-2 text-center align-top'>
-          <div className='inline-flex items-center gap-1'>
-            <Button
-              type='button'
-              variant='unstyled'
-              onClick={onCommit}
-              disabled={!draftValid}
-              className={cn(
-                'inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-40',
-                isMT ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-indigo-600 hover:bg-indigo-700',
-              )}
-            >
-              <Check size={12} /> เพิ่ม
-            </Button>
-            <Button
-              type='button'
-              variant='unstyled'
-              onClick={onCancel}
-              className='rounded-md border border-slate-200 p-1 text-slate-500 hover:bg-white'
-              aria-label='ยกเลิก'
-            >
-              <X size={13} />
-            </Button>
-          </div>
+      ) : null}
+      <td className='border-b border-slate-100 px-3 py-2 align-top'>
+        <select
+          value=''
+          onChange={(e) => {
+            const id = Number(e.target.value);
+            if (Number.isFinite(id) && id > 0) onPickCategory(id);
+          }}
+          className={selectClass}
+          disabled={!draftHub}
+        >
+          <option value=''>— เลือกหมวดหลัก (เพิ่มทันที) —</option>
+          {cats.map((c) => (
+            <option key={c.category_id} value={c.category_id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </td>
+      {!isMT ? (
+        <td className='border-b border-slate-100 px-3 py-2 align-middle'>
+          <span className='text-[11px] text-slate-400'>เลือกหมวดย่อยในเซลล์ได้หลังเพิ่ม</span>
         </td>
-      </tr>
-    </>
+      ) : null}
+      <td className='border-b border-slate-100 px-3 py-2 text-center align-middle'>
+        <Button
+          type='button'
+          variant='unstyled'
+          onClick={onCancel}
+          className='rounded-md border border-slate-200 p-1 text-slate-500 hover:bg-white'
+          aria-label='ปิด'
+        >
+          <X size={13} />
+        </Button>
+      </td>
+    </tr>
   );
 }
 
