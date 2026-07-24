@@ -179,6 +179,19 @@ export function CategoriesSection({
   const availableCatsInHub = (hub: (typeof hubs)[number]) =>
     hub.categories.filter((c) => !categoryIds.includes(c.category_id));
 
+  // Hub ที่โรงงานเลือกหมวดไว้แล้ว (มีกลุ่มอยู่แล้ว) — ปุ่ม "เพิ่ม Hub ใหม่" ต้องไม่โชว์ hub เหล่านี้
+  // (ให้ไปเพิ่มผ่าน "+ เพิ่มหมวด" ในกลุ่มเดิมแทน กันสร้าง hub ซ้ำ)
+  const usedHubIds = useMemo(() => {
+    const s = new Set<number>();
+    for (const c of resolvedCategories) {
+      const h = hubByCategoryId.get(c.id);
+      if (h) s.add(h.hub_id);
+    }
+    return s;
+  }, [resolvedCategories, hubByCategoryId]);
+  const newHubsForScope = (scope: Scope) =>
+    hubsForScope(scope).filter((h) => !usedHubIds.has(h.hub_id) && availableCatsInHub(h).length > 0);
+
   /** จัดกลุ่มหมวดที่เลือกไว้ตาม Hub (Hub เดียวกันอยู่กลุ่มเดียว) */
   const scopeGroups = (scope: Scope) => {
     const map = new Map<number | 'other', { hub: (typeof hubs)[number] | null; cats: { id: number; name: string }[] }>();
@@ -197,9 +210,9 @@ export function CategoriesSection({
     return groups;
   };
 
-  // เพิ่มหมวดใน Hub ใหม่ (ต้องเลือก hub เอง)
+  // เพิ่มหมวดใน Hub ใหม่ (ต้องเลือก hub เอง) — เลือกเฉพาะ hub ที่ยังไม่มีกลุ่ม
   const startAdd = (scope: Scope) => {
-    const firstHub = hubsForScope(scope).find((h) => availableCatsInHub(h).length > 0) ?? null;
+    const firstHub = newHubsForScope(scope)[0] ?? null;
     setDraft({ scope, hubId: firstHub?.hub_id ?? null, categoryId: null, subIds: [], lockedHub: false });
   };
   // เพิ่มหมวดใน Hub ที่มีอยู่แล้ว (hub ล็อก)
@@ -410,13 +423,13 @@ export function CategoriesSection({
                 );
               })}
 
-              {/* แถวร่าง: เพิ่ม Hub ใหม่ (มี hub select) */}
+              {/* แถวร่าง: เพิ่ม Hub ใหม่ (มี hub select — โชว์เฉพาะ hub ที่ยังไม่มีกลุ่ม) */}
               {editable && bottomDrafting ? (
                 <DraftRowEditor
                   scope={scope}
                   draft={draft!}
                   setDraft={setDraft}
-                  hubsForScope={hubsForScope(scope)}
+                  hubsForScope={newHubsForScope(scope)}
                   availableCatsInHub={availableCatsInHub}
                   draftHub={draftHub}
                   draftCatSubs={draftCatSubs}
@@ -428,8 +441,8 @@ export function CategoriesSection({
                 />
               ) : null}
 
-              {/* ปุ่มเพิ่ม Hub ใหม่ */}
-              {editable && !isDrafting ? (
+              {/* ปุ่มเพิ่ม Hub ใหม่ — ซ่อนเมื่อไม่มี hub ใหม่เหลือ (ทุก hub มีกลุ่มแล้ว) */}
+              {editable && !isDrafting && newHubsForScope(scope).length > 0 ? (
                 <tr>
                   <td colSpan={colCount} className='px-3 py-2'>
                     <Button
