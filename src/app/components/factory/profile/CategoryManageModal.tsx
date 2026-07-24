@@ -26,6 +26,8 @@ interface Props {
   initialCategoryIds: number[];
   initialSubCategoryIds: number[];
   focusCategoryId?: number | null;
+  /** เปิด modal แล้วกระโดดไปหน้าเลือก Hub ของ scope นี้ทันที (ใช้กับปุ่ม "+ เพิ่ม PD") */
+  initialScope?: ScopeTab | null;
   onClose: () => void;
   onConfirm: (categoryIds: number[], subCategoryIds: number[]) => void | Promise<void>;
 }
@@ -39,6 +41,7 @@ export function CategoryManageModal({
   initialCategoryIds,
   initialSubCategoryIds,
   focusCategoryId = null,
+  initialScope = null,
   onClose,
   onConfirm,
 }: Props) {
@@ -140,13 +143,17 @@ export function CategoryManageModal({
       const hub = hubs.find((h) => h.categories.some((c) => c.category_id === focusCategoryId));
       if (hub) setTargetHubId(hub.hub_id);
       setMode('manage');
+    } else if (initialScope != null) {
+      // "+ เพิ่ม PD/MT" — กระโดดไปหน้าเลือก Hub ของ scope นั้นเลย
+      setScopeTab(initialScope);
+      setMode('pick-hub');
     } else if (initialCategoryIds.length === 0) {
       setMode('manage');
       setScopeTab('PD');
     } else {
       setMode('manage');
     }
-  }, [open, initialCategoryIds, initialSubCategoryIds, focusCategoryId, hubs]);
+  }, [open, initialCategoryIds, initialSubCategoryIds, focusCategoryId, initialScope, hubs]);
 
   useEffect(() => {
     if (!open || focusCategoryId == null || mode !== 'manage') return;
@@ -391,11 +398,14 @@ export function CategoryManageModal({
     />
   );
 
+  const scopeLabel = (s: ScopeTab) => (s === 'MT' ? 'วัตถุดิบ (MT)' : 'รับผลิต (PD)');
   const title =
     mode === 'manage'
       ? 'จัดการหมวดหมู่'
       : mode === 'pick-hub'
-        ? 'เพิ่ม Hub'
+        ? initialScope != null
+          ? `เพิ่มหมวด${scopeLabel(initialScope)}`
+          : 'เพิ่ม Hub'
         : `เลือกหมวดใน "${targetHub?.name ?? ''}"`;
 
   const renderManageTable = (title: string, scope: ScopeTab) => {
@@ -730,29 +740,32 @@ export function CategoryManageModal({
         />
       </div>
 
-      <div className='flex gap-2'>
-        {(['PD', 'MT'] as const).map((tab) => {
-          const count = availableHubs.filter((h) => h.scope === tab).length;
-          return (
-            <button
-              key={tab}
-              type='button'
-              onClick={() => setScopeTab(tab)}
-              className={cn(
-                'rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors',
-                scopeTab === tab
-                  ? tab === 'PD'
-                    ? 'bg-brand-purple text-white'
-                    : 'bg-emerald-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
-              )}
-            >
-              {tab === 'PD' ? 'รับผลิต' : 'วัตถุดิบ'}
-              {count > 0 ? ` (${count})` : ''}
-            </button>
-          );
-        })}
-      </div>
+      {/* ล็อก scope เมื่อเปิดจากปุ่ม "+ PD/+MT" — ไม่ให้สลับข้าม scope */}
+      {initialScope == null ? (
+        <div className='flex gap-2'>
+          {(['PD', 'MT'] as const).map((tab) => {
+            const count = availableHubs.filter((h) => h.scope === tab).length;
+            return (
+              <button
+                key={tab}
+                type='button'
+                onClick={() => setScopeTab(tab)}
+                className={cn(
+                  'rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors',
+                  scopeTab === tab
+                    ? tab === 'PD'
+                      ? 'bg-brand-purple text-white'
+                      : 'bg-emerald-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+                )}
+              >
+                {tab === 'PD' ? 'รับผลิต' : 'วัตถุดิบ'}
+                {count > 0 ? ` (${count})` : ''}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
 
       {filteredAvailableHubs.length === 0 ? (
         <p className='py-6 text-center text-sm text-gray-400'>

@@ -580,33 +580,21 @@ export function FactoryInfoPage() {
       <InfoCard
         title='ข้อมูลการผลิตและหมวดหมู่'
         action={
-          <div className='flex items-center gap-2'>
-            {editSection === 'categories' ? (
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => openCategoryPickerRef.current?.()}
-                className={factoryButtonClass({ variant: 'secondary', size: 'sm' })}
-              >
-                <Plus size={11} /> จัดการหมวดหมู่
-              </Button>
-            ) : null}
-            <SectionEditActions
-              isEditing={editSection === 'categories'}
-              saving={saving}
-              onEdit={() => {
-                setEditSection('categories');
-                setError('');
-                setOkMsg('');
-              }}
-              onCancel={() => {
-                form.reset(initialValues);
-                setEditSection(null);
-                setError('');
-              }}
-              onSave={() => void handleSaveCategories()}
-            />
-          </div>
+          <SectionEditActions
+            isEditing={editSection === 'categories'}
+            saving={saving}
+            onEdit={() => {
+              setEditSection('categories');
+              setError('');
+              setOkMsg('');
+            }}
+            onCancel={() => {
+              form.reset(initialValues);
+              setEditSection(null);
+              setError('');
+            }}
+            onSave={() => void handleSaveCategories()}
+          />
         }
       >
         <CategoriesSection
