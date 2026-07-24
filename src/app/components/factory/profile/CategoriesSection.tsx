@@ -224,9 +224,11 @@ export function CategoriesSection({
       { shouldDirty: true },
     );
     if (draft.scope === 'PD' && draft.subIds.length > 0) {
+      // guard: ถ้าเลือก "ทั้งหมด" ให้ตัด sub เฉพาะทิ้ง (บังคับ exclusive อีกชั้นตอน commit)
+      const cleanDraftSubs = subsForDisplay(draft.subIds, draftCatSubs);
       form.setValue(
         'sub_category_ids',
-        [...new Set([...subCategoryIds, ...draft.subIds])].sort((a, b) => a - b),
+        [...new Set([...subCategoryIds, ...cleanDraftSubs])].sort((a, b) => a - b),
         { shouldDirty: true },
       );
     }
@@ -330,7 +332,8 @@ export function CategoriesSection({
                 const gHub = group.hub;
                 const draftingThisHub = draftInHubId != null && gHub?.hub_id === draftInHubId;
                 const canAddMore = gHub ? availableCatsInHub(gHub).length > 0 : false;
-                const rowSpan = group.cats.length + (draftingThisHub ? 1 : 0);
+                const showAddRow = editable && !!gHub && canAddMore && !draftingThisHub;
+                const rowSpan = group.cats.length + (draftingThisHub ? 1 : 0) + (showAddRow ? 1 : 0);
 
                 return (
                   <React.Fragment key={gHub?.hub_id ?? 'other'}>
@@ -342,21 +345,6 @@ export function CategoriesSection({
                           {idx === 0 ? (
                             <td className={cn(tdClass, 'bg-slate-50/40 align-top')} rowSpan={rowSpan}>
                               {hubBadge(gHub?.name ?? 'หมวดอื่นๆ')}
-                              {editable && gHub && canAddMore && !draftingThisHub ? (
-                                <div className='mt-2'>
-                                  <Button
-                                    type='button'
-                                    variant='unstyled'
-                                    onClick={() => startAddInHub(scope, gHub.hub_id)}
-                                    className={cn(
-                                      'inline-flex items-center gap-1 text-[11px] font-semibold',
-                                      isMT ? 'text-emerald-700 hover:underline' : 'text-indigo-700 hover:underline',
-                                    )}
-                                  >
-                                    <Plus size={11} /> เพิ่มหมวด
-                                  </Button>
-                                </div>
-                              ) : null}
                             </td>
                           ) : null}
                           <td className={cn(tdClass, 'font-semibold text-slate-900')}>{cat.name}</td>
@@ -393,6 +381,27 @@ export function CategoriesSection({
                         onCommit={commitAdd}
                         onCancel={cancelAdd}
                       />
+                    ) : null}
+
+                    {/* ปุ่มเพิ่มหมวดในกลุ่มนี้ — อยู่คอลัมน์ "หมวดหลัก" (hub cell ครอบด้วย rowSpan) */}
+                    {showAddRow && gHub ? (
+                      <tr>
+                        <td colSpan={colCount - 1} className='px-3 py-1.5'>
+                          <Button
+                            type='button'
+                            variant='unstyled'
+                            onClick={() => startAddInHub(scope, gHub.hub_id)}
+                            className={cn(
+                              'inline-flex items-center gap-1 rounded-md border border-dashed px-2 py-1 text-[11px] font-semibold transition-colors',
+                              isMT
+                                ? 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'
+                                : 'border-indigo-300 text-indigo-700 hover:bg-indigo-50',
+                            )}
+                          >
+                            <Plus size={12} /> เพิ่มหมวด
+                          </Button>
+                        </td>
+                      </tr>
                     ) : null}
                   </React.Fragment>
                 );
