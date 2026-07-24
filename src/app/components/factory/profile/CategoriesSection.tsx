@@ -237,6 +237,9 @@ export function CategoriesSection({
 
   useEffect(() => {
     if (editable) onRegisterAdd?.(() => startAdd('PD'));
+    // ล้าง draft ที่ค้างเมื่อสลับเข้า/ออกโหมดแก้ไข (component ไม่ unmount ตอน cancel)
+    // กัน stale draft ทำ rowSpan เพี้ยน + ซ่อนปุ่มเพิ่ม Hub ตอนกลับเข้าแก้ไขใหม่
+    setDraft(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editable]);
 
